@@ -1,3 +1,12 @@
+
+EventoraX Event management SaaS for universities, companies & NGOs — QR tickets, certificates, ID cards, and email automation.
+
+Built by ORBIT-I
+
+Frontend · Superadmin Panel · Organization Panel
+
+tech used nodejs for backend,react for fronted and my sql for database
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
