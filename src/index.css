@@ -1,0 +1,161 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 216 45% 20%;
+    --card: 0 0% 100%;
+    --card-foreground: 216 45% 20%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 216 45% 20%;
+    --primary: 214 100% 64%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 210 100% 90%;
+    --secondary-foreground: 216 45% 20%;
+    --muted: 210 100% 97%;
+    --muted-foreground: 213 20% 60%;
+    --accent: 210 100% 90%;
+    --accent-foreground: 216 45% 20%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 205 80% 95%;
+    --input: 205 80% 95%;
+    --ring: 214 100% 64%;
+    --radius: 0.625rem;
+
+    --color-ice: #FFFFFF;
+    --color-aqua: #CCE5FF;
+    --color-ocean: #8EC5FC;
+    --color-deep: #4A9CFF;
+    --color-horizon: #1B2A4A;
+    --color-foam: #E8F4FD;
+    --color-shoreline: #F5FAFF;
+    --color-mist: #A0B4CC;
+    --color-coral: #FF9EAA;
+    --color-sea-glass: #2A8B6F;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--color-ice);
+    color: var(--color-horizon);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Playfair Display', serif;
+  }
+}
+
+@layer components {
+  .font-heading {
+    font-family: 'Playfair Display', serif;
+  }
+
+  .font-body {
+    font-family: 'Inter', sans-serif;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-8 py-3.5 rounded-full font-medium transition-all duration-200;
+    background-color: var(--color-deep);
+    color: white;
+  }
+
+  .btn-primary:hover {
+    transform: scale(1.03);
+    background-color: #3A8CEF;
+  }
+
+  .section-padding {
+    @apply py-20 md:py-32 lg:py-40;
+  }
+
+  .content-max {
+    @apply max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12;
+  }
+
+  .scroll-reveal {
+    opacity: 1;
+  }
+
+  .blueprint-grid {
+    background-color: var(--color-horizon);
+    background-image:
+      linear-gradient(rgba(74,156,255,0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(74,156,255,0.07) 1px, transparent 1px);
+    background-size: 30px 30px;
+  }
+}
+
+@layer utilities {
+  .text-horizon { color: var(--color-horizon); }
+  .text-deep { color: var(--color-deep); }
+  .text-mist { color: var(--color-mist); }
+  .text-coral { color: var(--color-coral); }
+  .text-sea-glass { color: var(--color-sea-glass); }
+  .bg-aqua { background-color: var(--color-aqua); }
+  .bg-foam { background-color: var(--color-foam); }
+  .bg-shoreline { background-color: var(--color-shoreline); }
+  .bg-horizon { background-color: var(--color-horizon); }
+  .border-foam { border-color: var(--color-foam); }
+}
+
+/* Ticker Grid Marquee */
+@keyframes tickerScrollUp {
+  0% { transform: translateY(0); }
+  100% { transform: translateY(-50%); }
+}
+
+@keyframes tickerScrollDown {
+  0% { transform: translateY(-50%); }
+  100% { transform: translateY(0); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(8px); }
+}
+
+.ticker-col-up {
+  animation: tickerScrollUp 30s linear infinite;
+}
+
+.ticker-col-down {
+  animation: tickerScrollDown 25s linear infinite;
+}
+
+.ticker-grid:hover .ticker-col-up,
+.ticker-grid:hover .ticker-col-down {
+  animation-play-state: paused;
+}
+
+.animate-float {
+  animation: float 2s ease-in-out infinite;
+}
+
+/* 3D Text Reveal */
+.perspective-text {
+  perspective: 1000px;
+}
+
+.preserve-3d {
+  transform-style: preserve-3d;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .ticker-col-up,
+  .ticker-col-down {
+    animation: none !important;
+  }
+  .animate-float {
+    animation: none !important;
+  }
+}
