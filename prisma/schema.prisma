@@ -1,17 +1,3 @@
-// ==========================================================================
-// EventoraX — Event Management Module
-// Models: Event, Registration, Speaker, Sponsor, Session
-// Owner: Events Module Developer (feature/eventsmodule)
-// Notes:
-//  - All 5 models are tenant-scoped via `tenantId` (multi-tenant SaaS).
-//    No direct relation is declared to a `Tenant` model here since that
-//    model is owned by another module — tenantId is kept as a plain scalar
-//    + indexed column so every query MUST filter by tenantId explicitly.
-//  - `cuid()` used for IDs (swap to `uuid()` if the team standardizes on that).
-//  - Cascading deletes: deleting an Event cleans up its Registrations,
-//    Speakers, Sponsors, and Sessions automatically.
-// ==========================================================================
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -20,9 +6,9 @@ datasource db {
   provider = "mysql"
 }
 
-// --------------------------------------------------------------------------
+// ------------------------------
 // ENUMS
-// --------------------------------------------------------------------------
+// ------------------------------
 
 enum EventMode {
   ONLINE
@@ -67,15 +53,15 @@ enum SponsorTier {
   BRONZE
 }
 
-// --------------------------------------------------------------------------
+// ------------------------------
 // MODELS
-// --------------------------------------------------------------------------
+// ------------------------------
 
 model Event {
   id               String      @id @default(cuid())
-  tenantId         String // scopes this event to a tenant/organization
+  tenantId         String
   title            String
-  mode             EventMode   @default(OFFLINE)
+  mode             EventMode
   startDateTime    DateTime
   endDateTime      DateTime
   location         String?
@@ -87,16 +73,10 @@ model Event {
   meetingLink      String?
   status           EventStatus @default(DRAFT)
   createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
 
-  // --- Relations ---
-  // One event has many registrations (attendees signing up)
   registrations Registration[]
-  // One event has many speakers presenting at it
   speakers      Speaker[]
-  // One event has many sponsors backing it
   sponsors      Sponsor[]
-  // One event has many sessions in its schedule
   sessions      Session[]
 
   @@index([tenantId])
@@ -106,9 +86,9 @@ model Event {
 
 model Registration {
   id               String               @id @default(cuid())
-  tenantId         String // denormalized for fast tenant-scoped queries/reporting
+  tenantId         String
   eventId          String
-  refNo            String               @unique // human-readable reference/ticket number
+  refNo            String               @unique
   name             String
   email            String
   phone            String?
@@ -119,8 +99,6 @@ model Registration {
   status           RegistrationStatus   @default(PENDING)
   registrationDate DateTime             @default(now())
 
-  // --- Relations ---
-  // Each registration belongs to exactly one event
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
@@ -135,18 +113,15 @@ model Speaker {
   eventId      String
   firstName    String
   lastName     String
-  title        String? // e.g. job title / designation
+  title        String?
   company      String?
   sessionTopic String?
   bio          String? @db.Text
-  photo        String? // URL/path to uploaded image
+  photo        String?
   linkedin     String?
   displayOrder Int     @default(0)
 
-  // --- Relations ---
-  // Each speaker belongs to exactly one event
   event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  // A speaker can be linked to many sessions they present (schedule)
   sessions Session[]
 
   @@index([tenantId])
@@ -161,12 +136,10 @@ model Sponsor {
   name         String
   contactEmail String?
   website      String?
-  logo         String? // URL/path to uploaded logo
+  logo         String?
   tier         SponsorTier @default(BRONZE)
   displayOrder Int         @default(0)
 
-  // --- Relations ---
-  // Each sponsor belongs to exactly one event
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
@@ -179,22 +152,17 @@ model Session {
   id           String   @id @default(cuid())
   tenantId     String
   eventId      String
-  speakerId    String? // nullable: a schedule slot may not have an assigned speaker yet
+  speakerId    String?
   title        String
   startTime    DateTime
   endTime      DateTime
-  location     String? // room/hall/track, may differ from the event's main location
+  location     String?
   displayOrder Int      @default(0)
 
-  // --- Relations ---
-  // Each session belongs to exactly one event (the schedule it's part of)
   event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  // Each session may optionally be presented by one speaker;
-  // if the speaker is deleted, the session stays but becomes unassigned (SetNull)
   speaker Speaker? @relation(fields: [speakerId], references: [id], onDelete: SetNull)
 
   @@index([tenantId])
   @@index([eventId])
-  @@index([speakerId])
   @@map("sessions")
 }
