@@ -40,26 +40,29 @@ const testimonials = [
 function TestimonialCard({ quote, author, role, avatar }: typeof testimonials[0]) {
   return (
     <div
-      className="bg-[#F5FAFF] rounded-[20px] p-8 min-h-[200px] border"
-      style={{ borderColor: '#E8F4FD' }}
+      className="bg-white rounded-2xl p-8 min-h-[200px] border border-[#e9e4ff] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300"
     >
+      <div className="mb-4">
+        <span className="text-4xl text-[#ddd6fe] font-serif leading-none">"</span>
+      </div>
       <p
-        className="font-heading text-lg md:text-xl italic mb-5 leading-relaxed"
-        style={{ color: '#1B2A4A' }}
+        className="font-heading text-lg md:text-xl italic mb-5 leading-relaxed text-[#0f172a]"
       >
-        &ldquo;{quote}&rdquo;
+        {quote}
       </p>
       <div className="flex items-center gap-3">
-        <img
-          src={avatar}
-          alt={author}
-          className="w-10 h-10 rounded-full object-cover"
-        />
+        <div className="relative">
+          <img
+            src={avatar}
+            alt={author}
+            className="w-10 h-10 rounded-full object-cover ring-2 ring-transparent hover:ring-[#ddd6fe] transition-all duration-200"
+          />
+        </div>
         <div>
-          <p className="font-body text-sm font-medium" style={{ color: '#1B2A4A' }}>
+          <p className="font-body text-sm font-semibold text-[#0f172a]">
             {author}
           </p>
-          <p className="font-body text-xs" style={{ color: '#A0B4CC' }}>
+          <p className="font-body text-xs text-[#94a3b8]">
             {role}
           </p>
         </div>
@@ -99,11 +102,10 @@ export default function TestimonialsSection() {
   const col3 = [testimonials[2], testimonials[5], testimonials[2], testimonials[5]];
 
   return (
-    <section className="bg-white section-padding overflow-hidden">
+    <section className="bg-[#faf8ff] section-padding overflow-hidden">
       <div className="content-max">
         <h2
-          className="font-heading text-3xl md:text-5xl font-medium text-center mb-12 md:mb-16 tracking-[-0.02em]"
-          style={{ color: '#1B2A4A' }}
+          className="font-heading text-3xl md:text-5xl font-bold text-center mb-12 md:mb-16 tracking-[-0.02em] text-[#0f172a]"
         >
           Loved by event organizers worldwide
         </h2>

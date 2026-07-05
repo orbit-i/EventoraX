@@ -49,12 +49,12 @@ const fragmentShader = `
     vec3 lightDirection = normalize(lightPosition - vec3(0.0, 0.0, 0.0));
 
     float hemiMix = (dot(worldNormal, lightDirection) * 0.5 + 0.5);
-    vec3 hemiColor = mix(vec3(0.6, 0.8, 1.0), vec3(1.0, 1.0, 1.0), hemiMix);
+    vec3 hemiColor = mix(vec3(0.85, 0.80, 1.0), vec3(1.0, 1.0, 1.0), hemiMix);
 
     float fresnel = pow(1.0 - max(dot(viewDirection, worldNormal), 0.0), 3.0);
     vec3 finalColor = mix(colorShallow * hemiColor, vec3(1.0, 1.0, 1.0), fresnel * 0.8 + vElevation * 0.2);
 
-    gl_FragColor = vec4(finalColor, 0.85);
+    gl_FragColor = vec4(finalColor, 0.88);
   }
 `;
 
@@ -68,7 +68,7 @@ export default function OceanCanvas() {
     if (!container) return;
 
     const scene = new THREE.Scene();
-    scene.fog = new THREE.Fog(0xcce5ff, 400, 900);
+    scene.fog = new THREE.Fog(0xf3f0ff, 400, 900);
 
     const aspect = window.innerWidth / window.innerHeight;
     const cameraHeight = 130;
@@ -96,8 +96,8 @@ export default function OceanCanvas() {
       uniforms: {
         time: { value: 0 },
         mouse: { value: new THREE.Vector2(0.5, 0.5) },
-        colorDeep: { value: new THREE.Color(0.20, 0.40, 0.80) },
-        colorShallow: { value: new THREE.Color(0.55, 0.75, 0.95) },
+        colorDeep: { value: new THREE.Color(0.35, 0.20, 0.70) },
+        colorShallow: { value: new THREE.Color(0.75, 0.65, 0.95) },
         lightPosition: { value: new THREE.Vector3(50, 50, 50) }
       },
       vertexShader,

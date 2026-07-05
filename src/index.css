@@ -7,34 +7,38 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 216 45% 20%;
+    --foreground: 222 47% 11%;
     --card: 0 0% 100%;
-    --card-foreground: 216 45% 20%;
+    --card-foreground: 222 47% 11%;
     --popover: 0 0% 100%;
-    --popover-foreground: 216 45% 20%;
-    --primary: 214 100% 64%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 262 83% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 210 100% 90%;
-    --secondary-foreground: 216 45% 20%;
-    --muted: 210 100% 97%;
-    --muted-foreground: 213 20% 60%;
-    --accent: 210 100% 90%;
-    --accent-foreground: 216 45% 20%;
+    --secondary: 263 100% 97%;
+    --secondary-foreground: 262 83% 58%;
+    --muted: 263 100% 97%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 263 100% 97%;
+    --accent-foreground: 262 83% 58%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 98%;
-    --border: 205 80% 95%;
-    --input: 205 80% 95%;
-    --ring: 214 100% 64%;
-    --radius: 0.625rem;
+    --border: 263 70% 92%;
+    --input: 263 70% 92%;
+    --ring: 262 83% 58%;
+    --radius: 0.75rem;
 
     --color-ice: #FFFFFF;
-    --color-aqua: #CCE5FF;
-    --color-ocean: #8EC5FC;
-    --color-deep: #4A9CFF;
-    --color-horizon: #1B2A4A;
-    --color-foam: #E8F4FD;
-    --color-shoreline: #F5FAFF;
-    --color-mist: #A0B4CC;
+    --color-lavender: #f5f3ff;
+    --color-lavender-light: #ede9fe;
+    --color-lavender-border: #e9e4ff;
+    --color-purple-light: #c4b5fd;
+    --color-purple: #7c3aed;
+    --color-purple-dark: #6d28d9;
+    --color-slate: #0f172a;
+    --color-slate-light: #1e293b;
+    --color-gray: #64748b;
+    --color-gray-light: #94a3b8;
+    --color-gray-muted: #cbd5e1;
     --color-coral: #FF9EAA;
     --color-sea-glass: #2A8B6F;
   }
@@ -42,7 +46,7 @@
   body {
     font-family: 'Inter', sans-serif;
     background-color: var(--color-ice);
-    color: var(--color-horizon);
+    color: var(--color-slate);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-x: hidden;
@@ -63,14 +67,33 @@
   }
 
   .btn-primary {
-    @apply inline-flex items-center justify-center px-8 py-3.5 rounded-full font-medium transition-all duration-200;
-    background-color: var(--color-deep);
+    @apply inline-flex items-center justify-center px-8 py-3.5 rounded-xl font-semibold transition-all duration-200;
+    background-color: var(--color-purple);
     color: white;
+    box-shadow: 0 4px 14px rgba(124, 58, 237, 0.25);
   }
 
   .btn-primary:hover {
-    transform: scale(1.03);
-    background-color: #3A8CEF;
+    transform: translateY(-2px);
+    background-color: var(--color-purple-dark);
+    box-shadow: 0 6px 20px rgba(124, 58, 237, 0.35);
+  }
+
+  .btn-primary:active {
+    transform: translateY(0);
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-8 py-3.5 rounded-xl font-semibold transition-all duration-200;
+    background-color: white;
+    color: var(--color-slate);
+    border: 2px solid var(--color-lavender-border);
+  }
+
+  .btn-secondary:hover {
+    border-color: var(--color-purple-light);
+    background-color: var(--color-lavender);
+    color: var(--color-purple);
   }
 
   .section-padding {
@@ -85,26 +108,32 @@
     opacity: 1;
   }
 
-  .blueprint-grid {
-    background-color: var(--color-horizon);
+  .purple-grid {
+    background-color: var(--color-slate);
     background-image:
-      linear-gradient(rgba(74,156,255,0.07) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(74,156,255,0.07) 1px, transparent 1px);
+      linear-gradient(rgba(124, 58, 237, 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(124, 58, 237, 0.07) 1px, transparent 1px);
     background-size: 30px 30px;
   }
 }
 
 @layer utilities {
-  .text-horizon { color: var(--color-horizon); }
-  .text-deep { color: var(--color-deep); }
-  .text-mist { color: var(--color-mist); }
+  .text-slate { color: var(--color-slate); }
+  .text-slate-light { color: var(--color-slate-light); }
+  .text-purple { color: var(--color-purple); }
+  .text-purple-dark { color: var(--color-purple-dark); }
+  .text-gray { color: var(--color-gray); }
+  .text-gray-light { color: var(--color-gray-light); }
+  .text-gray-muted { color: var(--color-gray-muted); }
   .text-coral { color: var(--color-coral); }
   .text-sea-glass { color: var(--color-sea-glass); }
-  .bg-aqua { background-color: var(--color-aqua); }
-  .bg-foam { background-color: var(--color-foam); }
-  .bg-shoreline { background-color: var(--color-shoreline); }
-  .bg-horizon { background-color: var(--color-horizon); }
-  .border-foam { border-color: var(--color-foam); }
+  .bg-lavender { background-color: var(--color-lavender); }
+  .bg-lavender-light { background-color: var(--color-lavender-light); }
+  .bg-lavender-border { background-color: var(--color-lavender-border); }
+  .bg-purple { background-color: var(--color-purple); }
+  .bg-slate { background-color: var(--color-slate); }
+  .border-lavender { border-color: var(--color-lavender-border); }
+  .border-purple { border-color: var(--color-purple); }
 }
 
 /* Ticker Grid Marquee */

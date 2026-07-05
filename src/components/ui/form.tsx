@@ -80,7 +80,7 @@ function FormItem({ className, ...props }: React.ComponentProps<"div">) {
     <FormItemContext.Provider value={{ id }}>
       <div
         data-slot="form-item"
-        className={cn("grid gap-2", className)}
+        className={cn("grid gap-2.5", className)}
         {...props}
       />
     </FormItemContext.Provider>
@@ -97,7 +97,10 @@ function FormLabel({
     <Label
       data-slot="form-label"
       data-error={!!error}
-      className={cn("data-[error=true]:text-destructive", className)}
+      className={cn(
+        "font-semibold text-[#0f172a] data-[error=true]:text-[#dc2626] transition-colors duration-200",
+        className
+      )}
       htmlFor={formItemId}
       {...props}
     />
@@ -129,7 +132,7 @@ function FormDescription({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="form-description"
       id={formDescriptionId}
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn("text-[#475569] text-sm leading-relaxed", className)}
       {...props}
     />
   )
@@ -147,9 +150,12 @@ function FormMessage({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="form-message"
       id={formMessageId}
-      className={cn("text-destructive text-sm", className)}
+      className={cn("text-[#dc2626] text-sm font-medium flex items-center gap-1.5", className)}
       {...props}
     >
+      {error && (
+        <span className="size-1.5 rounded-full bg-[#dc2626] shrink-0" />
+      )}
       {body}
     </p>
   )

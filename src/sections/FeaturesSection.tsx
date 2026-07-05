@@ -54,15 +54,14 @@ const features = [
 
 export default function FeaturesSection() {
   return (
-    <section className="bg-[#F5FAFF] section-padding">
+    <section className="bg-[#f3f0ff] section-padding">
       <div className="content-max">
-        <h2
-          className="font-heading text-3xl md:text-5xl font-medium text-center mb-12 md:mb-16 tracking-[-0.02em]"
-          style={{ color: '#1B2A4A' }}
-        >
+        <h2 className="font-heading text-3xl md:text-5xl font-bold text-center mb-12 md:mb-16 tracking-[-0.02em] text-[#0f172a]">
           Everything you need to run
           <br />
-          unforgettable events
+          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#7c3aed] to-[#a78bfa]">
+            unforgettable events
+          </span>
         </h2>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
@@ -71,22 +70,16 @@ export default function FeaturesSection() {
             return (
               <div
                 key={i}
-                className="scroll-reveal bg-white border rounded-3xl p-7 md:p-8 transition-all duration-300 hover:-translate-y-1"
-                style={{ borderColor: '#E8F4FD' }}
+                className="scroll-reveal bg-white border border-[#e9e4ff] rounded-2xl p-7 md:p-8 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-lg hover:shadow-[#7c3aed]/10"
+                style={{ transitionDelay: `${(i % 4) * 75}ms` }}
               >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 transition-all duration-300 hover:scale-105"
-                  style={{ backgroundColor: '#CCE5FF', color: '#4A9CFF' }}
-                >
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 bg-[#f5f3ff] text-[#7c3aed] transition-all duration-300 hover:scale-110 hover:bg-[#ede9fe]">
                   <Icon size={24} />
                 </div>
-                <h3
-                  className="font-heading text-xl font-medium mb-2"
-                  style={{ color: '#1B2A4A' }}
-                >
+                <h3 className="font-heading text-xl font-semibold mb-2 text-[#0f172a]">
                   {feature.title}
                 </h3>
-                <p className="font-body text-sm leading-relaxed" style={{ color: '#A0B4CC' }}>
+                <p className="font-body text-sm leading-relaxed text-[#475569]">
                   {feature.desc}
                 </p>
               </div>

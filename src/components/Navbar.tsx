@@ -34,14 +34,14 @@ export default function Navbar() {
     <nav
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
         showBg
-          ? 'bg-white/85 backdrop-blur-[16px] shadow-sm'
+          ? 'bg-white/90 backdrop-blur-xl shadow-sm shadow-[#7c3aed]/5'
           : 'bg-transparent'
       }`}
-      style={{ height: 56 }}
+      style={{ height: 64 }}
     >
       <div className="content-max h-full flex items-center justify-between">
-        <Link to="/" className="font-heading text-2xl font-medium text-[#1B2A4A]">
-          EventoraX
+        <Link to="/" className="font-heading text-2xl font-bold text-[#0f172a] flex items-center gap-1">
+          Eventora<span className="bg-gradient-to-r from-[#7c3aed] to-[#a78bfa] bg-clip-text text-transparent">X</span>
         </Link>
 
         {/* Desktop Nav */}
@@ -50,21 +50,20 @@ export default function Navbar() {
             <Link
               key={link.href}
               to={link.href}
-              className="font-body text-sm text-[#1B2A4A] hover:text-[#4A9CFF] transition-colors duration-200"
+              className="font-body text-sm font-semibold text-[#475569] hover:text-[#7c3aed] transition-colors duration-200"
             >
               {link.label}
             </Link>
           ))}
           <Link
             to="/login"
-            className="font-body text-sm px-4 py-1.5 rounded-full border border-[#1B2A4A] text-[#1B2A4A] hover:bg-[#1B2A4A] hover:text-white transition-all duration-200"
+            className="font-body text-sm font-semibold px-5 py-2 rounded-xl border-2 border-[#e9e4ff] text-[#475569] hover:border-[#7c3aed] hover:text-[#7c3aed] hover:bg-[#f5f3ff] transition-all duration-200"
           >
             Login
           </Link>
           <Link
             to="/register"
-            className="font-body text-sm px-4 py-1.5 rounded-full text-white transition-all duration-200 hover:scale-[1.03]"
-            style={{ backgroundColor: '#4A9CFF' }}
+            className="font-body text-sm font-semibold px-5 py-2 rounded-xl text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
           >
             Get Started
           </Link>
@@ -72,38 +71,37 @@ export default function Navbar() {
 
         {/* Mobile Hamburger */}
         <button
-          className="md:hidden text-[#1B2A4A]"
+          className="md:hidden text-[#0f172a] p-2 rounded-lg hover:bg-[#f5f3ff] transition-colors duration-200"
           onClick={() => setMobileOpen(!mobileOpen)}
           aria-label="Toggle menu"
         >
-          {mobileOpen ? <X size={24} /> : <Menu size={24} />}
+          {mobileOpen ? <X size={24} className="text-[#7c3aed]" /> : <Menu size={24} />}
         </button>
       </div>
 
       {/* Mobile Menu */}
       {mobileOpen && (
-        <div className="md:hidden absolute top-14 left-0 w-full bg-white/95 backdrop-blur-[16px] shadow-lg border-t border-[#E8F4FD] py-4">
-          <div className="content-max flex flex-col gap-3">
+        <div className="md:hidden absolute top-16 left-0 w-full bg-white/95 backdrop-blur-xl shadow-xl shadow-[#7c3aed]/5 border-t border-[#e9e4ff] py-5">
+          <div className="content-max flex flex-col gap-1">
             {navLinks.map((link) => (
               <Link
                 key={link.href}
                 to={link.href}
-                className="font-body text-base text-[#1B2A4A] hover:text-[#4A9CFF] py-2 transition-colors"
+                className="font-body text-base font-medium text-[#475569] hover:text-[#7c3aed] hover:bg-[#f5f3ff] px-3 py-2.5 rounded-xl transition-all duration-200"
               >
                 {link.label}
               </Link>
             ))}
-            <div className="flex gap-3 pt-2 border-t border-[#E8F4FD]">
+            <div className="flex gap-3 pt-3 border-t border-[#e9e4ff] mt-2">
               <Link
                 to="/login"
-                className="flex-1 text-center font-body text-sm px-4 py-2 rounded-full border border-[#1B2A4A] text-[#1B2A4A]"
+                className="flex-1 text-center font-body text-sm font-semibold px-4 py-2.5 rounded-xl border-2 border-[#e9e4ff] text-[#475569] hover:border-[#7c3aed] hover:text-[#7c3aed] hover:bg-[#f5f3ff] transition-all duration-200"
               >
                 Login
               </Link>
               <Link
                 to="/register"
-                className="flex-1 text-center font-body text-sm px-4 py-2 rounded-full text-white"
-                style={{ backgroundColor: '#4A9CFF' }}
+                className="flex-1 text-center font-body text-sm font-semibold px-4 py-2.5 rounded-xl text-white bg-[#7c3aed] shadow-md shadow-[#7c3aed]/20 hover:bg-[#6d28d9] transition-all duration-200"
               >
                 Get Started
               </Link>
