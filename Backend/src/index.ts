@@ -1,6 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
-import orgRoutes from "./routes/orgnization.routes";
+import orgRoutes from "./routes/auth-route";
 
 dotenv.config();
 
