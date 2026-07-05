@@ -1,0 +1,15 @@
+# Dependencies
+node_modules
+
+# Environment variables
+.env
+
+# Build output (from tsc / ts-node-dev)
+dist
+
+# Prisma migrations should NOT be ignored — commit these
+# (no entry needed, they're meant to be tracked)
+
+# OS/editor junk (optional but common)
+.DS_Store
+*.log
