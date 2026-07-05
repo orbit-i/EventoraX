@@ -156,6 +156,20 @@ export async function duplicateEvent(id: string): Promise<ActionResult<{ id: str
 }
 
 // ------------------------------
+// GET single event (by id)
+// ------------------------------
+
+export async function getEventById(id: string) {
+  const tenantId = await getTenantId();
+  return prisma.event.findFirst({
+    where: { id, tenantId },
+    include: {
+      _count: { select: { registrations: true, speakers: true, sponsors: true, sessions: true } },
+    },
+  });
+}
+
+// ------------------------------
 // GET (list with search + filters)
 // ------------------------------
 

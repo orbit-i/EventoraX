@@ -71,6 +71,8 @@ model Event {
   ticketPrice      Decimal?    @db.Decimal(10, 2)
   registrationOpen Boolean     @default(true)
   meetingLink      String?
+  certTemplateId   String?
+  autoIssueCert    Boolean     @default(false)
   status           EventStatus @default(DRAFT)
   createdAt        DateTime    @default(now())
 
@@ -98,6 +100,7 @@ model Registration {
   registeredVia    RegisteredVia        @default(WEB)
   status           RegistrationStatus   @default(PENDING)
   registrationDate DateTime             @default(now())
+  ticketId         String?
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
