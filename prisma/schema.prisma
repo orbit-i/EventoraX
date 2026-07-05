@@ -1,13 +1,200 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// ==========================================================================
+// EventoraX — Event Management Module
+// Models: Event, Registration, Speaker, Sponsor, Session
+// Owner: Events Module Developer (feature/eventsmodule)
+// Notes:
+//  - All 5 models are tenant-scoped via `tenantId` (multi-tenant SaaS).
+//    No direct relation is declared to a `Tenant` model here since that
+//    model is owned by another module — tenantId is kept as a plain scalar
+//    + indexed column so every query MUST filter by tenantId explicitly.
+//  - `cuid()` used for IDs (swap to `uuid()` if the team standardizes on that).
+//  - Cascading deletes: deleting an Event cleans up its Registrations,
+//    Speakers, Sponsors, and Sessions automatically.
+// ==========================================================================
 
 generator client {
-  provider = "prisma-client"
-  output   = "../app/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
   provider = "mysql"
+}
+
+// --------------------------------------------------------------------------
+// ENUMS
+// --------------------------------------------------------------------------
+
+enum EventMode {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ONGOING
+  COMPLETED
+  CANCELLED
+}
+
+enum RegistrationStatus {
+  PENDING
+  CONFIRMED
+  WAITLISTED
+  CANCELLED
+  ATTENDED
+}
+
+enum RegisteredVia {
+  WEB
+  ADMIN
+  CSV_IMPORT
+  API
+}
+
+enum RegistrationCategory {
+  STUDENT
+  FACULTY
+  PROFESSIONAL
+  GUEST
+}
+
+enum SponsorTier {
+  PLATINUM
+  GOLD
+  SILVER
+  BRONZE
+}
+
+// --------------------------------------------------------------------------
+// MODELS
+// --------------------------------------------------------------------------
+
+model Event {
+  id               String      @id @default(cuid())
+  tenantId         String // scopes this event to a tenant/organization
+  title            String
+  mode             EventMode   @default(OFFLINE)
+  startDateTime    DateTime
+  endDateTime      DateTime
+  location         String?
+  description      String?     @db.Text
+  topic            String?
+  maxAttendees     Int?
+  ticketPrice      Decimal?    @db.Decimal(10, 2)
+  registrationOpen Boolean     @default(true)
+  meetingLink      String?
+  status           EventStatus @default(DRAFT)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  // --- Relations ---
+  // One event has many registrations (attendees signing up)
+  registrations Registration[]
+  // One event has many speakers presenting at it
+  speakers      Speaker[]
+  // One event has many sponsors backing it
+  sponsors      Sponsor[]
+  // One event has many sessions in its schedule
+  sessions      Session[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("events")
+}
+
+model Registration {
+  id               String               @id @default(cuid())
+  tenantId         String // denormalized for fast tenant-scoped queries/reporting
+  eventId          String
+  refNo            String               @unique // human-readable reference/ticket number
+  name             String
+  email            String
+  phone            String?
+  department       String?
+  rollNo           String?
+  category         RegistrationCategory @default(GUEST)
+  registeredVia    RegisteredVia        @default(WEB)
+  status           RegistrationStatus   @default(PENDING)
+  registrationDate DateTime             @default(now())
+
+  // --- Relations ---
+  // Each registration belongs to exactly one event
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([eventId])
+  @@index([eventId, status])
+  @@map("registrations")
+}
+
+model Speaker {
+  id           String  @id @default(cuid())
+  tenantId     String
+  eventId      String
+  firstName    String
+  lastName     String
+  title        String? // e.g. job title / designation
+  company      String?
+  sessionTopic String?
+  bio          String? @db.Text
+  photo        String? // URL/path to uploaded image
+  linkedin     String?
+  displayOrder Int     @default(0)
+
+  // --- Relations ---
+  // Each speaker belongs to exactly one event
+  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  // A speaker can be linked to many sessions they present (schedule)
+  sessions Session[]
+
+  @@index([tenantId])
+  @@index([eventId])
+  @@map("speakers")
+}
+
+model Sponsor {
+  id           String      @id @default(cuid())
+  tenantId     String
+  eventId      String
+  name         String
+  contactEmail String?
+  website      String?
+  logo         String? // URL/path to uploaded logo
+  tier         SponsorTier @default(BRONZE)
+  displayOrder Int         @default(0)
+
+  // --- Relations ---
+  // Each sponsor belongs to exactly one event
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([eventId])
+  @@index([eventId, tier])
+  @@map("sponsors")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  tenantId     String
+  eventId      String
+  speakerId    String? // nullable: a schedule slot may not have an assigned speaker yet
+  title        String
+  startTime    DateTime
+  endTime      DateTime
+  location     String? // room/hall/track, may differ from the event's main location
+  displayOrder Int      @default(0)
+
+  // --- Relations ---
+  // Each session belongs to exactly one event (the schedule it's part of)
+  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  // Each session may optionally be presented by one speaker;
+  // if the speaker is deleted, the session stays but becomes unassigned (SetNull)
+  speaker Speaker? @relation(fields: [speakerId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([eventId])
+  @@index([speakerId])
+  @@map("sessions")
 }
