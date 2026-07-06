@@ -1,0 +1,52 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: Segoe UI;
+  box-sizing: border-box;
+}
+
+aside {
+  position: fixed;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: 240px;
+  height: 100%;
+  padding: 20px;
+  padding-right: 30px;
+  border: 1px solid grey;
+  background-color: rgb(173, 216, 230, 0.2);
+}
+
+.sidebar-main-heading h1 {
+  color: #00509d;
+  font-weight: bold;
+  font-size: 1.4rem;
+}
+
+.sidebar-main-heading p {
+  font-size: 15px;
+  margin-bottom: 30px;
+}
+
+.sidebar-menu-items-container {
+  display: flex;
+  flex-direction: column;
+  align-items: start;
+  gap: 15px;
+}
+
+.menu-item-icon {
+  width: 16px;
+}
+
+.menu-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+}
+
+.menu-item p {
+  font-size: 15px;
+}
