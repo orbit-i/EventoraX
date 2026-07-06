@@ -6,18 +6,16 @@
     <title>EventoriaX</title>
     <link rel="stylesheet" href="home.css" />
     <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
-    />
+      rel="stylesheet"href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"/>
   </head>
   <body>
     <header>
-      <nav>
+      <nav class="navbar">
         <div class="div1">
           <div class="logo"><h2>EventoriaX</h2></div>
           <a href="">Features</a>
           <a href="">Pricing</a>
-          <a href="">About</a>
+          <a href="About.html">About</a>
           <a href="">Verify</a>
         </div>
         <div class="div2">
@@ -28,7 +26,7 @@
     </header>
     <main>
       <section class="hero">
-        <div class="hero-content">
+        <div class="hero-content reveal">
           <div class="tag">
             <span class="material-symbols-outlined">verified</span>
             <p>TRUSTED BY 300+ GLOBAL ORGANIZATIONS</p>
@@ -53,30 +51,30 @@
           <!-- glow / overlay circles -->
           <div class="circle circle-1"></div>
           <div class="circle circle-2"></div>
+          
           <!-- main image -->
           <img
             src="dashboard.png"
             alt="Dashboard Preview"
-            class="dashboard-image"
+            class="dashboard-image reveal"
           />
         </div>
       </section>
       <!--  cards -->
       <section class="status_bar">
-        <div class="cards">
+        <div class="cards reveal">
           <h4>12,000+</h4>
           <p>REGISTRATIONS</p>
         </div>
-        <div class="cards">
+        <div class="cards reveal">
           <h4>50,000+</h4>
-          <p>CERTIFICATES ISSUED</p>
         </div>
-        <div class="cards">
+        <div class="cards reveal">
           <h4>300+</h4>
           <p>ORGINAZATIONS</p>
         </div>
       </section>
-      <section class="feature-section">
+      <section class="feature-section reveal">
         <div class="feature-container">
           <div class="feature-heading">
             <h2>Powerful Enterprise Infrastructure</h2>
@@ -85,9 +83,9 @@
               platform.
             </p>
           </div>
-
+          
           <div class="feature-grid">
-            <div class="card qr-card">
+            <div class="card qr-card reveal">
               <div class="qr-content">
                 <span class="material-symbols-outlined"> qr_code_scanner </span>
                 <h3>QR Ticketing & Entry</h3>
@@ -99,7 +97,7 @@
               </div>
               <div class="qr_img"><img src="qrimg.jpg" alt="QR preview" /></div>
             </div>
-            <div class="card analytics-card">
+            <div class="card analytics-card reveal">
               <span class="material-symbols-outlined"> analytics </span>
               <h3>Advanced Analytics</h3>
               <p>
@@ -108,7 +106,7 @@
               </p>
             </div>
 
-            <div class="card secure-card">
+            <div class="card secure-card reveal">
               <span class="material-symbols-outlined"> verified </span>
               <h3>Secure Certificates</h3>
               <p>
@@ -117,7 +115,7 @@
               </p>
             </div>
 
-            <div class="card multi-card">
+            <div class="card multi-card reveal">
               <div class="multi-text">
                 <span class="material-symbols-outlined"> hub </span>
                 <h3>Enterprise Multi-tenancy</h3>
@@ -135,7 +133,7 @@
               </div>
             </div>
 
-            <div class="card id-card">
+            <div class="card id-card reveal">
               <span class="material-symbols-outlined"> badge </span>
               <h3>Automated ID Generator</h3>
               <p>
@@ -145,7 +143,7 @@
               </p>
             </div>
 
-            <div class="card lifecycle-card">
+            <div class="card lifecycle-card reveal">
               <span class="material-symbols-outlined"> mail </span>
               <h3>Event Lifecycle Automation</h3>
               <p>
@@ -156,14 +154,14 @@
           </div>
         </div>
       </section>
-      <section class="steps-section">
+      <section class="steps-section reveal">
         <div class="steps-container">
           <div class="steps-heading">
             <h2>Zero-to-Launch in Minutes</h2>
             <p>Streamlined workflows for busy administrators.</p>
           </div>
 
-          <div class="steps-wrapper">
+          <div class="steps-wrapper reveal-right">
             <!-- line -->
             <div class="progress-line"></div>
 
@@ -198,10 +196,10 @@
           </div>
         </div>
       </section>
-      <section class="pricing">
+      <section class="pricing reveal">
         <h2 class="pricing-title">Flexible Scaling for Any Need</h2>
         <p>Simple,transparent pricing built for long-term partnerships.</p>
-        <div class="pricing-cards">
+        <div class="pricing-cards reveal">
           <!-- PRO Plan -->
           <div class="card1">
             <div class="model">
@@ -297,29 +295,228 @@
           </div>
         </div>
       </section>
+      
+<!-- ================= TESTIMONIALS SECTION ================= -->
+<section class="testimonials-section">
+  <div class="container">
+     <!-- Heading -->
+  <div class="testimonials-header reveal">
+    <h2>What Our Clients Say</h2>
+    <p>Trusted by organizations and event partners worldwide</p>
+  </div>
+
+  <!-- Slider Wrapper -->
+  <div class="testimonial-slider">
+
+    <!-- Left Arrow -->
+    <button class="nav-btn prev-btn reveal-right">&#10094;</button>
+
+    <!-- Cards Container -->
+    <div class="testimonial-container">
+
+        <div class="testimonial-card common reveal-right">
+            <div class="quote">❝</div>
+
+            <p class="review">
+                EventoraX transformed the way we organize our annual
+                conferences. Registration, certificates, and attendee
+                management became effortless.
+            </p>
+
+            <div class="user">
+                <img src="https://randomuser.me/api/portraits/women/45.jpg" alt="">
+                <div>
+                    <h4>Sarah Ahmed</h4>
+                    <span>Training Coordinator • ORBIT-I</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card featured reveal-right">
+            <div class="quote">❝</div>
+
+            <p class="review">
+                The certificate verification system impressed both our
+                participants and employers. Everything feels secure,
+                modern, and professional.
+            </p>
+
+            <div class="user">
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="">
+                <div>
+                    <h4>Michael Johnson</h4>
+                    <span>Event Director • Tech Summit</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="testimonial-card common reveal-right">
+            <div class="quote">❝</div>
+
+            <p class="review">
+                QR ticketing reduced our check-in time from nearly
+                thirty minutes to under five. Our attendees loved the
+                smooth experience.
+            </p>
+
+            <div class="user">
+                <img src="https://randomuser.me/api/portraits/women/62.jpg" alt="">
+                <div>
+                    <h4>Ayesha Khan</h4>
+                    <span>University Events Office</span>
+                </div>
+            </div>
+        </div>
+        <div class="testimonial-card featured">
+            <div class="quote">❝</div>
+
+            <p class="review">
+                The certificate verification system impressed both our
+                participants and employers. Everything feels secure,
+                modern, and professional.
+            </p>
+
+            <div class="user">
+                <img src="https://randomuser.me/api/portraits/men/32.jpg" alt="">
+                <div>
+                    <h4>Michael Johnson</h4>
+                    <span>Event Director • Tech Summit</span>
+                </div>
+            </div>
+        </div>
+        
+
+    </div>
+    <!-- Right Arrow -->
+    <button class="nav-btn next-btn reveal-right">&#10095;</button>
+
+  </div>
+
+  <!-- ================= LOGO STRIP ================= -->
+  <div class="logo-strip reveal">
+    <img src="l1.png" alt="logo"/>
+    <img src="l2.png" alt="logo"/>
+    <img src="l3.png" alt="logo"/>
+    <img src="l4.png" alt="logo"/>
+  </div>
+
+  <!-- ================= CTA SECTION ================= -->
+  <div class="cta-box reveal">
+    <h2>Ready to simplify event management?</h2>
+  <p>Start your free trial and build smarter workflows.</p>
+  <button class="btn-white">Start Free Trial</button>
+  </div>
+  </div>
+
+</section>
+
+      <!-- <section class="testimonials">
+
+    <div class="testimonial-heading">
+        <span>WHAT PEOPLE SAY</span>
+        <h2>Trusted by Organizations Worldwide</h2>
+        <p>
+            Thousands of organizers rely on EventoraX to manage events,
+            issue certificates, and simplify attendee experiences.
+        </p>
+    </div>
+
+    
+
+</section> -->
       <section class="logo-wall">
         <div class="logo-wall-container">
           <h2>TRUSTED BY LEADING INSTITUTIONS</h2>
 
           <div class="logo-grid">
-            <div class="logo-item">
-              <img src="logo2.jpeg" alt="Logo 1" />
-            </div>
-
-            <div class="logo-item">
-              <img src="logo2.jpeg" alt="Logo 2" />
-            </div>
-
-            <div class="logo-item">
-              <img src="logo2.jpeg" alt="Logo 3" />
-            </div>
-
-            <div class="logo-item">
-              <img src="logo2.jpeg" alt="Logo 4" />
-            </div>
-          </div>
-        </div>
+           <div class="logo-track">
+             <img src="logo1.png" alt="Logo 1" />
+             <img src="logo2.png" alt="Logo 2" />
+             <img src="logo3.png" alt="Logo 3" />
+             <img src="logo4.png" alt="Logo 4" />
+             <img src="logo5.png" alt="Logo 5" />
+             <img src="logo6.png" alt="Logo 6" />
+             <img src="logo7.png" alt="Logo 7" />
+             <!-- duplicate logos for seamless loop -->
+             <img src="logo1.png" alt="Logo 1" />
+             <img src="logo2.png" alt="Logo 2" />
+             <img src="logo3.png" alt="Logo 3" />
+             <img src="logo4.png" alt="Logo 4" />
+             <img src="logo5.png" alt="Logo 5" />
+             <img src="logo6.png" alt="Logo 6" />
+             <img src="logo7.png" alt="Logo 7" />
+           </div>
+         </div>
       </section>
+      <section class="faq-section">
+       <div class="faq-container faqh reveal">
+         <h2>Frequently Asked Questions</h2>
+         <p>
+           An effective FAQ resource can educate, inform, and naturally guide users 
+           through our platform’s content and toward the goals and results you have set.
+         </p>
+       </div>
+     
+       <div class="faq-container faql reveal-right">
+         <ul class="faq-list">
+           <li>
+             <button class="faq-question">
+               What is EventoraX? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path fill="#3525cd" d="M297.4 438.6C309.9 451.1 330.2 451.1 342.7 438.6L502.7 278.6C515.2 266.1 515.2 245.8 502.7 233.3C490.2 220.8 469.9 220.8 457.4 233.3L320 370.7L182.6 233.4C170.1 220.9 149.8 220.9 137.3 233.4C124.8 245.9 124.8 266.2 137.3 278.7L297.3 438.7z"/></svg>
+             </button>
+             <div class="faq-answer">
+               EventoraX is an all-in-one event management platform developed by ORBIT-I 
+               that helps organizations create, manage, and automate events. From registrations 
+               and QR ticketing to certificate generation and analytics, everything is managed 
+               from one centralized dashboard.
+             </div>
+           </li>
+   
+           <li>
+             <button class="faq-question">
+               Who can use EventoraX? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path fill="#3525cd" d="M297.4 438.6C309.9 451.1 330.2 451.1 342.7 438.6L502.7 278.6C515.2 266.1 515.2 245.8 502.7 233.3C490.2 220.8 469.9 220.8 457.4 233.3L320 370.7L182.6 233.4C170.1 220.9 149.8 220.9 137.3 233.4C124.8 245.9 124.8 266.2 137.3 278.7L297.3 438.7z"/></svg>
+             </button>
+             <div class="faq-answer">
+               EventoraX is designed for universities, businesses, training institutes, 
+               conferences, workshops, non-profit organizations, and event organizers 
+               who want a professional and efficient way to manage their events.
+             </div>
+           </li>
+
+           <li>
+             <button class="faq-question">
+               Can I verify certificates issued through EventoraX? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path fill="#3525cd" d="M297.4 438.6C309.9 451.1 330.2 451.1 342.7 438.6L502.7 278.6C515.2 266.1 515.2 245.8 502.7 233.3C490.2 220.8 469.9 220.8 457.4 233.3L320 370.7L182.6 233.4C170.1 220.9 149.8 220.9 137.3 233.4C124.8 245.9 124.8 266.2 137.3 278.7L297.3 438.7z"/></svg>
+             </button>
+             <div class="faq-answer">
+               Yes. Every certificate generated through EventoraX can be verified using a 
+               unique verification code, ensuring authenticity and helping prevent certificate fraud.
+             </div>
+           </li>
+           <li>
+             <button class="faq-question">
+               What features does EventoraX offer? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path fill="#3525cd" d="M297.4 438.6C309.9 451.1 330.2 451.1 342.7 438.6L502.7 278.6C515.2 266.1 515.2 245.8 502.7 233.3C490.2 220.8 469.9 220.8 457.4 233.3L320 370.7L182.6 233.4C170.1 220.9 149.8 220.9 137.3 233.4C124.8 245.9 124.8 266.2 137.3 278.7L297.3 438.7z"/></svg>
+             </button>
+             <div class="faq-answer">
+               EventoraX includes event management, online registrations, QR code ticketing, 
+               digital certificate generation, ID card creation, email automation, analytics 
+               dashboards, REST API integration, and multi-tenant support for organizations.
+             </div>
+           </li>
+
+           <li>
+             <button class="faq-question">
+               Is there a free trial available? <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><!--!Font Awesome Free v7.3.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2026 Fonticons, Inc.--><path fill="#3525cd" d="M297.4 438.6C309.9 451.1 330.2 451.1 342.7 438.6L502.7 278.6C515.2 266.1 515.2 245.8 502.7 233.3C490.2 220.8 469.9 220.8 457.4 233.3L320 370.7L182.6 233.4C170.1 220.9 149.8 220.9 137.3 233.4C124.8 245.9 124.8 266.2 137.3 278.7L297.3 438.7z"/></svg>
+             </button>
+             <div class="faq-answer">
+               Yes. EventoraX offers a free trial so you can explore its features before 
+               choosing a subscription plan. Simply create an account and start managing 
+               your events in minutes.
+             </div>
+           </li>
+         </ul>
+       </div>
+     </section>
+
+
     </main>
     <footer class="footer">
       
@@ -335,5 +532,119 @@
         <a href="#">Status</a>
       </div>
    </footer>
+   <script>
+    window.addEventListener("scroll", function () {
+      const navbar = document.querySelector(".navbar");
+      if (window.scrollY > 0) {
+        // adjust threshold as needed
+        navbar.classList.add("scrolled");
+      } else {
+        navbar.classList.remove("scrolled");
+      }
+    });
+
+
+    const reveals = document.querySelectorAll(".reveal");
+
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("active");
+      // If you want it to stay visible once revealed:
+      observer.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.1 }); // 10% visible triggers
+
+reveals.forEach(reveal => {
+  observer.observe(reveal);
+});
+
+const reveal = document.querySelectorAll(".reveal, .reveal-right");
+
+const observers = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add("active");
+      observers.unobserve(entry.target); // keeps it revealed
+    }
+  });
+}, { threshold: 0.6 });
+
+reveal.forEach(reveal => {
+  observers.observe(reveal);
+});
+
+document.querySelectorAll(".faq-question").forEach(button => {
+  button.addEventListener("click", () => {
+    const answer = button.nextElementSibling;
+    const isOpen = answer.classList.contains("open");
+
+    // Close all answers (accordion style)
+    document.querySelectorAll(".faq-answer").forEach(a => {
+      a.style.maxHeight = null;
+      a.classList.remove("open");
+    });
+    document.querySelectorAll(".faq-question").forEach(q => q.classList.remove("active"));
+
+    // Toggle current
+    if (!isOpen) {
+      answer.classList.add("open");
+      answer.style.maxHeight = answer.scrollHeight + "px"; // animate to content height
+      button.classList.add("active");
+    }
+  });
+});
+const container = document.querySelector(".testimonial-container");
+const nextBtn = document.querySelector(".next-btn");
+const prevBtn = document.querySelector(".prev-btn");
+
+const cards = document.querySelectorAll(".testimonial-card");
+
+let isAnimating = false;
+
+// NEXT
+nextBtn.addEventListener("click", () => {
+  if (isAnimating) return;
+  isAnimating = true;
+
+  const firstCard = container.firstElementChild;
+  const cardWidth = firstCard.offsetWidth;
+
+  container.style.transition = "transform 0.4s ease";
+  container.style.transform = `translateX(-${cardWidth + 35}px)`;
+
+  setTimeout(() => {
+    container.appendChild(firstCard); // move first to last
+    container.style.transition = "none";
+    container.style.transform = "translateX(0)";
+    isAnimating = false;
+  }, 400);
+});
+
+// PREV
+prevBtn.addEventListener("click", () => {
+  if (isAnimating) return;
+  isAnimating = true;
+
+  const lastCard = container.lastElementChild;
+  const cardWidth = lastCard.offsetWidth;
+
+  container.insertBefore(lastCard, container.firstElementChild);
+  container.style.transition = "none";
+  container.style.transform = `translateX(-${cardWidth + 35}px)`;
+
+  requestAnimationFrame(() => {
+    container.style.transition = "transform 0.4s ease";
+    container.style.transform = "translateX(0)";
+  });
+
+  setTimeout(() => {
+    isAnimating = false;
+  }, 400);
+});
+
+
+  </script>
   </body>
 </html>

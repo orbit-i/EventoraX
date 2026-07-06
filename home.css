@@ -1,17 +1,31 @@
-header nav {
-    display: flex;
-    justify-content: space-between;
-    /* width: 1200px; */
-    height: 64px;
-    border-bottom: 1px solid #C7C4D8;
-    box-shadow: 0 3px 0 rgba(0, 0, 0, 0.103);
-    align-items: center;
-    padding-left: 40px;
-    padding-right: 40px;
-    font-family: sans-serif;
-    
-    
+body {
+  margin: 0;
+  overflow-x:hidden;
+  padding-top: 64px; /* same as navbar height */
 }
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 64px;
+  padding: 0 40px;
+  font-family: sans-serif;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  border-bottom: 1px solid #C7C4D8;
+  /* box-shadow: 0 3px 0 rgba(0, 0, 0, 0.1); */
+  background: transparent;
+  transition: background 0.3s ease;
+  z-index: 1000;
+}
+
+.navbar.scrolled {
+  background: #fff;
+  box-shadow: none;
+}
+
 nav .div1{
     display: flex;
     gap: 32px;
@@ -31,11 +45,37 @@ nav .div2{
     text-decoration: none;
     margin-top: 7px;
     color: black;
+    transition:  top 0.2s ease;
+    
 }
+.div1 a:hover{
+
+   color: rgb(53, 37, 205);
+   top: -3px;
+   position: relative;
+
+
+}
+.div1 a::after{
+  content: '';
+   width: 0%;
+   height: 3px;
+  background: rgb(53, 37, 205);
+  display: block;
+   margin-top: 5px;
+  transition: 0.5s;
+}
+.div1 a:hover::after{
+  width: 100%;
+}
+
 .logo{
     color: rgb(53, 37, 205);
     
     padding-top: 3px;
+}
+.div2 a:hover{
+  color: #000000f6;
 }
 .div2 .headerbtn{
     background-color: rgb(53, 37, 205);
@@ -47,9 +87,10 @@ nav .div2{
     border-radius: 10px;
 }
 .div2 .headerbtn:hover{
-  background: #005fa3;
+  background: #233144f0;
   color: #E2DFFF;
-  border:1px solid #005fa3 ;
+  border:1px solid #233144 ;
+  transform: scale(1.05);
 }
 
 /* ----------------------- */
@@ -144,9 +185,9 @@ body {
   color: #fff;
 }
 .btn.primary:hover{
-  background: #005fa3;
+  background: #233144f0;
   color: #E2DFFF;
-  border:1px solid #005fa3 ;
+  border:1px solid #233144 ;
 }
 
 .btn.secondary {
@@ -156,9 +197,9 @@ body {
   width: 160px;
 }
 .btn.secondary:hover{
-  background: #005fa3;
+  background: #233144f0;
   color: #E2DFFF;
-  border:1px solid #005fa3 ;
+  border:1px solid #233144 ;
 }
 .hero-image-wrapper {
   position: relative;
@@ -200,6 +241,7 @@ body {
   right: -100px;
   top: 65%;
 }
+
 .floating-card {
   position: absolute;
   background: rgba(255, 255, 255, 0.85);
@@ -251,18 +293,19 @@ border: 1px solid rgba(255,255,255,0.5);
 }
 /* ______________________________________ */
 .feature-section {
-  padding: 90px 20px;
-  background-color: #e2dfff12;
+  /* padding: 90px 20px; */
+  background-color: #233144;
+  overflow: hidden;
   /* background: #F8F9FF; */
 }
 
 .feature-container {
   max-width: 1280px;
-  margin: 0 auto;
-  
-  border-radius: 24px;
-  padding-left: 40px;
-  padding-right: 40px;
+  margin: 0 ;
+        background: radial-gradient(circle at top right,
+        rgba(41, 124, 154, 0.491),
+        transparent 60%);
+  padding: 80px 40px ;
   display: grid;
   gap: 64px;
 }
@@ -273,7 +316,7 @@ border: 1px solid rgba(255,255,255,0.5);
 
 .feature-heading h2 {
   font-size: 40px;
-  color: #111827;
+  color: #dde8ff;
   margin-bottom: 10px;
 }
 
@@ -287,16 +330,76 @@ border: 1px solid rgba(255,255,255,0.5);
   gap: 24px;
   
 }
+
+
+
+/* ============================ */
+.card:hover{
+
+    transform:translateY(-10px);
+
+    border-color:#28ddff;
+
+    box-shadow:0 20px 50px rgba(0,255,255,.15);
+}
 .card {
-  background: #eef2ff;
-  border: 1px solid #C7C4D8;
+  background: rgba(41, 124, 154, 0.059);
   border-radius: 16px;
   padding: 24px;
+  position: relative;
+  overflow: hidden;
+  border: 1px solid #c2ccff23;
+}
+.card:hover{
+  transform: translate3d(
+        var(--mx, 0px),
+        calc(var(--my, 0px) - 8px),
+        0
+    ) scale(1.02);
+    /* border: 1px solid rgb(53, 37, 205); */
+}
+/* =========================
+   BACKGROUND PATTERN
+========================= */
+.card::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(120deg,
+        transparent,
+        rgba(255,255,255,0.05),
+        transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
+}
+
+
+.card:hover::before {
+    transform: translateX(100%);
+}
+
+.card::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(
+        rgba(255,255,255,0.06) 1px,
+        transparent 1px
+    );
+    background-size: 18px 18px;
+    opacity: 0.25;
+    pointer-events: none;
+}
+
+/* content above overlays */
+.card > * {
+    position: relative;
+    z-index: 2;
 }
 
 .card h3 {
   font-size: 18px;
-  color: #111827;
+  color: #cbdafc;
   margin: 12px 0 10px;
 }
 
@@ -328,23 +431,23 @@ border: 1px solid rgba(255,255,255,0.5);
 }
 
 .qr-card .qr_img {
-  max-height: 256px;
-  max-width: 256px;
+  max-height: 150px;
+  max-width: 150px;
   justify-content: center;
   padding: 12px;
-  background-color: #fff;
+  background-color: transparent;
   border-radius: 12px;
 
 }
 .qr_img img{
-  max-width: 232px;
-  min-height: 232px;
+  max-width: 120px;
+  min-height: 125px;
 }
 
 .analytics-card {
   grid-column: span 4;
   min-height: 220px;
-  background: #dfe9ff;
+  background: rgba(41, 124, 154, 0.059);
 }
 
 .secure-card {
@@ -360,7 +463,7 @@ border: 1px solid rgba(255,255,255,0.5);
   align-items: center;
   padding: 32px;
   gap: 32px;
-  background: #dfe9ff;
+  background: rgba(41, 124, 154, 0.059);
 }
 
 .id-card {
@@ -380,7 +483,7 @@ border: 1px solid rgba(255,255,255,0.5);
   display: block;
 }
 .mini-box {
-  background: #cfd7ff;
+  background: rgba(41, 124, 154, 0.059);
   border-radius: 12px;
   width: 488px;
   height: 160px;
@@ -388,7 +491,7 @@ border: 1px solid rgba(255,255,255,0.5);
   align-items: center;
   justify-content: center;
   gap: 16px;
-  border: 1px solid #c2ccff;;
+  border: 1px solid #c2ccff45;
 }
 .mini-box span{
   background-color: #fff;
@@ -396,6 +499,10 @@ border: 1px solid rgba(255,255,255,0.5);
   border-radius: 9999px;
   font-size: 20px;
 
+}
+.mini-box span:hover{
+  background-color: rgb(53, 37, 205);
+  color: white;
 }
 /* ______________________________________________ */
 .steps-section {
@@ -661,11 +768,13 @@ line-height: 24px;
 }
 
 .btn:hover {
-  background: #005fa3;
+  background: #233144e0;
   color: #E2DFFF;
   border:1px solid #233144 ;
 }
-
+.recommended .btn:hover{
+  border:1px solid #E2DFFF;
+}
 .recommended {
   background-color: #233144;
 }
@@ -687,9 +796,326 @@ line-height: 24px;
 .card1 svg{
   width: 16.67px;
   height: 16.67px;
+}
+/* ---------------------testimonials----------- */
+.testimonials-section{
+  background-color: #ffffff;
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+.testimonials-header{
+  text-align: center;
+  margin-bottom: 50px;
+}
+.container{
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+.testimonial-container {
+  display: flex;
+  gap: 25px;
+  width: 100%;
+  max-width: 1050px;
+  overflow: hidden;
+  scroll-behavior: smooth;
+  padding: 20px 20px;
+  margin: auto;
+}
+.testimonial-slider {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+.testimonial-card{
+flex: 0 0 auto;
+  min-width: 280px;
+    background:white;
+    flex: 0 0 320px;
+    border-radius:25px;
+
+    padding:40px;
+
+    /* box-shadow:0 20px 40px rgba(0,0,0,.08); */
+
+    transition:.45s;
+
+    position:relative;
+
+    overflow:hidden;
+}
+
+.testimonial-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    left:0;
+
+    top:0;
+
+    width:100%;
+
+    height:5px;
+
+    background:linear-gradient(90deg,rgba(54, 37, 205, 0.842),#233144f0);
+
+    transform:scaleX(0);
+
+    transition:.4s;
+}
+
+.testimonial-card:hover{
+
+    transform:translateY(-12px);
+
+    box-shadow:0 20px 18px rgba(91,70,255,.18);
+}
+
+.testimonial-card:hover::before{
+
+    transform:scaleX(1);
+}
+
+.featured {
+  background: linear-gradient(145deg, #5b46ff, #7c4dff);
+  color: white;
+
+  transform: translateY(-10px);
+
+}
+.featured h4,
+.featured span,
+.featured .review{
+
+    color:white;
+}
+
+.featured .quote{
+
+    color:white;
+}
+.common{
+  border: 1px solid #5b46ff;
+}
+
+.quote{
+
+    font-size:70px;
+
+    color:#5b46ff;
+
+    line-height:1;
+
+    margin-bottom:20px;
+}
+
+.review{
+
+    line-height:1.9;
+
+    color:#555;
+
+    margin-bottom:35px;
+}
+
+.user{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:15px;
+}
+
+.user img{
+
+    width:60px;
+
+    height:60px;
+
+    border-radius:50%;
+
+    object-fit:cover;
+
+    border:3px solid #5b46ff;
+}
+
+.user h4{
+
+    margin:0;
+
+    color:#16213e;
+}
+
+.user span{
+
+    color:#777;
+
+    font-size:14px;
+}
+.testimonial-card{
+
+    opacity:1;
+
+    transform:none;
+
+    transition: all 0.4s ease;
+}
+
+.testimonial-card:nth-child(2){
+
+    animation-delay:.2s;
+}
+
+.testimonial-card:nth-child(3){
+
+    animation-delay:.4s;
+}
+
+@keyframes fadeUp{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(80px);
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+    }
+} 
+/* ================= NAV BUTTONS ================= */
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+
+  background: #111;
+  color: #fff;
+  border: none;
+  width: 45px;
+  height: 45px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  cursor: pointer;
+  font-size: 18px;
+  border-radius: 50%;
+  transition: 0.3s ease;
+}
+
+.prev-btn {
+  left: 10px;
+}
+
+.next-btn {
+  right: 10px;
+}
+
+.nav-btn:hover {
+  background: #233144f0;
+  transform: translateY(-50%) scale(1.1);
+}
+
+/* ================= LOGO STRIP ================= */
+.logo-strip {
+  margin-top: 60px;
+  display: flex;
+  justify-content: center;
+  gap: 40px;
+  flex-wrap: wrap;
+  opacity: 0.8;
+}
+
+.logo-strip img {
+  width: 80px;
+  height: 80px;
+  filter: grayscale(100%);
+  transition: 0.3s;
+}
+
+.logo-strip img:hover {
+  filter: grayscale(0%);
+  transform: scale(1.05);
+}
+
+/* ================= CTA BOX ================= */
+.cta-box {
+  margin-top: 70px;
+  text-align: center;
+  background: linear-gradient( #233144, #233144);
+  padding: 50px;
+  border-radius: 20px;
+  color: white;
+}
+
+.cta-box h3 {
+  font-size: 28px;
+  margin-bottom: 20px;
+}
+.cta-box p{
+  margin-top: 10px;
+  font-family: Arial, Helvetica, sans-serif;
+    color: rgb(107, 114, 128);
+    font-size: 14px;
+}
+
+.cta-box button {
+  padding: 12px 25px;
+  border:1px solid #3525CD;
+  background-color: #3525CD;
+  color: #E2DFFF;
+  font-size: 16px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: 0.3s;
+  margin-top: 20px;
+}
+
+.cta-box button:hover {
+  background: #233144e0;
+  color: #E2DFFF;
+  border:1px solid #E2DFFF;
+  transform: scale(1.05);
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+  .testimonial-track {
+    width: 100%;
+  }
+
+  .testimonial-card {
+    min-width: 260px;
+  }
+
+  .prev-btn {
+    left: 2%;
+  }
+
+  .next-btn {
+    right: 2%;
+  }
+
+  .testimonials-header h2 {
+    font-size: 28px;
+  }
+}
 
 /* ------------------LOGO WALL----------- */
-}
+
 .logo-wall {
   width: 100%;
   background: rgba(239, 244, 255, 0.5);
@@ -714,30 +1140,32 @@ line-height: 24px;
 }
 
 .logo-grid {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 70px;
-  flex-wrap: wrap;
+  width: 1200px;       /* adjust to your layout */
+  overflow: hidden;
   background-color: #fff;
-  width: 1200px;
 }
 
-.logo-item {
-  width: 120px;
-  height: 56px;
+.logo-track {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  gap: 50px;
+  animation: scrollLeft 20s linear infinite;
 }
 
-.logo-item img {
-  max-width: 100%;
-  border-radius: 10px;
-  max-height: 100%;
+.logo-track img {
+  width: 120px;
+  height: auto;
   object-fit: contain;
-  display: block;
 }
+
+@keyframes scrollLeft {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%); /* move half the track length */
+  }
+}
+
 /* -----------------------footer--------- */
 .footer{
   display: flex;
@@ -783,3 +1211,127 @@ line-height: 24px;
   font-size: 14px;
   font-weight: 500;
 }
+
+/* ------------transition----------- */
+.reveal {
+  opacity: 0;
+  transform: translateY(150px); /* start slightly down */
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+.reveal.active {
+  opacity: 1;
+  transform: translateY(0); /* slide into place */
+}
+
+.reveal-right {
+  opacity: 0;
+  transform: translateX(60px); /* start shifted to the right */
+  transition: opacity 1.2s ease, transform 1.2s ease;
+}
+
+.reveal-right.active {
+  opacity: 1;
+  transform: translateX(0); /* slide into place */
+}
+
+/* ------------------------FAQs------------ */
+.faq-section {
+  background-color: rgba(239, 244, 255, 0.5);
+  padding: 50px;
+  display: flex;
+  align-items: flex-start;
+  gap: 50px;
+
+}
+.faqh{
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 400px;
+  justify-content: center;
+
+}
+.faql{
+  flex: 2;
+
+}
+
+.faq-container h2 {
+  font-size: 2rem;
+  color: #3525cd; /* matches your EventoriaX theme */
+  margin-bottom: 20px;
+}
+
+.faq-container p {
+  font-size: 1rem;
+  color: #555;
+  margin-bottom: 30px;
+}
+
+.faq-list {
+  list-style: none;
+  padding-left: 0px;
+}
+
+.faq-list li {
+  margin-bottom: 25px;
+}
+
+.faq-list h3 {
+  font-size: 1.2rem;
+  color: #000;
+  margin-bottom: 8px;
+  background-color: #fff;
+  /* border: 1px solid #C7C4D8; */
+  padding: 20px;
+
+}
+
+.faq-list p {
+  font-size: 1rem;
+  color: #4444;
+  line-height: 1.6;
+  
+}
+.faq-container li{
+  background: #fff;
+}
+.faq-question {
+  width: 100%;
+  /* height: 30px; */
+  text-align: left;
+  background: #fff;
+  border: 0px solid #c7c4d8;
+  padding: 15px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  color: #000;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.faq-answer {
+  max-height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transform: translateY(0px);
+  transition: max-height 0.8s ease, opacity 0.8s ease, transform 0.8s ease, padding 0.4s ease;
+  padding: 0;
+  padding-left: 25px;
+  background: #fff;
+}
+.faq-answer.open {
+  opacity: 1;
+}
+
+.faql svg {
+  transition: transform 0.3s ease;
+  color: #3525cd;
+  width: 20px;
+}
+
+.faq-question.active svg {
+  transform: rotate(180deg);
+}
+
