@@ -7,12 +7,12 @@
 
 main {
   position: relative;
-  left: 240px;
   top: 70px;
-  padding-top: 105px;
-  width: 100%;
+  margin-left: 240px;
+  padding-top: 50px;
+  width: calc(100% - 240px);
   height: 100vh;
-  background-color: rgb(173, 216, 230, 0.2);
+  background-color: rgb(173, 216, 230, 0.1);
 }
 
 .stats-cards-container {
@@ -23,9 +23,74 @@ main {
 }
 
 .stats-card {
-  width: 180px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: start;
+  gap: 8px;
+  padding: 20px;
+  width: 200px;
   min-height: 120px;
   background-color: #ffffff;
   border: 1px solid gray;
   border-radius: 15px;
+  box-shadow: 0px 0px 4px rgb(128, 128, 128, 0.9);
+}
+
+.stats-box-icon-container {
+  background-color: rgb(0, 0, 255, 0.5);
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.stats-card-upper-container {
+  display: flex;
+  justify-content: center;
+  align-items: start;
+  gap: 15px;
+}
+
+.stats-para-container {
+  font-size: 12px;
+  color: #007200;
+}
+
+.stats-retention-para {
+  color: gray;
+}
+
+.total-tenants h1 {
+  font-size: 30px;
+}
+
+.sparkle-icon-container {
+  background-color: lightgray;
+}
+
+.sparkle-icon {
+  color: gray;
+}
+
+.timer-icon-container {
+  background-color: rgb(153, 88, 42, 0.2);
+}
+
+.timer-icon {
+  color: #99582a;
+}
+
+.stats-expiring-para p {
+  color: #99582a;
+}
+
+.stats-bank-note-arrow-up-container {
+  background-color: lightgray;
+}
+
+.bank-note-arrow-up {
+  color: rgb(94, 92, 92);
+}
+
+.stats-target-para {
+  color: #0b460b;
 }
