@@ -39,7 +39,7 @@ function TenantTable() {
         </div>
       </div>
       {/* second line */}
-      <table>
+      <table className='tenant-table'>
         <thead>
           <tr>
             <th>ORG NAME</th>
@@ -53,20 +53,25 @@ function TenantTable() {
 
         <tbody>
           {tenants.map((tenant) => (
-              <tr key={tenant.id}>
-                <td>
-                  <h4>{tenant.orgName}</h4>
-                  <p>{tenant.email}</p>
-                </td>
-                <td>{tenant.plan}</td>
-                <td>{tenant.status}</td>
-                <td>{tenant.trialEndDate}</td>
-                <td>{tenant.createdAt}</td>
-                <td>
-                  <button>View</button>
-                </td>
-              </tr>
-            ))
+            <tr key={tenant.id}>
+              <td>
+                <div className='org-info-container'>
+                  <img src={tenant.logo} alt={tenant.orgName} className='org-logo' />
+                  <div className='org-text-container'>
+                    <h4 className='org-name'>{tenant.orgName}</h4>
+                    <p className='org-email'>{tenant.email}</p>
+                  </div>
+                </div>
+              </td>
+              <td>{tenant.plan}</td>
+              <td>{tenant.status}</td>
+              <td>{tenant.trialEndDate}</td>
+              <td>{tenant.createdAt}</td>
+              <td>
+                <button>View</button>
+              </td>
+            </tr>
+          ))
           }
         </tbody>
       </table>
