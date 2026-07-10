@@ -1,5 +1,5 @@
 import '../styles/Sidebar.css';
-import { Calendar, ChartColumnDecreasing, CircleStar, LayoutDashboard, Settings, Users } from 'lucide-react';
+import { Calendar, ChartColumnDecreasing, CircleQuestionMark, CircleStar, Download, LayoutDashboard, LogOut, Plus, Settings, Users } from 'lucide-react';
 
 function Sidebar() {
   return (
@@ -40,6 +40,21 @@ function Sidebar() {
           <div className='menu-item'>
             <Settings className='menu-item-icon' />
             <p>Settings</p>
+          </div>
+          {/* item 7 */}
+          <div className='menu-item'>
+            <Plus className='menu-item-icon' />
+            <p>Add Tenant</p>
+          </div>
+          {/* item 8 */}
+          <div className='menu-item'>
+            <CircleQuestionMark className='menu-item-icon' />
+            <p>Support</p>
+          </div>
+          {/* item 9 */}
+          <div className='menu-item'>
+            <LogOut className='menu-item-icon' />
+            <p>Sign Out</p>
           </div>
         </div>
       </aside>

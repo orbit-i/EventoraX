@@ -50,3 +50,39 @@ aside {
 .menu-item p {
   font-size: 15px;
 }
+
+.menu-item:nth-child(7) {
+  position: fixed;
+  bottom: 120px;
+  color: #ffffff;
+  background-color: #00509d;
+  padding: 10px 50px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-bottom: 1px solid gray;
+}
+
+.menu-item:nth-child(7):hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 0px 6px rgb(0, 80, 157, 0.5);
+}
+
+.menu-item:nth-child(8) {
+  position: fixed;
+  bottom: 80px;
+}
+
+.menu-item:nth-child(9) {
+  position: fixed;
+  bottom: 40px;
+  border-radius: 12px;
+  padding: 4px 25px 4px 4px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.menu-item:nth-child(9):hover {
+  color: rgb(255, 0, 0, 0.7);
+  background-color: rgb(255, 0, 0, 0.1);
+}

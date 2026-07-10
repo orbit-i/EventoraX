@@ -19,7 +19,7 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 25px;
+  gap: 42px;
 }
 
 .stats-card {
