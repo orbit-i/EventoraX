@@ -2,7 +2,7 @@ import { Boxes, Sparkle, Sparkles, Timer, BanknoteArrowUp } from 'lucide-react'
 import '../styles/StatsCards.css'
 import TenantTable from './TenantTable'
 
-function StatsCards() {
+function StatsCards({ showModal, setShowModal, selectedTenant, setSelectedTenant }) {
   return (
     <main>
       <div className='stats-cards-container'>
@@ -72,7 +72,12 @@ function StatsCards() {
         </div>
       </div>
       {/* tenant Table */}
-      <TenantTable />
+      <TenantTable
+        showModal={showModal}
+        setShowModal={setShowModal}
+        selectedTenant={selectedTenant}
+        setSelectedTenant={setSelectedTenant}
+      />
     </main>
   )
 }

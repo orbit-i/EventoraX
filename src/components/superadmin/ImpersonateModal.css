@@ -1,0 +1,196 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: sans-serif;
+}
+
+.impersonate-container {
+  width: 420px;
+  min-height: 400px;
+  padding: 15px 20px;
+  background-color: #ffffff;
+  border-radius: 15px;
+  gap: 15px;
+  margin: 0 auto;
+  box-shadow: 0px 0px 6px rgb(0, 0, 255, 0.15);
+}
+
+.impersonate-first-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+}
+
+.triangle-alert-icon-container {
+  padding: 8px;
+  border: 1px solid #ffc300;
+  border-radius: 8px;
+  background-color: rgb(255, 195, 0, 0.1);
+  margin-top: 14px;
+}
+
+.triangle-alert-icon {
+  width: 25px;
+  color: #ffa200;
+}
+
+.impersonate-x-icon-container {
+  padding: 2px 3px;
+  border-radius: 8px;
+  background-color: rgb(128, 128, 128, 0.1);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.impersonate-x-icon {
+  width: 20px;
+  color: gray;
+}
+
+.impersonate-second-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  gap: 4px;
+}
+
+.impersonate-second-inner-upper-container {
+  margin-top: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.impersonate-second-inner-lower-container {
+  font-size: 14px;
+  color: gray;
+}
+
+.impersonate-tenant-info-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 13px;
+  width: 100%;
+  min-height: 60px;
+  background-color: rgb(211, 211, 211, 0.15);
+  border: 1px solid lightgray;
+  border-radius: 12px;
+  margin-top: 18px;
+  padding: 15px;
+}
+
+.impersonate-tenant-info-left-container {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 15px;
+}
+
+.impersonate-tenant-short-name-container {
+  color: #ffffff;
+  font-weight: 800;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: rgb(0, 0, 255, 0.8);
+}
+
+.impersonate-tenant-short-name-container p {
+  font-size: 16px;
+}
+
+.impersonate-tenant-name {
+  color: #000000;
+  font-weight: 600;
+}
+
+.impersonate-tenant-email {
+  color: gray;
+  margin-top: -2px;
+}
+
+.impersonate-tenant-info-right-container {
+  padding: 5px;
+  border-radius: 12px;
+  background-color: rgb(0, 0, 255, 0.15);
+}
+
+.impersonate-tenant-info-right-container p {
+  color: blue;
+  font-size: 12px;
+}
+
+.tenant-info-last-container {
+  width: 100%;
+  min-height: 60px;
+  border-radius: 12px;
+  background-color: rgb(255, 162, 0, 0.1);
+  border: 1px solid #ffa200;
+  margin-top: 20px;
+}
+
+.tenant-info-last-container {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+}
+
+.tenant-info-circle-alert-container {
+  color: #ffa200;
+  width: 16px;
+}
+
+.tenant-info-last-right-content-container p {
+  font-size: 12px;
+  color: #8d552d;
+}
+
+.impersonate-tenants-buttons {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.impersonate-cancel-btn {
+  color: gray;
+  width: 180px;
+  background-color: rgb(211, 211, 211, 0.3);
+  border: 1px solid rgb(128, 128, 128, 0.2);
+  padding: 6px;
+  border-radius: 12px;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.impersonate-cancel-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 0px 4px rgba(128, 128, 128, 0.2);
+}
+
+.start-impersonate-button-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #ffffff;
+  font-size: 14px;
+  gap: 4px;
+  padding: 6px 16px;
+  border-radius: 12px;
+  cursor: pointer;
+  background-color: rgb(0, 0, 255, 0.8);
+  transition: all 0.3s ease;
+}
+
+.start-impersonate-button-container:hover {
+  transform: translateY(-3px);
+  box-shadow: 0px 0px 4px rgba(0, 0, 255, 0.2);
+}
+
+.impersonate-user-plus-icon {
+  width: 14px;
+}

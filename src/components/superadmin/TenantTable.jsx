@@ -3,7 +3,7 @@ import '../styles/TenantTable.css'
 import tenants from './tenantsData'
 import { FaEye, FaEdit, FaTrash, FaUser, FaPen, FaPenSquare } from "react-icons/fa"
 
-function TenantTable() {
+function TenantTable({ showModal, setShowModal, selectedTenant, setSelectedTenant }) {
   return (
     <div>
       <div className='tenant-table-container'>
@@ -76,7 +76,12 @@ function TenantTable() {
                   <button>
                     <FaPen color='#10b981' />
                   </button>
-                  <button>
+                  <button 
+                  onClick={() => {
+                    setShowModal(true)
+                    setSelectedTenant(tenant)
+                  }}
+                  >
                     <FaUser color='#8b5cf6' />
                   </button>
                   <button>
