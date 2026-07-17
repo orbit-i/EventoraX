@@ -1,4 +1,4 @@
-import { EventMode, EventStatus, RegistrationStatus, RegisteredVia, RegistrationCategory, SponsorTier } from "@prisma/client";
+import { EventMode, EventStatus, RegistrationStatus, RegisteredVia, SponsorTier } from "@prisma/client";
 import { PrismaClient } from "@prisma/client";
 import { PrismaMariaDb } from "@prisma/adapter-mariadb";
 
@@ -18,6 +18,7 @@ async function seedEventForTenant(tenantId: string, index: number) {
     data: {
       tenantId,
       title: `${tenantId === TENANTS[0] ? "TechFest" : "GrowthSummit"} 202${index}`,
+      organizer: tenantId === TENANTS[0] ? "Computer Science Society" : "Growth Team",
       mode: [EventMode.ONLINE, EventMode.OFFLINE, EventMode.HYBRID][index % 3],
       startDateTime: daysFromNow(10 + index * 5),
       endDateTime: daysFromNow(10 + index * 5 + 1),
@@ -30,6 +31,17 @@ async function seedEventForTenant(tenantId: string, index: number) {
       meetingLink: index % 3 === 0 ? "https://meet.example.com/room" : null,
       status: [EventStatus.PUBLISHED, EventStatus.DRAFT, EventStatus.ONGOING][index % 3],
     },
+  });
+
+  // Categories (replaces old RegistrationCategory enum)
+  const studentCategory = await prisma.eventCategory.create({
+    data: { tenantId, eventId: event.id, label: "Student" },
+  });
+  const professionalCategory = await prisma.eventCategory.create({
+    data: { tenantId, eventId: event.id, label: "Professional" },
+  });
+  const facultyCategory = await prisma.eventCategory.create({
+    data: { tenantId, eventId: event.id, label: "Faculty" },
   });
 
   // Speakers
@@ -101,32 +113,32 @@ async function seedEventForTenant(tenantId: string, index: number) {
       {
         tenantId,
         eventId: event.id,
+        categoryId: studentCategory.id,
         refNo: `${tenantId.slice(0, 4).toUpperCase()}-${event.id.slice(-4)}-001`,
         name: "Sara Malik",
         email: "sara.malik@example.com",
         department: "Computer Science",
         rollNo: "CS-101",
-        category: RegistrationCategory.STUDENT,
         registeredVia: RegisteredVia.WEB,
-        status: RegistrationStatus.CONFIRMED,
+        status: RegistrationStatus.REGISTERED,
       },
       {
         tenantId,
         eventId: event.id,
+        categoryId: professionalCategory.id,
         refNo: `${tenantId.slice(0, 4).toUpperCase()}-${event.id.slice(-4)}-002`,
         name: "Hamza Iqbal",
         email: "hamza.iqbal@example.com",
-        category: RegistrationCategory.PROFESSIONAL,
         registeredVia: RegisteredVia.ADMIN,
-        status: RegistrationStatus.PENDING,
+        status: RegistrationStatus.REGISTERED,
       },
       {
         tenantId,
         eventId: event.id,
+        categoryId: facultyCategory.id,
         refNo: `${tenantId.slice(0, 4).toUpperCase()}-${event.id.slice(-4)}-003`,
         name: "Fatima Noor",
         email: "fatima.noor@example.com",
-        category: RegistrationCategory.FACULTY,
         registeredVia: RegisteredVia.CSV_IMPORT,
         status: RegistrationStatus.ATTENDED,
       },
@@ -143,7 +155,7 @@ async function main() {
     }
   }
 
-  console.log("Seed complete: 2 tenants, 3 events each, with speakers/sponsors/sessions/registrations.");
+  console.log("Seed complete: 2 tenants, 3 events each, with categories/speakers/sponsors/sessions/registrations.");
 }
 
 main()

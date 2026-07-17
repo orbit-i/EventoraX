@@ -16,20 +16,21 @@ enum EventMode {
   HYBRID
 }
 
+// Matches spec exactly: Draft, Upcoming, Active, Completed, Archived
 enum EventStatus {
   DRAFT
-  PUBLISHED
-  ONGOING
+  PUBLISHED   // "Upcoming" in spec
+  ONGOING     // "Active" in spec
   COMPLETED
-  CANCELLED
+  ARCHIVED
 }
 
+// Matches spec exactly: Registered, Attended, Absent, Cancelled
 enum RegistrationStatus {
-  PENDING
-  CONFIRMED
-  WAITLISTED
-  CANCELLED
+  REGISTERED
   ATTENDED
+  ABSENT
+  CANCELLED
 }
 
 enum RegisteredVia {
@@ -37,13 +38,6 @@ enum RegisteredVia {
   ADMIN
   CSV_IMPORT
   API
-}
-
-enum RegistrationCategory {
-  STUDENT
-  FACULTY
-  PROFESSIONAL
-  GUEST
 }
 
 enum SponsorTier {
@@ -61,6 +55,7 @@ model Event {
   id               String      @id @default(cuid())
   tenantId         String
   title            String
+  organizer        String?
   mode             EventMode
   startDateTime    DateTime
   endDateTime      DateTime
@@ -71,11 +66,13 @@ model Event {
   ticketPrice      Decimal?    @db.Decimal(10, 2)
   registrationOpen Boolean     @default(true)
   meetingLink      String?
-  certTemplateId   String?
+  certTemplateId   String?     // owned by Isha's Certificates module — id only, no local FK
   autoIssueCert    Boolean     @default(false)
   status           EventStatus @default(DRAFT)
   createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
 
+  categories    EventCategory[]
   registrations Registration[]
   speakers      Speaker[]
   sponsors      Sponsor[]
@@ -86,24 +83,45 @@ model Event {
   @@map("events")
 }
 
+// Per-event configurable categories (e.g. General, VIP, Speaker, Student...).
+// Replaces the old hardcoded global RegistrationCategory enum.
+model EventCategory {
+  id      String @id @default(cuid())
+  tenantId String
+  eventId String
+  label   String
+
+  event         Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  registrations Registration[]
+
+  @@unique([eventId, label])
+  @@index([tenantId])
+  @@index([eventId])
+  @@map("event_categories")
+}
+
 model Registration {
-  id               String               @id @default(cuid())
+  id               String              @id @default(cuid())
   tenantId         String
   eventId          String
-  refNo            String               @unique
+  categoryId       String?
+  refNo            String              @unique
   name             String
   email            String
   phone            String?
   department       String?
   rollNo           String?
-  category         RegistrationCategory @default(GUEST)
-  registeredVia    RegisteredVia        @default(WEB)
-  status           RegistrationStatus   @default(PENDING)
-  registrationDate DateTime             @default(now())
-  ticketId         String?
+  registeredVia    RegisteredVia       @default(WEB)
+  status           RegistrationStatus  @default(REGISTERED)
+  registrationDate DateTime            @default(now())
+  ticketId         String?             // owned by Isha's QR Tickets module — id only, no local FK
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
 
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  event    Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  category EventCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
 
+  @@unique([eventId, email]) // blocks duplicate registration to the same event
   @@index([tenantId])
   @@index([eventId])
   @@index([eventId, status])
@@ -111,7 +129,7 @@ model Registration {
 }
 
 model Speaker {
-  id           String  @id @default(cuid())
+  id           String   @id @default(cuid())
   tenantId     String
   eventId      String
   firstName    String
@@ -119,10 +137,13 @@ model Speaker {
   title        String?
   company      String?
   sessionTopic String?
-  bio          String? @db.Text
+  bio          String?  @db.Text
   photo        String?
   linkedin     String?
-  displayOrder Int     @default(0)
+  displayPublic Boolean @default(false)
+  displayOrder Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
   sessions Session[]
@@ -137,11 +158,13 @@ model Sponsor {
   tenantId     String
   eventId      String
   name         String
-  contactEmail String?
   website      String?
   logo         String?
   tier         SponsorTier @default(BRONZE)
+  displayPublic Boolean    @default(false)
   displayOrder Int         @default(0)
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 
   event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
@@ -152,15 +175,18 @@ model Sponsor {
 }
 
 model Session {
-  id           String   @id @default(cuid())
-  tenantId     String
-  eventId      String
-  speakerId    String?
-  title        String
-  startTime    DateTime
-  endTime      DateTime
-  location     String?
-  displayOrder Int      @default(0)
+  id            String   @id @default(cuid())
+  tenantId      String
+  eventId       String
+  speakerId     String?
+  title         String
+  startTime     DateTime
+  endTime       DateTime
+  location      String?
+  displayPublic Boolean  @default(false)
+  displayOrder  Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
   speaker Speaker? @relation(fields: [speakerId], references: [id], onDelete: SetNull)
