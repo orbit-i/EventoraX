@@ -13,10 +13,21 @@ enum Role {
   viewer
 }
 
+enum OrgStatus{
+  trial
+  active
+  expired
+}
+
 model Organization {
   id                  String   @id @default(uuid())
   name                String
   slug                String   @unique
+  logoUrl             String?
+  status              OrgStatus @default(trial)
+  subscriptionEndsAt  DateTime
+  planId              String?
+  plan                Plan?    @relation(fields: [planId], references: [id])
   createdAt           DateTime @default(now())
   users               User[]
 }
@@ -54,4 +65,14 @@ model EmailVerificationToken{
   user          User          @relation(fields: [userId], references: [id])
   expiresAt     DateTime
   createdAt     DateTime      @default(now())
+}
+
+model Plan{
+  id              String        @id @default(uuid())
+  name            String        @unique
+  maxSeats        Int?
+  features        Json?
+  price           Float?
+  createdAt       DateTime      @default(now())
+  organization    Organization[]
 }

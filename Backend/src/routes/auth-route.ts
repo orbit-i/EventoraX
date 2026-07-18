@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import crypto from 'crypto'
 import prisma from "../prisma/client"
 import { sendResetPasswordEmail,sendVerificationEmail } from "../utils/mail";
-import { register } from "module";
+import { isValidPhoneNumber } from "libphonenumber-js";
 
 
 const router = express.Router();
@@ -25,6 +25,7 @@ function generateSlug(name: string): string {
     .replace(/(^-|-$)/g, "");
 }
 
+const PASSWORD_REGEX=/^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>_\-+=~`[\]\\/;'])[A-Za-z\d\W_]{8,}$/;
 router.post("/register",
   async (req: Request<{}, {}, RegisterOrgBody>, res: Response) => {
     const { fullName, organizationName, email, password, phone } = req.body;
@@ -33,6 +34,12 @@ router.post("/register",
       return res.status(400).json({ error: "All fields are required" });
     }
 
+    if(!PASSWORD_REGEX.test(password)){
+      return res.status(400).json({error:"Password must be 8 characters and include at least one uppercase letter, one number, and one special character"})
+    }
+    if (!isValidPhoneNumber(phone)) {
+      return res.status(400).json({ error: "Phone number must be a valid Pakistani mobile number (e.g. +923001234567)" });
+    }
     try {
       const baseSlug = generateSlug(organizationName);
 
@@ -51,9 +58,16 @@ router.post("/register",
       const hashedPassword = await bcrypt.hash(password, 10);
 
       const result = await prisma.$transaction(async (tx) => {
-        const org = await tx.organization.create({
-          data: { name: organizationName, slug },
-        });
+      const starterPlan = await tx.plan.findUnique({ where: { name: "Starter" } });
+      const org = await tx.organization.create({
+        data: {
+          name: organizationName,
+          slug,
+          planId: starterPlan?.id,
+          status: "trial",
+          subscriptionEndsAt: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14-day trial
+        },
+      });
 
         const adminUser = await tx.user.create({
           data: {
