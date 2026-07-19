@@ -1,29 +1,48 @@
-import { Prisma } from "@prisma/client";
-import prisma  from "./client";
+import prisma from "./client";
 
-const ORG_SCOPED_MODELS = ["User"] as const
+const ORG_SCOPED_MODELS = ["User"] as const;
 
-export function getScopedPrisma(organizationId: string) {
+export function getScopedPrisma(
+  organizationId: string
+): ReturnType<typeof prisma.$extends> {
   return prisma.$extends({
     query: {
       $allModels: {
         async $allOperations({ model, operation, args, query }) {
           if (!model || !ORG_SCOPED_MODELS.includes(model as any)) {
-            return query(args); // not an org-scoped model, pass through untouched
+            return query(args);
           }
 
-          const readOps = ["findFirst", "findFirstOrThrow", "findMany", "findUnique", "findUniqueOrThrow", "count", "aggregate", "groupBy"];
-          const writeOps = ["update", "updateMany", "delete", "deleteMany"];
+          const mutableArgs = args as any;
 
-          if (readOps.includes(operation) || writeOps.includes(operation)) {
-            args.where = { ...args.where, organizationId };
+          switch (operation) {
+            case "findMany":
+            case "findFirst":
+            case "findFirstOrThrow":
+            case "findUnique":
+            case "findUniqueOrThrow":
+            case "count":
+            case "aggregate":
+            case "groupBy":
+            case "update":
+            case "updateMany":
+            case "delete":
+            case "deleteMany":
+              mutableArgs.where = {
+                ...(mutableArgs.where ?? {}),
+                organizationId,
+              };
+              break;
+
+            case "create":
+              mutableArgs.data = {
+                ...(mutableArgs.data ?? {}),
+                organizationId,
+              };
+              break;
           }
 
-          if (operation === "create") {
-            args.data = { ...args.data, organizationId };
-          }
-
-          return query(args);
+          return query(mutableArgs);
         },
       },
     },

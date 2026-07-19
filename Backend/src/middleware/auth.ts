@@ -24,8 +24,27 @@ export function authedQuery(req: Request, res: Response, next: NextFunction) {
   const token = authHeader.split(" ")[1];
 
   try {
-    req.user = jwt.verify(token, process.env.JWT_SECRET as string) as AuthPayload;
-    next();
+    const token = authHeader.split(" ")[1];
+
+if (!token) {
+  return res.status(401).json({ error: "Invalid token" });
+}
+
+const secret = process.env.JWT_SECRET;
+
+if (!secret) {
+  throw new Error("JWT_SECRET is not configured");
+}
+
+const payload = jwt.verify(token, secret) as jwt.JwtPayload & AuthPayload;
+
+req.user = {
+  userId: payload.userId,
+  organizationId: payload.organizationId,
+  role: payload.role,
+};
+
+next();
   } catch {
     return res.status(401).json({ error: "Invalid or expired token" });
   }
