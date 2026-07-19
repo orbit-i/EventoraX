@@ -1,0 +1,872 @@
+/* ==========================================
+   EVENTORIAX PRICING HERO SECTION
+   PART 1 - CSS
+========================================== */
+
+
+/* ==========================
+   HERO WRAPPER
+========================== */
+
+.pricing-hero {
+
+    position: relative;
+    min-height: 780px;
+
+    padding: 120px 8% 80px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    overflow: hidden;
+
+    background:
+    linear-gradient(
+        180deg,
+        #ffffff 0%,
+        #fbf9ff 100%
+    );
+
+}
+
+
+/* ==========================
+   BACKGROUND LAYER
+========================== */
+
+.hero-bg {
+
+    position:absolute;
+    inset:0;
+
+    pointer-events:none;
+
+    overflow:hidden;
+
+    z-index:0;
+
+}
+
+
+/* ==========================
+   PURPLE BLURRED BLOBS
+========================== */
+
+
+.purple-blob {
+
+    position:absolute;
+
+    border-radius:50%;
+
+    filter:blur(80px);
+
+    opacity:.55;
+
+    animation:
+    blobFloat 12s ease-in-out infinite alternate;
+
+}
+
+
+
+.blob1 {
+
+    width:500px;
+    height:500px;
+
+    background:#d9c7ff;
+
+    right:-120px;
+    top:20px;
+
+}
+
+
+
+.blob2 {
+
+
+    width:380px;
+    height:380px;
+
+    background:#eee5ff;
+
+    left:-150px;
+    bottom:60px;
+
+    animation-delay:2s;
+
+}
+
+
+
+
+@keyframes blobFloat {
+
+
+    from {
+
+        transform:
+        translateY(0px)
+        scale(1);
+
+    }
+
+
+    to {
+
+
+        transform:
+        translateY(-40px)
+        scale(1.08);
+
+    }
+
+}
+
+
+
+/* ==========================
+   HERO DOT PATTERN
+========================== */
+
+
+.dots {
+
+
+    position:absolute;
+
+    right:70px;
+    top:80px;
+
+
+    width:130px;
+    height:130px;
+
+
+    background-image:
+
+    radial-gradient(
+        #8b4cff 1.5px,
+        transparent 1.5px
+    );
+
+
+    background-size:14px 14px;
+
+
+    opacity:.35;
+
+
+    animation:
+    dotsMove 8s linear infinite;
+
+}
+
+
+
+@keyframes dotsMove {
+
+
+    0% {
+
+        transform:
+        translateY(0);
+
+    }
+
+
+    50% {
+
+        transform:
+        translateY(25px);
+
+    }
+
+
+    100% {
+
+
+        transform:
+        translateY(0);
+
+    }
+
+
+}
+
+
+
+
+/* ==========================
+   WAVE LINES
+========================== */
+
+
+.wave {
+
+
+position:absolute;
+
+
+left:-100px;
+top:180px;
+
+
+width:320px;
+height:320px;
+
+
+border-radius:50%;
+
+
+border:
+
+2px solid rgba(124,58,237,.15);
+
+
+box-shadow:
+
+
+0 0 0 35px rgba(124,58,237,.06),
+0 0 0 70px rgba(124,58,237,.04),
+0 0 0 110px rgba(124,58,237,.02);
+
+
+animation:
+
+wavePulse 7s ease-in-out infinite;
+
+
+}
+
+
+
+@keyframes wavePulse {
+
+
+0%,100%{
+
+transform:
+scale(1);
+
+}
+
+
+50%{
+
+transform:
+scale(1.15);
+
+}
+
+
+}
+
+
+
+/* ==========================
+   HERO CONTENT
+========================== */
+
+
+.hero-content {
+
+
+position:relative;
+
+z-index:2;
+
+width:48%;
+
+
+}
+
+
+
+.hero-tag {
+
+
+display:inline-flex;
+
+padding:
+
+8px 18px;
+
+
+border-radius:30px;
+
+
+font-size:13px;
+
+font-weight:600;
+
+
+color:#6d28d9;
+
+
+background:#f2eaff;
+
+
+border:
+
+1px solid rgba(124,58,237,.15);
+
+
+margin-bottom:25px;
+
+
+}
+
+
+
+
+.hero-content h1 {
+
+
+font-size:
+
+58px;
+
+
+line-height:
+
+1.05;
+
+
+letter-spacing:-2px;
+
+
+color:#121326;
+
+
+font-weight:800;
+
+
+margin-bottom:25px;
+
+
+}
+
+
+
+.hero-content h1 span {
+
+
+color:#6d28d9;
+
+
+}
+
+
+
+
+.hero-content p {
+
+
+font-size:18px;
+
+
+line-height:1.7;
+
+
+color:#555;
+
+
+max-width:480px;
+
+
+margin-bottom:35px;
+
+
+}
+
+
+
+/* ==========================
+ BUTTONS
+========================== */
+
+
+.hero-buttons {
+
+
+display:flex;
+
+gap:18px;
+
+margin-bottom:30px;
+
+
+}
+
+
+
+.hero-btn {
+
+
+padding:
+
+15px 32px;
+
+
+border-radius:12px;
+
+
+font-size:15px;
+
+
+font-weight:600;
+
+
+cursor:pointer;
+
+
+transition:.35s ease;
+
+
+}
+
+
+
+.primary-btn {
+
+
+background:
+
+linear-gradient(
+135deg,
+#7c3aed,
+#5b21b6
+);
+
+
+color:white;
+
+
+box-shadow:
+
+0 15px 35px rgba(124,58,237,.35);
+
+
+}
+
+
+
+.primary-btn:hover {
+
+
+transform:
+
+translateY(-4px);
+
+
+}
+
+
+
+.secondary-btn {
+
+
+background:white;
+
+
+border:
+
+1px solid #ddd;
+
+
+color:#111827;
+
+
+}
+
+
+
+.secondary-btn:hover {
+
+
+border-color:#8b5cf6;
+
+
+}
+
+
+
+
+
+/* ==========================
+   HERO FEATURES
+========================== */
+
+
+.hero-features {
+
+
+display:flex;
+
+gap:25px;
+
+flex-wrap:wrap;
+
+
+}
+
+
+
+.hero-feature {
+
+
+display:flex;
+
+align-items:center;
+
+gap:8px;
+
+
+font-size:14px;
+
+color:#444;
+
+
+}
+
+
+
+.hero-feature svg {
+
+
+width:20px;
+
+height:20px;
+
+
+color:#7c3aed;
+
+
+}
+
+
+
+
+/* ==========================
+   DASHBOARD CARD
+========================== */
+
+
+.dashboard-card {
+
+
+position:relative;
+
+z-index:2;
+
+
+width:430px;
+
+
+padding:25px;
+
+
+border-radius:25px;
+
+
+background:
+
+rgba(255,255,255,.65);
+
+
+backdrop-filter:
+
+blur(20px);
+
+
+
+border:
+
+1px solid rgba(255,255,255,.8);
+
+
+
+box-shadow:
+
+0 35px 80px rgba(91,33,182,.18);
+
+
+
+transform:
+
+rotate(6deg);
+
+
+animation:
+
+dashboardFloat 6s ease-in-out infinite;
+
+
+}
+
+
+
+.dashboard-card img {
+
+
+width:100%;
+
+
+border-radius:20px;
+
+
+}
+
+
+
+
+@keyframes dashboardFloat {
+
+
+
+0%,100%{
+
+
+transform:
+
+rotate(6deg)
+translateY(0);
+
+
+}
+
+
+50%{
+
+
+transform:
+
+rotate(4deg)
+translateY(-20px);
+
+
+}
+
+
+}
+
+
+
+
+
+/* ==========================
+   FLOATING ICON CARDS
+========================== */
+
+
+.floating-icon {
+
+
+position:absolute;
+
+
+width:65px;
+
+height:65px;
+
+
+border-radius:18px;
+
+
+background:white;
+
+
+display:flex;
+
+align-items:center;
+
+justify-content:center;
+
+
+
+box-shadow:
+
+0 20px 40px rgba(0,0,0,.12);
+
+
+
+animation:
+
+iconFloat 5s infinite;
+
+
+}
+
+
+
+.icon1 {
+
+
+right:430px;
+
+top:180px;
+
+
+}
+
+
+
+.icon2 {
+
+
+right:80px;
+
+top:310px;
+
+
+}
+
+
+
+.icon3 {
+
+
+right:350px;
+
+bottom:120px;
+
+
+}
+
+
+
+@keyframes iconFloat {
+
+
+0%,100%{
+
+transform:
+
+translateY(0);
+
+
+}
+
+
+50%{
+
+transform:
+
+translateY(-18px);
+
+
+}
+
+
+}
+
+
+
+
+
+/* ==========================
+   RESPONSIVE
+========================== */
+
+
+@media(max-width:1100px){
+
+
+.pricing-hero{
+
+
+flex-direction:column;
+
+text-align:center;
+
+padding-top:100px;
+
+
+}
+
+
+
+.hero-content{
+
+
+width:100%;
+
+}
+
+
+
+.hero-content p{
+
+
+margin:auto;
+
+margin-bottom:30px;
+
+}
+
+
+
+.hero-buttons,
+.hero-features{
+
+
+justify-content:center;
+
+}
+
+
+
+.dashboard-card{
+
+
+margin-top:60px;
+
+
+}
+
+
+}
+
+
+
+
+
+@media(max-width:600px){
+
+
+.hero-content h1{
+
+
+font-size:42px;
+
+
+}
+
+
+.dashboard-card{
+
+
+width:330px;
+
+
+}
+
+
+
+.pricing-hero{
+
+
+padding-left:20px;
+
+padding-right:20px;
+
+
+}
+
+
+
+}

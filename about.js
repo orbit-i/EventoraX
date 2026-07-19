@@ -1,12 +1,12 @@
 window.addEventListener("scroll", function () {
-      const navbar = document.querySelector(".navbar");
-      if (window.scrollY > 0) {
-        // adjust threshold as needed
-        navbar.classList.add("scrolled");
-      } else {
-        navbar.classList.remove("scrolled");
-      }
-    });
+  const navbar = document.querySelector(".navbar");
+  if (window.scrollY > 0) {
+    // adjust threshold as needed
+    navbar.classList.add("scrolled");
+  } else {
+    navbar.classList.remove("scrolled");
+  }
+});
 // ]==========================problem cards=================================
 const cards = document.querySelectorAll(".problem-card");
 const section = document.querySelector(".problem-section");
@@ -51,7 +51,7 @@ cards.forEach((card) => revealObserver.observe(card));
 // ===============================================================
 // ===================reveal transition======================================
 // ================================================================
- const reveals = document.querySelectorAll(".reveal");
+const reveals = document.querySelectorAll(".reveal");
 
 const observer = new IntersectionObserver((entries) => {
   entries.forEach(entry => {
