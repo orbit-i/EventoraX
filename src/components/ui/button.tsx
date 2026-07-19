@@ -11,7 +11,11 @@ const buttonVariants = cva(
       variant: {
         default:
           "bg-[#7c3aed] text-white shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0",
+        primary:
+          "bg-[#7c3aed] text-white shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0",
         destructive:
+          "bg-[#dc2626] text-white shadow-lg shadow-red-500/20 hover:bg-[#b91c1c] hover:shadow-xl hover:shadow-red-500/25 hover:-translate-y-0.5 active:translate-y-0",
+        danger:
           "bg-[#dc2626] text-white shadow-lg shadow-red-500/20 hover:bg-[#b91c1c] hover:shadow-xl hover:shadow-red-500/25 hover:-translate-y-0.5 active:translate-y-0",
         outline:
           "border-2 border-[#e2e8f0] bg-white text-[#0f172a] shadow-sm hover:border-[#c4b5fd] hover:bg-[#f5f3ff] hover:text-[#7c3aed] hover:-translate-y-0.5 active:translate-y-0",

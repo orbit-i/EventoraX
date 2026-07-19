@@ -22,6 +22,7 @@ import Team from './pages/Dashboard/Team';
 import Billing from './pages/Dashboard/Billing';
 import Settings from './pages/Dashboard/Settings';
 import Activity from './pages/Dashboard/activity';
+import { Toaster } from './components/ui/sonner';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -95,6 +96,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
+      <Toaster position="top-right" richColors />
     </>
   );
 }
