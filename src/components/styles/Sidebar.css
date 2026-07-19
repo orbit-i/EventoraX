@@ -45,13 +45,20 @@ aside {
   justify-content: center;
   align-items: center;
   gap: 5px;
+  padding: 4px 6px;
+}
+
+.active-menu-item {
+  background-color: #00509d;
+  color: #ffffff;
+  border-radius: 8px;
 }
 
 .menu-item p {
   font-size: 15px;
 }
 
-.menu-item:nth-child(7) {
+.menu-item:nth-child(8) {
   position: fixed;
   bottom: 120px;
   color: #ffffff;
@@ -63,17 +70,17 @@ aside {
   border-bottom: 1px solid gray;
 }
 
-.menu-item:nth-child(7):hover {
+.menu-item:nth-child(8):hover {
   transform: translateY(-3px);
   box-shadow: 0px 0px 6px rgb(0, 80, 157, 0.5);
 }
 
-.menu-item:nth-child(8) {
+.menu-item:nth-child(9) {
   position: fixed;
   bottom: 80px;
 }
 
-.menu-item:nth-child(9) {
+.menu-item:nth-child(10) {
   position: fixed;
   bottom: 40px;
   border-radius: 12px;
@@ -82,7 +89,7 @@ aside {
   transition: all 0.3s ease;
 }
 
-.menu-item:nth-child(9):hover {
+.menu-item:nth-child(10):hover {
   color: rgb(255, 0, 0, 0.7);
   background-color: rgb(255, 0, 0, 0.1);
 }

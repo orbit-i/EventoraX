@@ -1,0 +1,388 @@
+* {
+  margin: 0;
+  padding: 0;
+  font-family: sans-serif;
+  box-sizing: border-box;
+}
+
+.plans-main-container {
+  padding: 25px;
+  margin-top: -30px;
+}
+
+.plans-container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.plan {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 25px 10px 12px;
+  border-radius: 10px;
+  background-color: #ffffff;
+  box-shadow: 0px 0px 6px rgba(99, 98, 98, 0.4);
+}
+
+.icon-container {
+  background-color: lightblue;
+  padding: 8px;
+  border-radius: 10px;
+}
+
+.plan-star-icon {
+  width: 22px;
+  color: rgb(0, 0, 255, 0.6);
+}
+
+.plan-content h4 {
+  color: rgb(99, 98, 98);
+}
+
+.plan-content .total-plans {
+  font-weight: 600;
+  font-size: 18px;
+}
+
+.plans-para {
+  font-size: 15px;
+  color: rgb(99, 98, 98);
+}
+
+.second-plan-icon-container {
+  background-color: rgb(144, 238, 144, 0.5);
+}
+
+.second-plan-icon {
+  color: green;
+}
+
+.third-plan-icon-container {
+  background-color: rgba(123, 44, 191, 0.2);
+}
+
+.third-plan-icon {
+  color: #7b2cbf;
+}
+
+.fourth-plan-icon-container {
+  background-color: rgb(255, 121, 0, 0.2);
+}
+
+.fourth-plan-icon {
+  color: #ff7900;
+}
+
+.plans-second-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
+
+.create-plan-btn-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  background-color: #00509d;
+  color: #ffffff;
+  border-radius: 10px;
+  padding: 6px;
+  padding-right: 10px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.plus-icon {
+  width: 20px;
+}
+
+.pricing-para {
+  font-weight: 600;
+}
+
+.configure-plans-para {
+  color: gray;
+  font-size: 15px;
+}
+
+.filter-plans-container {
+  width: 100%;
+  min-height: 300px;
+  background-color: #ffffff;
+  border-radius: 20px;
+  border: 1px solid lightgray;
+  margin-top: 30px;
+  overflow: hidden;
+}
+
+.filter-plans {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+  border-bottom: 1px solid lightgray;
+}
+
+.filters-btns-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+}
+
+.filter-btn-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  font-size: 14px;
+  border: 1px solid lightgray;
+  color: gray;
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+
+.filter-icon {
+  width: 14px;
+}
+
+.tenant-table th {
+  background-color: rgb(228, 225, 225);
+  color: rgb(94, 93, 93);
+}
+
+.tenant-table th:first-child {
+  width: 20%;
+  font-size: 14px;
+}
+
+.plan-name-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+}
+
+.plan-name-icon-container {
+  padding: 6px 10px;
+  border: 1px solid rgb(148, 185, 148);
+  border-radius: 10px;
+  background-color: rgb(209, 228, 209);
+}
+
+.plan-name-star-icon {
+  width: 16px;
+  color: rgb(0, 128, 0, 0.8);
+}
+
+.plans-name-para {
+  font-size: 14px;
+  color: rgb(99, 98, 98);
+}
+
+.both-btn-container {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+.both-btn {
+  background-color: rgb(211, 211, 211, 0.7);
+  padding: 4px 6px;
+  border: 1px solid rgb(211, 211, 211, 0.7);
+  border-radius: 8px;
+  color: rgb(58, 57, 57);
+}
+
+.active-tenant-container {
+  margin-right: 20px;
+}
+
+.active-tenant-outer-bar {
+  background-color: rgb(224, 219, 219);
+  width: 100%;
+  height: 6px;
+  border-radius: 50px;
+  overflow: hidden;
+}
+
+.active-tenant-inner-bar {
+  width: 50%;
+  background-color: rgb(94, 196, 94);
+  height: 100%;
+  border-radius: 50px;
+}
+
+.active-tenant-outer-bar-row-two {
+  width: 100%;
+}
+
+.active-tenant-inner-bar-row-two {
+  width: 100%;
+  background-color: rgb(0, 0, 255, 0.7);
+}
+
+.active-tenant-container {
+  display: flex;
+  justify-content: start;
+  align-items: center;
+  gap: 10px;
+}
+
+.features-data-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 90px;
+  height: 50px;
+  font-size: 14px;
+  background-color: rgb(144, 238, 144, 0.3);
+  border-radius: 14px;
+  color: rgb(86, 148, 86);
+}
+
+.users-para {
+  color: rgb(65, 63, 63);
+  font-weight: 600;
+}
+
+.plans-pricing-dot-icon {
+  margin-left: -10px;
+  margin-right: -5px;
+}
+
+.plans-pricing-status-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: rgb(19, 80, 19);
+  background-color: rgb(144, 238, 144, 0.5);
+  border-radius: 10px;
+  width: 70px;
+  height: 30px;
+}
+
+.plans-pricing-select-container {
+  border: 1px solid rgb(80, 77, 77);
+  outline: none;
+  border-radius: 5px;
+  color: rgb(80, 77, 77);
+}
+
+.plan-name-second-row-star-icon {
+  color: rgb(0, 0, 255, 0.8);;
+}
+
+.plan-name-second-row-icon-container {
+  background-color: rgb(0, 0, 255, 0.1); 
+  border: 1px solid rgb(0, 0, 255, 0.2);
+}
+
+
+.second-row-features-data {
+  background-color: rgb(0, 0, 255, 0.1);
+  color: rgb(0, 0, 255, 0.8);
+}
+
+.plan-name-third-row-icon-container {
+  background-color: rgb(123, 44, 191, 0.1);
+  border: 1px solid rgb(123, 44, 191, 0.2);
+}
+
+.plan-name-third-row-star-icon {
+  color: #7b2cbf;
+}
+
+.active-tenant-third-row-inner-bar {
+  width: 20%;
+  background-color: #7b2cbf;
+}
+
+.features-data-third-row-container {
+  color: #7b2cbf;
+  background-color: rgb(123, 44, 191, 0.1);
+}
+
+/* .plans-cards-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+} */
+
+.plans-cards {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.card {
+  background-color: #ffffff;
+  width: 340px;
+  padding: 15px 20px;
+  box-shadow: 0px 0px 6px rgba(99, 98, 98, 0.4);
+  border-radius: 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: start;
+  align-items: start;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.plans-list-container {
+  display: flex;
+  justify-content: start;
+  align-items: start;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.plans-check-icon-container {
+  background-color: rgb(144, 238, 144, 0.3);
+  color: rgb(44, 119, 44);
+  padding: 2px;
+  border-radius: 4px;
+}
+
+.plan-list-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+}
+
+.active-tenants-container {
+  border-top: 1px solid lightgray;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 10px;
+}
+
+.plans-pricing-edit-btn  {
+  color: rgb(28, 82, 28);
+  font-size: 13px;
+  background-color: rgb(144, 238, 144, 0.3);
+  padding: 5px;
+  border-radius: 8px;
+}
+
+.third-card-check-icon {
+  color: #7b2cbf;
+  background-color: rgb(123, 44, 191, 0.1);
+}
+
+.second-card-check-icon {
+  color: rgb(0, 0, 255, 0.7);
+  background-color: rgb(0, 0, 255, 0.1);
+}

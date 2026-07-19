@@ -1,5 +1,7 @@
 import '../styles/Sidebar.css';
-import { Calendar, ChartColumnDecreasing, CircleQuestionMark, CircleStar, Download, LayoutDashboard, LogOut, Plus, Settings, Users } from 'lucide-react';
+import { Calendar, ChartColumnDecreasing, CircleQuestionMark, CircleStar, Download, LayoutDashboard, LogOut, Plus, Settings, Star, Stars, Users } from 'lucide-react';
+import { NavLink } from 'react-router-dom';
+
 
 function Sidebar() {
   return (
@@ -12,46 +14,79 @@ function Sidebar() {
         {/* sidebar Menu items */}
         <div className='sidebar-menu-items-container'>
           {/* item 1 */}
-          <div className='menu-item'>
+          <NavLink
+            to="/dashboard"
+            className={({ isActive }) =>
+              isActive ? "menu-item  active-menu-item" : "menu-item"
+            }>
             <LayoutDashboard className='menu-item-icon' />
             <p>Dashboard</p>
-          </div>
+          </NavLink>
           {/* item 2 */}
-          <div className='menu-item'>
+          <NavLink
+            to="/events"
+            className={({ isActive }) =>
+              isActive ? " menu-item active-menu-item" : "menu-item"
+            }>
             <Calendar className='menu-item-icon' />
             <p>Events</p>
-          </div>
+          </NavLink>
           {/* item 3 */}
-          <div className='menu-item'>
+          <NavLink
+            to="/tenants"
+            className={({ isActive }) =>
+              isActive ? "menu-item active-menu-item" : "menu-item"
+            }>
             <Users className='menu-item-icon' />
             <p>Tenants</p>
-          </div>
+          </NavLink>
           {/* item 4 */}
-          <div className='menu-item'>
+          <NavLink
+            to="/plans-pricing"
+            className={({ isActive }) =>
+              isActive ? "menu-item active-menu-item" : "menu-item"
+            }>
+            <Star className='menu-item-icon' />
+            <p>Plans & Pricing</p>
+          </NavLink>
+          {/* item 5 */}
+          <NavLink
+            to="/certificates"
+            className={({ isActive }) =>
+              isActive ? "menu-item active-menu-item" : "menu-item"
+            }>
             <CircleStar className='menu-item-icon' />
             <p>Certificates</p>
-          </div>
-          {/* item 5 */}
-          <div className='menu-item'>
+          </NavLink>
+          {/* item 6 */}
+          <NavLink
+            to="/analytics"
+            className={({ isActive }) =>
+              isActive ? "menu-item active-menu-item" : "menu-item"
+            }>
             <ChartColumnDecreasing className='menu-item-icon' />
             <p>Analytics</p>
-          </div>
-          {/* item 6 */}
-          <div className='menu-item'>
+          </NavLink>
+          {/* item 7 */}
+          <NavLink
+            to="/settings"
+            className={( { isActive } ) =>
+              isActive ? "menu-item active-menu-item" : "menu-item"
+            }>
             <Settings className='menu-item-icon' />
             <p>Settings</p>
-          </div>
-          {/* item 7 */}
+          </NavLink>
+          {/* item 8 */}
           <div className='menu-item'>
             <Plus className='menu-item-icon' />
             <p>Add Tenant</p>
           </div>
-          {/* item 8 */}
+          {/* item 9 */}
           <div className='menu-item'>
             <CircleQuestionMark className='menu-item-icon' />
             <p>Support</p>
           </div>
-          {/* item 9 */}
+          {/* item 10 */}
           <div className='menu-item'>
             <LogOut className='menu-item-icon' />
             <p>Sign Out</p>

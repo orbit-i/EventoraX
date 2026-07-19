@@ -19,7 +19,8 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 42px;
+  gap: 40px;
+  margin-left: -10px;
 }
 
 .stats-card {
@@ -29,7 +30,7 @@ main {
   align-items: start;
   gap: 8px;
   padding: 20px;
-  width: 200px;
+  width: 230px;
   min-height: 120px;
   background-color: #ffffff;
   border: 1px solid gray;

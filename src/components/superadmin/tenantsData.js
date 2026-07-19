@@ -17,7 +17,7 @@ const tenants = [
   
   {
     id: 2,
-    orgName: "SkylineMedia",
+    orgName: "Skyline Media",
     email: "billing@skylinemedia.com",
     logo: Skyline,
     plan: "Pro",
