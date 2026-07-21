@@ -58,7 +58,7 @@ aside {
   font-size: 15px;
 }
 
-.menu-item:nth-child(8) {
+.menu-item:nth-child(9) {
   position: fixed;
   bottom: 120px;
   color: #ffffff;
@@ -70,17 +70,17 @@ aside {
   border-bottom: 1px solid gray;
 }
 
-.menu-item:nth-child(8):hover {
+.menu-item:nth-child(9):hover {
   transform: translateY(-3px);
   box-shadow: 0px 0px 6px rgb(0, 80, 157, 0.5);
 }
 
-.menu-item:nth-child(9) {
+.menu-item:nth-child(10) {
   position: fixed;
   bottom: 80px;
 }
 
-.menu-item:nth-child(10) {
+.menu-item:nth-child(11) {
   position: fixed;
   bottom: 40px;
   border-radius: 12px;
@@ -89,7 +89,7 @@ aside {
   transition: all 0.3s ease;
 }
 
-.menu-item:nth-child(10):hover {
+.menu-item:nth-child(11):hover {
   color: rgb(255, 0, 0, 0.7);
   background-color: rgb(255, 0, 0, 0.1);
 }

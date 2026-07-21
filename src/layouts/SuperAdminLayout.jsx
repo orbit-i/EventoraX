@@ -1,10 +1,10 @@
 import Header from "../components/superadmin/Header";
 import Sidebar from "../components/superadmin/Sidebar";
 
-function SuperAdminLayout({ children }) {
+function SuperAdminLayout({ children, customHeader }) {
   return (
     <>
-      <Header />
+      {customHeader || <Header />}
       <Sidebar />
 
       <main>

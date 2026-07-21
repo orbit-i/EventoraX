@@ -1,0 +1,59 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+
+.revenue-header {
+    position: fixed;
+    left: 240px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #ffffff;
+    border: 1px solid gray;
+    width: calc(100% - 240px);
+    padding: 16px;
+    margin-left: -1px;
+    z-index: 1;
+}
+
+.financial-para {
+    font-size: 22px;
+    font-weight: 600;
+}
+
+.revenue-header-actions {
+    display: flex;
+    gap: 15px;
+}
+
+.transactions-search input {
+    outline: none;
+    border: none;
+}
+
+.transactions-search {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    border: 1px solid lightgray;
+    padding: 2px 6px;
+    border-radius: 8px;
+}
+
+.financial-search-icon {
+    color: gray;
+}
+
+.export-csv-button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    background-color: rgb(0, 0, 255, 0.1);
+    padding: 8px;
+    border-radius: 6px;
+}

@@ -1,5 +1,5 @@
 import '../styles/Sidebar.css';
-import { Calendar, ChartColumnDecreasing, CircleQuestionMark, CircleStar, Download, LayoutDashboard, LogOut, Plus, Settings, Star, Stars, Users } from 'lucide-react';
+import { Calendar, ChartColumnDecreasing, CircleQuestionMark, CircleStar, Download, LayoutDashboard, LogOut, Plus, Settings, Star, Stars, Users, Banknote } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 
 
@@ -51,6 +51,15 @@ function Sidebar() {
           </NavLink>
           {/* item 5 */}
           <NavLink
+            to="/revenue"
+            className={({ isActive }) =>
+              isActive ? "menu-item active-menu-item" : "menu-item"
+            }>
+            <Banknote className='menu-item-icon' />
+            <p>Revenue</p>
+          </NavLink>
+          {/* item 6 */}
+          <NavLink
             to="/certificates"
             className={({ isActive }) =>
               isActive ? "menu-item active-menu-item" : "menu-item"
@@ -58,7 +67,7 @@ function Sidebar() {
             <CircleStar className='menu-item-icon' />
             <p>Certificates</p>
           </NavLink>
-          {/* item 6 */}
+          {/* item 7 */}
           <NavLink
             to="/analytics"
             className={({ isActive }) =>
@@ -67,7 +76,7 @@ function Sidebar() {
             <ChartColumnDecreasing className='menu-item-icon' />
             <p>Analytics</p>
           </NavLink>
-          {/* item 7 */}
+          {/* item 8 */}
           <NavLink
             to="/settings"
             className={( { isActive } ) =>
@@ -76,17 +85,17 @@ function Sidebar() {
             <Settings className='menu-item-icon' />
             <p>Settings</p>
           </NavLink>
-          {/* item 8 */}
+          {/* item 9 */}
           <div className='menu-item'>
             <Plus className='menu-item-icon' />
             <p>Add Tenant</p>
           </div>
-          {/* item 9 */}
+          {/* item 10 */}
           <div className='menu-item'>
             <CircleQuestionMark className='menu-item-icon' />
             <p>Support</p>
           </div>
-          {/* item 10 */}
+          {/* item 11 */}
           <div className='menu-item'>
             <LogOut className='menu-item-icon' />
             <p>Sign Out</p>
