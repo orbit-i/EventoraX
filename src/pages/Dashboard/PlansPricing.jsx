@@ -2,10 +2,22 @@ import '../../components/styles/PlansPricing.css'
 import { Activity, ChartLine, Check, CheckCheck, Delete, Dot, Edit, Euro, ListFilter, Plus, Star, TrendingDown, TrendingUp, View } from "lucide-react";
 import SuperAdminLayout from "../../layouts/SuperAdminLayout";
 import CreatePlan from "./CreatePlan"
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 function PlansPricing() {
   const [showCreatePlan, setShowCreatePlan] = useState(false);
+
+  useEffect(() => {
+    if (showCreatePlan) {
+      document.body.style.overflow = "hidden"
+    } else {
+      document.body.style.overflow = "auto"
+    }
+
+    return () => {
+      document.body.style.overflow = "auto"
+    };
+  }, [showCreatePlan])
 
   return (
     <SuperAdminLayout>
@@ -66,8 +78,8 @@ function PlansPricing() {
           <div className='create-plan-btn-container'>
             <Plus className='plus-icon' />
             <button
-              onClick={() => 
-                 setShowCreatePlan(true)
+              onClick={() =>
+                setShowCreatePlan(true)
               }
             >
               Create Plan

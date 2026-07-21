@@ -19,8 +19,9 @@
   position: fixed;
   top: 0;
   right: 0;
-  width: 450px;
+  width: 480px;
   height: 100vh;
+  overflow-y: scroll;
   background-color: #ffffff;
   z-index: 1000;
 }
@@ -61,7 +62,7 @@
 }
 
 .plan-detail-container {
-  padding: 15px;
+  padding: 24px;
 }
 
 .plan-name-container {
@@ -131,10 +132,275 @@
   color: rgb(123, 44, 191, 0.6);
 }
 
+.monthly-yearly-price-container {
+  margin-top: 10px;
+}
+
+.monthly-yearly-price-container {
+  display: flex;
+  gap: 10px;
+}
+
 input[type="number"] {
   outline: none;
+  width: 185px;
 }
 
 .number-input-container {
-  
+  border: 1px solid lightgray;
+  padding: 6px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dollar-sign-icon {
+  color: rgb(144, 142, 142);
+}
+
+.billing-cycle-container {
+  margin-top: 10px;
+}
+
+.billing-cycle-container p {
+  color: gray;
+  font-size: 15px;
+}
+
+.billing-cycle-container button {
+  width: 140px;
+  border: 1px solid lightgray;
+  background-color: rgb(211, 211, 211, 0.4);
+  color: rgb(128, 128, 128, 0.6);
+  padding: 6px;
+  border-radius: 10px;
+}
+
+.billing-cycle-btns-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.billing-cycle-btns-container .monthly-btn {
+  background-color: rgb(173, 216, 230, 0.2);
+  border: 1px solid rgb(173, 216, 230, 0.8);
+  color: rgb(0, 0, 255, 0.6);
+  transition: all 0.3s ease;
+}
+
+.billing-cycle-btns-container .yearly-btn {
+  background-color: rgb(173, 216, 230, 0.2);
+  border: 1px solid rgb(173, 216, 230, 0.8);
+  color: rgb(0, 0, 255, 0.6);
+  transition: all 0.3s ease;
+}
+
+.billing-cycle-btns-container .both-btn {
+  background-color: rgb(173, 216, 230, 0.2);
+  border: 1px solid rgb(173, 216, 230, 0.8);
+  color: rgb(0, 0, 255, 0.6);
+  transition: all 0.3s ease;
+}
+
+.description-para {
+  font-size: 15px;
+  color: rgb(89, 88, 88)
+}
+
+.description-container {
+  margin-top: 10px;
+}
+
+.description-container textarea {
+  width: 100%;
+  border: 1px solid lightgray;
+  padding: 5px;
+  outline: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 0 0 0 rgba(173, 216, 230, 0);
+  transition: border-color 0.5s ease, box-shadow 0.5s ease;
+}
+
+.description-container textarea:focus {
+  border: 1px solid lightblue;
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(173, 216, 230, 0.6);
+}
+
+.features-container textarea {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid lightgray;
+  outline: none;
+  border-radius: 10px;
+}
+
+.features-list-para,
+.max-users-para,
+.storage-limit-para {
+  color: rgb(89, 88, 88);
+  font-size: 15px;
+}
+
+.feature-line-para {
+  font-size: 14px;
+  color: rgba(146, 144, 144, 0.7);
+}
+
+.features-container textarea::placeholder {
+  font-size: 14px;
+}
+
+.max-users-storage-limit-container {
+  display: flex;
+  justify-content: start;
+  align-items: start;
+  gap: 10px;
+}
+
+.max-users-storage-limit-container input {
+  border: 1px solid lightgray;
+  border-radius: 10px;
+  padding: 4px;
+  outline: none;
+}
+
+.unlimited-container,
+.mark-as-popular-unlimited-container {
+  display: flex;
+  align-items: start;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.toggle-switch,
+.mark-toggle-switch {
+  width: 40px;
+  height: 20px;
+  padding: 3px;
+  border-radius: 20px;
+  background-color: lightgray;
+  border: none;
+  display: flex;
+  align-items: center;
+  transition: background-color 0.3s ease;
+}
+
+.toggle-circle,
+.mark-toggle-circle {
+  width: 14px;
+  height: 14px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  transform: translateX(0);
+  transition: transform 0.3s ease;
+}
+
+.unlimited-para,
+.status-para {
+  color: rgb(89, 88, 88);
+  font-size: 15px;
+}
+
+.toggle-switch.toggle-on,
+.mark-toggle-switch.mark-toggle-on {
+  background-color: #2563eb;
+}
+
+.toggle-switch.toggle-on .toggle-circle,
+.mark-toggle-switch.mark-toggle-on .mark-toggle-circle {
+  transform: translateX(22px);
+}
+
+.status-container {
+  margin-top: 10px;
+}
+
+.status-btns-container button {
+  min-width: 130px;
+  background-color: rgb(211, 211, 211, 0.2);
+  color: gray;
+  padding: 6px;
+  border: 1px solid gray;
+  border-radius: 12px;
+  margin-top: 4px;
+  margin-right: 8px;
+  transition: all 0.3s ease;
+}
+
+.status-container .active-btn {
+  border: 1px solid rgb(144, 238, 144, 0.8);
+  background-color: rgb(144, 238, 144, 0.2);
+  color: rgb(87, 185, 87);
+}
+
+.status-container .inactive-btn {
+  border: 1px solid rgb(0, 0, 255, 0.4);
+  background-color: rgb(173, 216, 230, 0.3);
+  color: rgb(0, 0, 255, 0.6);
+}
+
+.status-container .draft-btn {
+  border: 1px solid rgb(255, 123, 0, 0.3);
+  background-color: rgb(255, 123, 0, 0.1);
+  color: #ff7b00;
+}
+
+.mark-as-popular-para {
+  color: rgb(89, 88, 88);
+  font-size: 15px;
+}
+
+.shows-popular-para {
+  font-size: 14px;
+  color: rgba(137, 136, 136, 0.9);
+}
+
+.mark-as-popular-container {
+  background-color: rgb(211, 211, 211, 0.1);
+  border: 1px solid rgb(211, 211, 211, 0.7);
+  padding: 8px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-top: 20px;
+}
+
+.cancel-save-plan-btns-container {
+  display: flex;
+  align-items: center;
+  margin-top: 25px;
+  gap: 15px;
+}
+
+.cancel-btn {
+  background-color: rgb(211, 211, 211, 0.6);
+  color: gray;
+  padding: 10px;
+  width: 200px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  transform: translateY(-3px);
+}
+
+.save-plan-btn {
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 10px;
+  width: 200px;
+  border-radius: 15px;
+  transition: all 0.3s ease;
+}
+
+.save-plan-btn:hover {
+  transform: translateY(-3px);
 }
