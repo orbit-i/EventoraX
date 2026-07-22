@@ -9,6 +9,7 @@ async function getTenantId(req: NextRequest): Promise<string> {
 
 const eventSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),
+  organizer: z.string().optional().nullable(),
   mode: z.nativeEnum(EventMode),
   startDateTime: z.coerce.date(),
   endDateTime: z.coerce.date(),
@@ -19,6 +20,8 @@ const eventSchema = z.object({
   ticketPrice: z.coerce.number().min(0).optional().nullable(),
   registrationOpen: z.boolean().default(true),
   meetingLink: z.string().url().optional().nullable().or(z.literal("")),
+  certTemplateId: z.string().optional().nullable(),
+  autoIssueCert: z.boolean().default(false),
   status: z.nativeEnum(EventStatus).default(EventStatus.DRAFT),
 }).refine((data) => data.endDateTime > data.startDateTime, {
   message: "End date/time must be after start date/time",

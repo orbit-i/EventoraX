@@ -23,6 +23,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       data: {
         tenantId,
         title: `${original.title} (Copy)`,
+        organizer: original.organizer,
         mode: original.mode,
         startDateTime: original.startDateTime,
         endDateTime: original.endDateTime,
@@ -33,6 +34,8 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         ticketPrice: original.ticketPrice,
         registrationOpen: original.registrationOpen,
         meetingLink: original.meetingLink,
+        certTemplateId: original.certTemplateId,
+        autoIssueCert: original.autoIssueCert,
         status: EventStatus.DRAFT,
       },
     });
