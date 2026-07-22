@@ -12,8 +12,9 @@ const attendanceSchema = z.object({
 });
 
 // PATCH /api/v1/registrations/:id/attendance   body: { "status": "ATTENDED" | "ABSENT" }
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const tenantId = await getTenantId(req);
     const body = await req.json();
     const parsed = attendanceSchema.safeParse(body);
@@ -26,7 +27,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const result = await prisma.registration.updateMany({
-      where: { id: params.id, tenantId },
+      where: { id, tenantId },
       data: { status: parsed.data.status },
     });
 
@@ -36,7 +37,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         { status: 404 }
       );
     }
-    return NextResponse.json({ data: { id: params.id, status: parsed.data.status }, error: null });
+    return NextResponse.json({ data: { id, status: parsed.data.status }, error: null });
   } catch (err) {
     console.error("PATCH /api/v1/registrations/:id/attendance failed:", err);
     return NextResponse.json(

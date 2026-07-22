@@ -29,11 +29,12 @@ const eventSchema = z.object({
 });
 
 // GET /api/v1/events/:id
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const tenantId = await getTenantId(req);
     const event = await prisma.event.findFirst({
-      where: { id: params.id, tenantId },
+      where: { id, tenantId },
       include: {
         _count: { select: { registrations: true, speakers: true, sponsors: true, sessions: true } },
       },
@@ -57,8 +58,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PATCH /api/v1/events/:id
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const tenantId = await getTenantId(req);
     const body = await req.json();
     const parsed = eventSchema.safeParse(body);
@@ -78,7 +80,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const result = await prisma.event.updateMany({
-      where: { id: params.id, tenantId },
+      where: { id, tenantId },
       data: parsed.data,
     });
 
@@ -89,7 +91,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       );
     }
 
-    return NextResponse.json({ data: { id: params.id }, error: null });
+    return NextResponse.json({ data: { id }, error: null });
   } catch (err) {
     console.error("PATCH /api/v1/events/:id failed:", err);
     return NextResponse.json(
@@ -100,10 +102,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 // DELETE /api/v1/events/:id
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const tenantId = await getTenantId(req);
-    const result = await prisma.event.deleteMany({ where: { id: params.id, tenantId } });
+    const result = await prisma.event.deleteMany({ where: { id, tenantId } });
 
     if (result.count === 0) {
       return NextResponse.json(
@@ -112,7 +115,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       );
     }
 
-    return NextResponse.json({ data: { id: params.id }, error: null });
+    return NextResponse.json({ data: { id}, error: null });
   } catch (err) {
     console.error("DELETE /api/v1/events/:id failed:", err);
     return NextResponse.json(

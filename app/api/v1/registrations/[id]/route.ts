@@ -17,11 +17,12 @@ const registrationUpdateSchema = z.object({
   status: z.nativeEnum(RegistrationStatus),
 });
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const tenantId = await getTenantId(req);
     const registration = await prisma.registration.findFirst({
-      where: { id: params.id, tenantId },
+      where: { id, tenantId },
       include: { category: { select: { id: true, label: true } } },
     });
 
@@ -41,8 +42,9 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const tenantId = await getTenantId(req);
     const body = await req.json();
     const parsed = registrationUpdateSchema.safeParse(body);
@@ -55,7 +57,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const result = await prisma.registration.updateMany({
-      where: { id: params.id, tenantId },
+      where: { id, tenantId },
       data: parsed.data,
     });
 
@@ -65,7 +67,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         { status: 404 }
       );
     }
-    return NextResponse.json({ data: { id: params.id }, error: null });
+    return NextResponse.json({ data: { id }, error: null });
   } catch (err) {
     console.error("PATCH /api/v1/registrations/:id failed:", err);
     return NextResponse.json(
@@ -75,10 +77,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const tenantId = await getTenantId(req);
-    const result = await prisma.registration.deleteMany({ where: { id: params.id, tenantId } });
+    const result = await prisma.registration.deleteMany({ where: { id, tenantId } });
 
     if (result.count === 0) {
       return NextResponse.json(
@@ -86,7 +89,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
         { status: 404 }
       );
     }
-    return NextResponse.json({ data: { id: params.id }, error: null });
+    return NextResponse.json({ data: { id  }, error: null });
   } catch (err) {
     console.error("DELETE /api/v1/registrations/:id failed:", err);
     return NextResponse.json(

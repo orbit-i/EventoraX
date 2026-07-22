@@ -7,10 +7,11 @@ async function getTenantId(req: NextRequest): Promise<string> {
 }
 
 // POST /api/v1/events/:id/duplicate
-export async function POST(req: NextRequest, { params }: { params: { id: string } }) {
+export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const { id } = await params;
     const tenantId = await getTenantId(req);
-    const original = await prisma.event.findFirst({ where: { id: params.id, tenantId } });
+    const original = await prisma.event.findFirst({ where: { id , tenantId } });
 
     if (!original) {
       return NextResponse.json(
