@@ -29,11 +29,12 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          docker build \
-            --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
-            -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest \
-            .
+         docker build \
+         -f Backend/dockerfile \
+         --build-arg DATABASE_URL="${{ secrets.DATABASE_URL }}" \
+         -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }} \
+         -t ${{ secrets.DOCKERHUB_USERNAME }}/${{ env.IMAGE_NAME }}:latest \
+         Backend/
 
       - name: Login to Docker Hub
         if: github.event_name == 'push'
