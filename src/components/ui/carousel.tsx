@@ -160,7 +160,7 @@ function CarouselItem({ className, ...props }: React.ComponentProps<"div">) {
       aria-roledescription="slide"
       data-slot="carousel-item"
       className={cn(
-        "min-w-0 shrink-0 grow-0 basis-full",
+        "min-w-0 shrink-0 grow-0 basis-full transition-all duration-200",
         orientation === "horizontal" ? "pl-4" : "pt-4",
         className
       )}
@@ -183,7 +183,7 @@ function CarouselPrevious({
       variant={variant}
       size={size}
       className={cn(
-        "absolute size-8 rounded-full",
+        "absolute size-10 rounded-xl border-2 border-[#e9e4ff] bg-white text-[#64748b] hover:bg-[#f5f3ff] hover:text-[#7c3aed] hover:border-[#c4b5fd] shadow-sm transition-all duration-200 disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-[#64748b] disabled:hover:border-[#e9e4ff] focus-visible:ring-2 focus-visible:ring-[#7c3aed]/30",
         orientation === "horizontal"
           ? "top-1/2 -left-12 -translate-y-1/2"
           : "-top-12 left-1/2 -translate-x-1/2 rotate-90",
@@ -193,7 +193,7 @@ function CarouselPrevious({
       onClick={scrollPrev}
       {...props}
     >
-      <ArrowLeft />
+      <ArrowLeft className="size-4" />
       <span className="sr-only">Previous slide</span>
     </Button>
   )
@@ -213,7 +213,7 @@ function CarouselNext({
       variant={variant}
       size={size}
       className={cn(
-        "absolute size-8 rounded-full",
+        "absolute size-10 rounded-xl border-2 border-[#e9e4ff] bg-white text-[#64748b] hover:bg-[#f5f3ff] hover:text-[#7c3aed] hover:border-[#c4b5fd] shadow-sm transition-all duration-200 disabled:opacity-30 disabled:hover:bg-white disabled:hover:text-[#64748b] disabled:hover:border-[#e9e4ff] focus-visible:ring-2 focus-visible:ring-[#7c3aed]/30",
         orientation === "horizontal"
           ? "top-1/2 -right-12 -translate-y-1/2"
           : "-bottom-12 left-1/2 -translate-x-1/2 rotate-90",
@@ -223,7 +223,7 @@ function CarouselNext({
       onClick={scrollNext}
       {...props}
     >
-      <ArrowRight />
+      <ArrowRight className="size-4" />
       <span className="sr-only">Next slide</span>
     </Button>
   )

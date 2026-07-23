@@ -15,21 +15,21 @@ gsap.registerPlugin(ScrollTrigger);
 
 export default function Home() {
   useEffect(() => {
-    // ScrollReveal for all .scroll-reveal elements
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
 
     const reveals = document.querySelectorAll('.scroll-reveal');
-    reveals.forEach((el) => {
+    reveals.forEach((el, index) => {
       gsap.from(el, {
         scrollTrigger: {
           trigger: el,
           start: 'top 85%',
         },
         opacity: 0,
-        y: 30,
-        duration: 0.5,
-        ease: 'power1.out',
+        y: 40,
+        duration: 0.6,
+        ease: 'power2.out',
+        delay: (index % 3) * 0.1,
       });
     });
 
@@ -39,7 +39,7 @@ export default function Home() {
   }, []);
 
   return (
-    <main>
+    <main className="min-h-screen bg-gradient-to-b from-[#f5f3ff] via-[#faf8ff] to-[#f3f0ff]">
       <HeroSection />
       <TrustedBySection />
       <StatsSection />

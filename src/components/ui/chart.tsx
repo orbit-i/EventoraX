@@ -55,7 +55,7 @@ function ChartContainer({
         data-slot="chart"
         data-chart={chartId}
         className={cn(
-          "[&_.recharts-cartesian-axis-tick_text]:fill-muted-foreground [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-border/50 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-border [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-border [&_.recharts-radial-bar-background-sector]:fill-muted [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-muted [&_.recharts-reference-line_[stroke='#ccc']]:stroke-border flex aspect-video justify-center text-xs [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
+          "bg-white rounded-2xl border border-[#e9e4ff] shadow-sm shadow-[#7c3aed]/5 p-4 [&_.recharts-cartesian-axis-tick_text]:fill-[#94a3b8] [&_.recharts-cartesian-grid_line[stroke='#ccc']]:stroke-[#e9e4ff]/80 [&_.recharts-curve.recharts-tooltip-cursor]:stroke-[#ddd6fe] [&_.recharts-polar-grid_[stroke='#ccc']]:stroke-[#e9e4fe] [&_.recharts-radial-bar-background-sector]:fill-[#f5f3ff] [&_.recharts-rectangle.recharts-tooltip-cursor]:fill-[#f5f3ff] [&_.recharts-reference-line_[stroke='#ccc']]:stroke-[#e9e4ff] flex aspect-video justify-center text-xs [&_.recharts-dot[stroke='#fff']]:stroke-transparent [&_.recharts-layer]:outline-hidden [&_.recharts-sector]:outline-hidden [&_.recharts-sector[stroke='#fff']]:stroke-transparent [&_.recharts-surface]:outline-hidden",
           className
         )}
         {...props}
@@ -143,7 +143,7 @@ function ChartTooltipContent({
 
     if (labelFormatter) {
       return (
-        <div className={cn("font-medium", labelClassName)}>
+        <div className={cn("font-semibold text-[#0f172a]", labelClassName)}>
           {labelFormatter(value, payload)}
         </div>
       )
@@ -153,7 +153,7 @@ function ChartTooltipContent({
       return null
     }
 
-    return <div className={cn("font-medium", labelClassName)}>{value}</div>
+    return <div className={cn("font-semibold text-[#0f172a]", labelClassName)}>{value}</div>
   }, [
     label,
     labelFormatter,
@@ -173,7 +173,7 @@ function ChartTooltipContent({
   return (
     <div
       className={cn(
-        "border-border/50 bg-background grid min-w-[8rem] items-start gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs shadow-xl",
+        "border border-[#e9e4ff] bg-white grid min-w-[8rem] items-start gap-1.5 rounded-xl px-3 py-2 text-xs shadow-xl shadow-[#7c3aed]/10",
         className
       )}
     >
@@ -190,7 +190,7 @@ function ChartTooltipContent({
               <div
                 key={item.dataKey}
                 className={cn(
-                  "[&>svg]:text-muted-foreground flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5",
+                  "[&>svg]:text-[#94a3b8] flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5",
                   indicator === "dot" && "items-center"
                 )}
               >
@@ -230,12 +230,12 @@ function ChartTooltipContent({
                     >
                       <div className="grid gap-1.5">
                         {nestLabel ? tooltipLabel : null}
-                        <span className="text-muted-foreground">
+                        <span className="text-[#64748b]">
                           {itemConfig?.label || item.name}
                         </span>
                       </div>
                       {item.value && (
-                        <span className="text-foreground font-mono font-medium tabular-nums">
+                        <span className="text-[#0f172a] font-mono font-semibold tabular-nums">
                           {item.value.toLocaleString()}
                         </span>
                       )}
@@ -287,7 +287,7 @@ function ChartLegendContent({
             <div
               key={item.value}
               className={cn(
-                "[&>svg]:text-muted-foreground flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3"
+                "[&>svg]:text-[#94a3b8] flex items-center gap-1.5 [&>svg]:h-3 [&>svg]:w-3 text-sm text-[#475569]"
               )}
             >
               {itemConfig?.icon && !hideIcon ? (

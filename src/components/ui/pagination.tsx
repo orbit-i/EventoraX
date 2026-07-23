@@ -27,7 +27,7 @@ function PaginationContent({
   return (
     <ul
       data-slot="pagination-content"
-      className={cn("flex flex-row items-center gap-1", className)}
+      className={cn("flex flex-row items-center gap-1.5", className)}
       {...props}
     />
   )
@@ -58,6 +58,10 @@ function PaginationLink({
           variant: isActive ? "outline" : "ghost",
           size,
         }),
+        isActive
+          ? "bg-[#f5f3ff] text-[#7c3aed] border-[#c4b5fd] font-semibold shadow-sm hover:bg-[#ede9fe] hover:text-[#6d28d9] hover:border-[#a78bfa]"
+          : "text-[#64748b] hover:bg-[#f5f3ff] hover:text-[#7c3aed]",
+        "rounded-xl transition-all duration-200",
         className
       )}
       {...props}
@@ -73,11 +77,11 @@ function PaginationPrevious({
     <PaginationLink
       aria-label="Go to previous page"
       size="default"
-      className={cn("gap-1 px-2.5 sm:pl-2.5", className)}
+      className={cn("gap-1.5 px-3 sm:pl-3 text-[#64748b] hover:text-[#7c3aed]", className)}
       {...props}
     >
-      <ChevronLeftIcon />
-      <span className="hidden sm:block">Previous</span>
+      <ChevronLeftIcon className="size-4" />
+      <span className="hidden sm:block font-medium">Previous</span>
     </PaginationLink>
   )
 }
@@ -90,11 +94,11 @@ function PaginationNext({
     <PaginationLink
       aria-label="Go to next page"
       size="default"
-      className={cn("gap-1 px-2.5 sm:pr-2.5", className)}
+      className={cn("gap-1.5 px-3 sm:pr-3 text-[#64748b] hover:text-[#7c3aed]", className)}
       {...props}
     >
-      <span className="hidden sm:block">Next</span>
-      <ChevronRightIcon />
+      <span className="hidden sm:block font-medium">Next</span>
+      <ChevronRightIcon className="size-4" />
     </PaginationLink>
   )
 }
@@ -107,7 +111,7 @@ function PaginationEllipsis({
     <span
       aria-hidden
       data-slot="pagination-ellipsis"
-      className={cn("flex size-9 items-center justify-center", className)}
+      className={cn("flex size-10 items-center justify-center rounded-xl text-[#c4b5fd] hover:bg-[#f5f3ff] hover:text-[#7c3aed] transition-all duration-200 cursor-default", className)}
       {...props}
     >
       <MoreHorizontalIcon className="size-4" />

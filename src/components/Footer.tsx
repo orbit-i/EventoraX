@@ -22,22 +22,26 @@ const legalLinks = [
 
 export default function Footer() {
   return (
-    <footer className="bg-[#1B2A4A] text-white">
+    <footer className="bg-[#0f172a] text-white">
       <div className="content-max py-16 md:py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}
           <div>
-            <Link to="/" className="font-heading text-2xl font-medium text-white">
-              EventoraX
+            <Link to="/" className="font-heading text-2xl font-bold">
+              Eventora<span className="text-[#a78bfa]">X</span>
             </Link>
-            <p className="mt-3 text-sm text-[#A0B4CC]">
+            <p className="mt-3 text-sm text-[#94a3b8] leading-relaxed">
               Event management made simple. Built by ORBIT-I.
             </p>
+            <div className="mt-4 flex items-center gap-2">
+              <div className="w-2 h-2 rounded-full bg-[#22c55e] animate-pulse" />
+              <span className="text-xs text-[#94a3b8]">All systems operational</span>
+            </div>
           </div>
 
           {/* Product */}
           <div>
-            <h4 className="font-body text-sm font-semibold uppercase tracking-wider text-white mb-4">
+            <h4 className="font-body text-xs font-bold uppercase tracking-widest text-[#a78bfa] mb-4">
               Product
             </h4>
             <ul className="space-y-2.5">
@@ -45,7 +49,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <Link
                     to={link.href}
-                    className="text-sm text-[#A0B4CC] hover:text-white transition-colors duration-200"
+                    className="text-sm text-[#94a3b8] hover:text-[#ddd6fe] transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -56,7 +60,7 @@ export default function Footer() {
 
           {/* Company */}
           <div>
-            <h4 className="font-body text-sm font-semibold uppercase tracking-wider text-white mb-4">
+            <h4 className="font-body text-xs font-bold uppercase tracking-widest text-[#a78bfa] mb-4">
               Company
             </h4>
             <ul className="space-y-2.5">
@@ -64,7 +68,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <Link
                     to={link.href}
-                    className="text-sm text-[#A0B4CC] hover:text-white transition-colors duration-200"
+                    className="text-sm text-[#94a3b8] hover:text-[#ddd6fe] transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -75,7 +79,7 @@ export default function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="font-body text-sm font-semibold uppercase tracking-wider text-white mb-4">
+            <h4 className="font-body text-xs font-bold uppercase tracking-widest text-[#a78bfa] mb-4">
               Legal
             </h4>
             <ul className="space-y-2.5">
@@ -83,7 +87,7 @@ export default function Footer() {
                 <li key={link.label}>
                   <Link
                     to={link.href}
-                    className="text-sm text-[#A0B4CC] hover:text-white transition-colors duration-200"
+                    className="text-sm text-[#94a3b8] hover:text-[#ddd6fe] transition-colors duration-200"
                   >
                     {link.label}
                   </Link>
@@ -94,10 +98,12 @@ export default function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-10 pt-6 border-t border-white/10">
-          <p className="text-xs text-[#A0B4CC]">
+        <div className="mt-10 pt-6 border-t border-[#1e293b] flex flex-col sm:flex-row items-center justify-between gap-4">
+          <p className="text-xs text-[#64748b]">
             &copy; 2025 EventoraX by ORBIT-I. All rights reserved.
           </p>
+          <div className="flex items-center gap-4">
+          </div>
         </div>
       </div>
     </footer>

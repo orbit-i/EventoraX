@@ -101,7 +101,7 @@ export default function HowItWorksSection() {
   return (
     <section className="bg-white section-padding text-center">
       <div className="content-max">
-        <p className="font-body text-sm uppercase tracking-[0.1em] mb-4" style={{ color: '#A0B4CC' }}>
+        <p className="font-body text-sm uppercase tracking-[0.1em] mb-4 text-[#7c3aed] font-semibold">
           How It Works
         </p>
 
@@ -109,18 +109,18 @@ export default function HowItWorksSection() {
         <div className="space-y-1 mb-16">
           <TextReveal3D
             text="Create your event."
-            className="font-heading font-medium leading-[1.1] tracking-[-0.02em]"
-            style={{ color: '#1B2A4A', fontSize: 'clamp(2rem, 8vw, 4rem)' }}
+            className="font-heading font-bold leading-[1.1] tracking-[-0.02em]"
+            style={{ color: '#0f172a', fontSize: 'clamp(2rem, 8vw, 4rem)' }}
           />
           <TextReveal3D
             text="Register attendees."
-            className="font-heading font-medium leading-[1.1] tracking-[-0.02em]"
-            style={{ color: '#1B2A4A', fontSize: 'clamp(2rem, 8vw, 4rem)' }}
+            className="font-heading font-bold leading-[1.1] tracking-[-0.02em]"
+            style={{ color: '#0f172a', fontSize: 'clamp(2rem, 8vw, 4rem)' }}
           />
           <TextReveal3D
             text="Issue certificates."
-            className="font-heading font-medium leading-[1.1] tracking-[-0.02em]"
-            style={{ color: '#1B2A4A', fontSize: 'clamp(2rem, 8vw, 4rem)' }}
+            className="font-heading font-bold leading-[1.1] tracking-[-0.02em]"
+            style={{ color: '#0f172a', fontSize: 'clamp(2rem, 8vw, 4rem)' }}
           />
         </div>
 
@@ -131,19 +131,16 @@ export default function HowItWorksSection() {
             return (
               <div
                 key={i}
-                className="scroll-reveal bg-[#F5FAFF] rounded-3xl p-8 md:p-10 text-left transition-all duration-300 hover:-translate-y-1"
+                className="scroll-reveal bg-white rounded-2xl p-8 md:p-10 text-left border border-[#e9e4ff] shadow-sm hover:shadow-lg hover:shadow-[#7c3aed]/10 hover:-translate-y-1 transition-all duration-300"
                 style={{ transitionDelay: `${i * 100}ms` }}
               >
-                <div
-                  className="w-12 h-12 rounded-xl flex items-center justify-center mb-5"
-                  style={{ backgroundColor: '#CCE5FF', color: '#4A9CFF' }}
-                >
+                <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 bg-[#f5f3ff] text-[#7c3aed]">
                   <Icon size={24} />
                 </div>
-                <h3 className="font-heading text-2xl font-medium mb-3" style={{ color: '#1B2A4A' }}>
+                <h3 className="font-heading text-2xl font-bold mb-3 text-[#0f172a]">
                   {step.title}
                 </h3>
-                <p className="font-body text-base" style={{ color: '#A0B4CC' }}>
+                <p className="font-body text-base text-[#475569] leading-relaxed">
                   {step.desc}
                 </p>
               </div>

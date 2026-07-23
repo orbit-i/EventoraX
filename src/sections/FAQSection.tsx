@@ -91,31 +91,32 @@ function FAQItem({ question, answer, isOpen, onToggle }: {
   onToggle: () => void;
 }) {
   return (
-    <div className="border-b" style={{ borderColor: '#E8F4FD' }}>
+    <div className="bg-white rounded-xl border border-[#e9e4ff] shadow-sm hover:shadow-md transition-all duration-200 mb-3 overflow-hidden">
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between py-6 text-left group"
+        className="w-full flex items-center justify-between p-5 md:p-6 text-left group"
       >
-        <span className="font-body text-lg font-medium pr-4" style={{ color: '#1B2A4A' }}>
+        <span className="font-body text-base md:text-lg font-semibold pr-4 text-[#0f172a] group-hover:text-[#7c3aed] transition-colors duration-200">
           {question}
         </span>
-        <ChevronDown
-          size={20}
-          className="flex-shrink-0 transition-transform duration-300"
-          style={{
-            color: '#A0B4CC',
-            transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-          }}
-        />
+        <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-[#f5f3ff] flex items-center justify-center group-hover:bg-[#ede9fe] transition-colors duration-200">
+          <ChevronDown
+            size={18}
+            className="text-[#7c3aed] transition-transform duration-300"
+            style={{
+              transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+            }}
+          />
+        </div>
       </button>
       <div
-        className="overflow-hidden transition-all duration-300"
+        className="overflow-hidden transition-all duration-300 ease-out"
         style={{
           maxHeight: isOpen ? 200 : 0,
           opacity: isOpen ? 1 : 0,
         }}
       >
-        <p className="font-body text-base pb-6" style={{ color: '#A0B4CC' }}>
+        <p className="font-body text-sm md:text-base pb-5 md:pb-6 px-5 md:px-6 text-[#475569] leading-relaxed">
           {answer}
         </p>
       </div>
@@ -127,18 +128,18 @@ export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="bg-[#F5FAFF] section-padding">
+    <section className="bg-[#f3f0ff] section-padding">
       <div className="content-max">
-        <p className="font-body text-sm uppercase tracking-[0.1em] mb-4 text-center" style={{ color: '#A0B4CC' }}>
+        <p className="font-body text-sm uppercase tracking-[0.1em] mb-4 text-center text-[#7c3aed] font-semibold">
           FAQ
         </p>
 
         {/* 3D Text Reveal */}
         <div className="text-center mb-12 md:mb-16">
-          <div className="font-heading font-medium leading-[1.1] tracking-[-0.02em]" style={{ color: '#1B2A4A', fontSize: 'clamp(3rem, 10vw, 6rem)' }}>
+          <div className="font-heading font-bold leading-[1.1] tracking-[-0.02em] text-[#0f172a]" style={{ fontSize: 'clamp(3rem, 10vw, 6rem)' }}>
             <TextReveal3D text="Got" />
           </div>
-          <div className="font-heading font-medium leading-[1.1] tracking-[-0.02em]" style={{ color: '#1B2A4A', fontSize: 'clamp(3rem, 10vw, 6rem)' }}>
+          <div className="font-heading font-bold leading-[1.1] tracking-[-0.02em] text-[#0f172a]" style={{ fontSize: 'clamp(3rem, 10vw, 6rem)' }}>
             <TextReveal3D text="questions?" />
           </div>
         </div>

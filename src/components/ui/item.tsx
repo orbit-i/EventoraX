@@ -10,7 +10,7 @@ function ItemGroup({ className, ...props }: React.ComponentProps<"div">) {
     <div
       role="list"
       data-slot="item-group"
-      className={cn("group/item-group flex flex-col", className)}
+      className={cn("group/item-group flex flex-col gap-1 rounded-2xl bg-[#faf8ff] p-2", className)}
       {...props}
     />
   )
@@ -24,23 +24,23 @@ function ItemSeparator({
     <Separator
       data-slot="item-separator"
       orientation="horizontal"
-      className={cn("my-0", className)}
+      className={cn("my-0 bg-[#e9e4ff]", className)}
       {...props}
     />
   )
 }
 
 const itemVariants = cva(
-  "group/item flex items-center border border-transparent text-sm rounded-md transition-colors [a]:hover:bg-accent/50 [a]:transition-colors duration-100 flex-wrap outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+  "group/item flex items-center border-2 border-transparent text-sm rounded-xl transition-all duration-200 [a]:hover:bg-[#f5f3ff] [a]:transition-colors duration-150 flex-wrap outline-none focus-visible:border-[#7c3aed] focus-visible:ring-2 focus-visible:ring-[#7c3aed]/30 focus-visible:ring-offset-1 hover:bg-[#f5f3ff]/50",
   {
     variants: {
       variant: {
         default: "bg-transparent",
-        outline: "border-border",
-        muted: "bg-muted/50",
+        outline: "border-[#e9e4ff] bg-white shadow-sm hover:border-[#c4b5fd] hover:shadow-md",
+        muted: "bg-[#f5f3ff]/80",
       },
       size: {
-        default: "p-4 gap-4 ",
+        default: "p-4 gap-4",
         sm: "py-3 px-4 gap-2.5",
       },
     },
@@ -77,9 +77,9 @@ const itemMediaVariants = cva(
     variants: {
       variant: {
         default: "bg-transparent",
-        icon: "size-8 border rounded-sm bg-muted [&_svg:not([class*='size-'])]:size-4",
+        icon: "size-9 border rounded-lg bg-[#f5f3ff] text-[#7c3aed] [&_svg:not([class*='size-'])]:size-4",
         image:
-          "size-10 rounded-sm overflow-hidden [&_img]:size-full [&_img]:object-cover",
+          "size-10 rounded-lg overflow-hidden [&_img]:size-full [&_img]:object-cover",
       },
     },
     defaultVariants: {
@@ -121,7 +121,7 @@ function ItemTitle({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="item-title"
       className={cn(
-        "flex w-fit items-center gap-2 text-sm leading-snug font-medium",
+        "flex w-fit items-center gap-2 text-sm leading-snug font-semibold text-[#0f172a]",
         className
       )}
       {...props}
@@ -134,8 +134,8 @@ function ItemDescription({ className, ...props }: React.ComponentProps<"p">) {
     <p
       data-slot="item-description"
       className={cn(
-        "text-muted-foreground line-clamp-2 text-sm leading-normal font-normal text-balance",
-        "[&>a:hover]:text-primary [&>a]:underline [&>a]:underline-offset-4",
+        "text-[#475569] line-clamp-2 text-sm leading-normal font-normal text-balance",
+        "[&>a:hover]:text-[#7c3aed] [&>a]:underline [&>a]:underline-offset-4",
         className
       )}
       {...props}
@@ -158,7 +158,7 @@ function ItemHeader({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="item-header"
       className={cn(
-        "flex basis-full items-center justify-between gap-2",
+        "flex basis-full items-center justify-between gap-2 mb-1",
         className
       )}
       {...props}
@@ -171,7 +171,7 @@ function ItemFooter({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="item-footer"
       className={cn(
-        "flex basis-full items-center justify-between gap-2",
+        "flex basis-full items-center justify-between gap-2 mt-1",
         className
       )}
       {...props}

@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router';
-import { Check, X, HelpCircle } from 'lucide-react';
+import { Check, X, HelpCircle, Sparkles } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -94,13 +94,13 @@ export default function Pricing() {
   return (
     <main className="pt-14">
       {/* Hero */}
-      <section className="bg-[#F5FAFF] py-20 md:py-32 text-center">
+      <section className="bg-[#f3f0ff] py-20 md:py-32 text-center">
         <div className="content-max">
-          <p className="font-body text-sm uppercase tracking-[0.1em] mb-4" style={{ color: '#A0B4CC' }}>Pricing</p>
-          <h1 className="font-heading text-4xl md:text-6xl font-medium tracking-[-0.02em] mb-6" style={{ color: '#1B2A4A' }}>
+          <p className="font-body text-sm uppercase tracking-[0.1em] mb-4 text-[#a78bfa] font-semibold">Pricing</p>
+          <h1 className="font-heading text-4xl md:text-6xl font-bold tracking-[-0.02em] mb-6 text-[#0f172a]">
             Simple, transparent pricing
           </h1>
-          <p className="font-body text-lg md:text-xl max-w-2xl mx-auto" style={{ color: '#A0B4CC' }}>
+          <p className="font-body text-lg md:text-xl max-w-2xl mx-auto text-[#64748b] leading-relaxed">
             Start free. Scale as you grow. No hidden fees, no surprises.
           </p>
         </div>
@@ -113,37 +113,41 @@ export default function Pricing() {
             {plans.map((plan, i) => (
               <div
                 key={i}
-                className={`scroll-reveal rounded-3xl p-8 transition-all duration-300 ${
+                className={`scroll-reveal rounded-2xl p-8 transition-all duration-300 ${
                   plan.active
-                    ? 'border-2 border-[#4A9CFF] shadow-lg'
-                    : 'border border-[#E8F4FD] hover:border-[#4A9CFF]'
+                    ? 'border-2 border-[#7c3aed] shadow-xl shadow-[#7c3aed]/10 scale-105 z-10'
+                    : 'border border-[#e9e4ff] hover:border-[#c4b5fd] hover:shadow-lg'
                 }`}
                 style={{
-                  background: plan.active ? '#F5FAFF' : '#FFFFFF',
-                  boxShadow: plan.active ? '0 8px 32px rgba(74,156,255,0.12)' : undefined,
+                  background: plan.active ? '#f5f3ff' : '#FFFFFF',
                   transitionDelay: `${i * 100}ms`,
                 }}
               >
                 {plan.active && (
-                  <div className="inline-block px-3 py-1 rounded-full text-xs font-medium mb-4 text-white" style={{ backgroundColor: '#4A9CFF' }}>
+                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold mb-4 text-white bg-[#7c3aed] shadow-sm shadow-[#7c3aed]/20">
+                    <Sparkles size={12} />
                     Most Popular
                   </div>
                 )}
-                <h3 className="font-heading text-2xl font-medium mb-1" style={{ color: '#1B2A4A' }}>{plan.name}</h3>
-                <p className="font-body text-sm mb-6" style={{ color: '#A0B4CC' }}>{plan.description}</p>
+                <h3 className="font-heading text-2xl font-bold mb-1 text-[#0f172a]">{plan.name}</h3>
+                <p className="font-body text-sm mb-6 text-[#475569]">{plan.description}</p>
                 <div className="flex items-baseline mb-8">
-                  <span className="font-heading text-5xl font-medium" style={{ color: '#1B2A4A' }}>{plan.price}</span>
-                  <span className="font-body text-lg ml-1" style={{ color: '#A0B4CC' }}>{plan.period}</span>
+                  <span className="font-heading text-5xl font-bold text-[#0f172a]">{plan.price}</span>
+                  <span className="font-body text-lg ml-1 text-[#94a3b8]">{plan.period}</span>
                 </div>
                 <ul className="space-y-3 mb-8">
                   {plan.features.map((f, fi) => (
                     <li key={fi} className="flex items-center gap-3">
                       {f.included ? (
-                        <Check size={18} style={{ color: '#2A8B6F' }} />
+                        <div className="w-5 h-5 rounded-full bg-[#f0fdf4] flex items-center justify-center flex-shrink-0">
+                          <Check size={14} className="text-[#16a34a]" />
+                        </div>
                       ) : (
-                        <X size={18} style={{ color: '#A0B4CC', opacity: 0.4 }} />
+                        <div className="w-5 h-5 rounded-full bg-[#f8fafc] flex items-center justify-center flex-shrink-0">
+                          <X size={14} className="text-[#cbd5e1]" />
+                        </div>
                       )}
-                      <span className="font-body text-sm" style={{ color: f.included ? '#1B2A4A' : '#A0B4CC', opacity: f.included ? 1 : 0.6 }}>
+                      <span className={`font-body text-sm ${f.included ? 'text-[#0f172a]' : 'text-[#94a3b8]'}`}>
                         {f.text}
                       </span>
                     </li>
@@ -151,12 +155,11 @@ export default function Pricing() {
                 </ul>
                 <Link
                   to="/register"
-                  className={`block w-full text-center py-3.5 rounded-full font-body font-medium transition-all duration-300 hover:scale-[1.02] ${
+                  className={`block w-full text-center py-3.5 rounded-xl font-body font-semibold transition-all duration-200 ${
                     plan.active
-                      ? 'text-white'
-                      : 'border hover:bg-[#F5FAFF]'
+                      ? 'bg-[#7c3aed] text-white shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0'
+                      : 'border-2 border-[#e2e8f0] text-[#0f172a] hover:border-[#c4b5fd] hover:bg-[#f5f3ff] hover:text-[#7c3aed]'
                   }`}
-                  style={plan.active ? { backgroundColor: '#4A9CFF' } : { borderColor: '#E8F4FD', color: '#1B2A4A' }}
                 >
                   {plan.cta}
                 </Link>
@@ -167,19 +170,19 @@ export default function Pricing() {
       </section>
 
       {/* Comparison Table */}
-      <section className="bg-[#F5FAFF] section-padding">
+      <section className="bg-[#f5f3ff] section-padding">
         <div className="content-max">
-          <h2 className="font-heading text-3xl md:text-4xl font-medium text-center mb-12 tracking-[-0.02em]" style={{ color: '#1B2A4A' }}>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold text-center mb-12 tracking-[-0.02em] text-[#0f172a]">
             Feature comparison
           </h2>
           <div className="overflow-x-auto">
-            <table className="w-full max-w-4xl mx-auto">
+            <table className="w-full max-w-4xl mx-auto bg-white rounded-2xl border border-[#e9e4ff] shadow-sm overflow-hidden">
               <thead>
-                <tr className="border-b-2" style={{ borderColor: '#4A9CFF' }}>
-                  <th className="text-left py-4 px-4 font-body text-sm font-medium" style={{ color: '#1B2A4A' }}>Feature</th>
-                  <th className="text-center py-4 px-4 font-body text-sm font-medium" style={{ color: '#1B2A4A' }}>Starter</th>
-                  <th className="text-center py-4 px-4 font-body text-sm font-medium" style={{ color: '#4A9CFF' }}>Pro</th>
-                  <th className="text-center py-4 px-4 font-body text-sm font-medium" style={{ color: '#1B2A4A' }}>Enterprise</th>
+                <tr className="border-b-2 border-[#7c3aed] bg-[#f5f3ff]">
+                  <th className="text-left py-4 px-6 font-body text-sm font-semibold text-[#0f172a]">Feature</th>
+                  <th className="text-center py-4 px-6 font-body text-sm font-semibold text-[#0f172a]">Starter</th>
+                  <th className="text-center py-4 px-6 font-body text-sm font-semibold text-[#7c3aed]">Pro</th>
+                  <th className="text-center py-4 px-6 font-body text-sm font-semibold text-[#0f172a]">Enterprise</th>
                 </tr>
               </thead>
               <tbody>
@@ -193,11 +196,11 @@ export default function Pricing() {
                   ['API Access', '—', '—', 'Full'],
                   ['Support', 'Email', 'Priority', 'Dedicated'],
                 ].map((row, i) => (
-                  <tr key={i} className="border-b" style={{ borderColor: '#E8F4FD' }}>
-                    <td className="py-4 px-4 font-body text-sm" style={{ color: '#1B2A4A' }}>{row[0]}</td>
-                    <td className="text-center py-4 px-4 font-body text-sm" style={{ color: '#A0B4CC' }}>{row[1]}</td>
-                    <td className="text-center py-4 px-4 font-body text-sm font-medium" style={{ color: '#4A9CFF' }}>{row[2]}</td>
-                    <td className="text-center py-4 px-4 font-body text-sm" style={{ color: '#1B2A4A' }}>{row[3]}</td>
+                  <tr key={i} className="border-b border-[#e9e4ff] last:border-b-0 hover:bg-[#faf8ff] transition-colors duration-150">
+                    <td className="py-4 px-6 font-body text-sm font-medium text-[#0f172a]">{row[0]}</td>
+                    <td className="text-center py-4 px-6 font-body text-sm text-[#64748b]">{row[1]}</td>
+                    <td className="text-center py-4 px-6 font-body text-sm font-semibold text-[#7c3aed]">{row[2]}</td>
+                    <td className="text-center py-4 px-6 font-body text-sm text-[#0f172a]">{row[3]}</td>
                   </tr>
                 ))}
               </tbody>
@@ -209,17 +212,19 @@ export default function Pricing() {
       {/* FAQ */}
       <section className="bg-white section-padding">
         <div className="content-max">
-          <h2 className="font-heading text-3xl md:text-4xl font-medium text-center mb-12 tracking-[-0.02em]" style={{ color: '#1B2A4A' }}>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold text-center mb-12 tracking-[-0.02em] text-[#0f172a]">
             Billing questions
           </h2>
           <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
             {faqs.map((faq, i) => (
-              <div key={i} className="scroll-reveal p-6 rounded-2xl border" style={{ borderColor: '#E8F4FD', backgroundColor: '#F5FAFF' }}>
+              <div key={i} className="scroll-reveal p-6 rounded-2xl border border-[#e9e4ff] bg-[#faf8ff] hover:shadow-md transition-all duration-200">
                 <div className="flex items-start gap-3">
-                  <HelpCircle size={20} className="flex-shrink-0 mt-0.5" style={{ color: '#4A9CFF' }} />
+                  <div className="w-8 h-8 rounded-lg bg-[#f5f3ff] flex items-center justify-center flex-shrink-0">
+                    <HelpCircle size={18} className="text-[#7c3aed]" />
+                  </div>
                   <div>
-                    <h4 className="font-body text-base font-medium mb-2" style={{ color: '#1B2A4A' }}>{faq.q}</h4>
-                    <p className="font-body text-sm" style={{ color: '#A0B4CC' }}>{faq.a}</p>
+                    <h4 className="font-body text-base font-semibold mb-2 text-[#0f172a]">{faq.q}</h4>
+                    <p className="font-body text-sm text-[#475569] leading-relaxed">{faq.a}</p>
                   </div>
                 </div>
               </div>

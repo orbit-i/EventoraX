@@ -89,13 +89,13 @@ export default function PricingSection() {
   return (
     <section
       ref={sectionRef}
-      className="section-padding blueprint-grid"
+      className="section-padding bg-[#f3f0ff]"
     >
       <div className="content-max text-center">
-        <h2 className="font-heading text-3xl md:text-5xl font-medium text-white mb-4 tracking-[-0.02em]">
+        <h2 className="font-heading text-3xl md:text-5xl font-bold text-[#0f172a] mb-4 tracking-[-0.02em]">
           Simple pricing, powerful features
         </h2>
-        <p className="font-body text-lg md:text-xl font-light mb-12 md:mb-16" style={{ color: '#A0B4CC' }}>
+        <p className="font-body text-lg md:text-xl mb-12 md:mb-16 text-[#64748b]">
           Start free. Scale as you grow.
         </p>
 
@@ -103,49 +103,48 @@ export default function PricingSection() {
           {plans.map((plan, i) => (
             <div
               key={i}
-              className={`plan-card rounded-3xl p-8 md:p-10 text-left transition-all duration-300 ${
+              className={`plan-card rounded-2xl p-8 md:p-10 text-left transition-all duration-300 hover:-translate-y-1 ${
                 plan.active
-                  ? 'border-2 border-[#4A9CFF]'
-                  : 'border border-dashed border-[rgba(74,156,255,0.3)] hover:border-solid hover:border-[#4A9CFF]'
+                  ? 'border-2 border-[#7c3aed] bg-white shadow-xl shadow-[#7c3aed]/10 scale-105 z-10'
+                  : 'border border-dashed border-[#ddd6fe] bg-white/80 hover:border-solid hover:border-[#c4b5fd] hover:bg-white hover:shadow-lg'
               }`}
-              style={{
-                background: 'rgba(255,255,255,0.05)',
-                backdropFilter: 'blur(16px)',
-                boxShadow: plan.active ? '0 0 40px rgba(74,156,255,0.2)' : undefined,
-              }}
             >
               {plan.active && (
-                <div className="inline-block px-3 py-1 rounded-full text-xs font-medium mb-4 bg-[#4A9CFF] text-white">
+                <div className="inline-block px-3 py-1 rounded-full text-xs font-semibold mb-4 bg-[#7c3aed] text-white shadow-sm shadow-[#7c3aed]/20">
                   Most Popular
                 </div>
               )}
-              <h3 className="font-heading text-2xl font-medium text-white mb-1">
+              <h3 className="font-heading text-2xl font-bold text-[#0f172a] mb-1">
                 {plan.name}
               </h3>
-              <p className="font-body text-sm mb-6" style={{ color: '#A0B4CC' }}>
+              <p className="font-body text-sm mb-6 text-[#475569]">
                 {plan.description}
               </p>
 
               <div className="flex items-baseline mb-8">
-                <span className="font-heading text-5xl font-medium text-white">
+                <span className="font-heading text-5xl font-bold text-[#0f172a]">
                   {plan.price}
                 </span>
-                <span className="font-body text-lg ml-1" style={{ color: '#A0B4CC' }}>
+                <span className="font-body text-lg ml-1 text-[#94a3b8]">
                   {plan.period}
                 </span>
               </div>
 
-              <ul className="space-y-3 mb-8">
+              <ul className="space-y-3.5 mb-8">
                 {plan.features.map((feature, fi) => (
                   <li key={fi} className="flex items-center gap-3">
                     {feature.included ? (
-                      <Check size={18} style={{ color: '#C8F0E4' }} />
+                      <div className="w-5 h-5 rounded-full bg-[#f5f3ff] flex items-center justify-center flex-shrink-0">
+                        <Check size={14} className="text-[#7c3aed]" />
+                      </div>
                     ) : (
-                      <X size={18} style={{ color: '#A0B4CC', opacity: 0.4 }} />
+                      <div className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center flex-shrink-0">
+                        <X size={14} className="text-[#cbd5e1]" />
+                      </div>
                     )}
                     <span
                       className="font-body text-sm"
-                      style={{ color: feature.included ? '#FFFFFF' : '#A0B4CC', opacity: feature.included ? 1 : 0.6 }}
+                      style={{ color: feature.included ? '#0f172a' : '#94a3b8', opacity: feature.included ? 1 : 0.6 }}
                     >
                       {feature.text}
                     </span>
@@ -155,10 +154,10 @@ export default function PricingSection() {
 
               <Link
                 to="/register"
-                className={`block w-full text-center py-3.5 rounded-full font-body font-medium transition-all duration-300 hover:scale-[1.02] ${
+                className={`block w-full text-center py-3.5 rounded-xl font-body font-semibold transition-all duration-200 ${
                   plan.active
-                    ? 'bg-[#4A9CFF] text-white hover:bg-[#3A8CEF]'
-                    : 'bg-transparent border border-[rgba(255,255,255,0.2)] text-white hover:bg-white/5'
+                    ? 'bg-[#7c3aed] text-white shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5'
+                    : 'bg-white border-2 border-[#e9e4ff] text-[#0f172a] hover:border-[#c4b5fd] hover:bg-[#f5f3ff] hover:text-[#7c3aed]'
                 }`}
               >
                 {plan.cta}

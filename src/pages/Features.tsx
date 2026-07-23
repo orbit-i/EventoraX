@@ -147,13 +147,13 @@ export default function Features() {
   return (
     <main className="pt-14">
       {/* Hero */}
-      <section className="bg-[#F5FAFF] py-20 md:py-32 text-center">
+      <section className="bg-[#f3f0ff] py-20 md:py-32 text-center">
         <div className="content-max">
-          <p className="font-body text-sm uppercase tracking-[0.1em] mb-4" style={{ color: '#A0B4CC' }}>Features</p>
-          <h1 className="font-heading text-4xl md:text-6xl font-medium tracking-[-0.02em] mb-6" style={{ color: '#1B2A4A' }}>
+          <p className="font-body text-sm uppercase tracking-[0.1em] mb-4 text-[#a78bfa] font-semibold">Features</p>
+          <h1 className="font-heading text-4xl md:text-6xl font-bold tracking-[-0.02em] mb-6 text-[#0f172a]">
             Everything you need
           </h1>
-          <p className="font-body text-lg md:text-xl max-w-2xl mx-auto" style={{ color: '#A0B4CC' }}>
+          <p className="font-body text-lg md:text-xl max-w-2xl mx-auto text-[#64748b] leading-relaxed">
             A complete toolkit for modern event organizers — from planning to post-event follow-up.
           </p>
         </div>
@@ -168,19 +168,19 @@ export default function Features() {
               return (
                 <div
                   key={i}
-                  className="scroll-reveal bg-[#F5FAFF] rounded-3xl p-8 border transition-all duration-300 hover:-translate-y-1"
-                  style={{ borderColor: '#E8F4FD', transitionDelay: `${(i % 3) * 100}ms` }}
+                  className="scroll-reveal bg-white rounded-2xl p-8 border border-[#e9e4ff] shadow-sm hover:shadow-lg hover:shadow-[#7c3aed]/10 hover:-translate-y-1 transition-all duration-300"
+                  style={{ transitionDelay: `${(i % 3) * 100}ms` }}
                 >
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5" style={{ backgroundColor: '#CCE5FF', color: '#4A9CFF' }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 bg-[#f5f3ff] text-[#7c3aed]">
                     <Icon size={24} />
                   </div>
-                  <h3 className="font-heading text-xl font-medium mb-2" style={{ color: '#1B2A4A' }}>{group.title}</h3>
-                  <p className="font-body text-sm mb-5" style={{ color: '#A0B4CC' }}>{group.desc}</p>
-                  <ul className="space-y-2">
+                  <h3 className="font-heading text-xl font-bold mb-2 text-[#0f172a]">{group.title}</h3>
+                  <p className="font-body text-sm mb-5 text-[#475569] leading-relaxed">{group.desc}</p>
+                  <ul className="space-y-2.5">
                     {group.features.map((f, fi) => (
-                      <li key={fi} className="flex items-start gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0" style={{ backgroundColor: '#4A9CFF' }} />
-                        <span className="font-body text-sm" style={{ color: '#1B2A4A' }}>{f}</span>
+                      <li key={fi} className="flex items-start gap-2.5">
+                        <div className="w-1.5 h-1.5 rounded-full mt-2 flex-shrink-0 bg-[#7c3aed]" />
+                        <span className="font-body text-sm text-[#0f172a]">{f}</span>
                       </li>
                     ))}
                   </ul>
@@ -192,9 +192,9 @@ export default function Features() {
       </section>
 
       {/* Additional highlights */}
-      <section className="bg-[#F5FAFF] section-padding">
+      <section className="bg-[#f5f3ff] section-padding">
         <div className="content-max">
-          <h2 className="font-heading text-3xl md:text-4xl font-medium text-center mb-12 tracking-[-0.02em]" style={{ color: '#1B2A4A' }}>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold text-center mb-12 tracking-[-0.02em] text-[#0f172a]">
             More powerful features
           </h2>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -206,12 +206,12 @@ export default function Features() {
             ].map((item, i) => {
               const Icon = item.icon;
               return (
-                <div key={i} className="scroll-reveal bg-white rounded-3xl p-6 border text-center" style={{ borderColor: '#E8F4FD', transitionDelay: `${i * 100}ms` }}>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4" style={{ backgroundColor: '#CCE5FF', color: '#4A9CFF' }}>
+                <div key={i} className="scroll-reveal bg-white rounded-2xl p-6 border border-[#e9e4ff] shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-300 text-center" style={{ transitionDelay: `${i * 100}ms` }}>
+                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mx-auto mb-4 bg-[#f5f3ff] text-[#7c3aed]">
                     <Icon size={24} />
                   </div>
-                  <h4 className="font-heading text-lg font-medium mb-2" style={{ color: '#1B2A4A' }}>{item.title}</h4>
-                  <p className="font-body text-sm" style={{ color: '#A0B4CC' }}>{item.desc}</p>
+                  <h4 className="font-heading text-lg font-bold mb-2 text-[#0f172a]">{item.title}</h4>
+                  <p className="font-body text-sm text-[#475569] leading-relaxed">{item.desc}</p>
                 </div>
               );
             })}
@@ -222,13 +222,18 @@ export default function Features() {
       {/* CTA */}
       <section className="bg-white py-20 md:py-28 text-center">
         <div className="content-max">
-          <h2 className="font-heading text-3xl md:text-4xl font-medium mb-4 tracking-[-0.02em]" style={{ color: '#1B2A4A' }}>
+          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 tracking-[-0.02em] text-[#0f172a]">
             Ready to explore?
           </h2>
-          <p className="font-body text-base mb-8" style={{ color: '#A0B4CC' }}>
+          <p className="font-body text-base mb-8 text-[#64748b]">
             Start your free trial and experience the difference.
           </p>
-          <Link to="/register" className="btn-primary">Start Free Trial</Link>
+          <Link
+            to="/register"
+            className="inline-flex items-center justify-center px-8 py-3.5 bg-[#7c3aed] text-white font-semibold rounded-xl shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
+          >
+            Start Free Trial
+          </Link>
         </div>
       </section>
     </main>
