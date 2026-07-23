@@ -1,0 +1,79 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  
+}
+
+enum Role {
+  superAdmin
+  admin
+  manager
+  viewer
+}
+
+enum OrgStatus{
+  trial
+  active
+  expired
+}
+
+model Organization {
+  id                  String   @id @default(uuid())
+  name                String
+  slug                String   @unique
+  logoUrl             String?
+  status              OrgStatus @default(trial)
+  subscriptionEndsAt  DateTime
+  planId              String?
+  plan                Plan?    @relation(fields: [planId], references: [id])
+  createdAt           DateTime @default(now())
+  users               User[]
+}
+
+model User {
+  id             String       @id @default(uuid())
+  name           String
+  email          String       @unique
+  password       String
+  phone          String
+  role           Role         @default(admin)
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  emailVerified Boolean  @default(false)
+  createdAt      DateTime     @default(now())
+
+
+  passwordRestToken   PasswordResetToken[]
+  emailVerificationToken   EmailVerificationToken[]
+}
+
+model PasswordResetToken{
+  id            String        @id @default(uuid())
+  token         String        @unique
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  expiresAt     DateTime
+  createdAt     DateTime      @default(now())
+}
+
+model EmailVerificationToken{
+  id            String        @id @default(uuid())
+  token         String        @unique
+  userId        String
+  user          User          @relation(fields: [userId], references: [id])
+  expiresAt     DateTime
+  createdAt     DateTime      @default(now())
+}
+
+model Plan{
+  id              String        @id @default(uuid())
+  name            String        @unique
+  maxSeats        Int?
+  features        Json?
+  price           Float?
+  createdAt       DateTime      @default(now())
+  organization    Organization[]
+}
