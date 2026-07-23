@@ -1,0 +1,111 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    box-sizing: border-box;
+}
+
+.revenue-main-container {
+    padding-inline: 50px;
+    /* min-height: 100vh; */
+}
+
+.revenue-upper-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.revenue-upper-first-container {
+    border: 1px solid rgb(195, 193, 193);
+    background-color: #ffffff;
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    min-width: 450px;
+    height: 160px;
+    padding: 18px;
+    border-radius: 15px;
+}
+
+.total-revenue-para {
+    color: rgb(79, 77, 77);
+    font-size: 15px;
+}
+
+.pkr-para {
+    color: #3f37c9;
+    font-size: 2.4rem;
+    font-weight: 600;
+    margin-bottom: 7px;
+}
+
+.treding-up-main-icon-container {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap: 10px;
+    color: green;
+}
+
+.revenue-upper-second-container {
+    border: 1px solid rgb(195, 193, 193);
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: start;
+    width: 240px;
+    height: 160px;
+    padding: 18px;
+    border-radius: 15px;
+}
+
+.outstanding-para {
+    color: rgb(79, 77, 77);
+    font-size: 15px;
+}
+
+.pkr-amount-para {
+    color: #bf0603;
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.pending-para {
+    color: gray;
+    font-size: 13px;
+    margin-bottom: 20px;
+}
+
+.revenue-upper-third-container {
+    border: 1px solid rgb(195, 193, 193);
+    background-color: #ffffff;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: start;
+    width: 240px;
+    height: 160px;
+    padding: 18px;
+    border-radius: 15px;
+}
+
+.monthly-recurring-para {
+    color: rgb(79, 77, 77);
+    font-size: 15px;
+}
+
+.pkr-amount-third-para {
+    font-size: 1.6rem;
+    font-weight: 600;
+}
+
+.active-subscription {
+    color: #ffffff;
+    background-color: #3f37c9;
+    padding: 4px;
+    border-radius: 15px;
+    font-size: 10px;
+    margin-right: 4px;
+}
