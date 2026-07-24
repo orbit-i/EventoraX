@@ -30,6 +30,7 @@ model Organization {
   plan                Plan?    @relation(fields: [planId], references: [id])
   createdAt           DateTime @default(now())
   users               User[]
+  invitations         Invitation[]
 }
 
 model User {
@@ -47,6 +48,7 @@ model User {
 
   passwordRestToken   PasswordResetToken[]
   emailVerificationToken   EmailVerificationToken[]
+  sentInvitations          Invitation[]
 }
 
 model PasswordResetToken{
@@ -75,4 +77,20 @@ model Plan{
   price           Float?
   createdAt       DateTime      @default(now())
   organization    Organization[]
+}
+
+model Invitation {
+  id             String       @id @default(uuid())
+  email          String
+  role           Role
+  token          String       @unique
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id])
+  invitedById    String
+  invitedBy      User         @relation(fields: [invitedById], references: [id])
+  expiresAt      DateTime
+  acceptedAt     DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@unique([email, organizationId])
 }

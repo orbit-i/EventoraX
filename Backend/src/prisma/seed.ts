@@ -1,6 +1,5 @@
-import { PrismaClient } from "@prisma/client";
+import prisma from "./client";
 
-const prisma = new PrismaClient();
 
 async function main() {
   await prisma.plan.createMany({
@@ -8,7 +7,7 @@ async function main() {
       {
         name: "Starter",
         price: 0,
-        maxSeats: null, // not shown on this tier, adjust if you have a seat limit
+        maxSeats: null, 
         features: {
           maxAttendees: 50,
           maxEventsAtOnce: 1,
@@ -22,10 +21,10 @@ async function main() {
       },
       {
         name: "Pro",
-        price: 29,
+        price: 70,
         features: {
           maxAttendees: null, // unlimited
-          maxEvents: 10,
+          maxEvents: 20,
           certificates: "custom",
           qrTicketing: true,
           support: "priority",

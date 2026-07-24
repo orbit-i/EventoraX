@@ -17,4 +17,5 @@ router.get("/me", authedQuery, checkOrgStatus, attachScopedPrisma, getOrgProfile
 router.patch("/me", authedQuery, checkOrgStatus, attachScopedPrisma, requireRole(["admin", "superAdmin"]), updateOrgSettings);
 router.post("/me/logo", authedQuery, checkOrgStatus, attachScopedPrisma, requireRole(["admin", "superAdmin"]), logoUpload.single("logo"), uploadLogo);
 router.patch("/me/plan", authedQuery, attachScopedPrisma, requireRole(["superAdmin"]), assignPlan);
+
 export default router;

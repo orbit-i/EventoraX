@@ -2,6 +2,9 @@ import { info } from "console";
 import "dotenv/config";
 import nodemailer from "nodemailer";
 
+
+const FRONTEND_URL=process.env.FRONTEND_URL
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -38,4 +41,19 @@ export async function sendVerificationEmail(toEmail: string, rawToken: string) {
            <a href="${verifyLink}">${verifyLink}</a>
            <p>This link expires in 24 hours.</p>`,
   });
+}
+
+export async function sendInviteEmail(toEmail:string,token:string) {
+  const acceptUrl = `${FRONTEND_URL}/accept-invite?token=${token}`;
+
+  await transporter.sendMail({
+    from: process.env.GMAIL_USER,
+    to: toEmail,
+    subject: "You've been invited to join a team on EventoraX",
+    html: `
+      <p>You've been invited to join an organization on EventoraX.</p>
+      <p><a href="${acceptUrl}">Click here to accept the invite and set up your account</a></p>
+      <p>This link expires in 7 days.</p>
+    `,
+  });    
 }
