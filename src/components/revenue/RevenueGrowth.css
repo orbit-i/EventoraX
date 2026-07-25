@@ -57,5 +57,53 @@
     background-color: #ffffff;
     border: 1px solid #d5d5e5;
     border-radius: 18px;
-    padding: 35px 38px;
+    padding: 30px 33px;
+    /* display: flex;
+    justify-content: start;
+    align-items: start; */
+}
+
+.plan-distribution-para {
+    font-size: 1.4rem;
+    font-weight: 600;
+}
+
+.enterprise-plan-container,
+.pro-plan-container,
+.legacy-plan-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 30px;
+}
+
+.enterprise-plan-outer-bar-container,
+.pro-plan-outer-bar-container,
+.legacy-plan-outer-bar-container {
+    width: 100%;
+    background-color: rgb(211, 211, 211, 0.4);
+    height: 8px;
+    border-radius: 50px;
+    margin-top: 10px;
+}
+
+.enterprise-plan-inner-bar-container {
+    width: 68%;
+    background-color: #3f37c9;
+    height: 100%;
+    border-radius: 50px;
+}
+
+.pro-plan-inner-bar-container {
+    width: 24%;
+    background-color: #80ffdb;
+    height: 100%;
+    border-radius: 50px;
+}
+
+.legacy-plan-inner-bar-container {
+    width: 8%;
+    background-color: gray;
+    height: 100%;
+    border-radius: 50px;
 }

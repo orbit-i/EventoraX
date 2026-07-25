@@ -3,6 +3,7 @@ import SuperAdminLayout from "../../layouts/SuperAdminLayout"
 import '../../../src/components/styles/Revenue.css'
 import { BookSearch, TrendingUp } from "lucide-react"
 import RevenueGrowth from "../../components/revenue/RevenueGrowth"
+import RevenueTransactions from "../../components/revenue/RevenueTransactions"
 
 function Revenue() {
     return (
@@ -35,6 +36,9 @@ function Revenue() {
                 </div>
                 {/* Revenue Growth component */}
                 <RevenueGrowth />
+                {/* Revenue Transaction container */}
+                <RevenueTransactions />
+                {/* Revenue Footer container */}
             </div>
 
         </SuperAdminLayout>

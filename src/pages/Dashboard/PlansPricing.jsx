@@ -123,7 +123,7 @@ function PlansPricing() {
             <tbody>
               <tr className='plans-pricing-table-row'>
                 <td>
-                  <div className="plan-name-container">
+                  <div className="plans-name-container">
                     <div className="plan-name-icon-container">
                       <Star className="plan-name-star-icon" />
                     </div>
@@ -189,7 +189,7 @@ function PlansPricing() {
               </tr>
               <tr className='plans-pricing-table-row'>
                 <td>
-                  <div className="plan-name-container">
+                  <div className="plans-name-container">
                     <div className="plan-name-icon-container plan-name-second-row-icon-container">
                       <Star className="plan-name-star-icon plan-name-second-row-star-icon" />
                     </div>
@@ -255,7 +255,7 @@ function PlansPricing() {
               </tr>
               <tr className='plans-pricing-table-row'>
                 <td>
-                  <div className="plan-name-container">
+                  <div className="plans-name-container">
                     <div className="plan-name-icon-container plan-name-third-row-icon-container">
                       <Star className="plan-name-star-icon plan-name-third-row-star-icon" />
                     </div>
@@ -331,7 +331,7 @@ function PlansPricing() {
           }}>Public Pricing Preview</p>
           <div className='plans-cards'>
             <div className='card'>
-              <div className="plan-name-container">
+              <div className="plans-name-container">
                 <div className="plan-name-icon-container">
                   <Star className="plan-name-star-icon" />
                 </div>
@@ -415,7 +415,7 @@ function PlansPricing() {
             </div>
             {/* card 2 */}
             <div className='card'>
-              <div className="plan-name-container">
+              <div className="plans-name-container">
                 <div className="plan-name-icon-container plan-name-second-row-icon-container">
                   <Star className="plan-name-star-icon plan-name-second-row-star-icon" />
                 </div>
@@ -499,7 +499,7 @@ function PlansPricing() {
             </div>
             {/* card 3 */}
             <div className='card'>
-              <div className="plan-name-container">
+              <div className="plans-name-container">
                 <div className="plan-name-icon-container plan-name-third-row-icon-container">
                   <Star className="plan-name-star-icon plan-name-third-row-star-icon" />
                 </div>

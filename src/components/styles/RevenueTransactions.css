@@ -1,0 +1,205 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    box-sizing: border-box;
+}
+
+.revenue-transaction-container {
+    width: 100%;
+    min-height: 400px;
+    border: 1px solid lightgray;
+    border-radius: 15px;
+    background-color: #ffffff;
+    margin-top: 30px;
+}
+
+.transaction-header-container {
+    padding: 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid lightgray;
+    width: 100%;
+}
+
+.transaction-history-para {
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.real-time-settlement-para {
+    font-size: 14px;
+    color: gray;
+}
+
+.transactions-btns-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
+.transaction-all-btn {
+    border: 1px solid gray;
+    width: 50px;
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.transaction-pending-btn {
+    color: #ffffff;
+    background-color: #3f37c9;
+    border-radius: 6px;
+    width: 80px;
+    padding: 2px;
+}
+
+.transaction-confirmed-btn {
+    border: 1px solid gray;
+    width: 90px;
+    border-radius: 6px;
+    padding: 2px;
+}
+
+.transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.transaction-table th:first-child {
+    width: 28%;
+
+}
+
+.transaction-table th,
+.transaction-table td {
+    padding: 15px;
+    text-align: left;
+    font-size: 14px;
+}
+
+.transaction-table tr {
+    border: 1px solid #d3dbe2;
+}
+
+.transaction-table th {
+    background-color: #d4d7db;
+    font-weight: 600;
+}
+
+.organization-container {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    gap: 10px;
+}
+
+.organization-left-container {
+    background-color: rgb(211, 211, 211, 0.5);
+    color: rgb(117, 111, 111);
+    padding: 8px 12px;
+    border-radius: 5px;
+}
+
+.techInnovate-para {
+    /* font-size: #000000; */
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.ino-para {
+    font-size: 13px;
+    color: rgb(146, 145, 145);
+}
+
+.amount-container p {
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.date-container p {
+    color: rgb(136, 136, 136);
+    font-size: 18px;
+}
+
+.method-container {
+    display: flex;
+    justify-content: start;
+    align-items: center;
+    text-align: start;
+    gap: 10px;
+}
+
+.method-container p {
+    font-size: 18px;
+}
+
+.active-container {
+    /* margin-left: -40px; */
+    width: 8px;
+    height: 8px;
+    background-color: green;
+    border-radius: 50%;
+}
+
+.second-active-container {
+    background-color: rgb(194, 81, 100);
+}
+
+.third-active-container {
+    background-color: lightgreen;
+}
+
+.transaction-status-container p {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #7f5539;
+    border-radius: 10px;
+    padding-block: 2px;
+    background-color: rgb(187, 148, 87, 0.2);
+
+}
+
+.transaction-confirmed-container p {
+    color: green;
+    background-color: rgb(144, 238, 144, 0.3);
+}
+
+.transaction-rejected-container p {
+    color: red;
+    background-color: rgb(255, 0, 0, 0.1);
+}
+
+#transaction-action {
+    outline: none;
+    border: 1px solid lightgray;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.transaction-footer-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+}
+
+.transaction-footer-container p {
+    color: gray;
+}
+
+.transaction-footer-btns-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+}
+
+.transaction-footer-btns-container button {
+    color: gray;
+    border: 1px solid gray;
+    padding: 4px 8px;
+    border-radius: 8px;
+}

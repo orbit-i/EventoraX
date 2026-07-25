@@ -54,7 +54,31 @@ function RevenueGrowth() {
             </div>
             {/* plan distribution container */}
             <div className='plan-distribution-container'>
-                
+                <p className='plan-distribution-para'>Plan Distribution</p>
+                {/* enterprise plan container */}
+                <div className='enterprise-plan-container'>
+                    <p>Enterprise Plan</p>
+                    <p>68%</p>
+                </div>
+                <div className='enterprise-plan-outer-bar-container'>
+                    <div className='enterprise-plan-inner-bar-container'></div>
+                </div>
+                {/* Pro plan container */}
+                <div className='pro-plan-container'>
+                    <p>Pro Plan</p>
+                    <p>24%</p>
+                </div>
+                <div className='pro-plan-outer-bar-container'>
+                    <div className='pro-plan-inner-bar-container'></div>
+                </div>
+                {/* legacy plan container */}
+                <div className='legacy-plan-container'>
+                    <p>Starter (Legacy)</p>
+                    <p>8%</p>
+                </div>
+                <div className='legacy-plan-outer-bar-container'>
+                    <div className='legacy-plan-inner-bar-container'></div>
+                </div>
             </div>
         </div>
     )
