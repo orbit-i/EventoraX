@@ -6,53 +6,8 @@ datasource db {
   provider = "mysql"
 }
 
-// ------------------------------
-// ENUMS
-// ------------------------------
-
-enum EventMode {
-  ONLINE
-  OFFLINE
-  HYBRID
-}
-
-// Matches spec exactly: Draft, Upcoming, Active, Completed, Archived
-enum EventStatus {
-  DRAFT
-  PUBLISHED   // "Upcoming" in spec
-  ONGOING     // "Active" in spec
-  COMPLETED
-  ARCHIVED
-}
-
-// Matches spec exactly: Registered, Attended, Absent, Cancelled
-enum RegistrationStatus {
-  REGISTERED
-  ATTENDED
-  ABSENT
-  CANCELLED
-}
-
-enum RegisteredVia {
-  WEB
-  ADMIN
-  CSV_IMPORT
-  API
-}
-
-enum SponsorTier {
-  PLATINUM
-  GOLD
-  SILVER
-  BRONZE
-}
-
-// ------------------------------
-// MODELS
-// ------------------------------
-
 model Event {
-  id               String      @id @default(cuid())
+  id               String          @id @default(cuid())
   tenantId         String
   title            String
   organizer        String?
@@ -60,37 +15,33 @@ model Event {
   startDateTime    DateTime
   endDateTime      DateTime
   location         String?
-  description      String?     @db.Text
+  description      String?         @db.Text
   topic            String?
   maxAttendees     Int?
-  ticketPrice      Decimal?    @db.Decimal(10, 2)
-  registrationOpen Boolean     @default(true)
+  ticketPrice      Decimal?        @db.Decimal(10, 2)
+  registrationOpen Boolean         @default(true)
   meetingLink      String?
-  certTemplateId   String?     // owned by Isha's Certificates module — id only, no local FK
-  autoIssueCert    Boolean     @default(false)
-  status           EventStatus @default(DRAFT)
-  createdAt        DateTime    @default(now())
-  updatedAt        DateTime    @updatedAt
-
-  categories    EventCategory[]
-  registrations Registration[]
-  speakers      Speaker[]
-  sponsors      Sponsor[]
-  sessions      Session[]
+  certTemplateId   String?
+  autoIssueCert    Boolean         @default(false)
+  status           EventStatus     @default(DRAFT)
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+  categories       EventCategory[]
+  registrations    Registration[]
+  sessions         Session[]
+  speakers         Speaker[]
+  sponsors         Sponsor[]
 
   @@index([tenantId])
   @@index([tenantId, status])
   @@map("events")
 }
 
-// Per-event configurable categories (e.g. General, VIP, Speaker, Student...).
-// Replaces the old hardcoded global RegistrationCategory enum.
 model EventCategory {
-  id      String @id @default(cuid())
-  tenantId String
-  eventId String
-  label   String
-
+  id            String         @id @default(cuid())
+  tenantId      String
+  eventId       String
+  label         String
   event         Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
   registrations Registration[]
 
@@ -101,52 +52,51 @@ model EventCategory {
 }
 
 model Registration {
-  id               String              @id @default(cuid())
+  id               String             @id @default(cuid())
   tenantId         String
   eventId          String
   categoryId       String?
-  refNo            String              @unique
+  refNo            String             @unique
   name             String
   email            String
   phone            String?
   department       String?
   rollNo           String?
-  registeredVia    RegisteredVia       @default(WEB)
-  status           RegistrationStatus  @default(REGISTERED)
-  registrationDate DateTime            @default(now())
-  ticketId         String?             // owned by Isha's QR Tickets module — id only, no local FK
-  createdAt        DateTime            @default(now())
-  updatedAt        DateTime            @updatedAt
+  registeredVia    RegisteredVia      @default(WEB)
+  status           RegistrationStatus @default(REGISTERED)
+  registrationDate DateTime           @default(now())
+  ticketId         String?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+  category         EventCategory?     @relation(fields: [categoryId], references: [id])
+  event            Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-  event    Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  category EventCategory? @relation(fields: [categoryId], references: [id], onDelete: SetNull)
-
-  @@unique([eventId, email]) // blocks duplicate registration to the same event
+  @@unique([eventId, email])
   @@index([tenantId])
   @@index([eventId])
   @@index([eventId, status])
+  @@index([categoryId], map: "registrations_categoryId_fkey")
   @@map("registrations")
 }
 
 model Speaker {
-  id           String   @id @default(cuid())
-  tenantId     String
-  eventId      String
-  firstName    String
-  lastName     String
-  title        String?
-  company      String?
-  sessionTopic String?
-  bio          String?  @db.Text
-  photo        String?
-  linkedin     String?
-  displayPublic Boolean @default(false)
-  displayOrder Int      @default(0)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-
-  event    Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  sessions Session[]
+  id            String    @id @default(cuid())
+  tenantId      String
+  eventId       String
+  firstName     String
+  lastName      String
+  title         String?
+  company       String?
+  sessionTopic  String?
+  bio           String?   @db.Text
+  photo         String?
+  linkedin      String?
+  displayPublic Boolean   @default(false)
+  displayOrder  Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  sessions      Session[]
+  event         Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([eventId])
@@ -154,19 +104,18 @@ model Speaker {
 }
 
 model Sponsor {
-  id           String      @id @default(cuid())
-  tenantId     String
-  eventId      String
-  name         String
-  website      String?
-  logo         String?
-  tier         SponsorTier @default(BRONZE)
-  displayPublic Boolean    @default(false)
-  displayOrder Int         @default(0)
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-
-  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  id            String      @id @default(cuid())
+  tenantId      String
+  eventId       String
+  name          String
+  website       String?
+  logo          String?
+  tier          SponsorTier @default(BRONZE)
+  displayPublic Boolean     @default(false)
+  displayOrder  Int         @default(0)
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+  event         Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([eventId])
@@ -187,11 +136,46 @@ model Session {
   displayOrder  Int      @default(0)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
-
-  event   Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
-  speaker Speaker? @relation(fields: [speakerId], references: [id], onDelete: SetNull)
+  event         Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  speaker       Speaker? @relation(fields: [speakerId], references: [id])
 
   @@index([tenantId])
   @@index([eventId])
+  @@index([speakerId], map: "sessions_speakerId_fkey")
   @@map("sessions")
+}
+
+enum EventMode {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ONGOING
+  COMPLETED
+  ARCHIVED
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  ATTENDED
+  ABSENT
+  CANCELLED
+}
+
+enum RegisteredVia {
+  WEB
+  ADMIN
+  CSV_IMPORT
+  API
+}
+
+enum SponsorTier {
+  PLATINUM
+  GOLD
+  SILVER
+  BRONZE
 }
