@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Certificates · ORBIT-I</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+
+  <!-- SIDEBAR -->
+
+  <li><a class="nav-link" href="templates.html"> Templates</a></li>
+<li><a class="nav-link" href="customize.html"> Customize</a></li>
+
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="brand-seal" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="16" r="12" fill="#B8892D"/></svg>
+      <div class="brand-name">ORBIT-I<span>X</span></div>
+    </div>
+    <div>
+      <div class="nav-group-label">Certificates</div>
+      <ul class="nav-list">
+        <li><a class="nav-link active" href="index.html"> Certificates</a></li>
+        <li><a class="nav-link" href="generate.html"> Generate Single</a></li>
+        <li><a class="nav-link" href="bulk-generate.html"> Bulk Generate</a></li>
+        <li><a class="nav-link" href="templates.html"> Templates</a></li>
+        <li><a class="nav-link" href="customize.html"> Customize</a></li>
+      </ul>
+    </div>
+    <div class="sidebar-footer">Signed in as<br><b style="color:#EDEFF5">Admin · Events Team</b></div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">
+        <span class="eyebrow">Certificates</span>
+        <h1>Issued Certificates</h1>
+      </div>
+      <div class="topbar-actions">
+        <div class="search-box">
+          <input type="text" placeholder="Search by name, email or certificate ID">
+        </div>
+        <a href="bulk-generate.html" class="btn btn-secondary">Bulk Generate</a>
+        <a href="generate.html" class="btn btn-gold">Generate Certificate</a>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="tab-strip mb-16">
+        <input type="radio" name="filter" id="f-all" checked>
+        <label for="f-all">All · 128</label>
+        <input type="radio" name="filter" id="f-issued">
+        <label for="f-issued">Issued · 109</label>
+        <input type="radio" name="filter" id="f-pending">
+        <label for="f-pending">Pending · 12</label>
+        <input type="radio" name="filter" id="f-revoked">
+        <label for="f-revoked">Revoked · 7</label>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>All certificates</h2>
+            <div class="desc">Every certificate generated across your events.</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>Recipient</th><th>Event</th><th>Template</th><th>Certificate ID</th><th>Issue date</th><th>Status</th><th></th></tr>
+            </thead>
+            <tbody>
+
+              <tr>
+                <td>
+                  <div class="recipient">
+                    <div class="avatar">AR</div>
+                    <div>
+                      <div class="recipient-name">Abeera Fazal</div>
+                      <div class="recipient-email">fazalabeera@mail.com</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Back-End Development 2026</td>
+                <td>Classic Gold</td>
+                <td class="cert-id">EVX-2026-00931</td>
+                <td>21 Jul 2026</td>
+                <td><span class="badge badge-issued">Issued</span></td>
+                <td>
+                  <div class="row-actions">
+                    <a class="icon-btn" href="certificate-preview.html" title="View">👁</a>
+                    <label class="icon-btn" for="send-modal-1" title="Send via email">✉</label>
+                    <label class="icon-btn danger" for="revoke-modal-1" title="Revoke">X</label>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <div class="recipient">
+                    <div class="avatar">BK</div>
+                    <div>
+                      <div class="recipient-name">Rai Saeed</div>
+                      <div class="recipient-email">raisaeed0707@mail.com</div>
+                    </div>
+                  </div>
+                </td>
+                <td>Front-End Development</td>
+                <td>Modern Minimal</td>
+                <td class="cert-id">EVX-2026-00928</td>
+                <td>20 Jul 2026</td>
+                <td><span class="badge badge-pending">Pending</span></td>
+                <td>
+                  <div class="row-actions">
+                    <a class="icon-btn" href="certificate-preview.html" title="View">👁</a>
+                    <label class="icon-btn" for="send-modal-1" title="Send via email">✉</label>
+                    <label class="icon-btn danger" for="revoke-modal-1" title="Revoke">X</label>
+                  </div>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <div class="recipient">
+                    <div class="avatar">SF</div>
+                    <div>
+                      <div class="recipient-name">Sana Fatima</div>
+                      <div class="recipient-email">sana.fatima@mail.com</div>
+                    </div>
+                  </div>
+                </td>
+                <td>React Development 2026</td>
+                <td>Elegant Ribbon</td>
+                <td class="cert-id">EVX-2026-00902</td>
+                <td>18 Jul 2026</td>
+                <td><span class="badge badge-revoked">Revoked</span></td>
+                <td>
+                  <div class="row-actions">
+                    <a class="icon-btn" href="certificate-preview.html" title="View">👁</a>
+                    <label class="icon-btn" for="send-modal-1" title="Send via email">✉</label>
+                  </div>
+                </td>
+              </tr>
+
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <span>Showing 1–3 of 128 certificates</span>
+          <div class="page-controls">
+            <button class="btn btn-secondary btn-sm" disabled>Previous</button>
+            <button class="btn btn-secondary btn-sm">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+
+<!-- REVOKE MODAL -->
+<input type="checkbox" id="revoke-modal-1" class="modal-toggle">
+<div class="modal">
+  <label for="revoke-modal-1" class="modal-backdrop"></label>
+  <div class="modal-panel">
+    <label for="revoke-modal-1" class="modal-close-label">✕</label>
+    <div class="modal-head">
+      <div class="modal-icon maroon"></div>
+      <div><h3>Revoke this certificate?</h3></div>
+    </div>
+    <div class="modal-body">
+      <p>Revoking <b>EVX-2026-00931</b> will invalidate it immediately. The recipient will no longer be able to verify it, and it will be marked <b>Revoked</b>.</p>
+      <div class="field mt-16" style="margin-bottom:0">
+        <label for="revoke-reason">Reason for revoking</label>
+        <select id="revoke-reason">
+          <option>Issued in error</option>
+          <option>Recipient details incorrect</option>
+          <option>Event / achievement not completed</option>
+          <option>Other</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <label for="revoke-modal-1" class="btn btn-secondary">Cancel</label>
+      <label for="revoke-modal-1" class="btn btn-danger">Revoke certificate</label>
+    </div>
+  </div>
+</div>
+
+<!-- SEND VIA EMAIL MODAL -->
+<input type="checkbox" id="send-modal-1" class="modal-toggle">
+<div class="modal">
+  <label for="send-modal-1" class="modal-backdrop"></label>
+  <div class="modal-panel">
+    <label for="send-modal-1" class="modal-close-label"></label>
+    <div class="modal-head">
+      <div class="modal-icon emerald"></div>
+      <div><h3>Send certificate via email</h3></div>
+    </div>
+    <div class="modal-body">
+      <p class="mb-16">The certificate PDF will be attached and sent from <b>certificates@Orbit-I.com</b>.</p>
+      <div class="field">
+        <label for="send-to">Recipient email</label>
+        <input type="email" id="send-to" value="raisaeed0707@mail.com">
+      </div>
+      <div class="field" style="margin-bottom:0">
+        <label for="send-msg">Message <span class="hint">(optional)</span></label>
+        <textarea id="send-msg" rows="3" placeholder="Add a short note…"></textarea>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <label for="send-modal-1" class="btn btn-secondary">Cancel</label>
+      <label for="send-modal-1" class="btn btn-gold">Send certificate</label>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
