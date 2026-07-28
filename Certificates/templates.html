@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Templates · ORBIT-I</title>
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="brand-seal" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="16" r="12" fill="#B8892D"/></svg>
+      <div class="brand-name">ORBIT-I<span>X</span></div>
+    </div>
+    <div>
+      <div class="nav-group-label">Certificates</div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="index.html"> Certificates</a></li>
+        <li><a class="nav-link" href="generate.html"> Generate Single</a></li>
+        <li><a class="nav-link" href="bulk-generate.html"> Bulk Generate</a></li>
+        <li><a class="nav-link active" href="templates.html"> Templates</a></li>
+        <li><a class="nav-link" href="customize.html">⚙ Customize</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="nav-group-label">QR Tickets</div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="qr-tickets-list.html">🎫 Tickets List</a></li>
+        <li><a class="nav-link" href="qr-scanner.html">📷 Scanner</a></li>
+      </ul>
+    </div>
+
+    <div>
+  <div class="nav-group-label">ID Cards</div>
+  <ul class="nav-list">
+    <li><a class="nav-link" href="id-cards-select.html">🪪 Select Attendees</a></li>
+    <li><a class="nav-link" href="id-cards-templates.html">🎨 Templates</a></li>
+    <li><a class="nav-link" href="id-cards-preview.html">👁 Preview &amp; Generate</a></li>
+  </ul>
+</div>
+
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">
+        <span class="eyebrow">Certificates · Templates</span>
+        <h1>Choose a Template</h1>
+      </div>
+      <a href="generate.html" class="btn btn-gold">Use selected template →</a>
+    </div>
+
+    <div class="content">
+      <div class="template-toolbar">
+        <div class="tab-strip">
+          <input type="radio" name="cat" id="cat-all" checked><label for="cat-all">All · 5</label>
+        </div>
+        <span class="text-soft">5 templates available</span>
+      </div>
+
+      <div class="template-grid">
+
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t1" checked>
+          <label for="t1">
+            <div class="tpl-thumb" style="background:linear-gradient(#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Classic Gold</span>
+            </div>
+            <div class="tpl-name">Classic Gold</div>
+            <div class="tpl-tag">Classic</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t2">
+          <label for="t2">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Modern Minimal</span>
+            </div>
+            <div class="tpl-name">Modern Minimal</div>
+            <div class="tpl-tag">Modern</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t3">
+          <label for="t3">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#EFE7E4, #D9CFC9)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t4">
+          <label for="t4">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#E4EEEA, #CFE3DA)">
+              <span class="tpl-title" style="color:#14213D">Bold Achievement</span>
+            </div>
+            <div class="tpl-name">Bold Achievement</div>
+            <div class="tpl-tag">Bold</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t5">
+          <label for="t5">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <!-- <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t6">
+          <label for="t6">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t7">
+          <label for="t7">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#EFE7E4, #D9CFC9)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t8">
+          <label for="t8">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#E4EEEA, #CFE3DA)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t9">
+          <label for="t9">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t10">
+          <label for="t10">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t11">
+          <label for="t11">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#EFE7E4, #D9CFC9)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t12">
+          <label for="t12">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#E4EEEA, #CFE3DA)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t13">
+          <label for="t13">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t14">
+          <label for="t14">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t15 ">
+          <label for="t15">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#EFE7E4, #D9CFC9)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t16">
+          <label for="t16">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#E4EEEA, #CFE3DA)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t17">
+          <label for="t17">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t18">
+          <label for="t18">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t19">
+          <label for="t19">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#EFE7E4, #D9CFC9)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t20">
+          <label for="t20">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#E4EEEA, #CFE3DA)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t21">
+          <label for="t21">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t23">
+          <label for="t22">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t23">
+          <label for="t23">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#EFE7E4, #D9CFC9)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t24">
+          <label for="t24">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#E4EEEA, #CFE3DA)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t25">
+          <label for="t25">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t26">
+          <label for="t26">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t27">
+          <label for="t27">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#EFE7E4, #D9CFC9)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t28">
+          <label for="t28">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#E4EEEA, #CFE3DA)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t29">
+          <label for="t29">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t30">
+          <label for="t30">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t31">
+          <label for="t31">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#EFE7E4, #D9CFC9)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t32">
+          <label for="t32">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#E4EEEA, #CFE3DA)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t33">
+          <label for="t33">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t34">
+          <label for="t34">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t35">
+          <label for="t35">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#EFE7E4, #D9CFC9)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t36">
+          <label for="t36">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#E4EEEA, #CFE3DA)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t37">
+          <label for="t37">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t38">
+          <label for="t38">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t39">
+          <label for="t39">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#EFE7E4, #D9CFC9)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t40">
+          <label for="t40">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#E4EEEA, #CFE3DA)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t41">
+          <label for="t41">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t42">
+          <label for="t42">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t43">
+          <label for="t43">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#EFE7E4, #D9CFC9)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t44">
+          <label for="t44">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#E4EEEA, #CFE3DA)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t45">
+          <label for="t45">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t47">
+          <label for="t46">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t47">
+          <label for="t47">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#EFE7E4, #D9CFC9)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t48">
+          <label for="t48">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#E4EEEA, #CFE3DA)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t49">
+          <label for="t49">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9, #F3E6BE)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div>
+
+        <div class="tpl-card">
+          <input type="radio" name="tpl-full" id="t50">
+          <label for="t50">
+            <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8, #E3E6EC)">
+              <span class="tpl-title" style="color:#14213D">Elegant Ribbon</span>
+            </div>
+            <div class="tpl-name">Elegant Ribbon</div>
+            <div class="tpl-tag">Elegant</div>
+          </label>
+        </div> -->
+
+
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

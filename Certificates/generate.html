@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Generate Certificate · ORBIT-I</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<style>
+  .step-panel { display: none; }
+
+  #step-1:checked ~ .app-shell #panel-1,
+  #step-2:checked ~ .app-shell #panel-2,
+  #step-3:checked ~ .app-shell #panel-3,
+  #step-4:checked ~ .app-shell #panel-4 {
+    display: block;
+  }
+</style>
+</head>
+<body>
+
+<!-- ye 4 radios pura stepper control karte hain -->
+<input type="radio" name="gen-step" id="step-1" class="modal-toggle" checked style="display:none">
+<input type="radio" name="gen-step" id="step-2" class="modal-toggle" style="display:none">
+<input type="radio" name="gen-step" id="step-3" class="modal-toggle" style="display:none">
+<input type="radio" name="gen-step" id="step-4" class="modal-toggle" style="display:none">
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="brand-seal" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="16" r="12" fill="#B8892D"/><path d="M20 10L21.8 14.2L26.3 14.6L22.9 17.5L23.9 22L20 19.6L16.1 22L17.1 17.5L13.7 14.6L18.2 14.2Z" fill="#14213D"/></svg>
+      <div class="brand-name">ORBIT-I<span>X</span></div>
+    </div>
+    <div>
+      <div class="nav-group-label">Certificates</div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="index.html">📄 Certificates</a></li>
+        <li><a class="nav-link active" href="generate.html">➕ Generate Single</a></li>
+        <li><a class="nav-link" href="bulk-generate.html">🗂 Bulk Generate</a></li>
+        <li><a class="nav-link" href="templates.html">🎨 Templates</a></li>
+        <li><a class="nav-link" href="customize.html">⚙ Customize</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="nav-group-label">QR Tickets</div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="qr-tickets-list.html">🎫 Tickets List</a></li>
+        <li><a class="nav-link" href="qr-scanner.html">📷 Scanner</a></li>
+      </ul>
+    </div>
+
+    <div>
+  <div class="nav-group-label">ID Cards</div>
+  <ul class="nav-list">
+    <li><a class="nav-link" href="id-cards-select.html">🪪 Select Attendees</a></li>
+    <li><a class="nav-link" href="id-cards-templates.html">🎨 Templates</a></li>
+    <li><a class="nav-link" href="id-cards-preview.html">👁 Preview &amp; Generate</a></li>
+  </ul>
+</div>
+
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">
+        <span class="eyebrow">Certificates · New</span>
+        <h1>Generate a Certificate</h1>
+      </div>
+      <a href="index.html" class="btn btn-ghost">Cancel</a>
+    </div>
+
+    <div class="content" style="max-width:900px">
+      <div class="card card-pad">
+
+        <div class="stepper-track">
+          <div class="step-node s1"><div class="step-dot">1</div><div class="step-label">Recipient</div></div>
+          <div class="step-line"></div>
+          <div class="step-node s2"><div class="step-dot">2</div><div class="step-label">Template</div></div>
+          <div class="step-line"></div>
+          <div class="step-node s3"><div class="step-dot">3</div><div class="step-label">Customize</div></div>
+          <div class="step-line"></div>
+          <div class="step-node s4"><div class="step-dot">4</div><div class="step-label">Preview</div></div>
+        </div>
+
+        <div class="step-panels">
+
+          <!-- STEP 1 -->
+          <section id="panel-1" class="step-panel">
+            <h2 class="mb-16">Recipient details</h2>
+            <div class="field-row">
+              <div class="field">
+                <label for="r-name">Recipient name</label>
+                <input type="text" id="r-name" placeholder="e.g. Rai Saeed">
+              </div>
+              <div class="field">
+                <label for="r-email">Recipient email</label>
+                <input type="email" id="r-email" placeholder="e.g. raisaeed0707@mail.com">
+              </div>
+            </div>
+            <div class="field-row">
+              <div class="field">
+                <label for="r-event">Event / course</label>
+                <select id="r-event">
+                  <option>Front-End Development 2026</option>
+                  <option>ORBIT Team — Batch 1</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="r-date">Completion date</label>
+                <input type="date" id="r-date" value="2026-07-24">
+              </div>
+            </div>
+            <label for="step-2" class="btn btn-gold">Continue to Template →</label>
+          </section>
+
+          <!-- STEP 2 -->
+          <section id="panel-2" class="step-panel">
+            <h2 class="mb-16">Choose a template</h2>
+            <div class="template-grid" style="grid-template-columns:repeat(auto-fill,minmax(150px,1fr))">
+              <div class="tpl-card">
+                <input type="radio" name="tpl-pick" id="tp1" checked>
+                <label for="tp1">
+                  <div class="tpl-thumb" style="background:linear-gradient(160deg,#FBF6E9,#F3E6BE)">
+                    <span class="tpl-title" style="color:#14213D">Classic Gold</span>
+                  </div>
+                  <div class="tpl-name">Classic Gold</div>
+                </label>
+              </div>
+              <div class="tpl-card">
+                <input type="radio" name="tpl-pick" id="tp2">
+                <label for="tp2">
+                  <div class="tpl-thumb" style="background:linear-gradient(160deg,#F5F6F8,#E3E6EC)">
+                    <span class="tpl-title" style="color:#14213D">Modern Minimal</span>
+                  </div>
+                  <div class="tpl-name">Modern Minimal</div>
+                </label>
+              </div>
+            </div>
+            <div class="flex gap-12 mt-24">
+              <label for="step-1" class="btn btn-secondary">← Back</label>
+              <label for="step-3" class="btn btn-gold">Continue →</label>
+            </div>
+          </section>
+
+          <!-- STEP 3 -->
+          <section id="panel-3" class="step-panel">
+            <h2 class="mb-16">Customize (basic)</h2>
+            <div class="field">
+              <label for="sig-name">Signatory name</label>
+              <input type="text" id="sig-name" value="Abdul Samad Rind">
+            </div>
+            <div class="flex gap-12 mt-24">
+              <label for="step-2" class="btn btn-secondary">← Back</label>
+              <label for="step-4" class="btn btn-gold">Continue to Preview →</label>
+            </div>
+          </section>
+
+          <!-- STEP 4 -->
+          <section id="panel-4" class="step-panel">
+            <h2 class="mb-16">Preview &amp; generate</h2>
+            <div class="cert-stage">
+              <div class="certificate">
+                <div class="certificate-inner">
+                  <span class="cert-eyebrow">ORBIT-I presents</span>
+                  <h3 class="cert-heading">Certificate of Completion</h3>
+                  <p class="cert-sub">is proudly awarded to</p>
+                  <div class="cert-recipient">Rai Muhammad Saeed</div>
+                  <p class="cert-desc">for successfully completing <b>Front-end Development 2026</b>.</p>
+                  <div class="cert-footer">
+                    <div class="cert-sign">
+                      <div class="sig-svg" style="font-family:var(--font-display);font-style:italic;font-size:20px;color:#14213D">ORBIT-I TEAM</div>
+                      <div class="cert-sign-name">Abdul Samad Rind</div>
+                    </div>
+                    <svg class="cert-seal" viewBox="0 0 64 64" fill="none">
+                      <circle cx="32" cy="32" r="20" fill="#B8892D"/>
+                      <path d="M32 20l3.5 7 7.5.8-5.5 5.2 1.5 7.5-6.5-3.8-6.5 3.8 1.5-7.5-5.5-5.2 7.5-.8Z" fill="#14213D"/>
+                    </svg>
+                    <div class="cert-sign-name">21 Jul 2026</div>
+                  </div>
+                  <div class="cert-id-row">Certificate ID EVX-2026-00931</div>
+                </div>
+              </div>
+            </div>
+            <div class="flex gap-12 mt-24">
+              <label for="step-3" class="btn btn-secondary">← Back</label>
+              <a href="index.html" class="btn btn-gold">Generate certificate</a>
+            </div>
+          </section>
+
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+</body>
+</html>

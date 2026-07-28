@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Tickets · ORBIT-I</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="brand-seal" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="20" cy="16" r="12" fill="#B8892D"/>
+        <circle cx="20" cy="16" r="12" stroke="#14213D" stroke-width="1"/>
+        <path d="M20 10L21.8 14.2L26.3 14.6L22.9 17.5L23.9 22L20 19.6L16.1 22L17.1 17.5L13.7 14.6L18.2 14.2Z" fill="#14213D"/>
+        <path d="M13 25L10 38L20 33L30 38L27 25" stroke="#B8892D" stroke-width="2" fill="none" stroke-linejoin="round"/>
+      </svg>
+      <div class="brand-name">ORBIT-I<span>X</span></div>
+    </div>
+
+    <div>
+      <div class="nav-group-label">Certificates</div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="index.html">📄 Certificates</a></li>
+        <li><a class="nav-link" href="generate.html">➕ Generate Single</a></li>
+        <li><a class="nav-link" href="bulk-generate.html">🗂 Bulk Generate</a></li>
+        <li><a class="nav-link" href="templates.html">🎨 Templates</a></li>
+        <li><a class="nav-link" href="customize.html">⚙ Customize</a></li>
+      </ul>
+    </div>
+
+    <div>
+      <div class="nav-group-label">QR Tickets</div>
+      <ul class="nav-list">
+        <li><a class="nav-link active" href="qr-tickets-list.html">🎫 Tickets List</a></li>
+        <li><a class="nav-link" href="qr-scanner.html">📷 Scanner</a></li>
+      </ul>
+    </div>
+
+    <div class="sidebar-footer">Signed in as<br><b style="color:#EDEFF5">Admin · Events Team</b></div>
+
+    <div>
+  <div class="nav-group-label">ID Cards</div>
+  <ul class="nav-list">
+    <li><a class="nav-link" href="id-cards-select.html">🪪 Select Attendees</a></li>
+    <li><a class="nav-link" href="id-cards-templates.html">🎨 Templates</a></li>
+    <li><a class="nav-link" href="id-cards-preview.html">👁 Preview &amp; Generate</a></li>
+  </ul>
+</div>
+
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">
+        <span class="eyebrow">QR Tickets</span>
+        <h1>Event Tickets</h1>
+      </div>
+      <div class="topbar-actions">
+        <div class="search-box">
+          <input type="text" id="search-input" placeholder="Search by attendee name or ticket ID">
+          <button id="search-go-btn" class="icon-btn" style="border:none;background:transparent" title="Open QR">🔍</button>
+        </div>
+        <button id="bulk-download-btn" class="btn btn-secondary" disabled>⬇ Download Selected (0)</button>
+        <a href="qr-scanner.html" class="btn btn-gold">📷 Open Scanner</a>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="tab-strip mb-16">
+        <input type="radio" name="ticket-filter" id="tf-all" value="all" checked>
+        <label for="tf-all">All · <span id="count-all">12</span></label>
+        <input type="radio" name="ticket-filter" id="tf-checked" value="Checked-in">
+        <label for="tf-checked">Checked-in · <span id="count-checked">0</span></label>
+        <input type="radio" name="ticket-filter" id="tf-pending" value="Not Arrived">
+        <label for="tf-pending">Not Arrived · <span id="count-pending">0</span></label>
+      </div>
+
+      <div class="bulk-bar" id="bulk-bar">
+        <span id="bulk-bar-text">0 tickets selected</span>
+        <button class="btn btn-gold btn-sm" id="bulk-download-btn-2">⬇ Download ZIP</button>
+        <button class="btn btn-ghost btn-sm" id="clear-selection-btn">Clear selection</button>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <div>
+            <h2>All tickets</h2>
+            <div class="desc">Every QR ticket issued for this event.</div>
+          </div>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="checkbox-cell"><input type="checkbox" id="select-all-checkbox" class="select-all-checkbox"></th>
+                <th>QR</th>
+                <th>Attendee</th>
+                <th>Ticket ID</th>
+                <th>Ticket type</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="ticket-rows">
+              <!-- Rows JavaScript se yahan generate hongi -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="pagination">
+          <span id="pagination-info">Showing 1–3 of 12 tickets</span>
+          <div class="page-controls">
+            <button class="btn btn-secondary btn-sm" id="prev-btn">Previous</button>
+            <button class="btn btn-secondary btn-sm" id="next-btn">Next</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+  
+  const TICKETS = [
+    { id:"TKT-2026-4471", name:"Rai Saeed",     email:"raisaeed0707@gmail.com", type:"General Admission", status:"Checked-in" },
+    { id:"TKT-2026-4472", name:"Abeera Fazal",  email:"fazalabeera@mail.com",   type:"VIP",                status:"Not Arrived" },
+    { id:"TKT-2026-4473", name:"Sana Fatima",   email:"sana.fatima@mail.com",   type:"General Admission", status:"Checked-in" },
+    { id:"TKT-2026-4474", name:"Bilal Khan",    email:"bilal.khan@mail.com",    type:"General Admission", status:"Checked-in" },
+    { id:"TKT-2026-4475", name:"Hamza Malik",   email:"hamza.malik@mail.com",   type:"VIP",                status:"Not Arrived" },
+    { id:"TKT-2026-4476", name:"Zara Nasir",    email:"zara.nasir@mail.com",    type:"General Admission", status:"Checked-in" },
+    { id:"TKT-2026-4477", name:"Usman Tariq",   email:"usman.tariq@mail.com",   type:"General Admission", status:"Not Arrived" },
+    { id:"TKT-2026-4478", name:"Mahnoor Ali",   email:"mahnoor.ali@mail.com",   type:"VIP",                status:"Checked-in" },
+    { id:"TKT-2026-4479", name:"Danish Iqbal",  email:"danish.iqbal@mail.com",  type:"General Admission", status:"Checked-in" },
+    { id:"TKT-2026-4480", name:"Iqra Yousaf",   email:"iqra.yousaf@mail.com",   type:"General Admission", status:"Not Arrived" },
+    { id:"TKT-2026-4481", name:"Farhan Sheikh", email:"farhan.sheikh@mail.com", type:"VIP",                status:"Checked-in" },
+    { id:"TKT-2026-4482", name:"Noor Fatima",   email:"noor.fatima@mail.com",   type:"General Admission", status:"Checked-in" }
+  ];
+
+  const PAGE_SIZE = 3;
+  let currentPage = 1;
+  let currentFilter = "all";
+  let currentSearch = "";
+  const selectedIds = new Set();
+
+  const rowsBody       = document.getElementById('ticket-rows');
+  const paginationInfo = document.getElementById('pagination-info');
+  const prevBtn        = document.getElementById('prev-btn');
+  const nextBtn        = document.getElementById('next-btn');
+  const searchInput    = document.getElementById('search-input');
+  const selectAllBox   = document.getElementById('select-all-checkbox');
+  const bulkBar        = document.getElementById('bulk-bar');
+  const bulkBarText    = document.getElementById('bulk-bar-text');
+  const bulkDownloadTopBtn = document.getElementById('bulk-download-btn');
+  const bulkDownloadBar2  = document.getElementById('bulk-download-btn-2');
+  const clearSelectionBtn = document.getElementById('clear-selection-btn');
+
+  function initials(name){
+    return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase();
+  }
+
+  function badgeClass(status){
+    return status === 'Checked-in' ? 'badge-issued' : 'badge-pending';
+  }
+
+  function getFilteredTickets(){
+    return TICKETS.filter(t => {
+      const matchesFilter = currentFilter === 'all' || t.status === currentFilter;
+      const q = currentSearch.toLowerCase();
+      const matchesSearch = !q || t.name.toLowerCase().includes(q) || t.id.toLowerCase().includes(q);
+      return matchesFilter && matchesSearch;
+    });
+  }
+
+  function renderCounts(){
+    document.getElementById('count-all').textContent = TICKETS.length;
+    document.getElementById('count-checked').textContent = TICKETS.filter(t => t.status === 'Checked-in').length;
+    document.getElementById('count-pending').textContent = TICKETS.filter(t => t.status === 'Not Arrived').length;
+  }
+
+  function updateBulkUI(){
+    const n = selectedIds.size;
+    bulkDownloadTopBtn.textContent = `⬇ Download Selected (${n})`;
+    bulkDownloadTopBtn.disabled = n === 0;
+    bulkBarText.textContent = `${n} ticket${n === 1 ? '' : 's'} selected`;
+    bulkBar.classList.toggle('active', n > 0);
+  }
+
+  function renderPage(){
+    const filtered = getFilteredTickets();
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    if(currentPage > totalPages) currentPage = totalPages;
+    if(currentPage < 1) currentPage = 1;
+
+    const start = (currentPage - 1) * PAGE_SIZE;
+    const pageItems = filtered.slice(start, start + PAGE_SIZE);
+
+    rowsBody.innerHTML = '';
+
+    if(pageItems.length === 0){
+      rowsBody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:30px;color:var(--ink-500)">No tickets found.</td></tr>';
+    }
+
+    pageItems.forEach(t => {
+      const tr = document.createElement('tr');
+      const checked = selectedIds.has(t.id) ? 'checked' : '';
+      tr.innerHTML = `
+        <td class="checkbox-cell"><input type="checkbox" class="row-checkbox" data-id="${t.id}" ${checked}></td>
+        <td><div class="qr-tile" data-qr="${t.id}"></div></td>
+        <td>
+          <div class="recipient">
+            <div class="avatar">${initials(t.name)}</div>
+            <div>
+              <div class="recipient-name">${t.name}</div>
+              <div class="recipient-email">${t.email}</div>
+            </div>
+          </div>
+        </td>
+        <td class="cert-id">${t.id}</td>
+        <td>${t.type}</td>
+        <td><span class="badge ${badgeClass(t.status)}">${t.status}</span></td>
+        <td>
+          <div class="row-actions">
+            <a class="icon-btn" href="qr-code-display.html?id=${t.id}" title="View QR">🔍</a>
+          </div>
+        </td>`;
+      rowsBody.appendChild(tr);
+    });
+
+    // Generate QR thumbnails for visible rows
+    document.querySelectorAll('.qr-tile[data-qr]').forEach(el => {
+      el.innerHTML = '';
+      new QRCode(el, {
+        text: el.dataset.qr,
+        width: 44,
+        height: 44,
+        colorDark: "#14213D",
+        colorLight: "#FBF6E9",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+    });
+
+    // Row checkbox listeners
+    document.querySelectorAll('.row-checkbox').forEach(cb => {
+      cb.addEventListener('change', function(){
+        if(this.checked) selectedIds.add(this.dataset.id);
+        else selectedIds.delete(this.dataset.id);
+        updateBulkUI();
+        syncSelectAllBox(filtered);
+      });
+    });
+
+    syncSelectAllBox(filtered);
+
+    const showingFrom = filtered.length === 0 ? 0 : start + 1;
+    const showingTo = Math.min(start + PAGE_SIZE, filtered.length);
+    paginationInfo.textContent = `Showing ${showingFrom}–${showingTo} of ${filtered.length} tickets`;
+
+    prevBtn.disabled = currentPage === 1;
+    nextBtn.disabled = currentPage === totalPages;
+  }
+
+  function syncSelectAllBox(filtered){
+    const allSelected = filtered.length > 0 && filtered.every(t => selectedIds.has(t.id));
+    selectAllBox.checked = allSelected;
+  }
+
+  selectAllBox.addEventListener('change', function(){
+    const filtered = getFilteredTickets();
+    if(this.checked){
+      filtered.forEach(t => selectedIds.add(t.id));
+    }else{
+      filtered.forEach(t => selectedIds.delete(t.id));
+    }
+    updateBulkUI();
+    renderPage();
+  });
+
+  clearSelectionBtn.addEventListener('click', function(){
+    selectedIds.clear();
+    updateBulkUI();
+    renderPage();
+  });
+
+  prevBtn.addEventListener('click', () => { currentPage--; renderPage(); });
+  nextBtn.addEventListener('click', () => { currentPage++; renderPage(); });
+
+  document.querySelectorAll('input[name="ticket-filter"]').forEach(radio => {
+    radio.addEventListener('change', function(){
+      currentFilter = this.value;
+      currentPage = 1;
+      renderPage();
+    });
+  });
+
+  searchInput.addEventListener('input', function(){
+    currentSearch = this.value;
+    currentPage = 1;
+    renderPage();
+  });
+
+  function goToSearchedTicket(){
+    const matches = getFilteredTickets();
+    if(matches.length === 0){
+      alert("Koi ticket is naam/ID se nahi mila.");
+      return;
+    }
+    const target = matches[0];
+    window.location.href = "qr-code-display.html?id=" + encodeURIComponent(target.id);
+  }
+
+  document.getElementById('search-go-btn').addEventListener('click', goToSearchedTicket);
+
+  searchInput.addEventListener('keydown', function(e){
+    if(e.key === 'Enter'){
+      e.preventDefault();
+      goToSearchedTicket();
+    }
+  });
+
+  
+  function sanitizeFileName(name){
+    return name.replace(/[^a-z0-9]/gi, '_');
+  }
+
+  async function bulkDownloadZip(){
+    if(selectedIds.size === 0){
+      alert("Pehle kam az kam ek ticket select karein.");
+      return;
+    }
+
+    const btnLabelBackup1 = bulkDownloadTopBtn.textContent;
+    const btnLabelBackup2 = bulkDownloadBar2.textContent;
+    bulkDownloadTopBtn.textContent = "Preparing ZIP…";
+    bulkDownloadBar2.textContent = "Preparing ZIP…";
+    bulkDownloadTopBtn.disabled = true;
+    bulkDownloadBar2.disabled = true;
+
+    try{
+      const zip = new JSZip();
+      const folder = zip.folder("EventoraX-Tickets");
+      const selectedTickets = TICKETS.filter(t => selectedIds.has(t.id));
+
+      for(const t of selectedTickets){
+        const tempDiv = document.createElement('div');
+        tempDiv.style.position = 'fixed';
+        tempDiv.style.left = '-9999px';
+        document.body.appendChild(tempDiv);
+
+        new QRCode(tempDiv, {
+          text: t.id,
+          width: 400,
+          height: 400,
+          colorDark: "#14213D",
+          colorLight: "#FBF6E9",
+          correctLevel: QRCode.CorrectLevel.M
+        });
+
+        // qrcodejs render ko ek tick ka time dein
+        await new Promise(resolve => setTimeout(resolve, 60));
+
+        let dataUrl;
+        const canvasEl = tempDiv.querySelector('canvas');
+        const imgEl = tempDiv.querySelector('img');
+        if(canvasEl){
+          dataUrl = canvasEl.toDataURL('image/png');
+        }else if(imgEl){
+          dataUrl = imgEl.src;
+        }
+
+        document.body.removeChild(tempDiv);
+
+        if(dataUrl){
+          const base64 = dataUrl.split(',')[1];
+          const fileName = sanitizeFileName(t.name) + "_" + t.id + ".png";
+          folder.file(fileName, base64, { base64: true });
+        }
+      }
+
+      const content = await zip.generateAsync({ type: "blob" });
+      const url = URL.createObjectURL(content);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = "eventorax-tickets.zip";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+    }catch(err){
+      console.error("ZIP download error:", err);
+      alert("ZIP banane mein masla hua. Console check karein.");
+    }finally{
+      bulkDownloadTopBtn.textContent = btnLabelBackup1;
+      bulkDownloadBar2.textContent = btnLabelBackup2;
+      bulkDownloadBar2.disabled = false;
+      updateBulkUI();
+    }
+  }
+
+  bulkDownloadTopBtn.addEventListener('click', bulkDownloadZip);
+  bulkDownloadBar2.addEventListener('click', bulkDownloadZip);
+
+  renderCounts();
+  renderPage();
+  updateBulkUI();
+});
+</script>
+
+</body>
+</html>

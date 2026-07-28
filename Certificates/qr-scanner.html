@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QR Scanner · ORBIT-I</title>
+<link rel="stylesheet" href="assets/css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+</head>
+<body>
+
+<div class="app-shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="brand-seal" viewBox="0 0 40 40" fill="none"><circle cx="20" cy="16" r="12" fill="#B8892D"/></svg>
+      <div class="brand-name">ORBIT-I<span>X</span></div>
+    </div>
+    <div>
+      <div class="nav-group-label">QR Tickets</div>
+      <ul class="nav-list">
+        <li><a class="nav-link" href="qr-tickets-list.html">🎫 Tickets List</a></li>
+        <li><a class="nav-link active" href="qr-scanner.html">📷 Scanner</a></li>
+      </ul>
+    </div>
+
+    <div>
+  <div class="nav-group-label">ID Cards</div>
+  <ul class="nav-list">
+    <li><a class="nav-link" href="id-cards-select.html">🪪 Select Attendees</a></li>
+    <li><a class="nav-link" href="id-cards-templates.html">🎨 Templates</a></li>
+    <li><a class="nav-link" href="id-cards-preview.html">👁 Preview &amp; Generate</a></li>
+  </ul>
+</div>
+
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div class="topbar-title">
+        <span class="eyebrow">QR Tickets · Check-in</span>
+        <h1>Scan Ticket</h1>
+      </div>
+      <a href="qr-tickets-list.html" class="btn btn-ghost">← Back to list</a>
+    </div>
+
+    <div class="content">
+      <div class="card card-pad">
+
+        <div class="banner banner-info mb-16" id="https-warning" style="display:none">
+          
+        </div>
+
+        <div id="console-log" class="banner banner-warn mb-16" style="display:none"></div>
+
+        <div class="scanner-body">
+          <div class="scanner-stage">
+
+            <video id="scanner-video" playsinline autoplay muted></video>
+            <canvas id="scanner-canvas"></canvas>
+
+            <div class="camera-permission-box" id="start-screen">
+              <div style="font-size:40px">📷</div>
+              <div>
+                <h3 style="color:#fff;font-size:16px;margin-bottom:6px">Start the scanner</h3>
+                <p style="color:#C9CEDA;font-size:13px">We'll ask for camera permission</p>
+              </div>
+              <button class="btn btn-gold" id="start-scan-btn" type="button">Start Camera</button>
+            </div>
+
+            <div class="scan-idle" style="display:none">
+              <div class="scan-frame">
+                <div class="scan-corner-bl"></div>
+                <div class="scan-corner-br"></div>
+                <div class="scan-line"></div>
+              </div>
+              <div class="scanner-caption">Point camera at the ticket's QR code</div>
+            </div>
+
+            <div class="scanner-result success" style="display:none">
+              <div class="r-icon">✓</div>
+              <h3>Ticket Verified</h3>
+              <p id="scan-success-name"></p>
+              <p id="scan-success-meta" class="text-soft"></p>
+              <button class="btn btn-gold btn-sm" id="rescan-btn-1" type="button">Scan next ticket</button>
+            </div>
+
+            <div class="scanner-result error" style="display:none">
+              <div class="r-icon">✕</div>
+              <h3>Invalid Ticket</h3>
+              <p id="scan-error-msg"></p>
+              <button class="btn btn-secondary btn-sm" id="rescan-btn-2" type="button">Try again</button>
+            </div>
+
+          </div>
+        </div>
+
+        <div class="card mt-24" style="box-shadow:none">
+          <div class="card-header"><h2 style="font-size:15px">Recent scans</h2></div>
+          <ul class="recent-scans" id="recent-scans" style="padding:8px 22px"></ul>
+        </div>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function(){
+
+  function safeGet(id){
+    const el = document.getElementById(id);
+    if(!el) console.warn('⚠️ Element not found:', id);
+    return el;
+  }
+
+  const video       = safeGet('scanner-video');
+  const canvas      = safeGet('scanner-canvas');
+  const ctx         = canvas ? canvas.getContext('2d', { willReadFrequently: true }) : null;
+  const startScreen = safeGet('start-screen');
+  const startBtn    = safeGet('start-scan-btn');
+  const idleEl      = document.querySelector('.scan-idle');
+  const successEl   = document.querySelector('.scanner-result.success');
+  const errorEl     = document.querySelector('.scanner-result.error');
+  const successName = safeGet('scan-success-name');
+  const successMeta  = safeGet('scan-success-meta');
+  const errorMsg     = safeGet('scan-error-msg');
+  const recentList   = safeGet('recent-scans');
+  const httpsWarning = safeGet('https-warning');
+  const rescanBtn1   = safeGet('rescan-btn-1');
+  const rescanBtn2   = safeGet('rescan-btn-2');
+
+  const VALID_TICKETS = {
+    "TKT-2026-4471": { name: "Rai Saeed",    type: "General Admission" },
+    "TKT-2026-4472": { name: "Abeera Fazal", type: "VIP" },
+    "TKT-2026-4473": { name: "Sana Fatima",  type: "General Admission" }
+  };
+
+  let stream = null;
+  let scanning = false;
+  let rafId = null;
+
+  if (!window.isSecureContext && httpsWarning) {
+    httpsWarning.style.display = 'flex';
+  }
+
+  function showOnly(el){
+    [idleEl, successEl, errorEl].forEach(e => { if(e) e.style.display = 'none'; });
+    if(el) el.style.display = 'flex';
+  }
+
+  async function startCamera(){
+    console.log('Start Camera clicked');
+    try{
+      stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: "environment" } },
+        audio: false
+      });
+      video.srcObject = stream;
+      await video.play();
+      if(startScreen) startScreen.style.display = 'none';
+      scanning = true;
+      showOnly(idleEl);
+      tick();
+    }catch(err){
+      console.error('Camera error:', err);
+      if(errorMsg) errorMsg.textContent = err.name === 'NotAllowedError'
+        ? "Camera permission denied. Please allow camera access and reload."
+        : "Could not access camera: " + err.message;
+      if(startScreen) startScreen.style.display = 'none';
+      showOnly(errorEl);
+    }
+  }
+
+  function tick(){
+    if(!scanning || !ctx) return;
+    if(video.readyState === video.HAVE_ENOUGH_DATA){
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height, { inversionAttempts: "dontInvert" });
+      if(code && code.data){
+        handleResult(code.data.trim());
+        return;
+      }
+    }
+    rafId = requestAnimationFrame(tick);
+  }
+
+  function handleResult(text){
+    scanning = false;
+    const ticket = VALID_TICKETS[text];
+    if(ticket){
+      if(successName) successName.textContent = ticket.name;
+      if(successMeta) successMeta.textContent = ticket.type + " · " + text;
+      showOnly(successEl);
+      addRecentScan(text, ticket.name, true);
+    }else{
+      if(errorMsg) errorMsg.textContent = '"' + text + '" doesn\'t match any ticket for this event.';
+      showOnly(errorEl);
+      addRecentScan(text, "Unknown", false);
+    }
+  }
+
+  function addRecentScan(id, name, ok){
+    if(!recentList) return;
+    const li = document.createElement('li');
+    li.className = 'recent-scan-item';
+    li.innerHTML = '<span class="badge ' + (ok ? 'badge-issued' : 'badge-revoked') + '">' +
+                   (ok ? 'OK' : 'Fail') + '</span> <b>' + name + '</b> <span class="text-soft">' + id + '</span>';
+    recentList.prepend(li);
+  }
+
+  function resumeScanning(){
+    showOnly(idleEl);
+    scanning = true;
+    tick();
+  }
+
+  if(startBtn) startBtn.addEventListener('click', startCamera);
+  if(rescanBtn1) rescanBtn1.addEventListener('click', resumeScanning);
+  if(rescanBtn2) rescanBtn2.addEventListener('click', resumeScanning);
+
+  if(typeof jsQR === 'undefined'){
+    console.error('jsQR library not loaded — check your internet connection or the script tag.');
+  }
+
+  window.addEventListener('beforeunload', function(){
+    scanning = false;
+    if(rafId) cancelAnimationFrame(rafId);
+    if(stream) stream.getTracks().forEach(t => t.stop());
+  });
+
+});
+</script>
+
+</body>
+</html>

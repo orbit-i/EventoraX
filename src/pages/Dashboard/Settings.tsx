@@ -6,7 +6,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Camera, Save, Shield, Bell, Globe, Palette } from "lucide-react"
+import { Camera, Save, Shield, Bell, Globe, } from "lucide-react"
 
 export default function Settings() {
   const [notifications, setNotifications] = useState(true)
