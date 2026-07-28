@@ -3,6 +3,7 @@ import TenantManagement from './pages/Dashboard/TenantManagement'
 import PlansPricing from './pages/Dashboard/PlansPricing'
 import { Routes, Route } from 'react-router-dom';
 import Revenue from './pages/Dashboard/Revenue';
+import Certificates from './components/certificates/Certificates';
 
 
 export default function App() {
@@ -12,6 +13,7 @@ export default function App() {
         <Route path='/tenants' element={<TenantManagement />} />
         <Route path='/plans-pricing' element={<PlansPricing />} />
         <Route path='/revenue' element={<Revenue />} />
+        <Route path='/certificates' element={<Certificates />} />
       </Routes>
     </BrowserRouter>
   );
