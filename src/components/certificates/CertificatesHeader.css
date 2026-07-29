@@ -38,6 +38,13 @@
     border: none;
 }
 
+.certificates-header-right-content-layout-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+}
+
 .certificates-header-right-content-container {
     display: flex;
     justify-content: center;

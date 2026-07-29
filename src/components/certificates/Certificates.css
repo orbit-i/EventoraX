@@ -175,3 +175,96 @@
 .certificate-table tr {
     border-bottom: 1px solid #d3dbe2;
 }
+
+.certificate-status-data-container div {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    border: 1px solid lightgray;
+    /* margin-top: 10px; */
+    border-radius: 15px;
+}
+
+.certificates-table-lower-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+}
+
+
+.certificates-table-lower-right-section {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 6px;
+}
+
+
+.page-number-container {
+    color: #ffffff;
+    background-color: #00509d;
+    font-size: 14px;
+    padding: 2px 8px;
+    border-radius: 15px;
+}
+
+.certificates-table-chevron-icon-container {
+    border: 1px solid lightgray;
+    color: gray;
+    padding: 5px;
+    border-radius: 15px;
+}
+
+.policy-enforcement-container {
+    border: 1px solid #c71f37;
+    border-radius: 16px;
+    padding: 15px;
+    display: flex;
+    justify-content: center;
+    align-items: start;
+    gap: 15px;
+    width: 100%;
+    margin-top: 30px;
+    background-color: rgb(199, 31, 55, 0.05);
+}
+
+.policy-enforcement-shield-icon-container {
+    color: #c71f37;
+    background-color: rgb(199, 31, 55, 0.1);
+    padding: 6px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+.policy-enforcement-content-container p:first-child {
+    font-size: 22x;
+    color: #c71f37;
+    font-weight: 600;
+}
+
+.policy-enforcement-content-container p:nth-child(2) {
+    color: gray;
+    font-size: 14px;
+}
+
+.certificate-expired-icon-container {
+    color: #c71f37;
+    background-color: rgb(199, 31, 55, 0.1);
+}
+
+.certificate-expiring-status-container {
+    color: #a47e1b;
+    background-color: rgb(164, 126, 27, 0.1);
+}
+
+.certificate-rotate-ccw-icon-container {
+    color: gray;
+    background-color: rgb(211, 211, 211, 0.1);
+}
+
+.certificate-active-status-container {
+    color: green;
+    background-color: rgb(144, 238, 144, 0.1);
+}
