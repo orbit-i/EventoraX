@@ -1,0 +1,17 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+    box-sizing: border-box;
+}
+
+.eventorax-admin-para {
+    font-size: 24px;
+    font-weight: 800;
+    color: #00509d;
+    font-family: 'Times New Roman', Times, serif;   
+}
+
+.enterprise-tier-para {
+    margin-bottom: 10px;
+}
