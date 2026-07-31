@@ -2,6 +2,7 @@ import { ArrowUpRight, Award, Calendar, DollarSign, Download, Users } from 'luci
 import './Analytics.css'
 import AnalyticsSidebar from './AnalyticsSidebar'
 import AnalyticsCharts from './AnalyticsCharts'
+import AnalyticsUsers from './AnalyticsUsers'
 
 function Analytics() {
   return (
@@ -87,6 +88,7 @@ function Analytics() {
                 </div>
             </section>
             <AnalyticsCharts />
+            <AnalyticsUsers />
         </div>
      </main>
     </>
