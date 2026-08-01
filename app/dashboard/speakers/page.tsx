@@ -125,14 +125,15 @@ export default function SpeakersPage() {
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Speakers</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             disabled={noEventSelected}
             render={<Link href={`/dashboard/speakers/reorder?eventId=${selectedEventId}`} />}
             nativeButton={false}
+            className="flex-1 sm:flex-none"
           >
             Reorder
           </Button>
@@ -140,7 +141,7 @@ export default function SpeakersPage() {
             disabled={noEventSelected}
             render={<Link href={`/dashboard/speakers/new?eventId=${selectedEventId}`} />}
             nativeButton={false}
-            className="gap-2"
+            className="gap-2 flex-1 sm:flex-none"
           >
             <UserPlus className="w-4 h-4" />
             Add Speaker

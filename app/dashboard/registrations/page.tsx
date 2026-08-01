@@ -220,14 +220,15 @@ export default function RegistrationsPage() {
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Registrations</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Button
             variant="outline"
             disabled={noEventSelected}
             render={<Link href={`/dashboard/registrations/import?eventId=${selectedEventId}`} />}
             nativeButton={false}
+            className="flex-1 sm:flex-none"
           >
             Import CSV
           </Button>
@@ -235,6 +236,7 @@ export default function RegistrationsPage() {
             disabled={noEventSelected}
             render={<Link href={`/dashboard/registrations/new?eventId=${selectedEventId}`} />}
             nativeButton={false}
+            className="flex-1 sm:flex-none"
           >
             Add Attendee
           </Button>

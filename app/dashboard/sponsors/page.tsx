@@ -127,13 +127,13 @@ export default function SponsorsPage() {
 
   return (
     <div className="p-6 space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-semibold">Sponsors</h1>
         <Button
           disabled={noEventSelected}
           render={<Link href={`/dashboard/sponsors/new?eventId=${selectedEventId}`} />}
           nativeButton={false}
-          className="gap-2"
+          className="gap-2 w-full sm:w-auto"
         >
           <Plus className="w-4 h-4" />
           Add Sponsor
