@@ -9,6 +9,7 @@ import Pricing from './pages/Pricing';
 import Contact from './pages/Contact';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import ForgotPassword from './pages/ForgotPassword';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import NotFound from './pages/NotFound';
@@ -22,6 +23,7 @@ import Team from './pages/Dashboard/Team';
 import Billing from './pages/Dashboard/Billing';
 import Settings from './pages/Dashboard/Settings';
 import Activity from './pages/Dashboard/activity';
+import { Toaster } from './components/ui/sonner';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -43,7 +45,10 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
 function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
-  const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
+  const isAuthPage =
+    location.pathname === '/login' ||
+    location.pathname === '/register' ||
+    location.pathname === '/forgot-password';
   const isDashboard = location.pathname.startsWith('/dashboard');
 
   // Dashboard has its own layout (Sidebar), so no Navbar/Footer
@@ -76,6 +81,7 @@ export default function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
 
@@ -95,6 +101,7 @@ export default function App() {
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
+      <Toaster position="top-right" richColors />
     </>
   );
 }

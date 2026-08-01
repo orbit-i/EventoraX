@@ -1,14 +1,63 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { toast } from 'sonner';
+import { determineRole, saveUserRole, getRedirectPathForRole } from '@/lib/auth';
+
+const loginSchema = z.object({
+  email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
+  password: z.string().min(6, 'Password must be at least 6 characters'),
+  remember: z.boolean(),
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+
+const REMEMBERED_EMAIL_KEY = 'rememberedEmail';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', remember: false });
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle login logic
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    formState: { errors, isSubmitting },
+  } = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: { email: '', password: '', remember: false },
+  });
+
+  // Pre-fill email if the user checked "Remember me" on a previous visit
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem(REMEMBERED_EMAIL_KEY);
+    if (rememberedEmail) {
+      setValue('email', rememberedEmail);
+      setValue('remember', true);
+    }
+  }, [setValue]);
+
+  const onSubmit = async (data: LoginFormValues) => {
+    // Simulated auth call — replace with real API request when backend is ready
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    localStorage.setItem('token', 'demo-token');
+
+    if (data.remember) {
+      localStorage.setItem(REMEMBERED_EMAIL_KEY, data.email);
+    } else {
+      localStorage.removeItem(REMEMBERED_EMAIL_KEY);
+    }
+
+    // Simulated role detection — replace with role from API response
+    const role = determineRole(data.email);
+    saveUserRole(role);
+
+    toast.success('Welcome back!');
+    navigate(getRedirectPathForRole(role));
   };
 
   return (
@@ -26,7 +75,8 @@ export default function Login() {
 
         {/* Form */}
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
           className="bg-white rounded-2xl p-8 border border-[#e9e4ff] shadow-lg shadow-[#7c3aed]/5"
         >
           <div className="space-y-5">
@@ -36,12 +86,16 @@ export default function Login() {
               </label>
               <input
                 type="email"
-                required
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
+                {...register('email')}
+                aria-invalid={!!errors.email}
+                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200 aria-invalid:border-[#dc2626] aria-invalid:ring-2 aria-invalid:ring-[#dc2626]/20"
                 placeholder="you@example.com"
               />
+              {errors.email && (
+                <p className="mt-1.5 text-xs font-medium text-[#dc2626]">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -51,10 +105,9 @@ export default function Login() {
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  required
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full px-4 py-3 pr-12 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
+                  {...register('password')}
+                  aria-invalid={!!errors.password}
+                  className="w-full px-4 py-3 pr-12 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200 aria-invalid:border-[#dc2626] aria-invalid:ring-2 aria-invalid:ring-[#dc2626]/20"
                   placeholder="Enter your password"
                 />
                 <button
@@ -65,14 +118,18 @@ export default function Login() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {errors.password && (
+                <p className="mt-1.5 text-xs font-medium text-[#dc2626]">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <div className="flex items-center justify-between">
               <label className="flex items-center gap-2.5 cursor-pointer">
                 <input
                   type="checkbox"
-                  checked={form.remember}
-                  onChange={(e) => setForm({ ...form, remember: e.target.checked })}
+                  {...register('remember')}
                   className="size-4 rounded border-2 border-[#ddd6fe] accent-[#7c3aed] text-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/30 cursor-pointer"
                 />
                 <span className="font-body text-sm text-[#475569]">
@@ -80,7 +137,7 @@ export default function Login() {
                 </span>
               </label>
               <Link
-                to="#"
+                to="/forgot-password"
                 className="font-body text-sm font-medium text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors duration-200"
               >
                 Forgot password?
@@ -89,10 +146,11 @@ export default function Login() {
 
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-body font-semibold text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-body font-semibold text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-60 disabled:pointer-events-none"
             >
               <LogIn size={18} />
-              Sign In
+              {isSubmitting ? 'Signing in...' : 'Sign In'}
             </button>
           </div>
         </form>
