@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,6 +14,8 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+const REMEMBERED_EMAIL_KEY = 'rememberedEmail';
+
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
@@ -21,19 +23,32 @@ export default function Login() {
   const {
     register,
     handleSubmit,
+    setValue,
     formState: { errors, isSubmitting },
   } = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
     defaultValues: { email: '', password: '', remember: false },
   });
 
+  // Pre-fill email if the user checked "Remember me" on a previous visit
+  useEffect(() => {
+    const rememberedEmail = localStorage.getItem(REMEMBERED_EMAIL_KEY);
+    if (rememberedEmail) {
+      setValue('email', rememberedEmail);
+      setValue('remember', true);
+    }
+  }, [setValue]);
+
   const onSubmit = async (data: LoginFormValues) => {
     // Simulated auth call — replace with real API request when backend is ready
     await new Promise((resolve) => setTimeout(resolve, 600));
 
     localStorage.setItem('token', 'demo-token');
+
     if (data.remember) {
-      localStorage.setItem('rememberMe', 'true');
+      localStorage.setItem(REMEMBERED_EMAIL_KEY, data.email);
+    } else {
+      localStorage.removeItem(REMEMBERED_EMAIL_KEY);
     }
 
     toast.success('Welcome back!');
