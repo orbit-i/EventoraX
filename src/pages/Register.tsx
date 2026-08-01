@@ -1,22 +1,58 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
+import { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { z } from 'zod';
 import { Eye, EyeOff, UserPlus, Check } from 'lucide-react';
+import { toast } from 'sonner';
+
+const registerSchema = z.object({
+  fullName: z.string().min(2, 'Full name must be at least 2 characters'),
+  orgName: z.string().min(2, 'Organization name must be at least 2 characters'),
+  email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
+  password: z
+    .string()
+    .min(8, 'Password must be at least 8 characters')
+    .regex(/[0-9]/, 'Password must include at least one number'),
+  phone: z
+    .string()
+    .optional()
+    .refine((val) => !val || /^[+\d][\d\s-]{6,}$/.test(val), {
+      message: 'Enter a valid phone number',
+    }),
+});
+
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function Register() {
   const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({
-    fullName: '',
-    orgName: '',
-    email: '',
-    password: '',
-    phone: '',
-  });
   const [submitted, setSubmitted] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: { fullName: '', orgName: '', email: '', password: '', phone: '' },
+  });
+
+  const onSubmit = async (data: RegisterFormValues) => {
+    // Simulated signup call — replace with real API request when backend is ready
+    await new Promise((resolve) => setTimeout(resolve, 600));
+
+    localStorage.setItem('token', 'demo-token');
+    toast.success('Account created!');
     setSubmitted(true);
   };
+
+  // Auto-redirect to the dashboard shortly after a successful signup
+  useEffect(() => {
+    if (!submitted) return;
+    const timer = setTimeout(() => navigate('/dashboard'), 2000);
+    return () => clearTimeout(timer);
+  }, [submitted, navigate]);
 
   if (submitted) {
     return (
@@ -32,7 +68,7 @@ export default function Register() {
             Your free trial has started. Redirecting to your dashboard...
           </p>
           <Link
-            to="/"
+            to="/dashboard"
             className="inline-flex items-center justify-center px-8 py-3.5 bg-[#7c3aed] text-white font-semibold rounded-xl shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
           >
             Go to Dashboard
@@ -65,7 +101,8 @@ export default function Register() {
 
         {/* Form */}
         <form
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSubmit)}
+          noValidate
           className="bg-white rounded-2xl p-8 border border-[#e9e4ff] shadow-lg shadow-[#7c3aed]/5"
         >
           <div className="space-y-5">
@@ -75,12 +112,16 @@ export default function Register() {
               </label>
               <input
                 type="text"
-                required
-                value={form.fullName}
-                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
+                {...register('fullName')}
+                aria-invalid={!!errors.fullName}
+                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200 aria-invalid:border-[#dc2626] aria-invalid:ring-2 aria-invalid:ring-[#dc2626]/20"
                 placeholder="John Doe"
               />
+              {errors.fullName && (
+                <p className="mt-1.5 text-xs font-medium text-[#dc2626]">
+                  {errors.fullName.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -89,12 +130,16 @@ export default function Register() {
               </label>
               <input
                 type="text"
-                required
-                value={form.orgName}
-                onChange={(e) => setForm({ ...form, orgName: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
+                {...register('orgName')}
+                aria-invalid={!!errors.orgName}
+                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200 aria-invalid:border-[#dc2626] aria-invalid:ring-2 aria-invalid:ring-[#dc2626]/20"
                 placeholder="Acme University"
               />
+              {errors.orgName && (
+                <p className="mt-1.5 text-xs font-medium text-[#dc2626]">
+                  {errors.orgName.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -103,12 +148,16 @@ export default function Register() {
               </label>
               <input
                 type="email"
-                required
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
+                {...register('email')}
+                aria-invalid={!!errors.email}
+                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200 aria-invalid:border-[#dc2626] aria-invalid:ring-2 aria-invalid:ring-[#dc2626]/20"
                 placeholder="you@example.com"
               />
+              {errors.email && (
+                <p className="mt-1.5 text-xs font-medium text-[#dc2626]">
+                  {errors.email.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -118,10 +167,9 @@ export default function Register() {
               <div className="relative">
                 <input
                   type={showPassword ? 'text' : 'password'}
-                  required
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full px-4 py-3 pr-12 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
+                  {...register('password')}
+                  aria-invalid={!!errors.password}
+                  className="w-full px-4 py-3 pr-12 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200 aria-invalid:border-[#dc2626] aria-invalid:ring-2 aria-invalid:ring-[#dc2626]/20"
                   placeholder="Create a strong password"
                 />
                 <button
@@ -132,6 +180,11 @@ export default function Register() {
                   {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
               </div>
+              {errors.password && (
+                <p className="mt-1.5 text-xs font-medium text-[#dc2626]">
+                  {errors.password.message}
+                </p>
+              )}
             </div>
 
             <div>
@@ -140,19 +193,25 @@ export default function Register() {
               </label>
               <input
                 type="tel"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
+                {...register('phone')}
+                aria-invalid={!!errors.phone}
+                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200 aria-invalid:border-[#dc2626] aria-invalid:ring-2 aria-invalid:ring-[#dc2626]/20"
                 placeholder="+92 300 1234567"
               />
+              {errors.phone && (
+                <p className="mt-1.5 text-xs font-medium text-[#dc2626]">
+                  {errors.phone.message}
+                </p>
+              )}
             </div>
 
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-body font-semibold text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+              disabled={isSubmitting}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-body font-semibold text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 disabled:opacity-60 disabled:pointer-events-none"
             >
               <UserPlus size={18} />
-              Create Account
+              {isSubmitting ? 'Creating account...' : 'Create Account'}
             </button>
           </div>
 
