@@ -1,0 +1,11 @@
+.App {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  background: #f5f7ff;
+}
+
+.App main {
+  flex: 1;
+  padding-top: 72px; /* offset for fixed navbar */
+}
