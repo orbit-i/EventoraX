@@ -5,6 +5,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
 import { toast } from 'sonner';
+import { determineRole, saveUserRole, getRedirectPathForRole } from '@/lib/auth';
 
 const loginSchema = z.object({
   email: z.string().min(1, 'Email is required').email('Enter a valid email address'),
@@ -51,8 +52,12 @@ export default function Login() {
       localStorage.removeItem(REMEMBERED_EMAIL_KEY);
     }
 
+    // Simulated role detection — replace with role from API response
+    const role = determineRole(data.email);
+    saveUserRole(role);
+
     toast.success('Welcome back!');
-    navigate('/dashboard');
+    navigate(getRedirectPathForRole(role));
   };
 
   return (
