@@ -1,0 +1,43 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: sans-serif;
+}
+
+.editor-content {
+    border-radius: 10px;
+    border: 1px solid lightgray;
+    margin-top: 20px;
+    background-color: #fafafa;
+}
+
+.rich-editor {
+    flex: 1;
+    width: 100%;
+    padding-right: 10px;
+}
+
+
+.toolbar {
+    display: flex;
+    align-items: center;
+    border: 1px solid lightgray;
+    margin-top: 20px;
+    padding: 8px;
+    gap: 15px;
+    border-radius: 10px;
+    background-color: #fafafa;
+}
+
+.ProseMirror {
+    min-height: 290px;
+    padding: 16px;
+    outline: none;
+    line-height: 1.7;
+}
+
+.ProseMirror ul {
+    list-style-type: disc;
+    padding-left: 25px;
+}

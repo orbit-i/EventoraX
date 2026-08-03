@@ -2,7 +2,7 @@ import { Bell, ChevronRight, Command, Search } from 'lucide-react'
 import './AnalyticsHeader.css'
 
 
-function AnalyticsHeader() {
+function AnalyticsHeader({ emailHeader }) {
     return (
         <div className='analytics-header'>
             <div className='analytics-header-left-content-container'>

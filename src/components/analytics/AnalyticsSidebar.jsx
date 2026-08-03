@@ -1,10 +1,10 @@
 import './AnalyticsSidebar.css'
 import '../styles/Sidebar.css';
-import { Calendar, ChartColumnDecreasing, CircleQuestionMark, CircleStar, Download, LayoutDashboard, LogOut, Plus, Settings, Star, Stars, Users, Banknote } from 'lucide-react';
+import { Calendar, ChartColumnDecreasing, CircleQuestionMark, CircleStar, Download, LayoutDashboard, LogOut, Plus, Settings, Star, Stars, Users, Banknote, MessageCircle, Mail } from 'lucide-react';
 import { NavLink } from 'react-router-dom';
 import AnalyticsHeader from './AnalyticsHeader';
 
-function AnalyticsSidebar() {
+function AnalyticsSidebar({ header }) {
     return (
         <div className='analytics-sidebar-main-container'>
             <aside>
@@ -30,10 +30,19 @@ function AnalyticsSidebar() {
                             <ChartColumnDecreasing className='menu-item-icon' />
                             <p>Analytics</p>
                         </NavLink>
+                        {/* item 3 */}
+                        <NavLink
+                            to="/email-templates"
+                            className={({ isActive }) =>
+                                isActive ? "menu-item active-menu-item" : "menu-item"
+                            }>
+                            <Mail className='menu-item-icon' />
+                            <p>Email Templates</p>
+                        </NavLink>
                     </div>
                 </div>
             </aside>
-            <AnalyticsHeader />
+            {header ?? <AnalyticsHeader />}
         </div>
     )
 }
