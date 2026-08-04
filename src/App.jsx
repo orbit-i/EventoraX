@@ -6,6 +6,7 @@ import Revenue from './pages/Dashboard/Revenue';
 import Certificates from './components/certificates/Certificates';
 import Analytics from './components/analytics/Analytics';
 import EmailTemplates from './components/emailTemplates/EmailTemplates';
+import EmailPreview from './components/emailPreview/EmailPreview';
 
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
         <Route path='/certificates' element={<Certificates />} />
         <Route path='/analytics' element={<Analytics />} />
         <Route path='/email-templates' element={<EmailTemplates />} />
+        <Route path='/email-preview' element={<EmailPreview />} />
       </Routes>
     </BrowserRouter>
   );

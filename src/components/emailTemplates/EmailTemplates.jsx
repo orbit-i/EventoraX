@@ -5,8 +5,10 @@ import { ChevronRight, Eye, Plus } from "lucide-react"
 import './EmailTemplates.css'
 import TemplatesList from "./components/TemplatesList/TemplatesList"
 import EmailEditor from "./components/EmailEditor/EmailEditor"
+import { useNavigate } from "react-router"
 
 function EmailTemplates() {
+    const navigate = useNavigate();
     return (
         <div>
             <AnalyticsSidebar header={<EmailHeader />} />
@@ -18,7 +20,11 @@ function EmailTemplates() {
                         <p>Email Templates</p>
                     </div>
                     <div className="email-templates-right-content-container">
-                        <button className="email-preview-icon-container">
+                        <button 
+                        onClick={() => (
+                            navigate("/email-preview")
+                        )}
+                        className="email-preview-icon-container">
                             <Eye size={14} />
                             Preview
                         </button>
