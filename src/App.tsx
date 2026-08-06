@@ -22,6 +22,9 @@ import Team from './pages/Dashboard/Team';
 import Billing from './pages/Dashboard/Billing';
 import Settings from './pages/Dashboard/Settings';
 import Activity from './pages/Dashboard/activity';
+import ComponentTest from "./pages/ComponentTest";
+import LoginPage from "./pages/LoginPage";
+import RegisterPage from "./pages/RegisterPage";
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -79,6 +82,14 @@ export default function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
 
+          {/*Component Playground*/}
+
+          <Route path="/test" element={<ComponentTest />} />
+
+          <Route path="/login-test" element={<LoginPage />} />
+
+          <Route path="/register-test" element={<RegisterPage />} />
+
           {/* Protected Dashboard Routes */}
        
           <Route path="/dashboard" element={<DashboardLayout />}>
@@ -89,6 +100,7 @@ export default function App() {
   <Route path="billing" element={<Billing />} />
   <Route path="settings" element={<Settings />} />
   <Route path="activity" element={<Activity />} />
+  
 </Route>
 
           {/* 404 */}
