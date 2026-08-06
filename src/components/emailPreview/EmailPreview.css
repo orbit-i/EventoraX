@@ -268,7 +268,7 @@ main {
 .email-preview-main-right-content-container {
     flex: 1;
     width: 100%;
-    height: 600px;
+    height: 650px;
     border: 1px solid lightgray;
     border-radius: 15px;
     overflow: hidden;
@@ -299,6 +299,12 @@ main {
     border-radius: 6px;
     padding: 2px 6px;
     background-color: #ffffff;
+}
+
+.email-preview-main-right-upper-btns-container button.active {
+    border: 1px solid #6c5ce7;
+    background-color: rgb(108, 92, 231, 0.1);
+    color: #6c5ce7;
 }
 
 .welcome-email-preview-container {
@@ -339,13 +345,127 @@ main {
     padding-block: 26px;
 }
 
+
 .eventorax-email {
-    width: 470px;
+    width: 500px;
     height: 90%;
+    margin: 0 auto;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0px 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.eventorax-email.eventorax-email-mobile-responsive {
+    width: 350px;
+    height: 93%;
+}
+
+.eventorax-upper-email-section {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #6c5ce7;
+    gap: 5px;
+    padding: 25px;
+    color: #ffffff;
+}
+
+.eventorax-text-para {
+    font-weight: 600;
+    font-size: 18px;
+}
+
+.eventorax-bottom-email-section {
+    width: 100%;
+    background-color: #ffffff;
+    height: 100%;
+}
+
+.eventorax-email-layout {
+    padding: 22px;
+}
+
+.eventorax-bottom-email-section .welcome-email-text-para {
+    font-weight: 600;
+    font-size: 19px;
+}
+
+.eventorax-bottom-email-section .account-creation-para {
+    font-size: 13px;
+    color: gray;
+    margin-top: 12px;
+}
+
+.eventorax-email-accounts-container {
+    width: 100%;
+    background-color: rgb(232, 230, 230, 0.3);
+    border-radius: 8px;
+    padding: 15px;
+    margin-top: 25px;
+}
+
+.account-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 13px;
+    border-bottom: 1px solid lightgray;
+    padding: 2px;
+}
+
+.account-details p:first-child {
+    color: rgb(158, 156, 156);
+}
+
+.eventorax-get-started-btn {
     display: flex;
     justify-content: center;
     align-items: center;
-    margin: 0 auto;
-    border-radius: 6px;
-    border: 1px solid #000000;
+    margin-top: 15px;
+}
+
+.eventorax-get-started-btn button {
+    color: #ffffff;
+    background-color: #6c5ce7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.support-eventorax-para {
+    font-size: 12px;
+    margin-top: 20px;
+}
+
+.eventorax-copy-rights-container {
+    font-size: 12px;
+    background-color: rgb(211, 211, 211, 0.2);
+    width: 100%;
+    height: 100%;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: start;
+    align-items: center;
+    border-top: 1px solid rgb(211, 211, 211, 0.5);
+}
+
+.eventorax-copy-rights-container p:first-child {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    color: gray;
+}
+
+.eventorax-copy-rights-container p:nth-child(2) {
+    color: gray;
+}
+
+.eventorax-copy-rights-container p:nth-child(3) {
+    color: #6c5ce7;
 }

@@ -1,12 +1,15 @@
-import { ArrowLeft, Check, ChevronRight, Monitor, MoveLeft, Send, Smartphone, Zap } from 'lucide-react'
+import { ArrowLeft, Check, ChevronRight, Copyright, Monitor, MoveLeft, MoveRight, Send, Smartphone, Zap } from 'lucide-react'
 import AnalyticsSidebar from '../analytics/AnalyticsSidebar'
 import EmailHeader from '../emailTemplates/EmailHeader'
 import './EmailPreview.css'
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router'
 
 function EmailPreview() {
 
     const [previewMode, setPreviewMode] = useState(0);
+    const navigate = useNavigate();
+
     return (
         <div>
             <AnalyticsSidebar header={<EmailHeader />} />
@@ -22,7 +25,11 @@ function EmailPreview() {
                     <div className='email-preview-lower-content-container'>
                         <p className='email-preview-para'>Email Preview</p>
                         <div className='email-preview-lower-content-btns-container'>
-                            <button className='email-preview-back-btn-container'>
+                            <button 
+                            onClick={() =>
+                                navigate("/email-templates")
+                            }
+                            className='email-preview-back-btn-container'>
                                 <ArrowLeft size={14} />
                                 Back
                             </button>
@@ -115,22 +122,68 @@ function EmailPreview() {
                                     <p>Email Preview — Welcome to EventoraX, James!</p>
                                 </div>
                                 <div className='email-preview-main-right-upper-btns-container'>
-                                    <button>
+                                    <button
+                                        className={previewMode === 0 ? 'active' : ""}
+                                        onClick={() => setPreviewMode(0)}
+                                    >
                                         <Monitor size={12} />
                                         Desktop
                                     </button>
-                                    <button>
+                                    <button
+                                        className={previewMode === 1 ? 'active' : ""}
+                                        onClick={() => setPreviewMode(1)}
+                                    >
                                         <Smartphone size={12} />
                                         Mobile
                                     </button>
                                 </div>
                             </div>
                             <div className='eventorax-email-box'>
-                                <div className='eventorax-email'>
+                                <div className={previewMode === 1 ? 'eventorax-email eventorax-email-mobile-responsive' : 'eventorax-email '}>
                                     <div className='eventorax-upper-email-section'>
-                                    <Zap />
-                                    <p>EventoraX</p>
-                                </div>
+                                        <Zap size={20} />
+                                        <p className='eventorax-text-para'>EventoraX</p>
+                                    </div>
+                                    <div className='eventorax-bottom-email-section'>
+                                        <div className='eventorax-email-layout'>
+                                            <p className='welcome-email-text-para'>Welcome to EventoraX, James!</p>
+                                            <p className='account-creation-para'>Your account has been successfully created for TechCorp Inc.. You can now access all premium features of our platform.</p>
+                                            <div className='eventorax-email-accounts-container'>
+                                                <p style={{
+                                                    color: 'gray',
+                                                    fontSize: 14
+                                                }}>Your account details:</p>
+                                                <div className='eventorax-account-details-container'>
+                                                    <div className='account-details'>
+                                                        <p>Email</p>
+                                                        <p>james@techcorp.io</p>
+                                                    </div>
+                                                    <div className='account-details'>
+                                                        <p>Plan</p>
+                                                        <p>Enterprise</p>
+                                                    </div>
+                                                    <div className='account-details'>
+                                                        <p>Organization</p>
+                                                        <p>TechCorp Inc.</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className='eventorax-get-started-btn'>
+                                                <button>
+                                                    Get Started
+                                                    <MoveRight size={20} />
+                                                </button>
+                                            </div>
+                                            <p className='support-eventorax-para'>
+                                                <span style={{ color: 'gray' }}>If you have any questions, our team is available at</span> <span style={{ color: '#6c5ce7' }}>support@eventoraX.com</span>
+                                            </p>
+                                        </div>
+                                        <div className='eventorax-copy-rights-container'>
+                                            <p><Copyright size={12} /> 2024 EventoraX. All rights reserved.</p>
+                                            <p>123 Tech Street, San Francisco, CA 94102</p>
+                                            <p>Unsubscribe · Privacy Policy · Terms of Service</p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
