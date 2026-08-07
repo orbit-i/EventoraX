@@ -4,9 +4,20 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>EventoriaX Pricing</title>
-
+  <meta name="description" content="EventoraX - The complete event management platform for universities, companies, and NGOs. Create events, manage registrations, issue certificates, and track analytics." />
+    <meta name="keywords" content="event management, event platform, registration, certificates, QR tickets, event organizer, ORBIT-I" />
+    <meta name="author" content="ORBIT-I" />
+    <meta name="theme-color" content="#7c3aed" />
+    <meta property="og:title" content="EventoraX - Where Every Moment Becomes a Memory" />
+    <meta property="og:description" content="The complete event management platform for modern organizers. Built by ORBIT-I." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://eventorax.com" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="EventoraX - Event Management Platform" />
+    <meta name="twitter:description" content="Create events, manage registrations, issue certificates, and track analytics." />
+    <link rel="canonical" href="https://eventorax.com" />
+  <title>Pricing | EventoriaX</title>
+  <link rel="icon" href="images/favicon.png">
   <link rel="stylesheet" href="style.css" />
   <!-- Font Awesome 6 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
@@ -19,28 +30,151 @@
   <!-- ================= NAVBAR ================= -->
 
   <header>
-    <nav class="navbar">
-      <div class="div1">
+
+
+<input type="checkbox" id="menu-toggle">
+
+
+<nav class="navbar">
+
+    <!-- Logo -->
+    <div class="div1">
+
         <div class="logo">
-          <h2>EventoriaX</h2>
+            <h2>EventoriaX</h2>
         </div>
-        <a href="features.html">Features</a>
-        <a href="">Pricing</a>
-        <a href="About.html">About</a>
-        <a href="">Verify</a>
-      </div>
-      <div class="div2">
-        <a href="" class="div2-1">Sign In</a>
-        <a href="" class="headerbtn">Get Started</a>
-        <div class="hamburger" onclick="toggleMenu()">☰</div>
-      </div>
-    </nav>
-  </header>
+
+
+        <div class="desktop-links">
+
+            <a href="features.html">Features</a>
+            <a href="p.html">Pricing</a>
+            <a href="About.html">About</a>
+            <a href="verify.html">Verify</a>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- Right Side -->
+    <div class="div2">
+
+
+        <a href="#" class="div2-1">
+            Sign In
+        </a>
+
+
+        <a href="contact.html" class="headerbtn">
+            Get Started
+        </a>
+
+
+
+        <!-- Hamburger -->
+
+        <label for="menu-toggle" class="menu-btn">
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </label>
+
+
+    </div>
+
+
+</nav>
+
+
+
+<!-- Overlay -->
+
+<label for="menu-toggle" class="menu-overlay"></label>
+
+
+
+<!-- Sidebar -->
+
+<aside class="mobile-sidebar">
+
+
+    <div>
+
+
+        <div class="sidebar-top">
+
+            <h2>Menu</h2>
+
+
+            <label for="menu-toggle" class="close-btn">
+
+                &times;
+
+            </label>
+
+
+        </div>
+
+
+
+        <div class="sidebar-links">
+
+            <a href="features.html">
+                Features
+            </a>
+
+
+            <a href="p.html">
+                Pricing
+            </a>
+
+
+            <a href="About.html">
+                About
+            </a>
+
+
+            <a href="verify.html">
+                Verify
+            </a>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <div class="sidebar-bottom">
+
+
+        <a href="#" class="mobile-signin">
+            Sign In
+        </a>
+
+
+        <a href="contact.html" class="mobile-btn">
+            Get Started
+        </a>
+
+
+    </div>
+
+
+</aside>
+
+
+</header>
   <!-- ================= HERO ================= -->
 
   <section class="pricing-hero">
 
-    <img src="pricing hero.png" alt="">
+    <img src="images/pricing hero.png" alt="">
     <div class="hero-content">
       <div class="hero-left">
         <div class="tag">PRICING</div>
@@ -57,9 +191,9 @@
         </p>
 
         <div class="hero-buttons">
-          <button class="primary">Start Free Trial →</button>
+          <button class="primary" onclick="window.location.href='contact.html#contact'">Start Free Trial →</button>
 
-          <button class="secondary">Compare Plans</button>
+          <button class="secondary" onclick="window.location.href='#compare'">Compare Plans</button>
         </div>
 
 
@@ -128,7 +262,7 @@
       </div>
     </div>
   </section>
-  <section class="pricing reveal">
+  <section class="pricing reveal" id="pricing">
     <h2 class="pricing-title">Flexible Scaling for Any Need</h2>
     <p>Simple,transparent pricing built for long-term partnerships.</p>
     <div class="pricing-cards reveal">
@@ -171,7 +305,7 @@
             </svg>QR Ticket Engine
           </li>
         </ul>
-        <a href="#" class="btn">Start 14-Day Trial</a>
+        <a href="contact.html" class="btn">Start 14-Day Trial</a>
       </div>
 
       <!-- ENTERPRISE Plan -->
@@ -215,7 +349,7 @@
             </svg>24/7 Dedicated Support
           </li>
         </ul>
-        <a href="#" class="btn">Contact Sales</a>
+        <a href="contact.html" class="btn">Contact Sales</a>
       </div>
     </div>
   </section>
@@ -223,7 +357,7 @@
 FEATURE COMPARISON
 ======================================= -->
 
-  <section class="feature-comparison">
+  <section class="feature-comparison" id="compare">
     <div class="comparison-heading">
 
       <span class="section-badge">
@@ -370,7 +504,7 @@ PAYMENT METHODS
 
         <div class="payment-card">
 
-          <img src="jazzcash.png" alt="JazzCash" class="jazzcash
+          <img src="images/jazzcash.png" alt="JazzCash" class="jazzcash
                 ">
 
           <h4>JazzCash</h4>
@@ -381,7 +515,7 @@ PAYMENT METHODS
 
         <div class="payment-card">
 
-          <img src="easypiasa.png" alt="EasyPaisa">
+          <img src="images/easypiasa.png" alt="EasyPaisa">
 
           <h4>EasyPaisa</h4>
 
@@ -453,7 +587,7 @@ FREE TRIAL CTA
 
         <div class="trial-right">
 
-          <a href="#" class="trial-btn">
+          <a href="contact.html" class="trial-btn">
 
             Start Free Trial
 
@@ -635,8 +769,8 @@ FREE TRIAL CTA
     </div>
 
     <div class="footer-links">
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms of Service</a>
+      <a href="privacy policy.html">Privacy Policy</a>
+      <a href="terms and conditions.html">Terms of Service</a>
       <a href="#">Cookie Policy</a>
       <a href="#">Status</a>
     </div>

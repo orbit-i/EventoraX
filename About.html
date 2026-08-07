@@ -3,7 +3,20 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>EventoraX</title>
+    <title>About | EventoriaX</title>
+    <meta name="description" content="EventoraX - The complete event management platform for universities, companies, and NGOs. Create events, manage registrations, issue certificates, and track analytics." />
+    <meta name="keywords" content="event management, event platform, registration, certificates, QR tickets, event organizer, ORBIT-I" />
+    <meta name="author" content="ORBIT-I" />
+    <meta name="theme-color" content="#7c3aed" />
+    <meta property="og:title" content="EventoraX - Where Every Moment Becomes a Memory" />
+    <meta property="og:description" content="The complete event management platform for modern organizers. Built by ORBIT-I." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://eventorax.com" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="EventoraX - Event Management Platform" />
+    <meta name="twitter:description" content="Create events, manage registrations, issue certificates, and track analytics." />
+    <link rel="canonical" href="https://eventorax.com" />
+    <link rel="icon" href="images/favicon.png">
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
@@ -18,25 +31,150 @@
   <body>
     <!-- ================= NAVBAR ================= -->
     <header>
-      <nav class="navbar">
-        <div class="div1">
-          <div class="logo"><h2>EventoriaX</h2></div>
-          <a href="features.html">Features</a>
-          <a href="p.html">Pricing</a>
-          <a href="About.html">About</a>
-          <a href="">Verify</a>
+
+
+<input type="checkbox" id="menu-toggle">
+
+
+<nav class="navbar">
+
+    <!-- Logo -->
+    <div class="div1">
+
+        <div class="logo">
+            <h2>EventoriaX</h2>
         </div>
-        <div class="div2">
-          <a href="" class="div2-1">Sign In</a>
-          <a href="" class="headerbtn">Get Started</a>
-          <div class="hamburger" onclick="toggleMenu()">☰</div>
+
+
+        <div class="desktop-links">
+
+            <a href="features.html">Features</a>
+            <a href="p.html">Pricing</a>
+            <a href="About.html">About</a>
+            <a href="verify.html">Verify</a>
+
         </div>
-      </nav>
-    </header>
+
+    </div>
+
+
+
+    <!-- Right Side -->
+    <div class="div2">
+
+
+        <a href="#" class="div2-1">
+            Sign In
+        </a>
+
+
+        <a href="contact.html" class="headerbtn">
+            Get Started
+        </a>
+
+
+
+        <!-- Hamburger -->
+
+        <label for="menu-toggle" class="menu-btn">
+
+            <span></span>
+            <span></span>
+            <span></span>
+
+        </label>
+
+
+    </div>
+
+
+</nav>
+
+
+
+<!-- Overlay -->
+
+<label for="menu-toggle" class="menu-overlay"></label>
+
+
+
+<!-- Sidebar -->
+
+<aside class="mobile-sidebar">
+
+
+    <div>
+
+
+        <div class="sidebar-top">
+
+            <h2>Menu</h2>
+
+
+            <label for="menu-toggle" class="close-btn">
+
+                &times;
+
+            </label>
+
+
+        </div>
+
+
+
+        <div class="sidebar-links">
+
+            <a href="features.html">
+                Features
+            </a>
+
+
+            <a href="p.html">
+                Pricing
+            </a>
+
+
+            <a href="About.html">
+                About
+            </a>
+
+
+            <a href="verify.html">
+                Verify
+            </a>
+
+
+        </div>
+
+
+    </div>
+
+
+
+    <div class="sidebar-bottom">
+
+
+        <a href="#" class="mobile-signin">
+            Sign In
+        </a>
+
+
+        <a href="contact.html" class="mobile-btn">
+            Get Started
+        </a>
+
+
+    </div>
+
+
+</aside>
+
+
+</header>
 
     <!-- ================= HERO ================= -->
     <section class="hero">
-      <img src="about.png" alt="" class="reveal" />
+      <img src="images/about.png" alt="" class="reveal" />
       <div class="hero-left reveal">
         <span class="tag">ABOUT EVENTORAX</span>
 
@@ -51,8 +189,12 @@
         </p>
 
         <div class="hero-actions">
-          <button class="btn primary">Try it Free</button>
-          <button class="btn secondary">View Pricing</button>
+          <button
+    class="btn primary"
+    onclick="window.location.href='contact.html#contact'">
+    Try it Free
+</button>
+          <button class="btn secondary" onclick="window.location.href='p.html#pricing'">View Pricing</button>
         </div>
       </div>
     </section>
@@ -178,7 +320,7 @@
             modern platform.
           </p>
 
-          <a href="#" class="problem-button">
+          <a href="features.html#features" class="problem-button">
             Explore More
             <span>→</span>
           </a>
@@ -325,7 +467,7 @@
     <!-- ================= ORBIT ================= -->
     <section class="built-section">
       <div class="orbiti-logo">
-        <img src="orbiti.png" alt="" />
+        <img src="images/orbiti.png" alt="" />
         <p>Building Ideas. Creating Impacts.</p>
       </div>
       <div class="heading">
@@ -564,7 +706,7 @@
 
           <div class="team-card reveal">
             <div class="member-image">
-              <img src="abdul samad.png" alt="CEO" />
+              <img src="images/abdul samad.png" alt="CEO" />
             </div>
 
             <h3>Abdul Samad</h3>
@@ -583,7 +725,7 @@
 
           <div class="team-card reveal">
             <div class="member-image">
-              <img src="Muneeb ur Rahman.png" alt="CTO" />
+              <img src="images/Muneeb ur Rahman.png" alt="CTO" />
             </div>
 
             <h3>Muneeb Ur Rahman</h3>
@@ -602,7 +744,7 @@
 
           <div class="team-card reveal">
             <div class="member-image">
-              <img src="anamta.png" alt="Designer" />
+              <img src="images/anamta.png" alt="Designer" />
             </div>
 
             <h3>Anamta</h3>
@@ -621,7 +763,7 @@
 
           <div class="team-card reveal">
             <div class="member-image">
-              <img src="kashif.png" alt="Operations" />
+              <img src="images/kashif.png" alt="Operations" />
             </div>
 
             <h3>Kashif</h3>
@@ -656,8 +798,8 @@
             </div>
           </div>
 
-          <a href="#" class="cta-btn">
-            View Openings
+          <a href="contact.html" class="cta-btn" >
+            Contact us
 
             <i class="fa-solid fa-arrow-right"></i>
           </a>
@@ -669,7 +811,7 @@
     <section class="cta">
       <h2>Ready to simplify event management?</h2>
       <p>Start your free trial and build smarter workflows.</p>
-      <button class="btn-white">Start Free Trial</button>
+      <button class="btn-white" onclick="window.location.href='contact.html#contact'">Start Free Trial</button>
     </section>
 
     <!-- ================= FOOTER ================= -->
@@ -682,8 +824,8 @@
       </div>
 
       <div class="footer-links">
-        <a href="#">Privacy Policy</a>
-        <a href="#">Terms of Service</a>
+        <a href="privacy policy.html">Privacy Policy</a>
+        <a href="terms and conditions.html">Terms of Service</a>
         <a href="#">Cookie Policy</a>
         <a href="#">Status</a>
       </div>

@@ -4,28 +4,164 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Document</title>
+  <title>Features | EventoriaX</title>
+  <meta name="description" content="EventoraX - The complete event management platform for universities, companies, and NGOs. Create events, manage registrations, issue certificates, and track analytics." />
+    <meta name="keywords" content="event management, event platform, registration, certificates, QR tickets, event organizer, ORBIT-I" />
+    <meta name="author" content="ORBIT-I" />
+    <meta name="theme-color" content="#7c3aed" />
+    <meta property="og:title" content="EventoraX - Where Every Moment Becomes a Memory" />
+    <meta property="og:description" content="The complete event management platform for modern organizers. Built by ORBIT-I." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://eventorax.com" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="EventoraX - Event Management Platform" />
+    <meta name="twitter:description" content="Create events, manage registrations, issue certificates, and track analytics." />
+    <link rel="canonical" href="https://eventorax.com" />
+  <link rel="icon" href="images/favicon.png">
   <link rel="stylesheet" href="features.css">
 </head>
 
 <body>
   <header>
+
+
+    <input type="checkbox" id="menu-toggle">
+
+
     <nav class="navbar">
+
+      <!-- Logo -->
       <div class="div1">
+
         <div class="logo">
           <h2>EventoriaX</h2>
         </div>
-        <a href="features.html">Features</a>
-        <a href="p.html">Pricing</a>
-        <a href="About.html">About</a>
-        <a href="">Verify</a>
+
+
+        <div class="desktop-links">
+
+          <a href="features.html">Features</a>
+          <a href="p.html">Pricing</a>
+          <a href="About.html">About</a>
+          <a href="verify.html">Verify</a>
+
+        </div>
+
       </div>
+
+
+
+      <!-- Right Side -->
       <div class="div2">
-        <a href="" class="div2-1">Sign In</a>
-        <a href="" class="headerbtn">Get Started</a>
-        <div class="hamburger" onclick="toggleMenu()">☰</div>
+
+
+        <a href="#" class="div2-1">
+          Sign In
+        </a>
+
+
+        <a href="contact.html" class="headerbtn">
+          Get Started
+        </a>
+
+
+
+        <!-- Hamburger -->
+
+        <label for="menu-toggle" class="menu-btn">
+
+          <span></span>
+          <span></span>
+          <span></span>
+
+        </label>
+
+
       </div>
+
+
     </nav>
+
+
+
+    <!-- Overlay -->
+
+    <label for="menu-toggle" class="menu-overlay"></label>
+
+
+
+    <!-- Sidebar -->
+
+    <aside class="mobile-sidebar">
+
+
+      <div>
+
+
+        <div class="sidebar-top">
+
+          <h2>Menu</h2>
+
+
+          <label for="menu-toggle" class="close-btn">
+
+            &times;
+
+          </label>
+
+
+        </div>
+
+
+
+        <div class="sidebar-links">
+
+          <a href="features.html">
+            Features
+          </a>
+
+
+          <a href="p.html">
+            Pricing
+          </a>
+
+
+          <a href="About.html">
+            About
+          </a>
+
+
+          <a href="verify.html">
+            Verify
+          </a>
+
+
+        </div>
+
+
+      </div>
+
+
+
+      <div class="sidebar-bottom">
+
+
+        <a href="#" class="mobile-signin">
+          Sign In
+        </a>
+
+
+        <a href="contact.html" class="mobile-btn">
+          Get Started
+        </a>
+
+
+      </div>
+
+
+    </aside>
+
+
   </header>
   <!-- ================= HERO ================= -->
 
@@ -48,9 +184,9 @@
         </p>
 
         <div class="hero-buttons">
-          <button class="primary">Explore Features →</button>
+          <button class="primary" onclick="window.location.href='#features'">Explore Features →</button>
 
-          <button class="secondary">Watch Demo</button>
+          
         </div>
 
 
@@ -68,164 +204,256 @@
       <p>Our innovative, future‑ready features make your event management effortless — ensuring a seamless experience
         without any hurdles.</p>
     </div>
-    <div class="feature">
-      <div class="feature-image">
-        <img src="event management.png" alt="" />
+    <div class="featuresx">
+      <div class="feature">
+        <div class="feature-image">
+          <img src="images/event management.png" alt="" />
+        </div>
+
+        <div class="feature-card">
+          <span class="number">01</span>
+
+          <h2>Event Management</h2>
+
+          <div class="line"></div>
+
+          <p>
+            Create, organize and manage events of every size with powerful tools
+            and automation.
+          </p>
+
+          <a href="#" class="expand-btn"> → </a>
+          <div class="feature-details">
+
+            <h4>What you'll get</h4>
+            <p>
+              Create, organize, and manage every stage of your event from a single dashboard. Schedule physical, online,
+              or hybrid events, customize registration settings, define attendance limits, assign certificate templates,
+              and monitor event progress in real time. Whether you're hosting a workshop, conference, seminar, or
+              university event, EventoriaX helps you streamline planning while keeping all event information organized
+              and accessible.
+            </p>
+
+          </div>
+        </div>
       </div>
+      <!-- ------ -->
+      <div class="feature reverse">
+        <div class="feature-image">
+          <img src="images/certificate system.jpg" alt="" />
+        </div>
 
-      <div class="feature-card">
-        <span class="number">01</span>
+        <div class="feature-card">
+          <span class="number">02</span>
 
-        <h2>Event Management</h2>
+          <h2>Certificate System</h2>
 
-        <div class="line"></div>
+          <div class="line"></div>
 
-        <p>
-          Create, organize and manage events of every size with powerful tools
-          and automation.
-        </p>
+          <p>
+            Design, issue and verify professional certificates in seconds with automation.
+          </p>
 
-        <a href="#"> → </a>
+          <a href="#" class="expand-btn"> → </a>
+          <div class="feature-details">
+
+            <h4>What you'll get</h4>
+            <p>
+              Generate professional digital certificates instantly with customizable templates designed for every type
+              of event. Issue certificates individually or in bulk, include organization branding, and send them
+              directly to participants via email. Every certificate contains a unique verification code and SHA-256
+              security hash, allowing anyone to verify its authenticity through the public verification page.
+            </p>
+
+          </div>
+
+        </div>
       </div>
-    </div>
-    <!-- ------ -->
-    <div class="feature reverse">
-      <div class="feature-image">
-        <img src="certificate system.jpg" alt="" />
+      <!-- ---------- -->
+      <div class="feature">
+        <div class="feature-image">
+          <img src="images/qr ticket system.jpg" alt="" />
+        </div>
+
+        <div class="feature-card">
+          <span class="number">03</span>
+
+          <h2>QR Ticketing & Scanner</h2>
+
+          <div class="line"></div>
+
+          <p>
+            Generate secure QR tickets and scan attendees instantly using any device.
+          </p>
+
+          <a href="#" class="expand-btn"> → </a>
+          <div class="feature-details">
+
+            <h4>What you'll get</h4>
+            <p>
+              Automatically generate secure QR tickets for every registered attendee and simplify event check-in with
+              fast, camera-based scanning. Track ticket usage in real time, prevent duplicate entries, and manage
+              attendance without paperwork. Tickets can also be downloaded in bulk or delivered directly through
+              automated email, making event entry faster and more reliable.
+            </p>
+
+          </div>
+        </div>
       </div>
+      <!-- -- -->
+      <div class="feature reverse">
+        <div class="feature-image">
+          <img src="images/id card.webp" alt="" />
+        </div>
 
-      <div class="feature-card">
-        <span class="number">02</span>
+        <div class="feature-card">
+          <span class="number">04</span>
 
-        <h2>Certificate System</h2>
+          <h2>ID Card Generator</h2>
 
-        <div class="line"></div>
+          <div class="line"></div>
 
-        <p>
-          Design, issue and verify professional certificates in seconds with automation.
-        </p>
+          <p>
+            Create professional ID cards for participants, speakers and staff in minutes.
+          </p>
 
-        <a href="#"> → </a>
+          <a href="#" class="expand-btn"> → </a>
+          <div class="feature-details">
+
+            <h4>What you'll get</h4>
+            <p>
+              Create professional ID cards for participants, speakers, volunteers, and staff with just a few clicks.
+              Select from multiple templates, customize logos and displayed information, preview designs before
+              publishing, and export high-quality PDFs individually or in bulk. This ensures a consistent and
+              professional identity for everyone attending your event.
+            </p>
+
+          </div>
+        </div>
       </div>
-    </div>
-    <!-- ---------- -->
-    <div class="feature">
-      <div class="feature-image">
-        <img src="qr ticket system.jpg" alt="" />
+      <!-- -- -->
+      <div class="feature">
+        <div class="feature-image">
+          <img src="images/analysis and reports.jfif" alt="" />
+        </div>
+
+        <div class="feature-card">
+          <span class="number">05</span>
+
+          <h2>Analytics & Reports</h2>
+
+          <div class="line"></div>
+
+          <p>
+            Get clear insight into registerations, attendance, certificates and event performance.
+          </p>
+
+          <a href="#" class="expand-btn"> → </a>
+          <div class="feature-details">
+
+            <h4>What you'll get</h4>
+            <p>
+              Gain valuable insights into your events with detailed analytics and visual reports. Monitor registrations,
+              attendance rates, certificate issuance, event performance, and participation trends through interactive
+              dashboards. Export reports in PDF format to support decision-making, measure event success, and improve
+              future planning with data-driven insights.
+            </p>
+
+          </div>
+        </div>
       </div>
+      <!-- ------- -->
+      <div class="feature reverse">
+        <div class="feature-image">
+          <img src="images/email auto.jpeg" alt="" />
+        </div>
 
-      <div class="feature-card">
-        <span class="number">03</span>
+        <div class="feature-card">
+          <span class="number">06</span>
 
-        <h2>QR Ticketing & Scanner</h2>
+          <h2>Email Automation</h2>
 
-        <div class="line"></div>
+          <div class="line"></div>
 
-        <p>
-          Generate secure QR tickets and scan attendees instantly using any device.
-        </p>
+          <p>
+            Sent the right emails at the right time with automation and smart triggers.
+          </p>
 
-        <a href="#"> → </a>
+          <a href="#" class="expand-btn"> → </a>
+          <div class="feature-details">
+
+            <h4>What you'll get</h4>
+            <p>
+              Keep participants informed with automated email workflows that deliver the right message at the right
+              time. Send registration confirmations, event reminders, QR tickets, digital certificates, renewal notices,
+              and important updates without manual effort. Built-in email automation improves communication while saving
+              valuable administrative time.
+            </p>
+
+          </div>
+        </div>
       </div>
-    </div>
-    <!-- -- -->
-    <div class="feature reverse">
-      <div class="feature-image">
-        <img src="id card.webp" alt="" />
+      <!-- ----------------------- -->
+      <div class="feature">
+        <div class="feature-image">
+          <img src="images/reset api.jfif" alt="" />
+        </div>
+
+        <div class="feature-card">
+          <span class="number">07</span>
+
+          <h2>Reset API</h2>
+
+          <div class="line"></div>
+
+          <p>
+            Integrate EventoriaX with your own systems using our powerful Reset API.
+          </p>
+
+          <a href="#" class="expand-btn"> → </a>
+          <div class="feature-details">
+
+            <h4>What you'll get</h4>
+            <p>
+              Connect EventoriaX with your existing applications using secure REST API access available for Enterprise
+              organizations. Generate and manage API tokens, integrate with third-party systems, automate workflows, and
+              exchange event data securely through a documented API, making EventoriaX part of your existing technology
+              ecosystem.
+            </p>
+
+          </div>
+        </div>
       </div>
+      <!-- ----------------------- -->
+      <div class="feature reverse">
+        <div class="feature-image">
+          <img src="images/security.jpeg" alt="" />
+        </div>
 
-      <div class="feature-card">
-        <span class="number">04</span>
+        <div class="feature-card">
+          <span class="number">08</span>
 
-        <h2>ID Card Generator</h2>
+          <h2>Multi-tenancy & security</h2>
 
-        <div class="line"></div>
+          <div class="line"></div>
 
-        <p>
-          Create professional ID cards for participants, speakers and staff in minutes.
-        </p>
+          <p>
+            Built for scale isolated, secure and reliable for every organization.
+          </p>
 
-        <a href="#"> → </a>
-      </div>
-    </div>
-    <!-- -- -->
-    <div class="feature">
-      <div class="feature-image">
-        <img src="analysis and reports.jfif" alt="" />
-      </div>
+          <a href="#" class="expand-btn"> → </a>
+          <div class="feature-details">
 
-      <div class="feature-card">
-        <span class="number">05</span>
+            <h4>What you'll get</h4>
+            <p>
+              Built with a secure multi-tenant architecture, EventoriaX ensures every organization operates within its
+              own isolated workspace while sharing a reliable cloud platform. Role-based permissions, activity logs,
+              secure authentication, audit tracking, and certificate verification protect sensitive information and
+              provide complete transparency for administrators and organizations of every size.
+            </p>
 
-        <h2>Analytics & Reports</h2>
-
-        <div class="line"></div>
-
-        <p>
-          Get clear insight into registerations, attendance, certificates and event performance.
-        </p>
-
-        <a href="#"> → </a>
-      </div>
-    </div>
-    <!-- ------- -->
-    <div class="feature reverse">
-      <div class="feature-image">
-        <img src="email auto.jpeg" alt="" />
-      </div>
-
-      <div class="feature-card">
-        <span class="number">06</span>
-
-        <h2>Email Automation</h2>
-
-        <div class="line"></div>
-
-        <p>
-          Sent the right emails at the right time with automation and smart triggers.
-        </p>
-
-        <a href="#"> → </a>
-      </div>
-    </div>
-    <!-- ----------------------- -->
-    <div class="feature">
-      <div class="feature-image">
-        <img src="reset api.jfif" alt="" />
-      </div>
-
-      <div class="feature-card">
-        <span class="number">07</span>
-
-        <h2>Reset API</h2>
-
-        <div class="line"></div>
-
-        <p>
-          Integrate EventoriaX with your own systems using our powerful Reset API.
-        </p>
-
-        <a href="#"> → </a>
-      </div>
-    </div>
-    <!-- ----------------------- -->
-    <div class="feature reverse">
-      <div class="feature-image">
-        <img src="security.jpeg" alt="" />
-      </div>
-
-      <div class="feature-card">
-        <span class="number">08</span>
-
-        <h2>Multi-tenancy & security</h2>
-
-        <div class="line"></div>
-
-        <p>
-          Built for scale isolated, secure and reliable for every organization.
-        </p>
-
-        <a href="#"> → </a>
+          </div>
+        </div>
       </div>
     </div>
   </section>
@@ -235,21 +463,21 @@
 
       <div class="logo-grid">
         <div class="logo-track">
-          <img src="logo1.png" alt="Logo 1" />
-          <img src="logo2.png" alt="Logo 2" />
-          <img src="logo3.png" alt="Logo 3" />
-          <img src="logo4.png" alt="Logo 4" />
-          <img src="logo5.png" alt="Logo 5" />
-          <img src="logo6.png" alt="Logo 6" />
-          <img src="logo7.png" alt="Logo 7" />
+          <img src="images/logo1.png" alt="Logo 1" />
+          <img src="images/logo2.png" alt="Logo 2" />
+          <img src="images/logo3.png" alt="Logo 3" />
+          <img src="images/logo4.png" alt="Logo 4" />
+          <img src="images/logo5.png" alt="Logo 5" />
+          <img src="images/logo6.png" alt="Logo 6" />
+          <img src="images/logo7.png" alt="Logo 7" />
           <!-- duplicate logos for seamless loop -->
-          <img src="logo1.png" alt="Logo 1" />
-          <img src="logo2.png" alt="Logo 2" />
-          <img src="logo3.png" alt="Logo 3" />
-          <img src="logo4.png" alt="Logo 4" />
-          <img src="logo5.png" alt="Logo 5" />
-          <img src="logo6.png" alt="Logo 6" />
-          <img src="logo7.png" alt="Logo 7" />
+          <img src="images/logo1.png" alt="Logo 1" />
+          <img src="images/logo2.png" alt="Logo 2" />
+          <img src="images/logo3.png" alt="Logo 3" />
+          <img src="images/logo4.png" alt="Logo 4" />
+          <img src="images/logo5.png" alt="Logo 5" />
+          <img src="images/logo6.png" alt="Logo 6" />
+          <img src="images/logo7.png" alt="Logo 7" />
         </div>
       </div>
   </section>
@@ -257,7 +485,7 @@
   <section class="cta">
     <h2>Ready to simplify event management?</h2>
     <p>Start your free trial and build smarter workflows.</p>
-    <button class="btn-white">Start Free Trial</button>
+    <button class="btn-white" onclick="window.location.href='contact.html#contact'">Start Free Trial</button>
   </section>
 
   <!-- ================= FOOTER ================= -->
@@ -269,12 +497,30 @@
     </div>
 
     <div class="footer-links">
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms of Service</a>
+      <a href="privacy policy.html">Privacy Policy</a>
+      <a href="terms and conditions.html">Terms of Service</a>
       <a href="#">Cookie Policy</a>
       <a href="#">Status</a>
     </div>
   </footer>
+
+
+  <script>
+    document.querySelectorAll(".expand-btn").forEach(function (button) {
+
+      button.addEventListener("click", function (e) {
+
+        e.preventDefault();
+
+        const card = this.closest(".feature-card");
+
+        card.classList.toggle("active");
+
+      });
+
+    });
+  </script>
+
 
 </body>
 

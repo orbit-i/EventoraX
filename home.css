@@ -17,7 +17,9 @@ body {
 
   padding-top: 64px; /* same as navbar height */
 }
-
+html {
+    scroll-behavior: smooth;
+}
 .navbar {
   display: flex;
   justify-content: space-between;
@@ -33,7 +35,7 @@ body {
   /* box-shadow: 0 3px 0 rgba(0, 0, 0, 0.1); */
   background: transparent;
   transition: background 0.3s ease;
-  z-index: 1000;
+  z-index: 100;
 }
 
 .navbar.scrolled {
@@ -103,6 +105,508 @@ nav .div2 {
   border: 1px solid #233144;
   transform: scale(1.05);
 }
+.desktop-links{
+  display: flex;
+  gap: 30px;
+}
+/*==============================
+        HAMBURGER BUTTON
+==============================*/
+
+#menu-toggle{
+
+    display:none;
+
+}
+
+.menu-btn{
+    width:52px;
+    height:52px;
+
+    display:none;
+
+    cursor:pointer;
+
+    border-radius:14px;
+
+    background:#fff;
+
+    border:1px solid #E5E7EB;
+
+    justify-content:center;
+    align-items:center;
+
+    flex-direction:column;
+
+    gap:6px;
+
+    transition:.35s;
+}
+
+.menu-btn:hover{
+    background:#F8F8FF;
+}
+
+.menu-btn span{
+
+    width:22px;
+    height:2px;
+
+    background:#111827;
+
+    border-radius:20px;
+
+    transition:.35s;
+
+}
+
+
+/*==============================
+            OVERLAY
+==============================*/
+
+.menu-overlay{
+
+    position:fixed;
+
+    inset:0;
+
+    background:rgba(0,0,0,.35);
+
+    opacity:0;
+
+    visibility:hidden;
+
+    transition:.4s;
+
+    z-index:1100;
+    
+
+}
+
+
+/*==============================
+            SIDEBAR
+==============================*/
+
+.mobile-sidebar{
+
+    position:fixed;
+
+    top:0;
+
+    right:0;
+
+    width:340px;
+
+    max-width:90%;
+
+    height:100vh;
+
+    background:#fff;
+
+    
+
+    box-shadow:
+    -25px 0 60px rgba(0,0,0,.18);
+
+    display:flex;
+
+    flex-direction:column;
+
+    justify-content:space-between;
+
+    padding:34px;
+
+    transform:translateX(110%);
+
+    transition:.45s cubic-bezier(.77,0,.175,1);
+
+    z-index:1200;
+
+}
+/*==============================
+      CSS ONLY MENU CONTROL
+==============================*/
+
+
+
+
+/* Open Sidebar */
+
+#menu-toggle:checked ~ .mobile-sidebar{
+
+    transform:translateX(0);
+
+}
+
+
+
+/* Show Overlay */
+
+#menu-toggle:checked ~ .menu-overlay{
+
+    opacity:1;
+    visibility:visible;
+
+}
+
+
+/* Hamburger Animation */
+
+#menu-toggle:checked + .menu-btn span:nth-child(1){
+
+    transform:translateY(8px) rotate(45deg);
+
+}
+
+
+#menu-toggle:checked + .menu-btn span:nth-child(2){
+
+    opacity:0;
+
+}
+
+
+#menu-toggle:checked + .menu-btn span:nth-child(3){
+
+    transform:translateY(-8px) rotate(-45deg);
+
+}
+
+/*==============================
+          SIDEBAR TOP
+==============================*/
+
+.sidebar-top{
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+}
+
+.sidebar-top h2{
+
+    font-size:28px;
+
+    color:#111827;
+
+}
+
+.close-btn{
+
+    width:48px;
+
+    height:48px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:var(--primary);
+    text-align: center;
+
+    color:#fff;
+
+    font-size:40px;
+
+    cursor:pointer;
+
+    transition:.3s;
+
+}
+
+.close-btn:hover{
+
+    transform:rotate(90deg);
+
+}
+
+
+/*==============================
+         SIDEBAR LINKS
+==============================*/
+
+.sidebar-links{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:8px;
+
+    margin-top:40px;
+
+}
+
+.sidebar-links a{
+
+    text-decoration:none;
+
+    color:#111827;
+
+    font-size:22px;
+
+    font-weight:600;
+
+    padding:18px 0;
+
+    border-bottom:1px solid #ECECEC;
+
+    transition:.3s;
+
+}
+
+.sidebar-links a:hover{
+
+    color:var(--primary);
+
+}
+
+
+/*==============================
+         SIDEBAR BOTTOM
+==============================*/
+
+.sidebar-bottom{
+
+    display:flex;
+
+    flex-direction:column;
+
+    gap:18px;
+
+}
+
+.mobile-signin{
+
+    text-decoration:none;
+
+    text-align:center;
+
+    color:#111827;
+
+    font-size:18px;
+
+    font-weight:600;
+
+}
+
+.mobile-btn{
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    height:56px;
+
+    background:var(--primary);
+
+    color:#fff;
+
+    text-decoration:none;
+
+    border-radius:16px;
+
+    font-size:18px;
+
+    font-weight:600;
+
+    transition:.3s;
+
+}
+
+.mobile-btn:hover{
+
+    background:var(--primary);
+
+}
+/*========================================
+        TABLET & MOBILE
+========================================*/
+
+@media(max-width:1024px){
+
+    .desktop-links{
+
+        display:none;
+
+    }
+
+    .div2-1{
+
+        display:none;
+
+    }
+
+    .menu-btn{
+
+        display:flex;
+
+    }
+
+    .navbar{
+
+        padding:18px 32px;
+
+    }
+    .headerbtn{
+      display: none;
+    }
+}
+
+
+@media(max-width:768px){
+
+    .navbar{
+
+        padding:16px 20px;
+
+    }
+    .headerbtn{
+      display: none;
+    }
+    .logo h2{
+
+        font-size:34px;
+
+    }
+
+    .headerbtn{
+
+        height:48px;
+
+        padding:0 26px;
+
+        font-size:16px;
+
+    }
+
+    .mobile-sidebar{
+
+        width:300px;
+
+        padding:28px;
+
+    }
+
+}
+
+
+@media(max-width:480px){
+
+    .logo h2{
+
+        font-size:30px;
+
+    }
+
+    .headerbtn{
+
+        padding:0 22px;
+
+        font-size:15px;
+
+    }
+
+    .mobile-sidebar{
+
+        width:280px;
+
+        border-radius:24px 0 0 24px;
+
+    }
+    .hero h1{
+
+        font-size:34px;
+
+        margin:20px 0;
+    }
+
+    .hero-text{
+
+        font-size:15px;
+
+        line-height:1.7;
+    }
+
+    .hero-buttons{
+
+        flex-direction:column;
+
+        width:100%;
+
+        align-items:center;
+
+        gap:14px;
+    }
+
+    .hero-buttons .btn{
+
+        width:100%;
+
+        max-width:320px;
+    }
+
+    .hero-image-wrapper{
+
+        margin-top:20px;
+    }
+
+    .dashboard-image{
+
+        width:100%;
+
+        border-radius:14px;
+    }
+
+    .circle-1{
+
+        width:120px;
+        height:120px;
+
+        left:-40px;
+    }
+
+    .circle-2{
+
+        width:130px;
+        height:130px;
+
+        right:-40px;
+    }
+
+    /* Stats */
+
+    .status_bar{
+
+        flex-direction:column;
+
+        gap:25px;
+
+        padding:35px 20px;
+    }
+
+    .cards{
+
+        width:100%;
+
+        text-align:center;
+    }
+
+    .cards h4{
+
+        font-size:30px;
+    }
+
+
+
+}
 
 /* ----------------------- */
 * {
@@ -118,8 +622,7 @@ body {
 
 .hero {
   position: relative;
-  max-width: 1280px;
-
+  max-width: 1280px;margin: auto;
   padding: 80px 40px;
 
   text-align: center;
@@ -144,7 +647,8 @@ body {
   display: flex;
   gap: 8px;
   align-items: center;
-  width: 335.44px;
+  width:fit-content;
+    max-width:100%;
   height: 26px;
   font-weight: 600;
   padding: 4px 16px;
@@ -309,6 +813,7 @@ body {
   transform: translateX(-50%);
   z-index: 0;
 }
+
 /* ______________________________________ */
 /*=========================================
             FEATURES SECTION
@@ -552,65 +1057,192 @@ body {
 .feature-card:hover .card-line {
   width: 135px;
 }
+/* =====================================================
+   PART 2 - RESPONSIVE FEATURES SECTION
+=====================================================*/
 
-/*=========================================
-            RESPONSIVE
-=========================================*/
+/* Large Tablets */
+@media (max-width:1024px){
 
-@media (max-width: 1100px) {
-  .feature-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+    .feature{
+        padding:90px 25px;
+    }
 
-  .section-title {
-    font-size: 2.4rem;
-  }
+    .feature .container{
+        width:100%;
+        max-width:900px;
+    }
+
+    .section-tag{
+        width:auto;
+        padding:8px 18px;
+        font-size:12px;
+    }
+
+    .section-title{
+        font-size:36px;
+    }
+
+    .section-description{
+        font-size:16px;
+        line-height:1.8;
+        margin-bottom:60px;
+        max-width:700px;
+    }
+
+    .feature-grid{
+        grid-template-columns:repeat(2,1fr);
+        gap:24px;
+    }
+
+    .feature-card{
+        padding:30px;
+    }
+
+    .icon-box{
+        width:76px;
+        height:76px;
+        margin-bottom:22px;
+    }
+
+    .icon-box i{
+        font-size:30px;
+    }
+
+    .feature-card h3{
+        font-size:24px;
+        margin-bottom:14px;
+    }
+
+    .feature-card p{
+        font-size:15px;
+        line-height:1.7;
+        margin-bottom:28px;
+    }
+
+    .card-number{
+        width:48px;
+        height:48px;
+        font-size:15px;
+    }
+
 }
 
-@media (max-width: 700px) {
-  .features {
-    padding: 90px 0;
-  }
+/* ===========================
+        MOBILE
+=========================== */
 
-  .feature-grid {
-    grid-template-columns: 1fr;
+@media (max-width:768px){
 
-    gap: 22px;
-  }
+    .feature{
+        padding:70px 18px;
+    }
 
-  .section-title {
-    font-size: 2rem;
-  }
+    .feature .container{
+        width:100%;
+    }
 
-  .section-description {
-    font-size: 1rem;
+    .section-tag{
+        margin:0 auto 18px;
+        width:fit-content;
+    }
 
-    margin-bottom: 55px;
-  }
+    .section-title{
+        font-size:30px;
+        line-height:1.25;
+    }
 
-  .feature-card {
-    padding: 28px;
-  }
+    .section-description{
+        font-size:15px;
+        margin-bottom:45px;
+        line-height:1.7;
+    }
 
-  .icon-box {
-    width: 74px;
-    height: 74px;
-  }
+    .feature-grid{
+        grid-template-columns:1fr;
+        gap:20px;
+    }
 
-  .icon-box i {
-    font-size: 30px;
-  }
+    .feature-card{
+        padding:28px;
+    }
 
-  .feature-card h3 {
-    font-size: 1.35rem;
-  }
+    .icon-box{
+        width:70px;
+        height:70px;
+    }
 
-  .card-number {
-    width: 46px;
-    height: 46px;
+    .icon-box i{
+        font-size:28px;
+    }
 
-    font-size: 0.9rem;
-  }
+    .feature-card h3{
+        font-size:22px;
+    }
+
+    .feature-card p{
+        font-size:15px;
+    }
+
+    .card-number{
+        width:44px;
+        height:44px;
+        top:18px;
+        right:18px;
+    }
+
+}
+
+/* ===========================
+        SMALL PHONES
+=========================== */
+
+@media (max-width:480px){
+
+    .feature{
+        padding:60px 15px;
+    }
+
+    .section-title{
+        font-size:26px;
+    }
+
+    .section-description{
+        font-size:14px;
+        margin-bottom:35px;
+    }
+
+    .feature-card{
+        padding:22px;
+        border-radius:18px;
+    }
+
+    .icon-box{
+        width:64px;
+        height:64px;
+    }
+
+    .icon-box i{
+        font-size:24px;
+    }
+
+    .feature-card h3{
+        font-size:20px;
+    }
+
+    .feature-card p{
+        font-size:14px;
+        line-height:1.6;
+    }
+
+    .card-line{
+        width:70px;
+    }
+
+    .feature-card:hover .card-line{
+        width:110px;
+    }
+
 }
 /* ______________________________________________ */
 .steps-section {
@@ -715,12 +1347,214 @@ body {
 .steps-wrapper img {
   width: 150px;
 }
+/* =====================================================
+   PART 3 - RESPONSIVE STEPS SECTION
+=====================================================*/
+
+/* ==========================
+        TABLET
+========================== */
+
+@media (max-width:1024px){
+
+    .steps-container{
+        padding:80px 30px;
+    }
+
+    .steps-heading h2{
+        font-size:36px;
+    }
+
+    .steps-heading p{
+        font-size:15px;
+    }
+
+    .steps-grid{
+        gap:25px;
+    }
+
+    .step-card{
+        max-width:100%;
+    }
+
+    .step-card img{
+        width:120px;
+        margin:18px auto;
+    }
+
+    .step-card h3{
+        font-size:20px;
+    }
+
+    .step-card p{
+        max-width:260px;
+        font-size:15px;
+    }
+
+}
+
+
+/* ==========================
+          MOBILE
+========================== */
+
+@media (max-width:768px){
+
+    .steps-container{
+        padding:65px 20px;
+    }
+
+    .steps-heading{
+        margin-bottom:45px;
+    }
+
+    .steps-heading h2{
+        font-size:30px;
+        line-height:1.25;
+    }
+
+    .steps-heading p{
+        font-size:15px;
+    }
+
+    /* Hide horizontal progress line */
+
+    .progress-line{
+        display:none;
+    }
+
+    /* Stack cards */
+
+    .steps-grid{
+
+        flex-direction:column;
+
+        align-items:center;
+
+        gap:40px;
+    }
+
+    .step-card{
+
+        width:100%;
+
+        max-width:420px;
+
+        background:#fff;
+
+        border:1px solid #E5E7EB;
+
+        border-radius:20px;
+
+        padding:28px 22px;
+
+        box-shadow:0 10px 30px rgba(0,0,0,.05);
+    }
+
+    .step-circle{
+
+        width:52px;
+
+        height:52px;
+
+        font-size:17px;
+
+        margin-bottom:18px;
+    }
+
+    .step-card img{
+
+        width:120px;
+
+        margin:20px auto;
+    }
+
+    .step-card h3{
+
+        font-size:22px;
+
+        margin-bottom:14px;
+    }
+
+    .step-card p{
+
+        font-size:15px;
+
+        max-width:100%;
+    }
+
+}
+
+
+/* ==========================
+        SMALL MOBILE
+========================== */
+
+@media (max-width:480px){
+
+    .steps-container{
+
+        padding:55px 15px;
+    }
+
+    .steps-heading{
+
+        margin-bottom:35px;
+    }
+
+    .steps-heading h2{
+
+        font-size:26px;
+    }
+
+    .steps-heading p{
+
+        font-size:14px;
+    }
+
+    .step-card{
+
+        padding:22px 18px;
+
+        border-radius:18px;
+    }
+
+    .step-circle{
+
+        width:46px;
+
+        height:46px;
+
+        font-size:15px;
+    }
+
+    .step-card img{
+
+        width:95px;
+    }
+
+    .step-card h3{
+
+        font-size:20px;
+    }
+
+    .step-card p{
+
+        font-size:14px;
+
+        line-height:1.6;
+    }
+
+}
 /* -------------------pricing------------------ */
 .pricing {
   text-align: center;
   padding: 60px 20px;
   background: #f9f9fb;
   font-family: "Segoe UI", sans-serif;
+}
+#price {
+    scroll-margin-top: 30px; /* Adjust to your navbar height */
 }
 
 .pricing-title {
@@ -871,6 +1705,249 @@ body {
 .card1 svg {
   width: 16.67px;
   height: 16.67px;
+}
+/* =====================================================
+   PART 4 - RESPONSIVE PRICING SECTION
+=====================================================*/
+
+/* ==========================
+        TABLET
+========================== */
+
+@media (max-width:1024px){
+
+    .pricing{
+
+        padding:80px 25px;
+    }
+
+    .pricing-title{
+
+        font-size:36px;
+
+        margin-bottom:16px;
+    }
+
+    .pricing > p{
+
+        max-width:650px;
+
+        margin:0 auto 45px;
+
+        font-size:16px;
+    }
+
+    .pricing-cards{
+
+        gap:25px;
+
+        justify-content:center;
+    }
+
+    .card1{
+
+        width:calc(50% - 15px);
+
+        min-width:340px;
+
+        height:auto;
+
+        padding:35px 28px;
+    }
+
+    .card1 .price{
+
+        font-size:36px;
+
+        line-height:1.2;
+    }
+
+    .model .span{
+
+        font-size:36px;
+
+        line-height:1.2;
+    }
+
+    .btn{
+
+        width:100%;
+    }
+
+}
+
+
+/* ==========================
+          MOBILE
+========================== */
+
+@media (max-width:768px){
+
+    .pricing{
+
+        padding:65px 20px;
+    }
+
+    .pricing-title{
+
+        font-size:30px;
+
+        line-height:1.3;
+    }
+
+    .pricing > p{
+
+        font-size:15px;
+
+        margin-bottom:35px;
+    }
+
+    .pricing-cards{
+
+        flex-direction:column;
+
+        align-items:center;
+
+        gap:22px;
+    }
+
+    .card1{
+
+        width:100%;
+
+        max-width:500px;
+
+        min-width:0;
+
+        height:auto;
+
+        padding:30px 24px;
+    }
+
+    .card1 .price{
+
+        font-size:34px;
+    }
+
+    .model .span{
+
+        font-size:34px;
+    }
+
+    .features{
+
+        padding-bottom:28px;
+    }
+
+    .features li,
+    .recommended li{
+
+        font-size:15px;
+
+        margin:14px 0;
+    }
+
+    .btn{
+
+        width:100%;
+
+        display:flex;
+
+        justify-content:center;
+
+        align-items:center;
+    }
+
+    .badge{
+
+        font-size:14px;
+
+        padding:8px 18px;
+
+        border-radius:0 22px;
+    }
+
+}
+
+
+/* ==========================
+        SMALL MOBILE
+========================== */
+
+@media (max-width:480px){
+
+    .pricing{
+
+        padding:55px 15px;
+    }
+
+    .pricing-title{
+
+        font-size:26px;
+    }
+
+    .pricing > p{
+
+        font-size:14px;
+    }
+
+    .card1{
+
+        padding:24px 18px;
+
+        border-radius:18px;
+    }
+
+    .card1 .price{
+
+        font-size:30px;
+    }
+
+    .model .span{
+
+        font-size:30px;
+    }
+
+    .card1 .desc,
+    .model p{
+
+        font-size:14px;
+    }
+
+    .features li,
+    .recommended li{
+
+        font-size:14px;
+
+        gap:8px;
+    }
+
+    .features svg,
+    .recommended svg{
+
+        width:15px;
+
+        height:15px;
+
+        flex-shrink:0;
+    }
+
+    .btn{
+
+        height:52px;
+
+        font-size:15px;
+
+        border-radius:10px;
+    }
+
+    .badge{
+
+        font-size:13px;
+
+        padding:7px 16px;
+    }
+
 }
 /* ---------------------testimonials----------- */
 .testimonials-section {
@@ -1139,28 +2216,7 @@ body {
   transform: scale(1.05);
 }
 
-/* ================= RESPONSIVE ================= */
-@media (max-width: 768px) {
-  .testimonial-track {
-    width: 100%;
-  }
 
-  .testimonial-card {
-    min-width: 260px;
-  }
-
-  .prev-btn {
-    left: 2%;
-  }
-
-  .next-btn {
-    right: 2%;
-  }
-
-  .testimonials-header h2 {
-    font-size: 28px;
-  }
-}
 
 /* ------------------LOGO WALL----------- */
 
@@ -1188,8 +2244,11 @@ body {
 }
 
 .logo-grid {
-  width: 1200px; /* adjust to your layout */
-  overflow: hidden;
+  width:100%;
+    max-width:1200px;
+    overflow:hidden;
+    margin:auto;
+  
   background-color: #fff;
 }
 
@@ -1212,6 +2271,377 @@ body {
   100% {
     transform: translateX(-50%); /* move half the track length */
   }
+}
+/* =====================================================
+   PART 5 - TESTIMONIALS + CTA + LOGO WALL
+=====================================================*/
+
+/* ==========================
+        TABLET
+========================== */
+
+@media (max-width:1024px){
+
+    .testimonials-section{
+        padding:70px 0;
+    }
+
+    .container{
+        width:100%;
+        max-width:900px;
+        padding:0 25px;
+    }
+
+    .testimonials-header h2{
+        font-size:36px;
+    }
+
+    .testimonials-header p{
+        font-size:16px;
+    }
+
+    .testimonial-container{
+
+        max-width:720px;
+
+        gap:20px;
+    }
+
+    .testimonial-card{
+
+        flex:0 0 340px;
+
+        min-width:340px;
+
+        padding:30px;
+    }
+
+    .quote{
+        font-size:56px;
+    }
+
+    .review{
+        font-size:15px;
+    }
+
+    .logo-strip{
+
+        gap:25px;
+    }
+
+    .logo-strip img{
+
+        width:65px;
+        height:65px;
+    }
+
+    .cta-box{
+
+        padding:45px 35px;
+    }
+
+    .cta-box h2{
+
+        font-size:34px;
+    }
+
+    .logo-grid{
+
+        width:100%;
+    }
+
+    .logo-track{
+
+        gap:35px;
+    }
+
+    .logo-track img{
+
+        width:100px;
+    }
+
+}
+
+
+/* ==========================
+          MOBILE
+========================== */
+
+@media (max-width:768px){
+
+    .testimonials-section{
+
+        padding:60px 0;
+    }
+
+    .container{
+
+        padding:0 18px;
+    }
+
+    .testimonials-header{
+
+        margin-bottom:35px;
+    }
+
+    .testimonials-header h2{
+
+        font-size:30px;
+    }
+
+    .testimonials-header p{
+
+        font-size:15px;
+    }
+
+    .testimonial-slider{
+
+        position:relative;
+    }
+
+    .testimonial-container{
+
+        max-width:100%;
+
+        gap:18px;
+
+        padding:10px 0;
+    }
+
+    .testimonial-card{
+
+        flex:0 0 100%;
+
+        min-width:100%;
+
+        padding:28px 24px;
+
+        border-radius:20px;
+    }
+
+    .quote{
+
+        font-size:48px;
+    }
+
+    .review{
+
+        font-size:15px;
+
+        margin-bottom:25px;
+    }
+
+    .user img{
+
+        width:55px;
+        height:55px;
+    }
+
+    .user h4{
+
+        font-size:17px;
+    }
+
+    .user span{
+
+        font-size:13px;
+    }
+
+    /* Navigation */
+
+    .nav-btn{
+
+        width:42px;
+        height:42px;
+    }
+
+    .prev-btn{
+
+        left:-6px;
+    }
+
+    .next-btn{
+
+        right:-6px;
+    }
+
+    /* Logo Strip */
+
+    .logo-strip{
+
+        margin-top:45px;
+
+        gap:18px;
+    }
+
+    .logo-strip img{
+
+        width:58px;
+        height:58px;
+    }
+
+    /* CTA */
+
+    .cta-box{
+
+        margin-top:45px;
+
+        padding:35px 22px;
+
+        border-radius:18px;
+    }
+
+    .cta-box h2{
+
+        font-size:28px;
+
+        line-height:1.3;
+    }
+
+    .cta-box p{
+
+        font-size:15px;
+    }
+
+    .cta-box button{
+
+        width:100%;
+
+        max-width:300px;
+    }
+
+    /* Logo Wall */
+
+    .logo-wall{
+
+        padding:50px 0;
+    }
+
+    .logo-wall h2{
+
+        font-size:11px;
+
+        margin-bottom:30px;
+    }
+
+    .logo-grid{
+
+        width:100%;
+    }
+
+    .logo-track{
+
+        gap:30px;
+    }
+
+    .logo-track img{
+
+        width:90px;
+    }
+
+}
+
+
+/* ==========================
+        SMALL MOBILE
+========================== */
+
+@media (max-width:480px){
+
+    .container{
+
+        padding:0 15px;
+    }
+
+    .testimonials-header h2{
+
+        font-size:26px;
+    }
+
+    .testimonial-card{
+
+        padding:22px 18px;
+    }
+
+    .quote{
+
+        font-size:40px;
+    }
+
+    .review{
+
+        font-size:14px;
+
+        line-height:1.7;
+    }
+
+    .user{
+
+        gap:12px;
+    }
+
+    .user img{
+
+        width:48px;
+        height:48px;
+    }
+
+    .user h4{
+
+        font-size:16px;
+    }
+
+    .user span{
+
+        font-size:12px;
+    }
+
+    .nav-btn{
+
+        display:none;
+    }
+
+    .logo-strip{
+
+        gap:14px;
+    }
+
+    .logo-strip img{
+
+        width:50px;
+        height:50px;
+    }
+
+    .cta-box{
+
+        padding:30px 18px;
+    }
+
+    .cta-box h2{
+
+        font-size:24px;
+    }
+
+    .cta-box p{
+
+        font-size:14px;
+    }
+
+    .cta-box button{
+
+        width:100%;
+    }
+
+    .logo-track{
+
+        gap:25px;
+    }
+
+    .logo-track img{
+
+        width:75px;
+    }
+
 }
 
 /* -----------------------footer--------- */
@@ -1384,4 +2814,322 @@ body {
 
 .faq-question.active svg {
   transform: rotate(180deg);
+}
+/* =====================================================
+   PART 6 - FAQ + FOOTER + FINAL RESPONSIVE FIXES
+=====================================================*/
+
+/* ==========================
+        TABLET
+========================== */
+
+@media (max-width:1024px){
+
+    .faq-section{
+
+        padding:70px 30px;
+
+        gap:40px;
+
+        align-items:flex-start;
+    }
+
+    .faqh{
+
+        flex:1;
+
+        height:auto;
+    }
+
+    .faql{
+
+        flex:1.5;
+    }
+
+    .faq-container h2{
+
+        font-size:34px;
+
+        margin-bottom:18px;
+    }
+
+    .faq-container p{
+
+        font-size:15px;
+
+        line-height:1.8;
+    }
+
+    .faq-question{
+
+        font-size:17px;
+
+        padding:20px;
+    }
+
+    .faq-answer{
+
+        font-size:15px;
+
+        padding-left:20px;
+    }
+
+    /* Footer */
+
+    .footer{
+
+        padding:28px 30px;
+
+        gap:25px;
+    }
+
+}
+
+
+/* ==========================
+          MOBILE
+========================== */
+
+@media (max-width:768px){
+
+    /* FAQ */
+
+    .faq-section{
+
+        flex-direction:column;
+
+        padding:60px 20px;
+
+        gap:35px;
+    }
+
+    .faqh{
+
+        width:100%;
+
+        text-align:center;
+
+        height:auto;
+    }
+
+    .faql{
+
+        width:100%;
+    }
+
+    .faq-container h2{
+
+        font-size:30px;
+    }
+
+    .faq-container p{
+
+        font-size:15px;
+    }
+
+    .faq-question{
+
+        font-size:16px;
+
+        padding:18px;
+    }
+
+    .faq-answer{
+
+        padding:0 18px 18px;
+
+        font-size:15px;
+
+        line-height:1.7;
+    }
+
+    .faq-question svg{
+
+        width:18px;
+
+        flex-shrink:0;
+    }
+
+    /* Footer */
+
+    .footer{
+
+        flex-direction:column;
+
+        align-items:center;
+
+        text-align:center;
+
+        padding:35px 20px;
+    }
+
+    .footer-left{
+
+        align-items:center;
+    }
+
+    .footer-left h3{
+
+        font-size:26px;
+    }
+
+    .footer-left p{
+
+        max-width:100%;
+    }
+
+    .footer-links{
+
+        justify-content:center;
+
+        gap:18px;
+    }
+
+}
+
+
+/* ==========================
+        SMALL PHONES
+========================== */
+
+@media (max-width:480px){
+
+    .faq-section{
+
+        padding:50px 15px;
+    }
+
+    .faq-container h2{
+
+        font-size:26px;
+    }
+
+    .faq-container p{
+
+        font-size:14px;
+    }
+
+    .faq-question{
+
+        font-size:15px;
+
+        padding:16px;
+    }
+
+    .faq-answer{
+
+        font-size:14px;
+
+        padding:0 16px 16px;
+    }
+
+    .footer{
+
+        padding:28px 15px;
+    }
+
+    .footer-left h3{
+
+        font-size:22px;
+    }
+
+    .footer-left p{
+
+        font-size:13px;
+    }
+
+    .footer-links{
+
+        gap:14px;
+    }
+
+    .footer-links a{
+
+        font-size:13px;
+    }
+
+}
+
+
+/* =====================================================
+        FINAL RESPONSIVE FIXES
+=====================================================*/
+
+/* Images */
+
+img{
+
+    max-width:100%;
+
+    height:auto;
+
+}
+
+/* Videos */
+
+video{
+
+    max-width:100%;
+
+}
+
+/* Tables */
+
+table{
+
+    width:100%;
+
+    overflow-x:auto;
+
+}
+
+/* Form Elements */
+
+input,
+textarea,
+select,
+button{
+
+    max-width:100%;
+}
+
+/* Long Text */
+
+p,
+h1,
+h2,
+h3,
+h4{
+
+    word-wrap:break-word;
+}
+
+/* Smooth Scrolling */
+
+html{
+
+    scroll-behavior:smooth;
+}
+
+/* Prevent accidental horizontal scrolling */
+
+body{
+
+    overflow-x:hidden;
+}
+
+/* Section Width */
+
+section{
+
+    width:100%;
+}
+
+/* Flex Containers */
+
+.container{
+
+    width:100%;
+
+    margin:auto;
 }

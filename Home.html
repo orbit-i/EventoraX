@@ -4,7 +4,24 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description"
+    content="EventoraX - The complete event management platform for universities, companies, and NGOs. Create events, manage registrations, issue certificates, and track analytics." />
+  <meta name="keywords"
+    content="event management, event platform, registration, certificates, QR tickets, event organizer, ORBIT-I" />
+  <meta name="author" content="ORBIT-I" />
+  <meta name="theme-color" content="#7c3aed" />
+  <meta property="og:title" content="EventoraX - Where Every M oment Becomes a Memory" />
+  <meta property="og:description"
+    content="The complete event management platform for modern organizers. Built by ORBIT-I." />
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://eventorax.com" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="EventoraX - Event Management Platform" />
+  <meta name="twitter:description"
+    content="Create events, manage registrations, issue certificates, and track analytics." />
+  <link rel="canonical" href="https://eventorax.com" />
   <title>EventoriaX</title>
+  <link rel="icon" href="images/favicon.png">
   <link rel="stylesheet" href="home.css" />
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css">
@@ -12,21 +29,145 @@
 
 <body>
   <header>
+
+
+    <input type="checkbox" id="menu-toggle">
+
+
     <nav class="navbar">
+
+      <!-- Logo -->
       <div class="div1">
+
         <div class="logo">
           <h2>EventoriaX</h2>
         </div>
-        <a href="features.html">Features</a>
-        <a href="p.html">Pricing</a>
-        <a href="About.html">About</a>
-        <a href="">Verify</a>
+
+
+        <div class="desktop-links">
+
+          <a href="features.html">Features</a>
+          <a href="p.html">Pricing</a>
+          <a href="About.html">About</a>
+          <a href="verify.html">Verify</a>
+
+        </div>
+
       </div>
+
+
+
+      <!-- Right Side -->
       <div class="div2">
-        <a href="" class="div2-1">Sign In</a>
-        <a href="contact.html" class="headerbtn">Get Started</a>
+
+
+        <a href="#" class="div2-1">
+          Sign In
+        </a>
+
+
+        <a href="contact.html" class="headerbtn">
+          Get Started
+        </a>
+
+
+
+        <!-- Hamburger -->
+
+        <label for="menu-toggle" class="menu-btn">
+
+          <span></span>
+          <span></span>
+          <span></span>
+
+        </label>
+
+
       </div>
+
+
     </nav>
+
+
+
+    <!-- Overlay -->
+
+    <label for="menu-toggle" class="menu-overlay"></label>
+
+
+
+    <!-- Sidebar -->
+
+    <aside class="mobile-sidebar">
+
+
+      <div>
+
+
+        <div class="sidebar-top">
+
+          <h2>Menu</h2>
+
+
+          <label for="menu-toggle" class="close-btn">
+
+            &times;
+
+          </label>
+
+
+        </div>
+
+
+
+        <div class="sidebar-links">
+
+          <a href="features.html">
+            Features
+          </a>
+
+
+          <a href="p.html">
+            Pricing
+          </a>
+
+
+          <a href="About.html">
+            About
+          </a>
+
+
+          <a href="verify.html">
+            Verify
+          </a>
+
+
+        </div>
+
+
+      </div>
+
+
+
+      <div class="sidebar-bottom">
+
+
+        <a href="#" class="mobile-signin">
+          Sign In
+        </a>
+
+
+        <a href="contact.html" class="mobile-btn">
+          Get Started
+        </a>
+
+
+      </div>
+
+
+    </aside>
+
+
   </header>
   <main>
     <section class="hero">
@@ -46,8 +187,8 @@
         </p>
 
         <div class="hero-buttons">
-          <a href="#" class="btn primary">Start Free Trial</a>
-          <a href="#" class="btn secondary">View Pricing</a>
+          <a href="contact.html#contact" class="btn primary">Start Free Trial</a>
+          <a href="#price" class="btn secondary">View Pricing</a>
         </div>
       </div>
 
@@ -57,7 +198,7 @@
         <div class="circle circle-2"></div>
 
         <!-- main image -->
-        <img src="dashboard.png" alt="Dashboard Preview" class="dashboard-image reveal" />
+        <img src="images/dashboard.png" alt="Dashboard Preview" class="dashboard-image reveal" />
       </div>
     </section>
     <!--  cards -->
@@ -300,7 +441,7 @@
             <div class="step-card">
               <div class="step-circle">1</div>
               <h3>Sign Up</h3>
-              <img src="signup.png" alt="">
+              <img src="images/signup.png" alt="">
               <p>
                 Create your organizational tenant and configure your primary
                 branding and security settings.
@@ -310,7 +451,7 @@
             <div class="step-card">
               <div class="step-circle">2</div>
               <h3>Create Event</h3>
-              <img src="create event.png" alt="">
+              <img src="images/create event.png" alt="">
               <p>
                 Define registration fields, session schedules, and ticketing
                 tiers using our intuitive builder.
@@ -320,7 +461,7 @@
             <div class="step-card">
               <div class="step-circle">3</div>
               <h3>Issue Certs</h3>
-              <img src="certificates.png" alt="">
+              <img src="images/certificates.png" alt="">
               <p>
                 Automate the delivery of attendance certificates or badges
                 once the event concludes.
@@ -330,7 +471,7 @@
         </div>
       </div>
     </section>
-    <section class="pricing reveal">
+    <section class="pricing reveal" id="price">
       <h2 class="pricing-title">Flexible Scaling for Any Need</h2>
       <p>Simple,transparent pricing built for long-term partnerships.</p>
       <div class="pricing-cards reveal">
@@ -373,7 +514,7 @@
               </svg>QR Ticket Engine
             </li>
           </ul>
-          <a href="#" class="btn">Start 14-Day Trial</a>
+          <a href="contact.html#contact" class="btn">Start 14-Day Trial</a>
         </div>
 
         <!-- ENTERPRISE Plan -->
@@ -417,7 +558,7 @@
               </svg>24/7 Dedicated Support
             </li>
           </ul>
-          <a href="#" class="btn">Contact Sales</a>
+          <a href="contact.html#contact" class="btn">Contact Sales</a>
         </div>
       </div>
     </section>
@@ -520,17 +661,17 @@
 
         <!-- ================= LOGO STRIP ================= -->
         <div class="logo-strip reveal">
-          <img src="l1.png" alt="logo" />
-          <img src="l2.png" alt="logo" />
-          <img src="l3.png" alt="logo" />
-          <img src="l4.png" alt="logo" />
+          <img src="images/l1.png" alt="logo" />
+          <img src="images/l2.png" alt="logo" />
+          <img src="images/l3.png" alt="logo" />
+          <img src="images/l4.png" alt="logo" />
         </div>
 
         <!-- ================= CTA SECTION ================= -->
         <div class="cta-box reveal">
           <h2>Ready to simplify event management?</h2>
           <p>Start your free trial and build smarter workflows.</p>
-          <button class="btn-white">Start Free Trial</button>
+          <button class="btn-white" onclick="window.location.href='contact.html#contact'">Start Free Trial</button>
         </div>
       </div>
 
@@ -542,21 +683,21 @@
 
         <div class="logo-grid">
           <div class="logo-track">
-            <img src="logo1.png" alt="Logo 1" />
-            <img src="logo2.png" alt="Logo 2" />
-            <img src="logo3.png" alt="Logo 3" />
-            <img src="logo4.png" alt="Logo 4" />
-            <img src="logo5.png" alt="Logo 5" />
-            <img src="logo6.png" alt="Logo 6" />
-            <img src="logo7.png" alt="Logo 7" />
+            <img src="images/logo1.png" alt="Logo 1" />
+            <img src="images/logo2.png" alt="Logo 2" />
+            <img src="images/logo3.png" alt="Logo 3" />
+            <img src="images/logo4.png" alt="Logo 4" />
+            <img src="images/logo5.png" alt="Logo 5" />
+            <img src="images/logo6.png" alt="Logo 6" />
+            <img src="images/logo7.png" alt="Logo 7" />
             <!-- duplicate logos for seamless loop -->
-            <img src="logo1.png" alt="Logo 1" />
-            <img src="logo2.png" alt="Logo 2" />
-            <img src="logo3.png" alt="Logo 3" />
-            <img src="logo4.png" alt="Logo 4" />
-            <img src="logo5.png" alt="Logo 5" />
-            <img src="logo6.png" alt="Logo 6" />
-            <img src="logo7.png" alt="Logo 7" />
+            <img src="images/logo1.png" alt="Logo 1" />
+            <img src="images/logo2.png" alt="Logo 2" />
+            <img src="images/logo3.png" alt="Logo 3" />
+            <img src="images/logo4.png" alt="Logo 4" />
+            <img src="images/logo5.png" alt="Logo 5" />
+            <img src="images/logo6.png" alt="Logo 6" />
+            <img src="images/logo7.png" alt="Logo 7" />
           </div>
         </div>
     </section>
@@ -658,8 +799,8 @@
     </div>
 
     <div class="footer-links">
-      <a href="#">Privacy Policy</a>
-      <a href="#">Terms of Service</a>
+      <a href="privacy policy.html">Privacy Policy</a>
+      <a href="terms and conditions.html">Terms of Service</a>
       <a href="#">Cookie Policy</a>
       <a href="#">Status</a>
     </div>
@@ -777,7 +918,9 @@
     });
 
 
+
   </script>
+
 </body>
 
 </html>
