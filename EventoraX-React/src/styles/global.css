@@ -1,0 +1,7 @@
+/* Minimal global reset applied once for the whole app */
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}

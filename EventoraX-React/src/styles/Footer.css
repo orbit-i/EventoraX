@@ -1,10 +1,15 @@
+/* ==========================================================
+   FOOTER STYLES
+   Used by src/components/Footer.jsx (rendered on every page)
+========================================================== */
+
 .footer {
   display: flex;
   justify-content: space-between;
-  background: linear-gradient(90deg, #ffffff 0%, #f8faff 100%);
+  background-color: #fff;
   align-items: center;
-  padding: 28px 40px;
-  border-top: 1px solid rgba(99, 102, 241, 0.12);
+  padding: 24px 40px;
+  border-top: 1px solid #c7c4d8ad;
   flex-wrap: wrap;
   gap: 20px;
 }
@@ -41,16 +46,4 @@
   color: #374151;
   font-size: 14px;
   font-weight: 500;
-}
-
-@media (max-width: 768px) {
-  .footer {
-    flex-direction: column;
-    text-align: center;
-    padding: 24px 20px;
-  }
-
-  .footer-left p {
-    max-width: 100%;
-  }
 }
