@@ -7,6 +7,7 @@ import Certificates from './components/certificates/Certificates';
 import Analytics from './components/analytics/Analytics';
 import EmailTemplates from './components/emailTemplates/EmailTemplates';
 import EmailPreview from './components/emailPreview/EmailPreview';
+import SystemSettings from './components/systemSettings/SystemSettings';
 
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
         <Route path='/analytics' element={<Analytics />} />
         <Route path='/email-templates' element={<EmailTemplates />} />
         <Route path='/email-preview' element={<EmailPreview />} />
+        <Route path='/system-settings' element={<SystemSettings />} />
       </Routes>
     </BrowserRouter>
   );

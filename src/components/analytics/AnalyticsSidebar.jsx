@@ -39,6 +39,15 @@ function AnalyticsSidebar({ header }) {
                             <Mail className='menu-item-icon' />
                             <p>Email Templates</p>
                         </NavLink>
+                        {/* item 4 */}
+                        <NavLink
+                            to="/system-settings"
+                            className={({ isActive }) =>
+                                isActive ? "menu-item active-menu-item" : "menu-item"
+                            }>
+                            <Settings className='menu-item-icon' />
+                            <p>System Settings</p>
+                        </NavLink>
                     </div>
                 </div>
             </aside>
