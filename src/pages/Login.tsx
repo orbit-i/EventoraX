@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
 import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
@@ -87,13 +88,11 @@ export default function Login() {
               </Link>
             </div>
 
-            <button
-              type="submit"
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-body font-semibold text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
-            >
-              <LogIn size={18} />
-              Sign In
-            </button>
+            <Button type="submit" variant="default" size="lg" className="w-full">
+  <LogIn size={18} />
+  Sign In
+</Button>
+
           </div>
         </form>
 

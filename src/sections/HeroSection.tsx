@@ -1,6 +1,7 @@
 import { Link } from 'react-router';
 import { ChevronDown } from 'lucide-react';
 import OceanCanvas from '../components/OceanCanvas';
+import { Button } from "@/components/ui/button";
 
 export default function HeroSection() {
   return (
@@ -23,9 +24,10 @@ export default function HeroSection() {
 
       {/* Hero Content */}
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center text-center px-4"
-        style={{ zIndex: 2 }}
-      >
+  className="absolute inset-0 flex flex-col items-center justify-center text-center px-4 pt-24"
+  style={{ zIndex: 2 }}
+>
+
         {/* Badge */}
         <div
           className="inline-flex items-center gap-2 px-5 py-2 rounded-full text-sm font-semibold mb-6 bg-white/80 backdrop-blur-md border border-[#e9e4ff] shadow-sm text-[#7c3aed]"
@@ -57,23 +59,18 @@ export default function HeroSection() {
           An event management platform for modern organizers. Built by ORBIT-I — turning ideas into impact.
         </p>
 
-        {/* CTA */}
-        <Link
-          to="/register"
-          className="inline-flex items-center justify-center px-8 py-3.5 bg-[#7c3aed] text-white font-semibold rounded-xl shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 mt-8 text-base"
-        >
-          Start Free Trial
-        </Link>
-      </div>
+              {/* CTA */}
+      <Button size="lg" asChild className="mt-8">
+        <Link to="/register">Start Free Trial</Link>
+      </Button>
 
       {/* Scroll Indicator */}
-      <div
-        className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 animate-float text-[#94a3b8]"
-        style={{ zIndex: 2 }}
-      >
+      <div className="flex flex-col items-center gap-1 mt-6 animate-float text-[#94a3b8]">
         <span className="font-body text-xs tracking-wider font-medium">Scroll</span>
         <ChevronDown size={20} />
       </div>
+      </div>
+
     </section>
   );
 }

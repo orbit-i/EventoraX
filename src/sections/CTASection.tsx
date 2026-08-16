@@ -1,4 +1,5 @@
 import { Link } from 'react-router';
+import { Button } from '@/components/ui/button';
 
 export default function CTASection() {
   return (
@@ -19,12 +20,10 @@ export default function CTASection() {
         <p className="font-body text-base md:text-lg mb-8 text-[#475569]">
           Join thousands of organizers who trust EventoraX.
         </p>
-        <Link
-          to="/register"
-          className="inline-flex items-center justify-center px-10 py-4 rounded-xl font-body font-semibold text-lg text-white bg-[#7c3aed] shadow-xl shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-2xl hover:shadow-[#7c3aed]/30 hover:-translate-y-1 active:translate-y-0 transition-all duration-200"
-        >
-          Start Free Trial
-        </Link>
+                <Button asChild variant="default" size="lg">
+          <Link to="/register">Start Free Trial</Link>
+        </Button>
+
       </div>
     </section>
   );

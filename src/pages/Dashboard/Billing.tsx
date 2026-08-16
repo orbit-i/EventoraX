@@ -89,12 +89,14 @@ export default function Billing() {
                     </li>
                   ))}
                 </ul>
-                <Button 
-                  className={`w-full rounded-xl ${plan.current ? 'bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-lg shadow-[#7c3aed]/25' : 'bg-white border-2 border-[#e9e4ff] text-[#0f172a] hover:bg-[#f5f3ff] hover:text-[#7c3aed] hover:border-[#c4b5fd]'}`}
-                  disabled={plan.current}
-                >
-                  {plan.current ? "Current Plan" : plan.name === "Enterprise" ? "Contact Sales" : "Upgrade"}
-                </Button>
+                <Button
+  variant={plan.current ? "default" : "outline"}
+  className="w-full"
+  disabled={plan.current}
+>
+  {plan.current ? "Current Plan" : plan.name === "Enterprise" ? "Contact Sales" : "Upgrade"}
+</Button>
+
               </CardContent>
             </Card>
           ))}

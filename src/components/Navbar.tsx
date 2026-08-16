@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router';
 import { Menu, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
 
 const navLinks = [
   { label: 'Features', href: '/features' },
@@ -61,12 +63,10 @@ export default function Navbar() {
           >
             Login
           </Link>
-          <Link
-            to="/register"
-            className="font-body text-sm font-semibold px-5 py-2 rounded-xl text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
-          >
-            Get Started
-          </Link>
+                    <Button asChild variant="default" size="sm">
+            <Link to="/register">Get Started</Link>
+          </Button>
+
         </div>
 
         {/* Mobile Hamburger */}
@@ -99,12 +99,10 @@ export default function Navbar() {
               >
                 Login
               </Link>
-              <Link
-                to="/register"
-                className="flex-1 text-center font-body text-sm font-semibold px-4 py-2.5 rounded-xl text-white bg-[#7c3aed] shadow-md shadow-[#7c3aed]/20 hover:bg-[#6d28d9] transition-all duration-200"
-              >
-                Get Started
-              </Link>
+                            <Button asChild variant="default" size="sm" className="flex-1">
+                <Link to="/register">Get Started</Link>
+              </Button>
+
             </div>
           </div>
         </div>

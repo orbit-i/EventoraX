@@ -1,15 +1,18 @@
 import { useState } from 'react';
 import { Link } from 'react-router';
-import { Eye, EyeOff, UserPlus, Check } from 'lucide-react';
+import { UserPlus, Check, User, Building2, Mail, Phone, Briefcase } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input, PasswordInput, SelectInput, TextareaInput } from '@/components/ui/input';
 
 export default function Register() {
-  const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     fullName: '',
     orgName: '',
     email: '',
     password: '',
     phone: '',
+    role: '',
+    bio: '',
   });
   const [submitted, setSubmitted] = useState(false);
 
@@ -31,12 +34,9 @@ export default function Register() {
           <p className="font-body text-base mb-6 text-[#64748b]">
             Your free trial has started. Redirecting to your dashboard...
           </p>
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center px-8 py-3.5 bg-[#7c3aed] text-white font-semibold rounded-xl shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
-          >
-            Go to Dashboard
-          </Link>
+          <Button asChild variant="default" size="lg">
+            <Link to="/">Go to Dashboard</Link>
+          </Button>
         </div>
       </main>
     );
@@ -44,7 +44,8 @@ export default function Register() {
 
   return (
     <main className="min-h-screen flex items-center justify-center bg-[#f3f0ff] px-4 py-20">
-      <div className="w-full max-w-md">
+      <div className="w-full max-w-lg">
+
         {/* Logo */}
         <div className="text-center mb-8">
           <Link to="/" className="font-heading text-3xl font-bold text-[#0f172a]">
@@ -68,92 +69,92 @@ export default function Register() {
           onSubmit={handleSubmit}
           className="bg-white rounded-2xl p-8 border border-[#e9e4ff] shadow-lg shadow-[#7c3aed]/5"
         >
-          <div className="space-y-5">
-            <div>
-              <label className="font-body text-sm font-semibold mb-2 block text-[#0f172a]">
-                Full Name
-              </label>
-              <input
+          <div className="space-y-4">
+
+            {/* Row 1 — Full Name + Organization */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Full Name"
                 type="text"
+                placeholder="John Doe"
+                icon={<User className="w-4 h-4" />}
                 required
                 value={form.fullName}
                 onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                placeholder="John Doe"
               />
-            </div>
-
-            <div>
-              <label className="font-body text-sm font-semibold mb-2 block text-[#0f172a]">
-                Organization Name
-              </label>
-              <input
+              <Input
+                label="Organization"
                 type="text"
+                placeholder="Acme University"
+                icon={<Building2 className="w-4 h-4" />}
                 required
                 value={form.orgName}
                 onChange={(e) => setForm({ ...form, orgName: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                placeholder="Acme University"
               />
             </div>
 
-            <div>
-              <label className="font-body text-sm font-semibold mb-2 block text-[#0f172a]">
-                Email
-              </label>
-              <input
+            {/* Row 2 — Email + Phone */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <Input
+                label="Email"
                 type="email"
+                placeholder="you@example.com"
+                icon={<Mail className="w-4 h-4" />}
                 required
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                placeholder="you@example.com"
               />
-            </div>
-
-            <div>
-              <label className="font-body text-sm font-semibold mb-2 block text-[#0f172a]">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full px-4 py-3 pr-12 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                  placeholder="Create a strong password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#7c3aed] transition-colors duration-200"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="font-body text-sm font-semibold mb-2 block text-[#0f172a]">
-                Phone
-              </label>
-              <input
+              <Input
+                label="Phone"
                 type="tel"
+                placeholder="+92 300 1234567"
+                icon={<Phone className="w-4 h-4" />}
                 value={form.phone}
                 onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                placeholder="+92 300 1234567"
               />
             </div>
 
-            <button
-              type="submit"
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-body font-semibold text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
-            >
+            {/* Row 3 — Password + Role */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <PasswordInput
+                label="Password"
+                placeholder="Create a strong password"
+                helper="Min. 8 characters"
+                required
+                value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+              />
+              <SelectInput
+                label="Role"
+                placeholder="Select your role"
+                options={[
+                  { value: 'event_director', label: 'Event Director' },
+                  { value: 'organizer',      label: 'Event Organizer' },
+                  { value: 'coordinator',    label: 'Coordinator' },
+                  { value: 'marketing',      label: 'Marketing' },
+                  { value: 'operations',     label: 'Operations' },
+                  { value: 'other',          label: 'Other' },
+                ]}
+                value={form.role}
+                onChange={(e) => setForm({ ...form, role: e.target.value })}
+              />
+            </div>
+
+            {/* Row 4 — Bio full width */}
+            <TextareaInput
+              label="Bio"
+              placeholder="Tell us a little about yourself or your organization... (optional)"
+              rows={3}
+              value={form.bio}
+              onChange={(e) => setForm({ ...form, bio: e.target.value })}
+            />
+
+            {/* Submit */}
+            <Button type="submit" variant="default" size="lg" className="w-full mt-2">
               <UserPlus size={18} />
               Create Account
-            </button>
+            </Button>
+
           </div>
 
           <p className="text-center mt-5 font-body text-xs text-[#94a3b8]">
@@ -179,6 +180,7 @@ export default function Register() {
             Sign in
           </Link>
         </p>
+
       </div>
     </main>
   );

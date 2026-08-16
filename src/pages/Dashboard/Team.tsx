@@ -29,10 +29,11 @@ export default function Team() {
             <h2 className="text-lg font-semibold text-[#0f172a]">Team Members</h2>
             <p className="text-sm text-[#475569]">Manage your team and their permissions</p>
           </div>
-          <Button className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl shadow-lg shadow-[#7c3aed]/25">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Invite Member
-          </Button>
+          <Button variant="default">
+  <UserPlus className="w-4 h-4 mr-2" />
+  Invite Member
+</Button>
+
         </div>
 
         <Card className="border-[#e9e4ff] shadow-sm">
