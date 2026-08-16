@@ -5,6 +5,7 @@ export const env = {
     PORT: process.env.PORT,
     MONGODB_URI: process.env.MONGODB_URI,
     CORS_ORIGIN: process.env.CORS_ORIGIN,
+    NODE_ENV: process.env.NODE_ENV,
     ACCESS_TOKEN_SECRET: process.env.ACCESS_TOKEN_SECRET,
     ACCESS_TOKEN_EXPIRY: process.env.ACCESS_TOKEN_EXPIRY,
     REFRESH_TOKEN_SECRET: process.env.REFRESH_TOKEN_SECRET,
