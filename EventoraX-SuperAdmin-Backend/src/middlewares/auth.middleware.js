@@ -16,7 +16,7 @@ export const verifyJWT = asyncHandler(async (req, _, next) => {
         const decodedToken = await jwt.verify(token, env.ACCESS_TOKEN_SECRET);
         console.log("Decoded Token: ", decodedToken);
 
-        const user = await User.findById(decodedToken?._id).select("-refreshToken");
+        const user = await User.findById(decodedToken?.userId).select("-refreshToken");
 
         if (!user) {
             throw new ApiError(401, "Invalid Access Token");

@@ -1,3 +1,5 @@
+import { ApiError } from "../utils/ApiError.js";
+
 export const validate = (schema) => {
     return (req, res, next) => {
         const result = schema.safeParse(req.body);
@@ -7,9 +9,7 @@ export const validate = (schema) => {
                 (err) => err.message
             );
             return next(
-                400,
-                "Validation failed",
-                errors
+                new ApiError(400, "validation failed", errors)
             );
         }
         console.log("Validation Passed");

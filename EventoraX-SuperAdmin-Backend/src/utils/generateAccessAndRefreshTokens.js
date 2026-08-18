@@ -1,4 +1,4 @@
-import { jwt } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 import { env } from '../config/env.js';
 
 export const generateAccessToken = (userId) => {

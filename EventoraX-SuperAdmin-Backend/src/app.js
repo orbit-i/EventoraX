@@ -11,8 +11,10 @@ app.use(cookieParser());
 
 // import routes
 import userRouter from './routes/auth.routes.js';
+import tenantRouter from './routes/tenant.routes.js'
 
 // declare routes
-app.use("/api/v1/auth", userRouter);
+app.use("/api/auth", userRouter);
+app.use("/api/tenants", tenantRouter);
 
 export default app;

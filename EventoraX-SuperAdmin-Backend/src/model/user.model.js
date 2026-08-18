@@ -1,6 +1,6 @@
 import mongoose, { Schema } from "mongoose";
 import bcrypt from 'bcryptjs';
-import { generateAccessToken, generateRefreshToken } from "../utils/generateAccessAndRefreshTokens";
+import { generateAccessToken, generateRefreshToken } from "../utils/generateAccessAndRefreshTokens.js";
 
 const userSchema = new Schema({
     username: {
@@ -20,6 +20,15 @@ const userSchema = new Schema({
         type: String,
         required: true,
     },
+    role: {
+        type: String,
+        enum: ["superadmin", "orgadmin", "user"],
+        default: "user"
+    },
+    tenantId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Tenant"
+    },
     refreshToken: {
         type: String,
         default: ""
@@ -37,7 +46,7 @@ userSchema.methods.isPasswordCorrect = async function (password) {
     return await bcrypt.compare(password, this.password)
 }
 
-userSchema.methods.generateTokens = () => {
+userSchema.methods.generateTokens = async function () {
     const accessToken = await generateAccessToken(this?._id);
     const refreshToken = await generateRefreshToken(this?._id);
     this.refreshToken = await bcrypt.hash(refreshToken, 10);

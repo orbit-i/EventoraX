@@ -1,4 +1,4 @@
-import { email, z } from 'zod';
+import { z } from 'zod';
 
 export const registerSchema = z.object({
     username: z
@@ -11,7 +11,11 @@ export const registerSchema = z.object({
 
     password: z
         .string()
-        .min(8, "Password must be at least 8 characters")
+        .min(8, "Password must be at least 8 characters"),
+
+    role: z
+        .enum(["superadmin", "orgadmin", "user"])
+        .optional()
 });
 
 export const loginSchema = z.object({

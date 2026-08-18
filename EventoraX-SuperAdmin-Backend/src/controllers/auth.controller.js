@@ -6,7 +6,7 @@ import { cookieOptions } from "../utils/cookieOptions.js";
 
 
 const registerUser = asyncHandler(async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, email, password, role } = req.body;
 
     const alreadyExist = await User.findOne({ email });
     if (alreadyExist) {
@@ -16,7 +16,8 @@ const registerUser = asyncHandler(async (req, res) => {
     const user = await User.create({
         username,
         password,
-        email
+        email,
+        role
     });
 
     const { accessToken, refreshToken } = await user.generateTokens();
@@ -53,7 +54,7 @@ const loginUser = asyncHandler(async (req, res) => {
 
     const { accessToken, refreshToken } = await user.generateTokens();
 
-    const loggedInUser = await User.findById(user?._id).select("-refreshToken");
+    const loggedInUser = await User.findById(user?._id).select("-refreshToken -password");
 
     return res
         .status(200)
