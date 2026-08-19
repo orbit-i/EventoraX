@@ -13,10 +13,12 @@ app.use(cookieParser());
 import userRouter from './routes/auth.routes.js';
 import tenantRouter from './routes/tenant.routes.js'
 import planRouter from './routes/plan.routes.js'
+import revenueRouter from './routes/revenue.routes.js';
 
 // declare routes
 app.use("/api/auth", userRouter);
 app.use("/api/tenants", tenantRouter);
 app.use("/api/plans", planRouter);
+app.use("/api/revenue", revenueRouter);
 
 export default app;
