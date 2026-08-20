@@ -1,93 +1,4 @@
-.page-contact .hamburger {
-            display: none;
-            font-size: 24px;
-            cursor: pointer;
-        }
-.page-contact .navbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            height: 64px;
-            padding: 0 40px;
-            font-family: sans-serif;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            border-bottom: 1px solid #C7C4D8;
-            background: #fff;
-            transition: background 0.3s ease;
-            z-index: 1000;
-        }
-.page-contact .navbar.scrolled {
-            background: #fff;
-            box-shadow: none;
-        }
-.page-contact nav .div1 {
-            display: flex;
-            gap: 32px;
-        }
-.page-contact nav .div2 {
-            display: flex;
-            gap: 16px;
-        }
-.page-contact .div2 a {
-            text-decoration: none;
-            color: rgb(53, 37, 205);
-        }
-.page-contact .div2 .div2-1 {
-            margin-top: 10px;
-        }
-.page-contact .div1 a {
-            text-decoration: none;
-            margin-top: 7px;
-            color: black;
-            transition: top 0.2s ease;
-
-        }
-.page-contact .div1 a:hover {
-
-            color: rgb(53, 37, 205);
-            top: -3px;
-            position: relative;
-
-
-        }
-.page-contact .div1 a::after {
-            content: '';
-            width: 0%;
-            height: 3px;
-            background: rgb(53, 37, 205);
-            display: block;
-            margin-top: 5px;
-            transition: 0.5s;
-        }
-.page-contact .div1 a:hover::after {
-            width: 100%;
-        }
-.page-contact .logo {
-            color: rgb(53, 37, 205);
-
-            padding-top: 3px;
-        }
-.page-contact .div2 a:hover {
-            color: #000000f6;
-        }
-.page-contact .div2 .headerbtn {
-            background-color: rgb(53, 37, 205);
-            border: 1px solid #4e46e5;
-            color: white;
-            padding: 10px;
-            padding-left: 30px;
-            padding-right: 30px;
-            border-radius: 10px;
-        }
-.page-contact .div2 .headerbtn:hover {
-            background: #233144f0;
-            color: #E2DFFF;
-            border: 1px solid #233144;
-            transform: scale(1.05);
-        }
+/* Navbar is global — see Header.css */
 .page-contact {
             --primary: rgb(53, 37, 205);
             --text: #0f172a;
@@ -106,10 +17,10 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Inter, sans-serif;
+            font-family: 'Inter', sans-serif;
         }
 .page-contact * p {
-            font-family: Arial, Helvetica, sans-serif;
+            font-family: 'Inter', sans-serif;
             color: rgb(107, 114, 128);
             font-size: 14px;
         }
@@ -993,42 +904,46 @@
 .page-contact .faq-item.active .faq-question i {
             transform: rotate(45deg);
         }
-.page-contact .footer {
-            display: flex;
-            justify-content: space-between;
-            background-color: #fff;
-            align-items: center;
-            padding: 24px 40px;
-            border-top: 1px solid #c7c4d8ad;
-            flex-wrap: wrap;
-            gap: 20px;
-        }
-.page-contact .footer-left {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-.page-contact .footer-left h3 {
-            margin: 0;
-            font-size: 24px;
-            font-weight: 700;
-            color: #0f172a;
-        }
-.page-contact .footer-left p {
-            margin: 0;
-            font-size: 14px;
-            color: #6b7280;
-            line-height: 1.6;
-            max-width: 450px;
-        }
-.page-contact .footer-links {
-            display: flex;
-            gap: 24px;
-            flex-wrap: wrap;
-        }
-.page-contact .footer-links a {
-            text-decoration: none;
-            color: #374151;
-            font-size: 14px;
-            font-weight: 500;
-        }
+/* Footer is global — see Footer.css */
+
+/* ==========================================================
+   CONTACT PAGE — RESPONSIVE (Mobile & Tablet) — additions
+========================================================== */
+
+@media (max-width: 1200px) {
+  .page-contact .contact-grid {
+    grid-template-columns: 1fr;
+    padding: 0 40px;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-contact .contact-grid {
+    padding: 0 20px;
+  }
+
+  .page-contact .send-btn {
+    width: 100%;
+    margin-left: 0;
+  }
+
+  .page-contact .section-title h2 {
+    font-size: 30px;
+  }
+
+  .page-contact .faq-question {
+    font-size: 15px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-contact .contact-hero h1 {
+    font-size: 28px;
+  }
+
+  .page-contact .why-card,
+  .page-contact .contact-form-card,
+  .page-contact .contact-info-card {
+    padding: 20px 16px;
+  }
+}

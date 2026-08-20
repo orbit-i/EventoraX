@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from "react";
-import Header from "../components/Header";
 import "../styles/home.css";
 
 // Small reusable check icon used repeatedly in the pricing cards
@@ -228,7 +227,6 @@ function Home() {
 
   return (
     <div className="page-home">
-      <Header />
       {/* ================= HERO ================= */}
         <section className="hero">
           <div className="hero-content reveal">

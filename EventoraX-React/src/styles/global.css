@@ -1,7 +1,104 @@
-/* Minimal global reset applied once for the whole app */
-* {
-  box-sizing: border-box;
+/* ==========================================================
+   GLOBAL STYLES — Applied to the entire app
+========================================================== */
+
+:root {
+  --primary: #4f46e5;
+  --primary-dark: #3525cd;
+  --primary-deep: #1e1b4b;
+  --text: #111827;
+  --muted: #6b7280;
+  --surface: #ffffff;
+  --surface-2: #f8f9ff;
+  --border: #e5e7eb;
+  --shadow: 0 8px 30px rgba(15, 23, 42, 0.08);
 }
-body {
+
+*, *::before, *::after {
+  box-sizing: border-box;
   margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-size: 16px;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto',
+    'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: #f8f9ff;
+  color: var(--text);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+/* Typography defaults — Inter everywhere */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Inter', sans-serif;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+}
+
+p {
+  font-family: 'Inter', sans-serif;
+  color: #6b7280;
+  line-height: 1.7;
+  font-size: 15px;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+button {
+  font-family: 'Inter', sans-serif;
+}
+
+input, textarea, select {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Smooth transitions on interactive elements */
+button, a, input, textarea, select {
+  transition: all 0.2s ease;
+}
+
+/* Text selection highlight */
+::selection {
+  background: rgba(79, 70, 229, 0.15);
+  color: var(--text);
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c4b5fd;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #4f46e5;
 }

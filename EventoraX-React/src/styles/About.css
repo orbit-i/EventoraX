@@ -9,10 +9,10 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: Inter, sans-serif;
+  font-family: 'Inter', sans-serif;
 }
 .page-about * p {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
   color: rgb(107, 114, 128);
   font-size: 16px;
   line-height: 1.6;
@@ -21,100 +21,13 @@ body.page-about {
   background: var(--bg);
   color: var(--text);
 }
-.page-about .hamburger {
-  display: none;
-  font-size: 24px;
-  cursor: pointer;
-}
-.page-about .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 64px;
-  padding: 0 40px;
-  font-family: sans-serif;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  border-bottom: 1px solid #c7c4d8;
-  background: #fff;
-  transition: background 0.3s ease;
-  z-index: 1000;
-}
-.page-about .navbar.scrolled {
-  background: #fff;
-  box-shadow: none;
-}
-.page-about nav .div1 {
-  display: flex;
-  gap: 32px;
-}
-.page-about nav .div2 {
-  display: flex;
-  gap: 16px;
-}
-.page-about .div2 a {
-  text-decoration: none;
-  color: rgb(53, 37, 205);
-}
-.page-about .div2 .div2-1 {
-  margin-top: 10px;
-}
-.page-about .div1 a {
-  text-decoration: none;
-  margin-top: 7px;
-  color: black;
-  transition: top 0.2s ease;
-}
-.page-about .div1 a:hover {
-  color: rgb(53, 37, 205);
-  top: -3px;
-  position: relative;
-}
-.page-about .div1 a::after {
-  content: "";
-  width: 0%;
-  height: 3px;
-  background: rgb(53, 37, 205);
-  display: block;
-  margin-top: 5px;
-  transition: 0.5s;
-}
-.page-about .div1 a:hover::after {
-  width: 100%;
-}
-.page-about .logo {
-  color: rgb(53, 37, 205);
-
-  padding-top: 3px;
-}
-.page-about .div2 a:hover {
-  color: #000000f6;
-}
-.page-about .div2 .headerbtn {
-  background-color: rgb(53, 37, 205);
-  border: 1px solid #4e46e5;
-  color: white;
-  padding: 10px;
-  padding-left: 30px;
-  padding-right: 30px;
-  border-radius: 10px;
-}
-.page-about .div2 .headerbtn:hover {
-  background: #233144f0;
-  color: #e2dfff;
-  border: 1px solid #233144;
-  transform: scale(1.05);
-}
+/* Navbar is global — see Header.css */
 .page-about .hero {
   position: relative;
   overflow: hidden;
   padding: 70px 7%;
-
-  margin-top: 60px;
-
   background: #cecaf532;
+  border-bottom: 1px solid #c7c4d8;
 }
 .page-about .hero-left {
   width: 48%;
@@ -453,25 +366,8 @@ body.page-about {
 }
 
 
-@media (max-width: 768px) {.page-about .navbar {
-    padding: 15px 20px;
-  }
-.page-about .nav-links {
-    display: none;
-    flex-direction: column;
-    position: absolute;
-    top: 60px;
-    left: 0;
-    width: 100%;
-    background: white;
-    padding: 20px;
-  }
-.page-about .nav-links.active {
-    display: flex;
-  }
-.page-about .hamburger {
-    display: block;
-  }
+/* Navbar & footer are global — see Header.css / Footer.css */
+@media (max-width: 768px) {
 .page-about .hero-left h1 {
     font-size: 32px;
   }
@@ -1287,45 +1183,8 @@ body.page-about {
     font-size: 1.45rem;
   }
 
-}.page-about .footer {
-  display: flex;
-  justify-content: space-between;
-  background-color: #fff;
-  align-items: center;
-  padding: 24px 40px;
-  border-top: 1px solid #c7c4d8ad;
-  flex-wrap: wrap;
-  gap: 20px;
 }
-.page-about .footer-left {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.page-about .footer-left h3 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #0f172a;
-}
-.page-about .footer-left p {
-  margin: 0;
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.6;
-  max-width: 450px;
-}
-.page-about .footer-links {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-.page-about .footer-links a {
-  text-decoration: none;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 500;
-}
+/* Footer is global — see Footer.css */
 .page-about .reveal {
   opacity: 0;
   transform: translateY(150px);
@@ -1347,4 +1206,127 @@ body.page-about {
 .page-about .reveal-right.active {
   opacity: 1;
   transform: translateX(0);
+}
+
+/* ==========================================================
+   ABOUT PAGE — RESPONSIVE — additional fixes
+========================================================== */
+
+@media (max-width: 900px) {
+  .page-about .built-section {
+    flex-direction: column;
+    padding: 60px 40px;
+    align-items: flex-start;
+    gap: 40px;
+  }
+
+  .page-about .built-section .parts {
+    flex-wrap: wrap;
+    gap: 20px;
+  }
+
+  .page-about .built-section .heading h2 {
+    font-size: 32px;
+  }
+
+  .page-about .orbiti-logo img {
+    width: 40%;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-about .hero {
+    padding: 60px 20px 40px;
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .page-about .hero-left {
+    width: 100%;
+  }
+
+  .page-about .hero-left h1 {
+    font-size: 30px;
+  }
+
+  .page-about .hero img {
+    display: none;
+  }
+
+  .page-about .hero-actions {
+    justify-content: center;
+  }
+
+  .page-about .section {
+    padding: 60px 20px;
+  }
+
+  .page-about .steps-wrapper {
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+  }
+
+  .page-about .progress-line {
+    display: none;
+  }
+
+  .page-about .plsvg {
+    display: none;
+  }
+
+  .page-about .steps-grid {
+    gap: 24px;
+  }
+
+  .page-about .mcard,
+  .page-about .mcard2 {
+    margin: 0;
+  }
+
+  .page-about .step-card {
+    max-width: 100%;
+    padding: 24px;
+  }
+
+  .page-about .built-section {
+    padding: 48px 20px;
+  }
+
+  .page-about .problem-grid {
+    flex-direction: column;
+  }
+
+  .page-about .problem-card {
+    width: 100%;
+    height: auto;
+    min-height: 180px;
+  }
+
+  .page-about .grid-column.offset,
+  .page-about .grid-column.small-offset {
+    margin-top: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-about .hero-left h1 {
+    font-size: 26px;
+  }
+
+  .page-about .title {
+    font-size: 28px;
+  }
+
+  .page-about .mv-section {
+    padding: 50px 16px;
+  }
+
+  .page-about .cta {
+    padding: 60px 20px;
+  }
+
+  .page-about .cta h2 {
+    font-size: 24px;
+  }
 }

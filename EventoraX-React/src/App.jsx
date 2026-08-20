@@ -5,6 +5,8 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import Features from "./pages/Features";
 import Pricing from "./pages/Pricing";
+import SignIn from "./pages/SignIn";
+import Verify from "./pages/Verify";
 
 function App() {
   return (
@@ -15,6 +17,8 @@ function App() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/features" element={<Features />} />
         <Route path="/pricing" element={<Pricing />} />
+        <Route path="/signin" element={<SignIn />} />
+        <Route path="/verify" element={<Verify />} />
       </Route>
     </Routes>
   );

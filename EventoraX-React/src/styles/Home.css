@@ -6,7 +6,7 @@
   --card: #ffffff;
 }
 .page-home * p {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Inter', sans-serif;
   color: rgb(107, 114, 128);
   font-size: 16px;
   line-height: 1.6;
@@ -14,110 +14,25 @@
 body.page-home {
   margin: 0;
   overflow-x: hidden;
-
-  padding-top: 64px; 
 }
-.page-home .navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  height: 64px;
-  padding: 0 40px;
-  font-family: sans-serif;
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  border-bottom: 1px solid #c7c4d8;
-  
-  background: transparent;
-  transition: background 0.3s ease;
-  z-index: 1000;
-}
-.page-home .navbar.scrolled {
-  background: #fff;
-  box-shadow: none;
-}
-.page-home nav .div1 {
-  display: flex;
-  gap: 32px;
-}
-.page-home nav .div2 {
-  display: flex;
-  gap: 16px;
-}
-.page-home .div2 a {
-  text-decoration: none;
-  color: rgb(53, 37, 205);
-}
-.page-home .div2 .div2-1 {
-  margin-top: 10px;
-}
-.page-home .div1 a {
-  text-decoration: none;
-  margin-top: 7px;
-  color: black;
-  transition: top 0.2s ease;
-}
-.page-home .div1 a:hover {
-  color: rgb(53, 37, 205);
-  top: -3px;
-  position: relative;
-}
-.page-home .div1 a::after {
-  content: "";
-  width: 0%;
-  height: 3px;
-  background: rgb(53, 37, 205);
-  display: block;
-  margin-top: 5px;
-  transition: 0.5s;
-}
-.page-home .div1 a:hover::after {
-  width: 100%;
-}
-.page-home .logo {
-  color: rgb(53, 37, 205);
-
-  padding-top: 3px;
-}
-.page-home .div2 a:hover {
-  color: #000000f6;
-}
-.page-home .div2 .headerbtn {
-  background-color: rgb(53, 37, 205);
-  border: 1px solid #4e46e5;
-  color: white;
-  padding: 10px;
-  padding-left: 30px;
-  padding-right: 30px;
-  border-radius: 10px;
-}
-.page-home .div2 .headerbtn:hover {
-  background: #233144f0;
-  color: #e2dfff;
-  border: 1px solid #233144;
-  transform: scale(1.05);
-}
+/* Navbar is global — see Header.css */
 .page-home * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 body.page-home {
-  font-family: Arial, sans-serif;
+  font-family: 'Inter', sans-serif;
   background: #f7f7ff;
 }
 .page-home .hero {
   position: relative;
   max-width: 1280px;
-
   padding: 80px 40px;
-
   text-align: center;
   background: linear-gradient(#e2dfff71, #e2dfff34);
-
   overflow: hidden;
+  border-bottom: 1px solid #c7c4d8;
 }
 .page-home .hero-content {
   max-width: 760px;
@@ -1056,45 +971,7 @@ body.page-home {
   100% {
     transform: translateX(-50%); 
   }
-}.page-home .footer {
-  display: flex;
-  justify-content: space-between;
-  background-color: #fff;
-  align-items: center;
-  padding: 24px 40px;
-  border-top: 1px solid #c7c4d8ad;
-  flex-wrap: wrap;
-  gap: 20px;
-}
-.page-home .footer-left {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.page-home .footer-left h3 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 700;
-  color: #0f172a;
-}
-.page-home .footer-left p {
-  margin: 0;
-  font-size: 14px;
-  color: #6b7280;
-  line-height: 1.6;
-  max-width: 450px;
-}
-.page-home .footer-links {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-.page-home .footer-links a {
-  text-decoration: none;
-  color: #374151;
-  font-size: 14px;
-  font-weight: 500;
-}
+/* Footer is global — see Footer.css */
 .page-home .reveal {
   opacity: 0;
   transform: translateY(150px); 
@@ -1205,4 +1082,159 @@ body.page-home {
 }
 .page-home .faq-question.active svg {
   transform: rotate(180deg);
+}
+
+/* ==========================================================
+   HOME PAGE — RESPONSIVE (Mobile & Tablet)
+========================================================== */
+
+@media (max-width: 1024px) {
+  .page-home .hero {
+    padding: 60px 24px;
+  }
+
+  .page-home .dashboard-image {
+    width: 100%;
+    max-height: none;
+  }
+
+  .page-home .pricing-cards {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .page-home .card1 {
+    width: 100%;
+    max-width: 480px;
+    height: auto;
+    padding-bottom: 32px;
+  }
+
+  .page-home .btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .page-home .hero {
+    padding: 48px 20px;
+  }
+
+  .page-home .hero h1 {
+    font-size: 36px;
+  }
+
+  .page-home .tag {
+    font-size: 11px;
+    width: auto;
+    padding: 4px 14px;
+    height: auto;
+  }
+
+  .page-home .hero-buttons {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .page-home .btn.primary,
+  .page-home .btn.secondary {
+    width: 100%;
+    max-width: 280px;
+    text-align: center;
+  }
+
+  .page-home .status_bar {
+    flex-direction: column;
+    padding: 32px 20px;
+    gap: 20px;
+    text-align: center;
+  }
+
+  .page-home .section-title {
+    font-size: 28px;
+  }
+
+  .page-home .section-description {
+    font-size: 15px;
+    margin-bottom: 40px;
+  }
+
+  .page-home .steps-container {
+    padding: 60px 20px;
+  }
+
+  .page-home .steps-heading h2 {
+    font-size: 28px;
+  }
+
+  .page-home .steps-grid {
+    flex-direction: column;
+    align-items: center;
+    gap: 40px;
+  }
+
+  .page-home .progress-line {
+    display: none;
+  }
+
+  .page-home .step-card {
+    max-width: 100%;
+    width: 100%;
+  }
+
+  .page-home .pricing {
+    padding: 48px 20px;
+  }
+
+  .page-home .pricing-title {
+    font-size: 28px;
+  }
+
+  .page-home .faq-section {
+    flex-direction: column;
+    padding: 40px 20px;
+    gap: 30px;
+  }
+
+  .page-home .faqh {
+    height: auto;
+    flex: none;
+  }
+
+  .page-home .faq-container h2 {
+    font-size: 26px;
+  }
+
+  .page-home .cta-box {
+    padding: 36px 24px;
+    border-radius: 16px;
+  }
+
+  .page-home .cta-box h2 {
+    font-size: 22px;
+  }
+
+  .page-home .logo-strip {
+    gap: 24px;
+  }
+
+  .page-home .testimonials-header h2 {
+    font-size: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-home .hero h1 {
+    font-size: 28px;
+  }
+
+  .page-home .testimonial-container {
+    padding: 10px;
+  }
+
+  .page-home .testimonial-card {
+    flex: 0 0 280px;
+    padding: 28px 20px;
+  }
 }

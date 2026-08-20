@@ -47,3 +47,23 @@
   font-size: 14px;
   font-weight: 500;
 }
+
+/* ── Responsive Footer ── */
+@media (max-width: 600px) {
+  .footer {
+    flex-direction: column;
+    padding: 24px 20px;
+    text-align: center;
+    align-items: center;
+  }
+
+  .footer-links {
+    justify-content: center;
+    gap: 16px;
+  }
+
+  .footer-left p {
+    max-width: 100%;
+    font-size: 13px;
+  }
+}

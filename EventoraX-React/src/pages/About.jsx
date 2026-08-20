@@ -165,6 +165,27 @@ function About() {
     return () => observer.disconnect();
   }, []);
 
+  // ---------- Problem cards visibility (.show) ----------
+  useEffect(() => {
+    const cards = document.querySelectorAll(".problem-card");
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("show");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+
+    cards.forEach((card) => observer.observe(card));
+
+    return () => observer.disconnect();
+  }, []);
+
   // ---------- Journey timeline progress-on-scroll ----------
   const wrapperRef = useRef(null);
   const fillRef = useRef(null);
