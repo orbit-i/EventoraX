@@ -152,6 +152,11 @@
   50% { transform: translateY(8px); }
 }
 
+@keyframes shimmer {
+  0%   { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
 .ticker-col-up {
   animation: tickerScrollUp 30s linear infinite;
 }
