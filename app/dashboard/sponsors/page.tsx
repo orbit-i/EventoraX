@@ -20,17 +20,21 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Pagination } from "@/components/layout/Pagination";
-import { Globe, Pencil, Trash2, Plus, Loader2 } from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { Avatar } from "@/components/shared/Avatar";
+import { StatCard, StatCardSkeleton } from "@/components/shared/StatCard";
+import { CardGridSkeleton, EmptyState } from "@/components/shared/EmptyState";
+import { Globe, Pencil, Trash2, Plus, Handshake, Award } from "lucide-react";
 import type { Sponsor, SponsorTier } from "@/types/sponsor";
 import type { EventOption } from "@/types/registration";
 
 const LIMIT = 20;
 
 const TIER_STYLES: Record<SponsorTier, string> = {
-  PLATINUM: "bg-slate-200 text-slate-800",
-  GOLD: "bg-amber-100 text-amber-800",
-  SILVER: "bg-gray-200 text-gray-700",
-  BRONZE: "bg-orange-100 text-orange-800",
+  PLATINUM: "bg-slate-100 text-slate-700 border border-slate-200",
+  GOLD: "bg-amber-50 text-amber-700 border border-amber-200",
+  SILVER: "bg-gray-100 text-gray-600 border border-gray-200",
+  BRONZE: "bg-orange-50 text-orange-700 border border-orange-200",
 };
 
 const TIER_OPTIONS: { value: SponsorTier | "ALL"; label: string }[] = [
@@ -57,6 +61,8 @@ export default function SponsorsPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [stats, setStats] = useState<{ total: number; platinumGold: number } | null>(null);
 
   const [deleteTarget, setDeleteTarget] = useState<Sponsor | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -109,6 +115,35 @@ export default function SponsorsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEventId, tier, page]);
 
+  // Stats strip — total + platinum/gold count for the selected event.
+  useEffect(() => {
+    if (!selectedEventId) {
+      setStats(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const [all, platinum, gold] = await Promise.all([
+          api.getList<Sponsor>(`/sponsors${buildQuery({ eventId: selectedEventId, limit: 1 })}`),
+          api.getList<Sponsor>(
+            `/sponsors${buildQuery({ eventId: selectedEventId, tier: "PLATINUM", limit: 1 })}`
+          ),
+          api.getList<Sponsor>(
+            `/sponsors${buildQuery({ eventId: selectedEventId, tier: "GOLD", limit: 1 })}`
+          ),
+        ]);
+        if (cancelled) return;
+        setStats({ total: all.meta.total, platinumGold: platinum.meta.total + gold.meta.total });
+      } catch {
+        // Non-critical — skip stats silently on error.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedEventId]);
+
   async function confirmDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -126,19 +161,38 @@ export default function SponsorsPage() {
   const noEventSelected = !selectedEventId;
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold">Sponsors</h1>
-        <Button
-          disabled={noEventSelected}
-          render={<Link href={`/dashboard/sponsors/new?eventId=${selectedEventId}`} />}
-          nativeButton={false}
-          className="gap-2 w-full sm:w-auto"
-        >
-          <Plus className="w-4 h-4" />
-          Add Sponsor
-        </Button>
-      </div>
+    <div className="p-6 space-y-5">
+      <PageHeader
+        title="Sponsors"
+        subtitle="Manage sponsors for each event."
+        actions={
+          <Button
+            disabled={noEventSelected}
+            render={<Link href={`/dashboard/sponsors/new?eventId=${selectedEventId}`} />}
+            nativeButton={false}
+            className="gap-2 w-full sm:w-auto"
+          >
+            <Plus className="w-4 h-4" />
+            Add Sponsor
+          </Button>
+        }
+      />
+
+      {!noEventSelected && (
+        <div className="grid grid-cols-2 gap-3 max-w-md">
+          {stats ? (
+            <>
+              <StatCard label="Total sponsors" value={stats.total} icon={Handshake} accent="purple" />
+              <StatCard label="Platinum + Gold" value={stats.platinumGold} icon={Award} accent="blue" />
+            </>
+          ) : (
+            <>
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </>
+          )}
+        </div>
+      )}
 
       <div className="flex flex-wrap gap-3 items-center">
         <Select value={selectedEventId} onValueChange={(v) => setSelectedEventId(v ?? "")}>
@@ -173,49 +227,49 @@ export default function SponsorsPage() {
       </div>
 
       {noEventSelected ? (
-        <div className="text-center text-muted-foreground py-16 border rounded-md">
-          Select an event above to view its sponsors.
-        </div>
+        <EmptyState
+          icon={Handshake}
+          title="No event selected"
+          description="Select an event above to view its sponsors."
+        />
       ) : error ? (
         <div className="text-center text-red-600 py-16 border rounded-md">{error}</div>
       ) : loading ? (
-        <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
-          <Loader2 className="w-5 h-5 animate-spin" />
-          <span>Loading sponsors...</span>
-        </div>
+        <CardGridSkeleton count={6} />
       ) : sponsors.length === 0 ? (
-        <div className="text-center text-muted-foreground py-16 border rounded-md">
-          No sponsors yet for this event.
-        </div>
+        <EmptyState
+          icon={Plus}
+          title="No sponsors yet"
+          description="Add your first sponsor for this event."
+          action={
+            <Button
+              size="sm"
+              render={<Link href={`/dashboard/sponsors/new?eventId=${selectedEventId}`} />}
+              nativeButton={false}
+            >
+              Add Sponsor
+            </Button>
+          }
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {sponsors.map((s) => (
             <div
               key={s.id}
-              className="border rounded-lg bg-white p-4 flex flex-col gap-3 hover:shadow-sm transition-shadow"
+              className="rounded-xl border border-[#e9e4ff] bg-white p-4 flex flex-col gap-3 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
             >
               <div className="flex items-start gap-3">
-                {s.logo ? (
-                  <img
-                    src={s.logo}
-                    alt={s.name}
-                    className="w-12 h-12 rounded-md object-contain border shrink-0 bg-white"
-                  />
-                ) : (
-                  <div className="w-12 h-12 rounded-md bg-[#f3f0ff] text-[#7c3aed] font-semibold flex items-center justify-center shrink-0">
-                    {s.name.slice(0, 2).toUpperCase()}
-                  </div>
-                )}
+                <Avatar name={s.name} src={s.logo} shape="square" />
                 <div className="min-w-0 flex-1">
-                  <p className="font-medium truncate">{s.name}</p>
+                  <p className="font-medium text-slate-900 truncate">{s.name}</p>
                   <span
-                    className={"inline-block text-xs px-2 py-0.5 rounded-full mt-1 " + TIER_STYLES[s.tier]}
+                    className={"inline-block text-xs px-2 py-0.5 rounded-full mt-1 font-medium " + TIER_STYLES[s.tier]}
                   >
                     {s.tier}
                   </span>
                 </div>
                 {s.displayPublic && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 shrink-0">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
                     Public
                   </span>
                 )}
@@ -239,9 +293,7 @@ export default function SponsorsPage() {
                   <Button
                     size="sm"
                     variant="ghost"
-                    render={
-                      <Link href={`/dashboard/sponsors/${s.id}/edit?eventId=${selectedEventId}`} />
-                    }
+                    render={<Link href={`/dashboard/sponsors/${s.id}/edit?eventId=${selectedEventId}`} />}
                     nativeButton={false}
                   >
                     <Pencil className="w-4 h-4" />
@@ -267,18 +319,13 @@ export default function SponsorsPage() {
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
             Are you sure you want to delete{" "}
-            <span className="font-medium text-foreground">{deleteTarget?.name}</span>? This
-            cannot be undone.
+            <span className="font-medium text-foreground">{deleteTarget?.name}</span>? This cannot be undone.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
               Cancel
             </Button>
-            <Button
-              onClick={confirmDelete}
-              disabled={deleting}
-              className="bg-red-600 hover:bg-red-700"
-            >
+            <Button onClick={confirmDelete} disabled={deleting} className="bg-red-600 hover:bg-red-700">
               {deleting ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>

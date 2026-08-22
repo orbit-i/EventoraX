@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { SponsorTier } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-
-async function getTenantId(req: NextRequest): Promise<string> {
-  return "tenant_alpha_univ";
-}
+import { getTenantId } from "@/lib/auth";
 
 const sponsorUpdateSchema = z.object({
   name: z.string().min(1, "Name is required").max(200),

@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { EventMode, EventStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-
-async function getTenantId(req: NextRequest): Promise<string> {
-  return "tenant_alpha_univ";
-}
+import { getTenantId } from "@/lib/auth";
 
 const eventSchema = z.object({
   title: z.string().min(1, "Title is required").max(200),

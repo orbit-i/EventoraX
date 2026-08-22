@@ -13,6 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormSection } from "@/components/shared/FormSection";
 import type { Sponsor, SponsorTier } from "@/types/sponsor";
 
 const TIER_OPTIONS: SponsorTier[] = ["PLATINUM", "GOLD", "SILVER", "BRONZE"];
@@ -69,39 +70,42 @@ export function SponsorForm({ eventId, initialSponsor, onSaved, onCancel }: Spon
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="p-3 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
           {error}
         </div>
       )}
 
-      <div>
-        <Label htmlFor="name">Sponsor Name *</Label>
-        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
-        {fieldErrors.name && <p className="text-sm text-red-600 mt-1">{fieldErrors.name}</p>}
-      </div>
+      <FormSection title="Sponsor details">
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label htmlFor="name">Sponsor Name *</Label>
+          <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+          {fieldErrors.name && <p className="text-sm text-red-600">{fieldErrors.name}</p>}
+        </div>
 
-      <div>
-        <Label htmlFor="website">Website</Label>
-        <Input
-          id="website"
-          value={website}
-          onChange={(e) => setWebsite(e.target.value)}
-          placeholder="https://..."
-        />
-      </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="website">Website</Label>
+          <Input
+            id="website"
+            value={website}
+            onChange={(e) => setWebsite(e.target.value)}
+            placeholder="https://..."
+          />
+        </div>
 
-      <div>
-        <Label htmlFor="logo">Logo URL</Label>
-        <Input
-          id="logo"
-          value={logo}
-          onChange={(e) => setLogo(e.target.value)}
-          placeholder="https://..."
-        />
+        <div className="space-y-1.5">
+          <Label htmlFor="logo">Logo URL</Label>
+          <Input
+            id="logo"
+            value={logo}
+            onChange={(e) => setLogo(e.target.value)}
+            placeholder="https://..."
+          />
+        </div>
+
         {logo && (
-          <div className="mt-2 flex items-center gap-2">
+          <div className="sm:col-span-2 flex items-center gap-2">
             <img
               src={logo}
               alt="Preview"
@@ -111,31 +115,33 @@ export function SponsorForm({ eventId, initialSponsor, onSaved, onCancel }: Spon
             <span className="text-xs text-muted-foreground">Preview</span>
           </div>
         )}
-      </div>
+      </FormSection>
 
-      <div>
-        <Label>Tier</Label>
-        <Select value={tier} onValueChange={(v) => setTier((v ?? "BRONZE") as SponsorTier)}>
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {TIER_OPTIONS.map((t) => (
-              <SelectItem key={t} value={t}>
-                {t.charAt(0) + t.slice(1).toLowerCase()}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div className="flex items-center justify-between border rounded-md p-3">
-        <div>
-          <Label htmlFor="displayPublic">Show on public event page</Label>
-          <p className="text-xs text-muted-foreground">Visible on the public sponsor listing.</p>
+      <FormSection title="Tier & visibility">
+        <div className="space-y-1.5">
+          <Label>Tier</Label>
+          <Select value={tier} onValueChange={(v) => setTier((v ?? "BRONZE") as SponsorTier)}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {TIER_OPTIONS.map((t) => (
+                <SelectItem key={t} value={t}>
+                  {t.charAt(0) + t.slice(1).toLowerCase()}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <Switch id="displayPublic" checked={displayPublic} onCheckedChange={setDisplayPublic} />
-      </div>
+
+        <div className="flex items-center justify-between rounded-lg border border-[#e9e4ff] p-3">
+          <div>
+            <Label htmlFor="displayPublic">Show on public event page</Label>
+            <p className="text-xs text-muted-foreground">Visible on the public sponsor listing.</p>
+          </div>
+          <Switch id="displayPublic" checked={displayPublic} onCheckedChange={setDisplayPublic} />
+        </div>
+      </FormSection>
 
       <div className="flex gap-2 pt-2">
         <Button type="submit" disabled={submitting}>

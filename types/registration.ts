@@ -56,4 +56,5 @@ export interface CsvImportResult {
   skipped: number;
   total: number;
   errors: { row: number; email: string; reason: string }[];
+  categoryWarnings: { row: number; email: string; categoryLabel: string }[];
 }

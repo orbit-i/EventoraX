@@ -1,5 +1,5 @@
 "use client";
-
+import { ListSkeleton } from "@/components/shared/Skeletons";
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
@@ -41,7 +41,7 @@ function SortableSpeakerRow({ speaker, index }: { speaker: Speaker; index: numbe
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 border rounded-lg bg-white p-3"
+      className="flex items-center gap-3 border border-[#e9e4ff] rounded-lg bg-white p-3"
     >
       <button
         {...attributes}
@@ -187,9 +187,7 @@ export default function SpeakerReorderPage() {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
-          <Loader2 className="w-5 h-5 animate-spin" /> Loading speakers...
-        </div>
+        <ListSkeleton count={4} />
       ) : speakers.length === 0 ? (
         <div className="text-center text-muted-foreground py-16 border rounded-md">
           No speakers to reorder for this event.

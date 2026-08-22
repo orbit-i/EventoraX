@@ -11,3 +11,10 @@ export function toDatetimeLocal(iso?: string | null): string {
 export function fromDatetimeLocal(local: string): string {
   return new Date(local).toISOString();
 }
+export function formatTimeRange(start: string, end: string): string {
+  const s = new Date(start);
+  const e = new Date(end);
+  const dateStr = s.toLocaleDateString(undefined, { month: "short", day: "numeric" });
+  const timeFmt = (d: Date) => d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+  return `${dateStr} · ${timeFmt(s)} – ${timeFmt(e)}`;
+}

@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { EventStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-
-async function getTenantId(req: NextRequest): Promise<string> {
-  return "tenant_alpha_univ";
-}
+import { getTenantId } from "@/lib/auth";
 
 // POST /api/v1/events/:id/duplicate
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {

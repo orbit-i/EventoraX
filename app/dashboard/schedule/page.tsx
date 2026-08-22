@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import { api, buildQuery, ApiError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { formatTimeRange } from "@/lib/date";
 import {
   Select,
   SelectContent,
@@ -20,22 +21,14 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Pagination } from "@/components/layout/Pagination";
-import { MapPin, Mic2, Pencil, Trash2, Plus, Loader2 } from "lucide-react";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { ListSkeleton } from "@/components/shared/Skeletons";
+import { MapPin, Mic2, Pencil, Trash2, Plus, CalendarClock } from "lucide-react";
 import type { Session } from "@/types/session";
 import type { EventOption } from "@/types/registration";
 
 const LIMIT = 20;
-
-function formatTimeRange(start: string, end: string) {
-  const s = new Date(start);
-  const e = new Date(end);
-  const sameDay = s.toDateString() === e.toDateString();
-  const dateStr = s.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  const timeFmt = (d: Date) => d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-  return sameDay
-    ? `${dateStr} · ${timeFmt(s)} – ${timeFmt(e)}`
-    : `${dateStr} ${timeFmt(s)} – ${e.toLocaleDateString(undefined, { month: "short", day: "numeric" })} ${timeFmt(e)}`;
-}
 
 export default function SchedulePage() {
   const searchParams = useSearchParams();
@@ -115,30 +108,33 @@ export default function SchedulePage() {
   const noEventSelected = !selectedEventId;
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold">Schedule</h1>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            disabled={noEventSelected}
-            render={<Link href={`/dashboard/schedule/reorder?eventId=${selectedEventId}`} />}
-            nativeButton={false}
-            className="flex-1 sm:flex-none"
-          >
-            Reorder
-          </Button>
-          <Button
-            disabled={noEventSelected}
-            render={<Link href={`/dashboard/schedule/new?eventId=${selectedEventId}`} />}
-            nativeButton={false}
-            className="gap-2 flex-1 sm:flex-none"
-          >
-            <Plus className="w-4 h-4" />
-            Add Session
-          </Button>
-        </div>
-      </div>
+    <div className="p-6 space-y-5">
+      <PageHeader
+        title="Schedule"
+        subtitle="Manage the session agenda for each event."
+        actions={
+          <>
+            <Button
+              variant="outline"
+              disabled={noEventSelected}
+              render={<Link href={`/dashboard/schedule/reorder?eventId=${selectedEventId}`} />}
+              nativeButton={false}
+              className="flex-1 sm:flex-none"
+            >
+              Reorder
+            </Button>
+            <Button
+              disabled={noEventSelected}
+              render={<Link href={`/dashboard/schedule/new?eventId=${selectedEventId}`} />}
+              nativeButton={false}
+              className="gap-2 flex-1 sm:flex-none"
+            >
+              <Plus className="w-4 h-4" />
+              Add Session
+            </Button>
+          </>
+        }
+      />
 
       <Select value={selectedEventId} onValueChange={(v) => setSelectedEventId(v ?? "")}>
         <SelectTrigger className="w-64">
@@ -154,39 +150,48 @@ export default function SchedulePage() {
       </Select>
 
       {noEventSelected ? (
-        <div className="text-center text-muted-foreground py-16 border rounded-md">
-          Select an event above to view its schedule.
-        </div>
+        <EmptyState
+          icon={CalendarClock}
+          title="No event selected"
+          description="Select an event above to view its schedule."
+        />
       ) : error ? (
         <div className="text-center text-red-600 py-16 border rounded-md">{error}</div>
       ) : loading ? (
-        <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
-          <Loader2 className="w-5 h-5 animate-spin" /> Loading schedule...
-        </div>
+        <ListSkeleton count={4} />
       ) : sessions.length === 0 ? (
-        <div className="text-center text-muted-foreground py-16 border rounded-md">
-          No sessions yet for this event.
-        </div>
+        <EmptyState
+          icon={Plus}
+          title="No sessions yet"
+          description="Add your first session for this event."
+          action={
+            <Button
+              size="sm"
+              render={<Link href={`/dashboard/schedule/new?eventId=${selectedEventId}`} />}
+              nativeButton={false}
+            >
+              Add Session
+            </Button>
+          }
+        />
       ) : (
         <div className="space-y-3">
           {sessions.map((s) => (
             <div
               key={s.id}
-              className="border rounded-lg bg-white p-4 flex items-center justify-between gap-4"
+              className="rounded-xl border border-[#e9e4ff] bg-white p-4 flex items-center justify-between gap-4 transition-all duration-200 hover:shadow-md"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-medium">{s.title}</p>
+                  <p className="font-medium text-slate-900">{s.title}</p>
                   {s.displayPublic && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700">
+                    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
                       Public
                     </span>
                   )}
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {formatTimeRange(s.startTime, s.endTime)}
-                </p>
-                <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
+                <p className="text-sm text-slate-500 mt-1">{formatTimeRange(s.startTime, s.endTime)}</p>
+                <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
                   {s.speaker && (
                     <span className="flex items-center gap-1">
                       <Mic2 className="w-3.5 h-3.5" />
@@ -230,18 +235,13 @@ export default function SchedulePage() {
           </DialogHeader>
           <p className="text-sm text-muted-foreground">
             Are you sure you want to delete{" "}
-            <span className="font-medium text-foreground">{deleteTarget?.title}</span>? This
-            can't be undone.
+            <span className="font-medium text-foreground">{deleteTarget?.title}</span>? This can't be undone.
           </p>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
               Cancel
             </Button>
-            <Button
-              onClick={confirmDelete}
-              disabled={deleting}
-              className="bg-red-600 hover:bg-red-700"
-            >
+            <Button onClick={confirmDelete} disabled={deleting} className="bg-red-600 hover:bg-red-700">
               {deleting ? "Deleting..." : "Delete"}
             </Button>
           </DialogFooter>

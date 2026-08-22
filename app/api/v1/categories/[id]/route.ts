@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
-
-async function getTenantId(req: NextRequest): Promise<string> {
-  return "tenant_alpha_univ";
-}
+import { getTenantId } from "@/lib/auth";
 
 const categoryUpdateSchema = z.object({
   label: z.string().min(1, "Label is required").max(100),

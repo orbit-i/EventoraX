@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { RegistrationStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-
-async function getTenantId(req: NextRequest): Promise<string> {
-  return "tenant_alpha_univ";
-}
+import { getTenantId } from "@/lib/auth";
 
 const attendanceSchema = z.object({
   status: z.enum([RegistrationStatus.ATTENDED, RegistrationStatus.ABSENT]),

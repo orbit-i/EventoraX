@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { RegisteredVia } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-
-async function getTenantId(req: NextRequest): Promise<string> {
-  return "tenant_alpha_univ";
-}
+import { getTenantId } from "@/lib/auth";
 
 const rowSchema = z.object({
   name: z.string().min(1),
@@ -57,16 +54,23 @@ export async function POST(req: NextRequest) {
     const categories = await prisma.eventCategory.findMany({ where: { tenantId, eventId } });
     const categoryMap = new Map(categories.map((c) => [c.label.toLowerCase(), c.id]));
 
-    let inserted = 0;
+        let inserted = 0;
     let skipped = 0;
     const errors: { row: number; email: string; reason: string }[] = [];
+    const categoryWarnings: { row: number; email: string; categoryLabel: string }[] = [];
 
     for (let i = 0; i < rows.length; i++) {
       const row = rows[i];
       try {
-        const categoryId = row.categoryLabel
-          ? categoryMap.get(row.categoryLabel.toLowerCase()) ?? null
-          : null;
+        let categoryId: string | null = null;
+        if (row.categoryLabel) {
+          const matched = categoryMap.get(row.categoryLabel.toLowerCase());
+          if (matched) {
+            categoryId = matched;
+          } else {
+            categoryWarnings.push({ row: i + 1, email: row.email, categoryLabel: row.categoryLabel });
+          }
+        }
 
         const refNo = `${eventId.slice(-6).toUpperCase()}-${Date.now().toString().slice(-6)}-${i}`;
 
@@ -96,7 +100,7 @@ export async function POST(req: NextRequest) {
     }
 
     return NextResponse.json({
-      data: { inserted, skipped, total: rows.length, errors },
+      data: { inserted, skipped, total: rows.length, errors, categoryWarnings },
       error: null,
     });
   } catch (err) {

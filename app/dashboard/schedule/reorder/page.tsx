@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { formatTimeRange } from "@/lib/date";
 import {
   DndContext,
   closestCenter,
@@ -21,14 +22,8 @@ import { api, ApiError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import { GripVertical, Loader2, ArrowLeft, Save, Mic2, MapPin } from "lucide-react";
 import type { Session } from "@/types/session";
+import { ListSkeleton } from "@/components/shared/Skeletons";
 
-function formatTimeRange(start: string, end: string) {
-  const s = new Date(start);
-  const e = new Date(end);
-  const dateStr = s.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-  const timeFmt = (d: Date) => d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
-  return `${dateStr} · ${timeFmt(s)} – ${timeFmt(e)}`;
-}
 
 function SortableSessionRow({ session, index }: { session: Session; index: number }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
@@ -45,7 +40,7 @@ function SortableSessionRow({ session, index }: { session: Session; index: numbe
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-start gap-3 border rounded-lg bg-white p-3"
+      className="flex items-center gap-3 border border-[#e9e4ff] rounded-lg bg-white p-3"
     >
       <button
         {...attributes}
@@ -189,9 +184,8 @@ export default function ScheduleReorderPage() {
       )}
 
       {loading ? (
-        <div className="flex items-center justify-center gap-2 py-16 text-muted-foreground">
-          <Loader2 className="w-5 h-5 animate-spin" /> Loading schedule...
-        </div>
+        <ListSkeleton count={4} />
+      
       ) : sessions.length === 0 ? (
         <div className="text-center text-muted-foreground py-16 border rounded-md">
           No sessions to reorder for this event.

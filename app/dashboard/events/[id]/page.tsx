@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Pencil, Copy, Trash2, Users, Mic2, Handshake, ListOrdered } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EventModeBadge, EventStatusBadge } from "@/components/events/EventBadges";
+import { StatCard, StatCardSkeleton } from "@/components/shared/StatCard";
 import { api, ApiError } from "@/lib/api";
 import { EventItem } from "@/types/event";
 
@@ -53,7 +54,21 @@ export default function EventDetailPage() {
     }
   }
 
-  if (loading) return <p className="text-sm text-slate-400">Loading…</p>;
+  if (loading) {
+    return (
+      <div className="max-w-3xl space-y-6 animate-pulse">
+        <div className="h-4 w-28 rounded bg-slate-100" />
+        <div className="h-7 w-2/3 rounded bg-slate-100" />
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <StatCardSkeleton key={i} />
+          ))}
+        </div>
+        <div className="h-64 rounded-xl bg-slate-50 border border-[#e9e4ff]" />
+      </div>
+    );
+  }
+
   if (error || !event)
     return (
       <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700">
@@ -62,10 +77,10 @@ export default function EventDetailPage() {
     );
 
   const stats = [
-    { label: "Registrations", value: event._count?.registrations ?? 0, icon: Users },
-    { label: "Speakers", value: event._count?.speakers ?? 0, icon: Mic2 },
-    { label: "Sponsors", value: event._count?.sponsors ?? 0, icon: Handshake },
-    { label: "Sessions", value: event._count?.sessions ?? 0, icon: ListOrdered },
+    { label: "Registrations", value: event._count?.registrations ?? 0, icon: Users, accent: "purple" as const },
+    { label: "Speakers", value: event._count?.speakers ?? 0, icon: Mic2, accent: "blue" as const },
+    { label: "Sponsors", value: event._count?.sponsors ?? 0, icon: Handshake, accent: "emerald" as const },
+    { label: "Sessions", value: event._count?.sessions ?? 0, icon: ListOrdered, accent: "slate" as const },
   ];
 
   return (
@@ -76,7 +91,7 @@ export default function EventDetailPage() {
 
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <h2 className="text-xl font-semibold text-slate-900">{event.title}</h2>
             <EventStatusBadge status={event.status} />
             <EventModeBadge mode={event.mode} />
@@ -104,11 +119,7 @@ export default function EventDetailPage() {
 
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {stats.map((s) => (
-          <div key={s.label} className="rounded-xl border border-[#e9e4ff] bg-white p-4">
-            <s.icon className="h-4 w-4 text-[#7c3aed]" />
-            <p className="mt-2 text-2xl font-semibold text-slate-900">{s.value}</p>
-            <p className="text-xs text-slate-500">{s.label}</p>
-          </div>
+          <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} accent={s.accent} />
         ))}
       </div>
 

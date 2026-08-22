@@ -14,6 +14,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormSection } from "@/components/shared/FormSection";
 import type { Session } from "@/types/session";
 
 interface SpeakerOption {
@@ -107,21 +108,21 @@ export function SessionForm({ eventId, initialSession, onSaved, onCancel }: Sess
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="p-3 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
           {error}
         </div>
       )}
 
-      <div>
-        <Label htmlFor="title">Session Title *</Label>
-        <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-        {fieldErrors.title && <p className="text-sm text-red-600 mt-1">{fieldErrors.title}</p>}
-      </div>
+      <FormSection title="Session details">
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label htmlFor="title">Session Title *</Label>
+          <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
+          {fieldErrors.title && <p className="text-sm text-red-600">{fieldErrors.title}</p>}
+        </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
+        <div className="space-y-1.5">
           <Label htmlFor="startTime">Start Time *</Label>
           <Input
             id="startTime"
@@ -131,7 +132,7 @@ export function SessionForm({ eventId, initialSession, onSaved, onCancel }: Sess
             required
           />
         </div>
-        <div>
+        <div className="space-y-1.5">
           <Label htmlFor="endTime">End Time *</Label>
           <Input
             id="endTime"
@@ -141,42 +142,44 @@ export function SessionForm({ eventId, initialSession, onSaved, onCancel }: Sess
             required
           />
         </div>
-      </div>
+      </FormSection>
 
-      <div>
-        <Label>Speaker</Label>
-        <Select value={speakerId} onValueChange={(v) => setSpeakerId(v ?? "NONE")}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder={speakersLoading ? "Loading speakers..." : "No speaker"} />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="NONE">No speaker</SelectItem>
-            {speakers.map((sp) => (
-              <SelectItem key={sp.id} value={sp.id}>
-                {sp.firstName} {sp.lastName}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      <div>
-        <Label htmlFor="location">Location</Label>
-        <Input
-          id="location"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="e.g. Main Auditorium"
-        />
-      </div>
-
-      <div className="flex items-center justify-between border rounded-md p-3">
-        <div>
-          <Label htmlFor="displayPublic">Show on public event page</Label>
-          <p className="text-xs text-muted-foreground">Visible on the public schedule listing.</p>
+      <FormSection title="Speaker & location">
+        <div className="space-y-1.5">
+          <Label>Speaker</Label>
+          <Select value={speakerId} onValueChange={(v) => setSpeakerId(v ?? "NONE")}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder={speakersLoading ? "Loading speakers..." : "No speaker"} />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="NONE">No speaker</SelectItem>
+              {speakers.map((sp) => (
+                <SelectItem key={sp.id} value={sp.id}>
+                  {sp.firstName} {sp.lastName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         </div>
-        <Switch id="displayPublic" checked={displayPublic} onCheckedChange={setDisplayPublic} />
-      </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="location">Location</Label>
+          <Input
+            id="location"
+            value={location}
+            onChange={(e) => setLocation(e.target.value)}
+            placeholder="e.g. Main Auditorium"
+          />
+        </div>
+
+        <div className="flex items-center justify-between rounded-lg border border-[#e9e4ff] p-3 sm:col-span-2">
+          <div>
+            <Label htmlFor="displayPublic">Show on public event page</Label>
+            <p className="text-xs text-muted-foreground">Visible on the public schedule listing.</p>
+          </div>
+          <Switch id="displayPublic" checked={displayPublic} onCheckedChange={setDisplayPublic} />
+        </div>
+      </FormSection>
 
       <div className="flex gap-2 pt-2">
         <Button type="submit" disabled={submitting}>

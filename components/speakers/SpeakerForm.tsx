@@ -7,6 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
+import { FormSection } from "@/components/shared/FormSection";
 import type { Speaker } from "@/types/speaker";
 
 interface SpeakerFormProps {
@@ -69,15 +70,15 @@ export function SpeakerForm({ eventId, initialSpeaker, onSaved, onCancel }: Spea
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="p-3 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
           {error}
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-4">
-        <div>
+      <FormSection title="Basic info" description="Who they are.">
+        <div className="space-y-1.5">
           <Label htmlFor="firstName">First Name *</Label>
           <Input
             id="firstName"
@@ -86,10 +87,10 @@ export function SpeakerForm({ eventId, initialSpeaker, onSaved, onCancel }: Spea
             required
           />
           {fieldErrors.firstName && (
-            <p className="text-sm text-red-600 mt-1">{fieldErrors.firstName}</p>
+            <p className="text-sm text-red-600">{fieldErrors.firstName}</p>
           )}
         </div>
-        <div>
+        <div className="space-y-1.5">
           <Label htmlFor="lastName">Last Name *</Label>
           <Input
             id="lastName"
@@ -98,13 +99,10 @@ export function SpeakerForm({ eventId, initialSpeaker, onSaved, onCancel }: Spea
             required
           />
           {fieldErrors.lastName && (
-            <p className="text-sm text-red-600 mt-1">{fieldErrors.lastName}</p>
+            <p className="text-sm text-red-600">{fieldErrors.lastName}</p>
           )}
         </div>
-      </div>
-
-      <div className="grid grid-cols-2 gap-4">
-        <div>
+        <div className="space-y-1.5">
           <Label htmlFor="title">Title</Label>
           <Input
             id="title"
@@ -113,72 +111,75 @@ export function SpeakerForm({ eventId, initialSpeaker, onSaved, onCancel }: Spea
             onChange={(e) => setTitle(e.target.value)}
           />
         </div>
-        <div>
+        <div className="space-y-1.5">
           <Label htmlFor="company">Company</Label>
           <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} />
         </div>
-      </div>
+      </FormSection>
 
-      <div>
-        <Label htmlFor="sessionTopic">Session Topic</Label>
-        <Input
-          id="sessionTopic"
-          value={sessionTopic}
-          onChange={(e) => setSessionTopic(e.target.value)}
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="bio">Bio</Label>
-        <Textarea
-          id="bio"
-          rows={4}
-          value={bio}
-          onChange={(e) => setBio(e.target.value)}
-          placeholder="Short biography for the public event page..."
-        />
-      </div>
-
-      <div>
-        <Label htmlFor="photo">Photo URL</Label>
-        <Input
-          id="photo"
-          value={photo}
-          onChange={(e) => setPhoto(e.target.value)}
-          placeholder="https://..."
-        />
-        {photo && (
-          <div className="mt-2 flex items-center gap-2">
-            <img
-              src={photo}
-              alt="Preview"
-              className="w-12 h-12 rounded-full object-cover border"
-              onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
-            />
-            <span className="text-xs text-muted-foreground">Preview</span>
-          </div>
-        )}
-      </div>
-
-      <div>
-        <Label htmlFor="linkedin">LinkedIn URL</Label>
-        <Input
-          id="linkedin"
-          value={linkedin}
-          onChange={(e) => setLinkedin(e.target.value)}
-          placeholder="https://linkedin.com/in/..."
-        />
-      </div>
-
-      <div className="flex items-center justify-between border rounded-md p-3">
-        <div>
-          <Label htmlFor="displayPublic">Show on public event page</Label>
-          <p className="text-xs text-muted-foreground">
-            Visible to attendees viewing the public event listing.
-          </p>
+      <FormSection title="Bio & session" description="What they're speaking about.">
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label htmlFor="sessionTopic">Session Topic</Label>
+          <Input
+            id="sessionTopic"
+            value={sessionTopic}
+            onChange={(e) => setSessionTopic(e.target.value)}
+          />
         </div>
-        <Switch id="displayPublic" checked={displayPublic} onCheckedChange={setDisplayPublic} />
-      </div>
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label htmlFor="bio">Bio</Label>
+          <Textarea
+            id="bio"
+            rows={4}
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Short biography for the public event page..."
+          />
+        </div>
+      </FormSection>
+
+      <FormSection title="Photo, links & visibility">
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label htmlFor="photo">Photo URL</Label>
+          <Input
+            id="photo"
+            value={photo}
+            onChange={(e) => setPhoto(e.target.value)}
+            placeholder="https://..."
+          />
+          {photo && (
+            <div className="mt-2 flex items-center gap-2">
+              <img
+                src={photo}
+                alt="Preview"
+                className="w-12 h-12 rounded-full object-cover border"
+                onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+              />
+              <span className="text-xs text-muted-foreground">Preview</span>
+            </div>
+          )}
+        </div>
+
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label htmlFor="linkedin">LinkedIn URL</Label>
+          <Input
+            id="linkedin"
+            value={linkedin}
+            onChange={(e) => setLinkedin(e.target.value)}
+            placeholder="https://linkedin.com/in/..."
+          />
+        </div>
+
+        <div className="flex items-center justify-between rounded-lg border border-[#e9e4ff] p-3 sm:col-span-2">
+          <div>
+            <Label htmlFor="displayPublic">Show on public event page</Label>
+            <p className="text-xs text-muted-foreground">
+              Visible to attendees viewing the public event listing.
+            </p>
+          </div>
+          <Switch id="displayPublic" checked={displayPublic} onCheckedChange={setDisplayPublic} />
+        </div>
+      </FormSection>
 
       <div className="flex gap-2 pt-2">
         <Button type="submit" disabled={submitting}>

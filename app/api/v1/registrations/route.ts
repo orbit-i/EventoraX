@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { RegistrationStatus, RegisteredVia, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-
-async function getTenantId(req: NextRequest): Promise<string> {
-  return "tenant_alpha_univ";
-}
+import { getTenantId } from "@/lib/auth";
 
 const registrationSchema = z.object({
   eventId: z.string().min(1, "eventId is required"),
@@ -116,9 +113,21 @@ export async function POST(req: NextRequest) {
       data: { ...parsed.data, tenantId, refNo },
     });
 
-    // TODO (Isha's QR Tickets hook): trigger QR ticket generation here once contract is confirmed
-    // e.g. await triggerQrTicketCreation(registration.id);
-
+        // Fire-and-log: ticket generation failures should never block registration creation.
+    try {
+      await fetch(`${process.env.INTERNAL_API_BASE_URL}/api/v1/tickets/generate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          registrationId: registration.id,
+          eventId: registration.eventId,
+          attendeeName: registration.name,
+          attendeeEmail: registration.email,
+        }),
+      });
+    } catch (err) {
+      console.error("QR ticket generation failed:", err);
+    }
     return NextResponse.json({ data: registration, error: null }, { status: 201 });
   } catch (err: any) {
     if (err.code === "P2002") {

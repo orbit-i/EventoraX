@@ -25,6 +25,11 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Pagination } from "@/components/layout/Pagination";
+import { PageHeader } from "@/components/shared/PageHeader";
+import { StatCard, StatCardSkeleton } from "@/components/shared/StatCard";
+import { EmptyState } from "@/components/shared/EmptyState";
+import { TableSkeletonRows } from "@/components/shared/Skeletons";
+import { Users, UserCheck, UserX, ClipboardList } from "lucide-react";
 import type {
   Registration,
   RegistrationStatus,
@@ -41,10 +46,10 @@ const STATUS_OPTIONS: { value: RegistrationStatus | "ALL"; label: string }[] = [
 ];
 
 const STATUS_BADGE_VARIANT: Record<RegistrationStatus, string> = {
-  REGISTERED: "bg-blue-100 text-blue-700",
-  ATTENDED: "bg-green-100 text-green-700",
-  ABSENT: "bg-red-100 text-red-700",
-  CANCELLED: "bg-gray-200 text-gray-600",
+  REGISTERED: "bg-blue-50 text-blue-700 border border-blue-200",
+  ATTENDED: "bg-emerald-50 text-emerald-700 border border-emerald-200",
+  ABSENT: "bg-red-50 text-red-700 border border-red-200",
+  CANCELLED: "bg-slate-100 text-slate-500 border border-slate-200",
 };
 
 const LIMIT = 20;
@@ -72,11 +77,14 @@ export default function RegistrationsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Bulk selection — persists across filter/page changes, cleared only manually.
+  const [stats, setStats] = useState<{
+    total: number;
+    attended: number;
+    absent: number;
+  } | null>(null);
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
-
-  // Per-row attendance marking loading state
   const [attendanceLoadingId, setAttendanceLoadingId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -149,6 +157,35 @@ export default function RegistrationsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEventId, status, categoryId, debouncedSearch, page]);
 
+  // Stats strip — parallel counts for the selected event.
+  useEffect(() => {
+    if (!selectedEventId) {
+      setStats(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const [all, attended, absent] = await Promise.all([
+          api.getList<Registration>(`/registrations${buildQuery({ eventId: selectedEventId, limit: 1 })}`),
+          api.getList<Registration>(
+            `/registrations${buildQuery({ eventId: selectedEventId, status: "ATTENDED", limit: 1 })}`
+          ),
+          api.getList<Registration>(
+            `/registrations${buildQuery({ eventId: selectedEventId, status: "ABSENT", limit: 1 })}`
+          ),
+        ]);
+        if (cancelled) return;
+        setStats({ total: all.meta.total, attended: attended.meta.total, absent: absent.meta.total });
+      } catch {
+        // Non-critical — skip stats silently on error.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedEventId, page === 1 ? "refresh" : "noop"]); // eslint-disable-line react-hooks/exhaustive-deps
+
   const noEventSelected = !selectedEventId;
 
   function toggleRow(id: string) {
@@ -219,31 +256,51 @@ export default function RegistrationsPage() {
   }
 
   return (
-    <div className="p-6 space-y-4">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <h1 className="text-2xl font-semibold">Registrations</h1>
-        <div className="flex flex-wrap gap-2">
-          <Button
-            variant="outline"
-            disabled={noEventSelected}
-            render={<Link href={`/dashboard/registrations/import?eventId=${selectedEventId}`} />}
-            nativeButton={false}
-            className="flex-1 sm:flex-none"
-          >
-            Import CSV
-          </Button>
-          <Button
-            disabled={noEventSelected}
-            render={<Link href={`/dashboard/registrations/new?eventId=${selectedEventId}`} />}
-            nativeButton={false}
-            className="flex-1 sm:flex-none"
-          >
-            Add Attendee
-          </Button>
-        </div>
-      </div>
+    <div className="p-6 space-y-5">
+      <PageHeader
+        title="Registrations"
+        subtitle="View and manage attendee registrations."
+        actions={
+          <>
+            <Button
+              variant="outline"
+              disabled={noEventSelected}
+              render={<Link href={`/dashboard/registrations/import?eventId=${selectedEventId}`} />}
+              nativeButton={false}
+              className="flex-1 sm:flex-none"
+            >
+              Import CSV
+            </Button>
+            <Button
+              disabled={noEventSelected}
+              render={<Link href={`/dashboard/registrations/new?eventId=${selectedEventId}`} />}
+              nativeButton={false}
+              className="flex-1 sm:flex-none"
+            >
+              Add Attendee
+            </Button>
+          </>
+        }
+      />
 
-      {/* Filters */}
+      {!noEventSelected && (
+        <div className="grid grid-cols-3 gap-3 max-w-xl">
+          {stats ? (
+            <>
+              <StatCard label="Total" value={stats.total} icon={ClipboardList} accent="purple" />
+              <StatCard label="Attended" value={stats.attended} icon={UserCheck} accent="emerald" />
+              <StatCard label="Absent" value={stats.absent} icon={UserX} accent="slate" />
+            </>
+          ) : (
+            <>
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-wrap gap-3 items-center">
         <Select value={selectedEventId} onValueChange={(v) => setSelectedEventId(v ?? "")}>
           <SelectTrigger className="w-64">
@@ -302,10 +359,9 @@ export default function RegistrationsPage() {
         />
       </div>
 
-      {/* Bulk action toolbar — only visible once something is selected */}
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 p-3 rounded-md bg-[#f3f0ff] border border-[#e9e4ff]">
-          <span className="text-sm font-medium">{selectedIds.size} selected</span>
+        <div className="flex items-center gap-3 p-3 rounded-xl bg-[#f3f0ff] border border-[#e9e4ff]">
+          <span className="text-sm font-medium text-slate-700">{selectedIds.size} selected</span>
           <Button size="sm" onClick={handleBulkMarkAttended} disabled={bulkActionLoading}>
             {bulkActionLoading ? "Working..." : "Mark Attended"}
           </Button>
@@ -318,24 +374,23 @@ export default function RegistrationsPage() {
         </div>
       )}
 
-      {/* Table */}
       {noEventSelected ? (
-        <div className="text-center text-muted-foreground py-16 border rounded-md">
-          Select an event above to view its registrations.
-        </div>
+        <EmptyState
+          icon={Users}
+          title="No event selected"
+          description="Select an event above to view its registrations."
+        />
       ) : error ? (
         <div className="text-center text-red-600 py-16 border rounded-md">{error}</div>
       ) : (
-        <div className="border rounded-md overflow-x-auto">
+        <div className="rounded-xl border border-[#e9e4ff] bg-white overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="hover:bg-transparent">
                 <TableHead className="w-10">
                   <Checkbox
                     checked={allOnPageSelected}
-                    onCheckedChange={(checked) =>
-                      checked ? selectAllOnPage() : clearSelection()
-                    }
+                    onCheckedChange={(checked) => (checked ? selectAllOnPage() : clearSelection())}
                   />
                 </TableHead>
                 <TableHead>Ref No</TableHead>
@@ -353,25 +408,18 @@ export default function RegistrationsPage() {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={12} className="text-center py-8">
-                    Loading...
-                  </TableCell>
-                </TableRow>
+                <TableSkeletonRows columns={12} rows={6} />
               ) : registrations.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={12} className="text-center py-8">
-                    No registrations found.
+                  <TableCell colSpan={12} className="py-10">
+                    <EmptyState icon={Users} title="No registrations found" />
                   </TableCell>
                 </TableRow>
               ) : (
                 registrations.map((r) => (
                   <TableRow key={r.id}>
                     <TableCell>
-                      <Checkbox
-                        checked={selectedIds.has(r.id)}
-                        onCheckedChange={() => toggleRow(r.id)}
-                      />
+                      <Checkbox checked={selectedIds.has(r.id)} onCheckedChange={() => toggleRow(r.id)} />
                     </TableCell>
                     <TableCell className="font-mono text-sm">{r.refNo}</TableCell>
                     <TableCell>{r.name}</TableCell>
@@ -381,7 +429,9 @@ export default function RegistrationsPage() {
                     <TableCell>{r.rollNo ?? "—"}</TableCell>
                     <TableCell>{r.category?.label ?? "—"}</TableCell>
                     <TableCell>
-                      <Badge className={STATUS_BADGE_VARIANT[r.status]}>{r.status}</Badge>
+                      <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_BADGE_VARIANT[r.status]}`}>
+                        {r.status}
+                      </span>
                     </TableCell>
                     <TableCell>{r.registeredVia}</TableCell>
                     <TableCell>{new Date(r.registrationDate).toLocaleDateString()}</TableCell>

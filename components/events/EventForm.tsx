@@ -16,6 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormSection } from "@/components/shared/FormSection";
 import { ApiError } from "@/lib/api";
 import { fromDatetimeLocal } from "@/lib/date";
 import { EventFormValues, EventStatus, EVENT_STATUS_LABELS } from "@/types/event";
@@ -120,14 +121,14 @@ export function EventForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="max-w-2xl space-y-6">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="max-w-2xl space-y-8">
       {formError && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           {formError}
         </div>
       )}
 
-      <div className="grid gap-4 sm:grid-cols-2">
+      <FormSection title="Basic details" description="What the event is called and how it runs.">
         <div className="space-y-1.5 sm:col-span-2">
           <Label htmlFor="title">Event name *</Label>
           <Input id="title" {...register("title")} placeholder="e.g. Annual Tech Symposium" />
@@ -157,6 +158,28 @@ export function EventForm({
           />
         </div>
 
+        {showStatus && (
+          <div className="space-y-1.5">
+            <Label>Status</Label>
+            <Controller
+              control={control}
+              name="status"
+              render={({ field }) => (
+                <Select value={field.value} onValueChange={field.onChange}>
+                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
+                  <SelectContent>
+                    {(Object.keys(EVENT_STATUS_LABELS) as EventStatus[]).map((s) => (
+                      <SelectItem key={s} value={s}>{EVENT_STATUS_LABELS[s]}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            />
+          </div>
+        )}
+      </FormSection>
+
+      <FormSection title="Date & location" description="When and where it's happening.">
         <div className="space-y-1.5">
           <Label htmlFor="startDateTime">Start date & time *</Label>
           <Input id="startDateTime" type="datetime-local" {...register("startDateTime")} />
@@ -185,11 +208,13 @@ export function EventForm({
           <Input id="location" {...register("location")} placeholder="e.g. Main Auditorium" />
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 sm:col-span-2">
           <Label htmlFor="topic">Topic</Label>
           <Input id="topic" {...register("topic")} />
         </div>
+      </FormSection>
 
+      <FormSection title="Capacity & certificate" description="Limits, pricing, and completion rules.">
         <div className="space-y-1.5">
           <Label htmlFor="maxAttendees">Max attendees</Label>
           <Input id="maxAttendees" type="number" min="0" {...register("maxAttendees")} />
@@ -200,35 +225,10 @@ export function EventForm({
           <Input id="ticketPrice" type="number" step="0.01" min="0" {...register("ticketPrice")} placeholder="0.00" />
         </div>
 
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 sm:col-span-2">
           <Label htmlFor="certTemplateId">Certificate template</Label>
           <Input id="certTemplateId" disabled placeholder="Certificate templates coming soon" />
           <p className="text-xs text-slate-400">Populates once the Certificates module ships.</p>
-        </div>
-
-        {showStatus && (
-          <div className="space-y-1.5">
-            <Label>Status</Label>
-            <Controller
-              control={control}
-              name="status"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(EVENT_STATUS_LABELS) as EventStatus[]).map((s) => (
-                      <SelectItem key={s} value={s}>{EVENT_STATUS_LABELS[s]}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
-        )}
-
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="description">Description</Label>
-          <Textarea id="description" rows={4} {...register("description")} />
         </div>
 
         <div className="flex items-center justify-between rounded-lg border border-[#e9e4ff] p-3">
@@ -258,7 +258,13 @@ export function EventForm({
             )}
           />
         </div>
-      </div>
+      </FormSection>
+
+      <FormSection title="Description">
+        <div className="space-y-1.5 sm:col-span-2">
+          <Textarea id="description" rows={4} {...register("description")} />
+        </div>
+      </FormSection>
 
       {children}
 

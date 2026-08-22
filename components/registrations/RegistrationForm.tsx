@@ -12,6 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { FormSection } from "@/components/shared/FormSection";
 import type { CategoryOption, RegisteredVia, RegistrationStatus } from "@/types/registration";
 
 const VIA_OPTIONS: RegisteredVia[] = ["WEB", "ADMIN", "CSV_IMPORT", "API"];
@@ -83,100 +84,104 @@ export function RegistrationForm({ eventId, onSaved, onCancel }: RegistrationFor
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="p-3 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
           {error}
         </div>
       )}
 
-      <div>
-        <Label htmlFor="name">Name *</Label>
-        <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
-        {fieldErrors.name && <p className="text-sm text-red-600 mt-1">{fieldErrors.name}</p>}
-      </div>
+      <FormSection title="Attendee details" description="Who is registering.">
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label htmlFor="name">Name *</Label>
+          <Input id="name" value={name} onChange={(e) => setName(e.target.value)} required />
+          {fieldErrors.name && <p className="text-sm text-red-600">{fieldErrors.name}</p>}
+        </div>
 
-      <div>
-        <Label htmlFor="email">Email *</Label>
-        <Input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
-        {fieldErrors.email && <p className="text-sm text-red-600 mt-1">{fieldErrors.email}</p>}
-      </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Email *</Label>
+          <Input
+            id="email"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+          {fieldErrors.email && <p className="text-sm text-red-600">{fieldErrors.email}</p>}
+        </div>
 
-      <div>
-        <Label htmlFor="phone">Phone</Label>
-        <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
-      </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="phone">Phone</Label>
+          <Input id="phone" value={phone} onChange={(e) => setPhone(e.target.value)} />
+        </div>
 
-      <div>
-        <Label htmlFor="department">Department</Label>
-        <Input id="department" value={department} onChange={(e) => setDepartment(e.target.value)} />
-      </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="department">Department</Label>
+          <Input id="department" value={department} onChange={(e) => setDepartment(e.target.value)} />
+        </div>
 
-      <div>
-        <Label htmlFor="rollNo">Roll No</Label>
-        <Input id="rollNo" value={rollNo} onChange={(e) => setRollNo(e.target.value)} />
-      </div>
+        <div className="space-y-1.5">
+          <Label htmlFor="rollNo">Roll No</Label>
+          <Input id="rollNo" value={rollNo} onChange={(e) => setRollNo(e.target.value)} />
+        </div>
+      </FormSection>
 
-      <div>
-        <Label>Category</Label>
-        <Select value={categoryId} onValueChange={(v) => setCategoryId(v ?? "NONE")}>
-          <SelectTrigger className="w-full">
-            <SelectValue placeholder="No category" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="NONE">No category</SelectItem>
-            {categories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>
-                {cat.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+      <FormSection title="Registration details" description="Category and how this record is tracked.">
+        <div className="space-y-1.5">
+          <Label>Category</Label>
+          <Select value={categoryId} onValueChange={(v) => setCategoryId(v ?? "NONE")}>
+            <SelectTrigger className="w-full">
+              <SelectValue placeholder="No category" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="NONE">No category</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat.id} value={cat.id}>
+                  {cat.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div>
-        <Label>Registered Via</Label>
-        <Select
-          value={registeredVia}
-          onValueChange={(v) => setRegisteredVia((v ?? "ADMIN") as RegisteredVia)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {VIA_OPTIONS.map((v) => (
-              <SelectItem key={v} value={v}>
-                {v}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+        <div className="space-y-1.5">
+          <Label>Registered Via</Label>
+          <Select
+            value={registeredVia}
+            onValueChange={(v) => setRegisteredVia((v ?? "ADMIN") as RegisteredVia)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {VIA_OPTIONS.map((v) => (
+                <SelectItem key={v} value={v}>
+                  {v}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-      <div>
-        <Label>Status</Label>
-        <Select
-          value={status}
-          onValueChange={(v) => setStatus((v ?? "REGISTERED") as RegistrationStatus)}
-        >
-          <SelectTrigger className="w-full">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {STATUS_OPTIONS.map((s) => (
-              <SelectItem key={s} value={s}>
-                {s}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
+        <div className="space-y-1.5 sm:col-span-2">
+          <Label>Status</Label>
+          <Select
+            value={status}
+            onValueChange={(v) => setStatus((v ?? "REGISTERED") as RegistrationStatus)}
+          >
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {STATUS_OPTIONS.map((s) => (
+                <SelectItem key={s} value={s}>
+                  {s}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </FormSection>
 
       <div className="flex gap-2">
         <Button type="submit" disabled={submitting}>

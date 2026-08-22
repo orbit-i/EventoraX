@@ -1,12 +1,13 @@
 "use client";
-
+import { PageHeader } from "@/components/shared/PageHeader";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
+import { Plus, CalendarDays, Rocket, Radio, CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { EventsFilters, EventsFiltersValue } from "@/components/events/EventsFilters";
 import { EventsTable } from "@/components/events/EventsTable";
 import { Pagination } from "@/components/layout/Pagination";
+import { StatCard, StatCardSkeleton } from "@/components/shared/StatCard";
 import { api, ApiError, buildQuery } from "@/lib/api";
 import { useDebouncedValue } from "@/lib/hooks";
 import { EventItem } from "@/types/event";
@@ -26,9 +27,15 @@ export default function EventsListPage() {
   const [error, setError] = useState<string | null>(null);
   const [refetchKey, setRefetchKey] = useState(0);
 
+  const [stats, setStats] = useState<{
+    total: number;
+    published: number;
+    ongoing: number;
+    completed: number;
+  } | null>(null);
+
   const debouncedSearch = useDebouncedValue(filters.search, 400);
 
-  // Reset to page 1 whenever filters change.
   useEffect(() => {
     setPage(1);
   }, [debouncedSearch, filters.status, filters.mode]);
@@ -70,24 +77,63 @@ export default function EventsListPage() {
     };
   }, [debouncedSearch, filters.status, filters.mode, page, refetchKey]);
 
+  // Lightweight parallel count-only fetches for the stats strip.
+  useEffect(() => {
+    let cancelled = false;
+    async function loadStats() {
+      try {
+        const [all, published, ongoing, completed] = await Promise.all([
+          api.getList<EventItem>(`/events${buildQuery({ limit: 1 })}`),
+          api.getList<EventItem>(`/events${buildQuery({ status: "PUBLISHED", limit: 1 })}`),
+          api.getList<EventItem>(`/events${buildQuery({ status: "ONGOING", limit: 1 })}`),
+          api.getList<EventItem>(`/events${buildQuery({ status: "COMPLETED", limit: 1 })}`),
+        ]);
+        if (cancelled) return;
+        setStats({
+          total: all.meta.total,
+          published: published.meta.total,
+          ongoing: ongoing.meta.total,
+          completed: completed.meta.total,
+        });
+      } catch {
+        // Stats strip is a nice-to-have; fail silently if it errors.
+      }
+    }
+    loadStats();
+    return () => {
+      cancelled = true;
+    };
+  }, [refetchKey]);
+
   return (
     <div className="space-y-5">
-      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <h2 className="text-xl font-semibold text-slate-900">Events</h2>
-          <p className="text-sm text-slate-500">
-            Manage every event in one place.
-          </p>
-        </div>
-        <Button
-          className="bg-[#7c3aed] hover:bg-[#6d28d9] w-full sm:w-auto"
-          nativeButton={false}
-          render={
-          <Link href="/dashboard/events/new">
-          <Plus className="mr-1.5 h-4 w-4" /> Create event
-          </Link>
-          }
-        />
+      <PageHeader
+        title="Events"
+        subtitle="Manage every event in one place."
+        actions={
+          <Button
+            className="bg-[#7c3aed] hover:bg-[#6d28d9] w-full sm:w-auto"
+            nativeButton={false}
+            render={
+              <Link href="/dashboard/events/new">
+                <Plus className="mr-1.5 h-4 w-4" /> Create event
+              </Link>
+            }
+          />
+        }
+      />
+
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {stats ? (
+          <>
+            <StatCard label="Total events" value={stats.total} icon={CalendarDays} accent="purple" />
+            <StatCard label="Upcoming" value={stats.published} icon={Rocket} accent="blue" />
+            <StatCard label="Ongoing" value={stats.ongoing} icon={Radio} accent="emerald" />
+            <StatCard label="Completed" value={stats.completed} icon={CheckCircle2} accent="slate" />
+          </>
+        ) : (
+          Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
+        )}
       </div>
 
       <EventsFilters value={filters} onChange={setFilters} />
@@ -104,12 +150,7 @@ export default function EventsListPage() {
             onChanged={() => setRefetchKey((k) => k + 1)}
           />
           {!loading && (
-            <Pagination
-              page={page}
-              limit={LIMIT}
-              total={total}
-              onPageChange={setPage}
-            />
+            <Pagination page={page} limit={LIMIT} total={total} onPageChange={setPage} />
           )}
         </>
       )}

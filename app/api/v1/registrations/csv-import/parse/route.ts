@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-
-async function getTenantId(req: NextRequest): Promise<string> {
-  return "tenant_alpha_univ";
-}
+import { getTenantId } from "@/lib/auth";
 
 // Simple CSV parser that handles quoted fields with commas inside them
 function parseCsv(text: string): { headers: string[]; rows: string[][] } {

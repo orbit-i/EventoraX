@@ -267,7 +267,7 @@ export default function CsvImportPage() {
 
   return (
     <div className="p-6 max-w-3xl space-y-6">
-      <h1 className="text-2xl font-semibold">Import Registrations from CSV</h1>
+            <h1 className="text-xl font-semibold text-slate-900">Import Registrations from CSV</h1>
 
       <StepIndicator current={step} />
 
@@ -453,6 +453,37 @@ export default function CsvImportPage() {
               {importResult.total} total rows.
             </span>
           </div>
+                    {importResult.categoryWarnings.length > 0 && (
+            <div>
+              <h2 className="font-medium mb-2 text-amber-700">
+                {importResult.categoryWarnings.length} row(s) imported without a matching category
+              </h2>
+              <p className="text-sm text-muted-foreground mb-2">
+                These rows were imported successfully, but their category label didn't match any
+                existing category for this event, so they were left uncategorized.
+              </p>
+              <div className="border rounded-md overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Row</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Category label in file</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {importResult.categoryWarnings.map((w, i) => (
+                      <TableRow key={i}>
+                        <TableCell>{w.row}</TableCell>
+                        <TableCell>{w.email}</TableCell>
+                        <TableCell>{w.categoryLabel}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            </div>
+          )}
 
           {importResult.errors.length > 0 && (
             <div>

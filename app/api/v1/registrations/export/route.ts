@@ -2,10 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import * as XLSX from "xlsx";
 import { RegistrationStatus, Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
-
-async function getTenantId(req: NextRequest): Promise<string> {
-  return "tenant_alpha_univ";
-}
+import { getTenantId } from "@/lib/auth";
 
 // GET /api/v1/registrations/export?eventId=&format=csv|xlsx&status=&ids=id1,id2
 export async function GET(req: NextRequest) {
