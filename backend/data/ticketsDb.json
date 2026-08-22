@@ -1,0 +1,14 @@
+[
+  {
+    "id": "74a78f8a-c0b5-41c5-80ff-d332f7dad001",
+    "ticketCode": "TKT-74A78F8A",
+    "registrationId": "reg_123",
+    "eventId": "evt_1",
+    "attendeeName": "Ayesha Khan",
+    "attendeeEmail": "ayesha@mail.com",
+    "used": true,
+    "usedAt": "2026-08-08T11:42:28.240Z",
+    "qrCodeUrl": "/uploads/tickets/74a78f8a-c0b5-41c5-80ff-d332f7dad001.png",
+    "createdAt": "2026-08-08T11:36:39.960Z"
+  }
+]
