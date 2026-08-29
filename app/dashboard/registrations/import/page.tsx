@@ -94,42 +94,47 @@ function parseCsvText(text: string): string[][] {
 function StepIndicator({ current }: { current: Step }) {
   const currentIndex = STEPS.findIndex((s) => s.key === current);
   return (
-    <div className="flex items-center mb-6">
-      {STEPS.map((step, i) => {
-        const isActive = i === currentIndex;
-        const isComplete = i < currentIndex;
-        return (
-          <div key={step.key} className="flex items-center flex-1 last:flex-none">
-            <div className="flex items-center gap-2">
-              <div
-                className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-medium shrink-0 ${
-                  isComplete
-                    ? "bg-[#7c3aed] text-white"
-                    : isActive
-                    ? "bg-[#7c3aed] text-white ring-4 ring-[#f3f0ff]"
-                    : "bg-gray-100 text-gray-400"
-                }`}
-              >
-                {isComplete ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
+    <div className="mb-6">
+      <div className="flex items-center">
+        {STEPS.map((step, i) => {
+          const isActive = i === currentIndex;
+          const isComplete = i < currentIndex;
+          return (
+            <div key={step.key} className="flex items-center flex-1 last:flex-none">
+              <div className="flex items-center gap-2">
+                <div
+                  className={`flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full text-sm font-medium shrink-0 ${
+                    isComplete
+                      ? "bg-[#7c3aed] text-white"
+                      : isActive
+                      ? "bg-[#7c3aed] text-white ring-4 ring-[#f3f0ff]"
+                      : "bg-gray-100 text-gray-400"
+                  }`}
+                >
+                  {isComplete ? <CheckCircle2 className="w-4 h-4" /> : i + 1}
+                </div>
+                <span
+                  className={`hidden sm:inline text-sm font-medium whitespace-nowrap ${
+                    isActive ? "text-[#171717]" : isComplete ? "text-[#7c3aed]" : "text-gray-400"
+                  }`}
+                >
+                  {step.label}
+                </span>
               </div>
-              <span
-                className={`text-sm font-medium whitespace-nowrap ${
-                  isActive ? "text-[#171717]" : isComplete ? "text-[#7c3aed]" : "text-gray-400"
-                }`}
-              >
-                {step.label}
-              </span>
+              {i < STEPS.length - 1 && (
+                <div
+                  className={`h-0.5 flex-1 mx-2 sm:mx-3 rounded ${
+                    isComplete ? "bg-[#7c3aed]" : "bg-gray-200"
+                  }`}
+                />
+              )}
             </div>
-            {i < STEPS.length - 1 && (
-              <div
-                className={`h-0.5 flex-1 mx-3 rounded ${
-                  isComplete ? "bg-[#7c3aed]" : "bg-gray-200"
-                }`}
-              />
-            )}
-          </div>
-        );
-      })}
+          );
+        })}
+      </div>
+      <p className="mt-2 text-sm font-medium text-slate-700 sm:hidden">
+        Step {currentIndex + 1} of {STEPS.length}: {STEPS[currentIndex].label}
+      </p>
     </div>
   );
 }
@@ -256,7 +261,7 @@ export default function CsvImportPage() {
 
   if (!eventId) {
     return (
-      <div className="p-6">
+      <div>
         <p className="text-red-600">No event selected. Go back and select an event first.</p>
         <Button className="mt-4" onClick={() => router.push("/dashboard/registrations")}>
           Back to Registrations
@@ -266,8 +271,8 @@ export default function CsvImportPage() {
   }
 
   return (
-    <div className="p-6 max-w-3xl space-y-6">
-            <h1 className="text-xl font-semibold text-slate-900">Import Registrations from CSV</h1>
+    <div className="max-w-3xl space-y-6">
+      <h1 className="text-xl font-semibold text-slate-900">Import Registrations from CSV</h1>
 
       <StepIndicator current={step} />
 
@@ -347,8 +352,8 @@ export default function CsvImportPage() {
 
           <div className="space-y-3 border rounded-lg p-4 bg-white">
             {TARGET_FIELDS.map((field) => (
-              <div key={field.key} className="flex items-center gap-3">
-                <Label className="w-40">
+              <div key={field.key} className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:gap-3">
+                <Label className="sm:w-40 shrink-0">
                   {field.label}
                   {field.required && <span className="text-red-600"> *</span>}
                 </Label>
@@ -358,7 +363,7 @@ export default function CsvImportPage() {
                     setMapping((prev) => ({ ...prev, [field.key]: v === "NONE" ? "" : v! }))
                   }
                 >
-                  <SelectTrigger className="w-64">
+                  <SelectTrigger className="w-full sm:w-64">
                     <SelectValue placeholder="Select CSV column" />
                   </SelectTrigger>
                   <SelectContent>

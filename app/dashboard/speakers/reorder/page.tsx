@@ -153,14 +153,14 @@ export default function SpeakerReorderPage() {
 
   if (!eventId) {
     return (
-      <div className="p-6">
+      <div>
         <p className="text-red-600">No event selected. Go back and select an event first.</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-xl space-y-4">
+    <div className="max-w-xl space-y-4">
       <div className="flex items-center justify-between">
         <div>
           <button

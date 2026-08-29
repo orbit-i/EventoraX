@@ -26,7 +26,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { Avatar } from "@/components/shared/Avatar";
 import { StatCard, StatCardSkeleton } from "@/components/shared/StatCard";
 import { CardGridSkeleton, EmptyState } from "@/components/shared/EmptyState";
-import { ExternalLink, Pencil, Trash2, UserPlus, Users, Globe2 } from "lucide-react";
+import { ExternalLink, Pencil, Trash2, UserPlus, Users, Eye } from "lucide-react";
 import type { Speaker, EventOption } from "@/types/speaker";
 
 const LIMIT = 20;
@@ -48,6 +48,9 @@ export default function SpeakersPage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [stats, setStats] = useState<{ total: number; public: number } | null>(null);
+  const [refetchKey, setRefetchKey] = useState(0);
 
   const [deleteTarget, setDeleteTarget] = useState<Speaker | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -107,6 +110,33 @@ export default function SpeakersPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debouncedSearch]);
 
+  // Stats strip — real event-wide counts (not just the current page),
+  // refreshed whenever refetchKey bumps (i.e. after a delete).
+  useEffect(() => {
+    if (!selectedEventId) {
+      setStats(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const [all, publicRes] = await Promise.all([
+          api.getList<Speaker>(`/speakers${buildQuery({ eventId: selectedEventId, limit: 1 })}`),
+          api.getList<Speaker>(
+            `/speakers${buildQuery({ eventId: selectedEventId, displayPublic: "true", limit: 1 })}`
+          ),
+        ]);
+        if (cancelled) return;
+        setStats({ total: all.meta.total, public: publicRes.meta.total });
+      } catch {
+        // Non-critical — skip stats silently on error.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedEventId, refetchKey]);
+
   async function confirmDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -114,6 +144,7 @@ export default function SpeakersPage() {
       await api.delete(`/speakers/${deleteTarget.id}`);
       setDeleteTarget(null);
       await loadSpeakers();
+      setRefetchKey((k) => k + 1);
     } catch (err) {
       alert(err instanceof ApiError ? err.message : "Failed to delete speaker.");
     } finally {
@@ -122,10 +153,9 @@ export default function SpeakersPage() {
   }
 
   const noEventSelected = !selectedEventId;
-  const publicOnPage = speakers.filter((s) => s.displayPublic).length;
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="space-y-5">
       <PageHeader
         title="Speakers"
         subtitle="Manage speakers for each event."
@@ -154,24 +184,24 @@ export default function SpeakersPage() {
       />
 
       {!noEventSelected && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {loading && speakers.length === 0 ? (
+        <div className="grid grid-cols-2 gap-3 max-w-xs">
+          {stats ? (
             <>
-              <StatCardSkeleton />
-              <StatCardSkeleton />
+              <StatCard label="Total speakers" value={stats.total} icon={Users} accent="purple" />
+              <StatCard label="Public" value={stats.public} icon={Eye} accent="blue" />
             </>
           ) : (
             <>
-              <StatCard label="Total speakers" value={total} icon={Users} accent="purple" />
-              <StatCard label="Public (this page)" value={publicOnPage} icon={Globe2} accent="blue" />
+              <StatCardSkeleton />
+              <StatCardSkeleton />
             </>
           )}
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3 items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <Select value={selectedEventId} onValueChange={(v) => setSelectedEventId(v ?? "")}>
-          <SelectTrigger className="w-64">
+          <SelectTrigger className="w-full sm:w-64">
             <SelectValue placeholder={eventsLoading ? "Loading events..." : "Select an event"} />
           </SelectTrigger>
           <SelectContent>
@@ -188,7 +218,7 @@ export default function SpeakersPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           disabled={noEventSelected}
-          className="w-72"
+          className="w-full sm:w-72"
         />
       </div>
 

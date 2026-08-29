@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
 
     const eventId = searchParams.get("eventId") || undefined;
+    const displayPublicParam = searchParams.get("displayPublic");
     const page = Number(searchParams.get("page") || 1);
     const limit = Number(searchParams.get("limit") || 20);
 
@@ -35,7 +36,11 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const where: Prisma.SessionWhereInput = { tenantId, eventId };
+    const where: Prisma.SessionWhereInput = {
+      tenantId,
+      eventId,
+      ...(displayPublicParam !== null ? { displayPublic: displayPublicParam === "true" } : {}),
+    };
 
     const [sessions, total] = await Promise.all([
       prisma.session.findMany({

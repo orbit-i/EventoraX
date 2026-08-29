@@ -27,6 +27,7 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { TableSkeletonRows } from "@/components/shared/Skeletons";
 import { EventModeBadge, EventStatusBadge } from "./EventBadges";
 import { EventItem } from "@/types/event";
 import { api, ApiError } from "@/lib/api";
@@ -92,8 +93,22 @@ export function EventsTable({
 
   if (loading) {
     return (
-      <div className="rounded-xl border border-[#e9e4ff] bg-white p-8 text-center text-sm text-slate-400">
-        Loading events…
+      <div className="overflow-hidden rounded-xl border border-[#e9e4ff] bg-white">
+        <Table>
+          <TableHeader>
+            <TableRow className="hover:bg-transparent">
+              <TableHead>Name</TableHead>
+              <TableHead className="hidden md:table-cell">Date</TableHead>
+              <TableHead className="hidden sm:table-cell">Mode</TableHead>
+              <TableHead>Status</TableHead>
+              <TableHead className="hidden sm:table-cell text-right">Registrations</TableHead>
+              <TableHead className="w-12" />
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableSkeletonRows columns={6} rows={5} />
+          </TableBody>
+        </Table>
       </div>
     );
   }
@@ -116,10 +131,10 @@ export function EventsTable({
           <TableHeader>
             <TableRow className="hover:bg-transparent">
               <TableHead>Name</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Mode</TableHead>
+              <TableHead className="hidden md:table-cell">Date</TableHead>
+              <TableHead className="hidden sm:table-cell">Mode</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="text-right">Registrations</TableHead>
+              <TableHead className="hidden sm:table-cell text-right">Registrations</TableHead>
               <TableHead className="w-12" />
             </TableRow>
           </TableHeader>
@@ -132,17 +147,20 @@ export function EventsTable({
               >
                 <TableCell className="font-medium text-slate-900">
                   {event.title}
+                  <p className="mt-0.5 text-xs text-slate-400 sm:hidden">
+                    {formatDateRange(event.startDateTime, event.endDateTime)}
+                  </p>
                 </TableCell>
-                <TableCell className="text-slate-600">
+                <TableCell className="hidden md:table-cell text-slate-600">
                   {formatDateRange(event.startDateTime, event.endDateTime)}
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   <EventModeBadge mode={event.mode} />
                 </TableCell>
                 <TableCell>
                   <EventStatusBadge status={event.status} />
                 </TableCell>
-                <TableCell className="text-right text-slate-600">
+                <TableCell className="hidden sm:table-cell text-right text-slate-600">
                   {event._count?.registrations ?? 0}
                 </TableCell>
                 <TableCell onClick={(e) => e.stopPropagation()}>

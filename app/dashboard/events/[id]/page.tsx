@@ -59,7 +59,7 @@ export default function EventDetailPage() {
       <div className="max-w-3xl space-y-6 animate-pulse">
         <div className="h-4 w-28 rounded bg-slate-100" />
         <div className="h-7 w-2/3 rounded bg-slate-100" />
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {Array.from({ length: 4 }).map((_, i) => (
             <StatCardSkeleton key={i} />
           ))}
@@ -98,26 +98,27 @@ export default function EventDetailPage() {
           </div>
           {event.organizer && <p className="mt-1 text-sm text-slate-500">by {event.organizer}</p>}
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 w-full sm:w-auto">
           <Button
             variant="outline"
             nativeButton={false}
+            className="flex-1 sm:flex-none"
             render={
               <Link href={`/dashboard/events/${id}/edit`}>
                 <Pencil className="mr-1.5 h-4 w-4" /> Edit
               </Link>
             }
           />
-          <Button variant="outline" disabled={busy} onClick={handleDuplicate}>
+          <Button variant="outline" disabled={busy} onClick={handleDuplicate} className="flex-1 sm:flex-none">
             <Copy className="mr-1.5 h-4 w-4" /> Duplicate
           </Button>
-          <Button variant="destructive" disabled={busy} onClick={handleDelete}>
+          <Button variant="destructive" disabled={busy} onClick={handleDelete} className="flex-1 sm:flex-none">
             <Trash2 className="mr-1.5 h-4 w-4" /> Delete
           </Button>
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
         {stats.map((s) => (
           <StatCard key={s.label} label={s.label} value={s.value} icon={s.icon} accent={s.accent} />
         ))}

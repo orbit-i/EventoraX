@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { SpeakerForm } from "../../../../components/speakers/SpeakerForm";
+import { SpeakerForm } from "@/components/speakers/SpeakerForm";
+import { RecordFormPage } from "@/components/shared/RecordFormPage";
 
 export default function NewSpeakerPage() {
   const router = useRouter();
@@ -10,20 +11,26 @@ export default function NewSpeakerPage() {
 
   if (!eventId) {
     return (
-      <div className="p-6">
-        <p className="text-red-600">No event selected. Go back and select an event first.</p>
-      </div>
+      <RecordFormPage title="Add Speaker" backHref="/dashboard/speakers" backLabel="Back to speakers">
+        <p className="text-sm text-red-600">
+          No event selected. Go back to the Speakers list and select an event first.
+        </p>
+      </RecordFormPage>
     );
   }
 
   return (
-    <div className="p-6 max-w-2xl">
-      <h1 className="text-2xl font-semibold mb-6">Add Speaker</h1>
+    <RecordFormPage
+      title="Add Speaker"
+      subtitle="Add a new speaker to this event."
+      backHref={`/dashboard/speakers?eventId=${eventId}`}
+      backLabel="Back to speakers"
+    >
       <SpeakerForm
         eventId={eventId}
         onSaved={() => router.push(`/dashboard/speakers?eventId=${eventId}`)}
         onCancel={() => router.push(`/dashboard/speakers?eventId=${eventId}`)}
       />
-    </div>
+    </RecordFormPage>
   );
 }

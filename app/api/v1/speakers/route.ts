@@ -25,6 +25,7 @@ export async function GET(req: NextRequest) {
     const { searchParams } = new URL(req.url);
 
     const eventId = searchParams.get("eventId") || undefined;
+    const displayPublicParam = searchParams.get("displayPublic");
     const page = Number(searchParams.get("page") || 1);
     const limit = Number(searchParams.get("limit") || 20);
 
@@ -35,7 +36,11 @@ export async function GET(req: NextRequest) {
       );
     }
 
-    const where: Prisma.SpeakerWhereInput = { tenantId, eventId };
+    const where: Prisma.SpeakerWhereInput = {
+      tenantId,
+      eventId,
+      ...(displayPublicParam !== null ? { displayPublic: displayPublicParam === "true" } : {}),
+    };
 
     const [speakers, total] = await Promise.all([
       prisma.speaker.findMany({

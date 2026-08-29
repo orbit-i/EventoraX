@@ -29,7 +29,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { StatCard, StatCardSkeleton } from "@/components/shared/StatCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { TableSkeletonRows } from "@/components/shared/Skeletons";
-import { Users, UserCheck, UserX, ClipboardList } from "lucide-react";
+import { Users, UserCheck, UserX, ClipboardList, XCircle } from "lucide-react";
 import type {
   Registration,
   RegistrationStatus,
@@ -81,7 +81,9 @@ export default function RegistrationsPage() {
     total: number;
     attended: number;
     absent: number;
+    cancelled: number;
   } | null>(null);
+  const [refetchKey, setRefetchKey] = useState(0);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [bulkActionLoading, setBulkActionLoading] = useState(false);
@@ -157,7 +159,8 @@ export default function RegistrationsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEventId, status, categoryId, debouncedSearch, page]);
 
-  // Stats strip — parallel counts for the selected event.
+  // Stats strip — parallel counts for the selected event. Depends on
+  // refetchKey so it never goes stale after attendance/bulk actions.
   useEffect(() => {
     if (!selectedEventId) {
       setStats(null);
@@ -166,7 +169,7 @@ export default function RegistrationsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const [all, attended, absent] = await Promise.all([
+        const [all, attended, absent, cancelledRes] = await Promise.all([
           api.getList<Registration>(`/registrations${buildQuery({ eventId: selectedEventId, limit: 1 })}`),
           api.getList<Registration>(
             `/registrations${buildQuery({ eventId: selectedEventId, status: "ATTENDED", limit: 1 })}`
@@ -174,9 +177,17 @@ export default function RegistrationsPage() {
           api.getList<Registration>(
             `/registrations${buildQuery({ eventId: selectedEventId, status: "ABSENT", limit: 1 })}`
           ),
+          api.getList<Registration>(
+            `/registrations${buildQuery({ eventId: selectedEventId, status: "CANCELLED", limit: 1 })}`
+          ),
         ]);
         if (cancelled) return;
-        setStats({ total: all.meta.total, attended: attended.meta.total, absent: absent.meta.total });
+        setStats({
+          total: all.meta.total,
+          attended: attended.meta.total,
+          absent: absent.meta.total,
+          cancelled: cancelledRes.meta.total,
+        });
       } catch {
         // Non-critical — skip stats silently on error.
       }
@@ -184,7 +195,7 @@ export default function RegistrationsPage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedEventId, page === 1 ? "refresh" : "noop"]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [selectedEventId, refetchKey]);
 
   const noEventSelected = !selectedEventId;
 
@@ -217,6 +228,7 @@ export default function RegistrationsPage() {
     try {
       await api.patch(`/registrations/${id}/attendance`, { status: newStatus });
       await loadRegistrations();
+      setRefetchKey((k) => k + 1);
     } catch (err: any) {
       alert(err?.message ?? "Failed to update attendance.");
     } finally {
@@ -234,6 +246,7 @@ export default function RegistrationsPage() {
       });
       clearSelection();
       await loadRegistrations();
+      setRefetchKey((k) => k + 1);
     } catch (err: any) {
       alert(err?.message ?? "Bulk action failed.");
     } finally {
@@ -256,7 +269,7 @@ export default function RegistrationsPage() {
   }
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="space-y-5">
       <PageHeader
         title="Registrations"
         subtitle="View and manage attendee registrations."
@@ -284,15 +297,17 @@ export default function RegistrationsPage() {
       />
 
       {!noEventSelected && (
-        <div className="grid grid-cols-3 gap-3 max-w-xl">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {stats ? (
             <>
               <StatCard label="Total" value={stats.total} icon={ClipboardList} accent="purple" />
               <StatCard label="Attended" value={stats.attended} icon={UserCheck} accent="emerald" />
               <StatCard label="Absent" value={stats.absent} icon={UserX} accent="slate" />
+              <StatCard label="Cancelled" value={stats.cancelled} icon={XCircle} accent="blue" />
             </>
           ) : (
             <>
+              <StatCardSkeleton />
               <StatCardSkeleton />
               <StatCardSkeleton />
               <StatCardSkeleton />
@@ -301,9 +316,9 @@ export default function RegistrationsPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3 items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <Select value={selectedEventId} onValueChange={(v) => setSelectedEventId(v ?? "")}>
-          <SelectTrigger className="w-64">
+          <SelectTrigger className="w-full sm:w-64">
             <SelectValue placeholder={eventsLoading ? "Loading events..." : "Select an event"} />
           </SelectTrigger>
           <SelectContent>
@@ -320,7 +335,7 @@ export default function RegistrationsPage() {
           onValueChange={(v) => setStatus((v ?? "ALL") as RegistrationStatus | "ALL")}
           disabled={noEventSelected}
         >
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-full sm:w-44">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -337,7 +352,7 @@ export default function RegistrationsPage() {
           onValueChange={(v) => setCategoryId(v ?? "ALL")}
           disabled={noEventSelected || categories.length === 0}
         >
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-full sm:w-44">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent>
@@ -355,12 +370,12 @@ export default function RegistrationsPage() {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           disabled={noEventSelected}
-          className="w-64"
+          className="w-full sm:w-64"
         />
       </div>
 
       {selectedIds.size > 0 && (
-        <div className="flex items-center gap-3 p-3 rounded-xl bg-[#f3f0ff] border border-[#e9e4ff]">
+        <div className="flex flex-wrap items-center gap-3 p-3 rounded-xl bg-[#f3f0ff] border border-[#e9e4ff]">
           <span className="text-sm font-medium text-slate-700">{selectedIds.size} selected</span>
           <Button size="sm" onClick={handleBulkMarkAttended} disabled={bulkActionLoading}>
             {bulkActionLoading ? "Working..." : "Mark Attended"}
@@ -395,14 +410,14 @@ export default function RegistrationsPage() {
                 </TableHead>
                 <TableHead>Ref No</TableHead>
                 <TableHead>Name</TableHead>
-                <TableHead>Email</TableHead>
-                <TableHead>Phone</TableHead>
-                <TableHead>Department</TableHead>
-                <TableHead>Roll No</TableHead>
-                <TableHead>Category</TableHead>
+                <TableHead className="hidden md:table-cell">Email</TableHead>
+                <TableHead className="hidden lg:table-cell">Phone</TableHead>
+                <TableHead className="hidden lg:table-cell">Department</TableHead>
+                <TableHead className="hidden xl:table-cell">Roll No</TableHead>
+                <TableHead className="hidden md:table-cell">Category</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Registered Via</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead className="hidden xl:table-cell">Registered Via</TableHead>
+                <TableHead className="hidden lg:table-cell">Date</TableHead>
                 <TableHead>Attendance</TableHead>
               </TableRow>
             </TableHeader>
@@ -422,19 +437,22 @@ export default function RegistrationsPage() {
                       <Checkbox checked={selectedIds.has(r.id)} onCheckedChange={() => toggleRow(r.id)} />
                     </TableCell>
                     <TableCell className="font-mono text-sm">{r.refNo}</TableCell>
-                    <TableCell>{r.name}</TableCell>
-                    <TableCell>{r.email}</TableCell>
-                    <TableCell>{r.phone ?? "—"}</TableCell>
-                    <TableCell>{r.department ?? "—"}</TableCell>
-                    <TableCell>{r.rollNo ?? "—"}</TableCell>
-                    <TableCell>{r.category?.label ?? "—"}</TableCell>
+                    <TableCell>
+                      {r.name}
+                      <p className="mt-0.5 text-xs text-slate-400 md:hidden">{r.email}</p>
+                    </TableCell>
+                    <TableCell className="hidden md:table-cell">{r.email}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{r.phone ?? "—"}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{r.department ?? "—"}</TableCell>
+                    <TableCell className="hidden xl:table-cell">{r.rollNo ?? "—"}</TableCell>
+                    <TableCell className="hidden md:table-cell">{r.category?.label ?? "—"}</TableCell>
                     <TableCell>
                       <span className={`inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_BADGE_VARIANT[r.status]}`}>
                         {r.status}
                       </span>
                     </TableCell>
-                    <TableCell>{r.registeredVia}</TableCell>
-                    <TableCell>{new Date(r.registrationDate).toLocaleDateString()}</TableCell>
+                    <TableCell className="hidden xl:table-cell">{r.registeredVia}</TableCell>
+                    <TableCell className="hidden lg:table-cell">{new Date(r.registrationDate).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <div className="flex gap-1">
                         <Button

@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { SessionForm } from "../../../../components/sessions/SessionForm";
+import { SessionForm } from "@/components/sessions/SessionForm";
+import { RecordFormPage } from "@/components/shared/RecordFormPage";
 
 export default function NewSessionPage() {
   const router = useRouter();
@@ -10,20 +11,26 @@ export default function NewSessionPage() {
 
   if (!eventId) {
     return (
-      <div className="p-6">
-        <p className="text-red-600">No event selected. Go back and select an event first.</p>
-      </div>
+      <RecordFormPage title="Add Session" backHref="/dashboard/schedule" backLabel="Back to schedule">
+        <p className="text-sm text-red-600">
+          No event selected. Go back to the Schedule list and select an event first.
+        </p>
+      </RecordFormPage>
     );
   }
 
   return (
-    <div className="p-6 max-w-2xl">
-      <h1 className="text-2xl font-semibold mb-6">Add Session</h1>
+    <RecordFormPage
+      title="Add Session"
+      subtitle="Add a new session to this event's schedule."
+      backHref={`/dashboard/schedule?eventId=${eventId}`}
+      backLabel="Back to schedule"
+    >
       <SessionForm
         eventId={eventId}
         onSaved={() => router.push(`/dashboard/schedule?eventId=${eventId}`)}
         onCancel={() => router.push(`/dashboard/schedule?eventId=${eventId}`)}
       />
-    </div>
+    </RecordFormPage>
   );
 }

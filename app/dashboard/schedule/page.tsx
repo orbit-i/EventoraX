@@ -22,9 +22,10 @@ import {
 } from "@/components/ui/dialog";
 import { Pagination } from "@/components/layout/Pagination";
 import { PageHeader } from "@/components/shared/PageHeader";
+import { StatCard, StatCardSkeleton } from "@/components/shared/StatCard";
 import { EmptyState } from "@/components/shared/EmptyState";
 import { ListSkeleton } from "@/components/shared/Skeletons";
-import { MapPin, Mic2, Pencil, Trash2, Plus, CalendarClock } from "lucide-react";
+import { MapPin, Mic2, Pencil, Trash2, Plus, CalendarClock, Eye } from "lucide-react";
 import type { Session } from "@/types/session";
 import type { EventOption } from "@/types/registration";
 
@@ -44,6 +45,9 @@ export default function SchedulePage() {
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [stats, setStats] = useState<{ total: number; public: number } | null>(null);
+  const [refetchKey, setRefetchKey] = useState(0);
 
   const [deleteTarget, setDeleteTarget] = useState<Session | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -77,7 +81,12 @@ export default function SchedulePage() {
       setError(null);
       const query = buildQuery({ eventId: selectedEventId, page, limit: LIMIT });
       const res = await api.getList<Session>(`/sessions${query}`);
-      setSessions(res.data.sort((a, b) => a.displayOrder - b.displayOrder));
+      setSessions(
+        res.data.sort((a, b) => {
+          const t = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+          return t !== 0 ? t : a.displayOrder - b.displayOrder;
+        })
+      );
       setTotal(res.meta.total);
     } catch (err: any) {
       setError(err?.message ?? "Failed to load schedule");
@@ -91,6 +100,34 @@ export default function SchedulePage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEventId, page]);
 
+  // Stats strip — this module previously had no at-a-glance numbers for
+  // Schedule at all. Depends on refetchKey so it never goes stale after
+  // a delete.
+  useEffect(() => {
+    if (!selectedEventId) {
+      setStats(null);
+      return;
+    }
+    let cancelled = false;
+    (async () => {
+      try {
+        const [all, publicRes] = await Promise.all([
+          api.getList<Session>(`/sessions${buildQuery({ eventId: selectedEventId, limit: 1 })}`),
+          api.getList<Session>(
+            `/sessions${buildQuery({ eventId: selectedEventId, displayPublic: "true", limit: 1 })}`
+          ),
+        ]);
+        if (cancelled) return;
+        setStats({ total: all.meta.total, public: publicRes.meta.total });
+      } catch {
+        // Non-critical — skip stats silently on error.
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedEventId, refetchKey]);
+
   async function confirmDelete() {
     if (!deleteTarget) return;
     setDeleting(true);
@@ -98,6 +135,7 @@ export default function SchedulePage() {
       await api.delete(`/sessions/${deleteTarget.id}`);
       setDeleteTarget(null);
       await loadSessions();
+      setRefetchKey((k) => k + 1);
     } catch (err) {
       alert(err instanceof ApiError ? err.message : "Failed to delete session.");
     } finally {
@@ -108,7 +146,7 @@ export default function SchedulePage() {
   const noEventSelected = !selectedEventId;
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="space-y-5">
       <PageHeader
         title="Schedule"
         subtitle="Manage the session agenda for each event."
@@ -136,8 +174,24 @@ export default function SchedulePage() {
         }
       />
 
+      {!noEventSelected && (
+        <div className="grid grid-cols-2 gap-3 max-w-xs">
+          {stats ? (
+            <>
+              <StatCard label="Total sessions" value={stats.total} icon={CalendarClock} accent="purple" />
+              <StatCard label="Public" value={stats.public} icon={Eye} accent="blue" />
+            </>
+          ) : (
+            <>
+              <StatCardSkeleton />
+              <StatCardSkeleton />
+            </>
+          )}
+        </div>
+      )}
+
       <Select value={selectedEventId} onValueChange={(v) => setSelectedEventId(v ?? "")}>
-        <SelectTrigger className="w-64">
+        <SelectTrigger className="w-full sm:w-64">
           <SelectValue placeholder={eventsLoading ? "Loading events..." : "Select an event"} />
         </SelectTrigger>
         <SelectContent>
@@ -179,7 +233,7 @@ export default function SchedulePage() {
           {sessions.map((s) => (
             <div
               key={s.id}
-              className="rounded-xl border border-[#e9e4ff] bg-white p-4 flex items-center justify-between gap-4 transition-all duration-200 hover:shadow-md"
+              className="rounded-xl border border-[#e9e4ff] bg-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 transition-all duration-200 hover:shadow-md"
             >
               <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -191,7 +245,7 @@ export default function SchedulePage() {
                   )}
                 </div>
                 <p className="text-sm text-slate-500 mt-1">{formatTimeRange(s.startTime, s.endTime)}</p>
-                <div className="flex items-center gap-4 mt-2 text-sm text-slate-500">
+                <div className="flex items-center gap-4 mt-2 text-sm text-slate-500 flex-wrap">
                   {s.speaker && (
                     <span className="flex items-center gap-1">
                       <Mic2 className="w-3.5 h-3.5" />
@@ -206,7 +260,7 @@ export default function SchedulePage() {
                   )}
                 </div>
               </div>
-              <div className="flex gap-1 shrink-0">
+              <div className="flex gap-1 shrink-0 self-end sm:self-auto">
                 <Button
                   size="sm"
                   variant="ghost"

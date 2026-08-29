@@ -56,12 +56,14 @@ export function EventForm({
   submitLabel,
   showStatus = false,
   onSubmit,
+  onCancel,
   children,
 }: {
   defaultValues: Partial<EventFormInternalValues>;
   submitLabel: string;
   showStatus?: boolean;
   onSubmit: (values: EventFormValues) => Promise<void>;
+  onCancel?: () => void;
   children?: React.ReactNode;
 }) {
   const {
@@ -121,7 +123,7 @@ export function EventForm({
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="max-w-2xl space-y-8">
+    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
       {formError && (
         <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
           {formError}
@@ -268,9 +270,16 @@ export function EventForm({
 
       {children}
 
-      <Button type="submit" disabled={isSubmitting} className="bg-[#7c3aed] hover:bg-[#6d28d9]">
-        {isSubmitting ? "Saving…" : submitLabel}
-      </Button>
+      <div className="flex gap-2 pt-2">
+        <Button type="submit" disabled={isSubmitting} className="bg-[#7c3aed] hover:bg-[#6d28d9]">
+          {isSubmitting ? "Saving…" : submitLabel}
+        </Button>
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
+            Cancel
+          </Button>
+        )}
+      </div>
     </form>
   );
 }

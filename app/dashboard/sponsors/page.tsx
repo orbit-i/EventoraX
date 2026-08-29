@@ -24,7 +24,7 @@ import { PageHeader } from "@/components/shared/PageHeader";
 import { Avatar } from "@/components/shared/Avatar";
 import { StatCard, StatCardSkeleton } from "@/components/shared/StatCard";
 import { CardGridSkeleton, EmptyState } from "@/components/shared/EmptyState";
-import { Globe, Pencil, Trash2, Plus, Handshake, Award } from "lucide-react";
+import { Globe, Pencil, Trash2, Plus, Handshake, Medal, Award, Eye } from "lucide-react";
 import type { Sponsor, SponsorTier } from "@/types/sponsor";
 import type { EventOption } from "@/types/registration";
 
@@ -62,7 +62,13 @@ export default function SponsorsPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const [stats, setStats] = useState<{ total: number; platinumGold: number } | null>(null);
+  const [stats, setStats] = useState<{
+    total: number;
+    public: number;
+    platinum: number;
+    gold: number;
+  } | null>(null);
+  const [refetchKey, setRefetchKey] = useState(0);
 
   const [deleteTarget, setDeleteTarget] = useState<Sponsor | null>(null);
   const [deleting, setDeleting] = useState(false);
@@ -115,7 +121,9 @@ export default function SponsorsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedEventId, tier, page]);
 
-  // Stats strip — total + platinum/gold count for the selected event.
+  // Stats strip — total, public-facing, and each headline tier shown as
+  // its own card (never lumped together). Depends on refetchKey so it
+  // never goes stale after a delete.
   useEffect(() => {
     if (!selectedEventId) {
       setStats(null);
@@ -124,8 +132,11 @@ export default function SponsorsPage() {
     let cancelled = false;
     (async () => {
       try {
-        const [all, platinum, gold] = await Promise.all([
+        const [all, publicRes, platinum, gold] = await Promise.all([
           api.getList<Sponsor>(`/sponsors${buildQuery({ eventId: selectedEventId, limit: 1 })}`),
+          api.getList<Sponsor>(
+            `/sponsors${buildQuery({ eventId: selectedEventId, displayPublic: "true", limit: 1 })}`
+          ),
           api.getList<Sponsor>(
             `/sponsors${buildQuery({ eventId: selectedEventId, tier: "PLATINUM", limit: 1 })}`
           ),
@@ -134,7 +145,12 @@ export default function SponsorsPage() {
           ),
         ]);
         if (cancelled) return;
-        setStats({ total: all.meta.total, platinumGold: platinum.meta.total + gold.meta.total });
+        setStats({
+          total: all.meta.total,
+          public: publicRes.meta.total,
+          platinum: platinum.meta.total,
+          gold: gold.meta.total,
+        });
       } catch {
         // Non-critical — skip stats silently on error.
       }
@@ -142,7 +158,7 @@ export default function SponsorsPage() {
     return () => {
       cancelled = true;
     };
-  }, [selectedEventId]);
+  }, [selectedEventId, refetchKey]);
 
   async function confirmDelete() {
     if (!deleteTarget) return;
@@ -151,6 +167,7 @@ export default function SponsorsPage() {
       await api.delete(`/sponsors/${deleteTarget.id}`);
       setDeleteTarget(null);
       await loadSponsors();
+      setRefetchKey((k) => k + 1);
     } catch (err) {
       alert(err instanceof ApiError ? err.message : "Failed to delete sponsor.");
     } finally {
@@ -161,7 +178,7 @@ export default function SponsorsPage() {
   const noEventSelected = !selectedEventId;
 
   return (
-    <div className="p-6 space-y-5">
+    <div className="space-y-5">
       <PageHeader
         title="Sponsors"
         subtitle="Manage sponsors for each event."
@@ -179,14 +196,18 @@ export default function SponsorsPage() {
       />
 
       {!noEventSelected && (
-        <div className="grid grid-cols-2 gap-3 max-w-md">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
           {stats ? (
             <>
               <StatCard label="Total sponsors" value={stats.total} icon={Handshake} accent="purple" />
-              <StatCard label="Platinum + Gold" value={stats.platinumGold} icon={Award} accent="blue" />
+              <StatCard label="Public" value={stats.public} icon={Eye} accent="emerald" />
+              <StatCard label="Platinum" value={stats.platinum} icon={Medal} accent="slate" />
+              <StatCard label="Gold" value={stats.gold} icon={Award} accent="blue" />
             </>
           ) : (
             <>
+              <StatCardSkeleton />
+              <StatCardSkeleton />
               <StatCardSkeleton />
               <StatCardSkeleton />
             </>
@@ -194,9 +215,9 @@ export default function SponsorsPage() {
         </div>
       )}
 
-      <div className="flex flex-wrap gap-3 items-center">
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
         <Select value={selectedEventId} onValueChange={(v) => setSelectedEventId(v ?? "")}>
-          <SelectTrigger className="w-64">
+          <SelectTrigger className="w-full sm:w-64">
             <SelectValue placeholder={eventsLoading ? "Loading events..." : "Select an event"} />
           </SelectTrigger>
           <SelectContent>
@@ -213,7 +234,7 @@ export default function SponsorsPage() {
           onValueChange={(v) => setTier((v ?? "ALL") as SponsorTier | "ALL")}
           disabled={noEventSelected}
         >
-          <SelectTrigger className="w-44">
+          <SelectTrigger className="w-full sm:w-44">
             <SelectValue placeholder="Tier" />
           </SelectTrigger>
           <SelectContent>

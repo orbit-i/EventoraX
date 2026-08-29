@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { SponsorForm } from "../../../../components/sponsors/SponsorForm";
+import { SponsorForm } from "@/components/sponsors/SponsorForm";
+import { RecordFormPage } from "@/components/shared/RecordFormPage";
 
 export default function NewSponsorPage() {
   const router = useRouter();
@@ -10,20 +11,26 @@ export default function NewSponsorPage() {
 
   if (!eventId) {
     return (
-      <div className="p-6">
-        <p className="text-red-600">No event selected. Go back and select an event first.</p>
-      </div>
+      <RecordFormPage title="Add Sponsor" backHref="/dashboard/sponsors" backLabel="Back to sponsors">
+        <p className="text-sm text-red-600">
+          No event selected. Go back to the Sponsors list and select an event first.
+        </p>
+      </RecordFormPage>
     );
   }
 
   return (
-    <div className="p-6 max-w-2xl">
-      <h1 className="text-2xl font-semibold mb-6">Add Sponsor</h1>
+    <RecordFormPage
+      title="Add Sponsor"
+      subtitle="Add a new sponsor to this event."
+      backHref={`/dashboard/sponsors?eventId=${eventId}`}
+      backLabel="Back to sponsors"
+    >
       <SponsorForm
         eventId={eventId}
         onSaved={() => router.push(`/dashboard/sponsors?eventId=${eventId}`)}
         onCancel={() => router.push(`/dashboard/sponsors?eventId=${eventId}`)}
       />
-    </div>
+    </RecordFormPage>
   );
 }

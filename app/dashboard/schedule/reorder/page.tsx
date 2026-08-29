@@ -20,14 +20,29 @@ import {
 import { CSS } from "@dnd-kit/utilities";
 import { api, ApiError } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { GripVertical, Loader2, ArrowLeft, Save, Mic2, MapPin } from "lucide-react";
+import { GripVertical, Lock, Loader2, ArrowLeft, Save, Mic2, MapPin } from "lucide-react";
 import type { Session } from "@/types/session";
 import { ListSkeleton } from "@/components/shared/Skeletons";
 
+function sortSessions(list: Session[]) {
+  return [...list].sort((a, b) => {
+    const t = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
+    return t !== 0 ? t : a.displayOrder - b.displayOrder;
+  });
+}
 
-function SortableSessionRow({ session, index }: { session: Session; index: number }) {
+function SortableSessionRow({
+  session,
+  index,
+  locked,
+}: {
+  session: Session;
+  index: number;
+  locked: boolean;
+}) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: session.id,
+    disabled: locked,
   });
 
   const style = {
@@ -40,16 +55,27 @@ function SortableSessionRow({ session, index }: { session: Session; index: numbe
     <div
       ref={setNodeRef}
       style={style}
-      className="flex items-center gap-3 border border-[#e9e4ff] rounded-lg bg-white p-3"
+      className={`flex items-center gap-3 border rounded-lg bg-white p-3 ${
+        locked ? "border-[#e9e4ff]" : "border-[#c4b5fd]"
+      }`}
     >
-      <button
-        {...attributes}
-        {...listeners}
-        className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 shrink-0 touch-none mt-1"
-        aria-label="Drag to reorder"
-      >
-        <GripVertical className="w-5 h-5" />
-      </button>
+      {locked ? (
+        <span
+          className="text-gray-300 shrink-0 mt-1"
+          title="Only sessions that share the same start time can be reordered against each other"
+        >
+          <Lock className="w-4 h-4" />
+        </span>
+      ) : (
+        <button
+          {...attributes}
+          {...listeners}
+          className="cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600 shrink-0 touch-none mt-1"
+          aria-label="Drag to reorder"
+        >
+          <GripVertical className="w-5 h-5" />
+        </button>
+      )}
 
       <span className="w-6 text-center text-sm font-medium text-muted-foreground shrink-0 mt-1">
         {index + 1}
@@ -60,7 +86,7 @@ function SortableSessionRow({ session, index }: { session: Session; index: numbe
         <p className="text-sm text-muted-foreground">
           {formatTimeRange(session.startTime, session.endTime)}
         </p>
-        <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground">
+        <div className="flex items-center gap-4 mt-1 text-sm text-muted-foreground flex-wrap">
           {session.speaker && (
             <span className="flex items-center gap-1">
               <Mic2 className="w-3.5 h-3.5" />
@@ -103,7 +129,7 @@ export default function ScheduleReorderPage() {
         const res = await api.getList<Session>(
           `/sessions?${new URLSearchParams({ eventId, limit: "100" }).toString()}`
         );
-        const sorted = [...res.data].sort((a, b) => a.displayOrder - b.displayOrder);
+        const sorted = sortSessions(res.data);
         setSessions(sorted);
         setOriginalOrder(sorted.map((s) => s.id));
       } catch (err: any) {
@@ -114,9 +140,24 @@ export default function ScheduleReorderPage() {
     })();
   }, [eventId]);
 
+  const timeKey = (s: Session) => new Date(s.startTime).getTime();
+  const conflictCounts = sessions.reduce<Record<number, number>>((acc, s) => {
+    const k = timeKey(s);
+    acc[k] = (acc[k] ?? 0) + 1;
+    return acc;
+  }, {});
+  const isLocked = (s: Session) => (conflictCounts[timeKey(s)] ?? 0) < 2;
+  const hasAnyTies = Object.values(conflictCounts).some((c) => c > 1);
+
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;
+
+    const activeSession = sessions.find((s) => s.id === active.id);
+    const overSession = sessions.find((s) => s.id === over.id);
+    if (!activeSession || !overSession) return;
+
+    if (timeKey(activeSession) !== timeKey(overSession)) return;
 
     setSessions((prev) => {
       const oldIndex = prev.findIndex((s) => s.id === active.id);
@@ -152,14 +193,14 @@ export default function ScheduleReorderPage() {
 
   if (!eventId) {
     return (
-      <div className="p-6">
+      <div>
         <p className="text-red-600">No event selected. Go back and select an event first.</p>
       </div>
     );
   }
 
   return (
-    <div className="p-6 max-w-xl space-y-4">
+    <div className="max-w-xl space-y-4">
       <div>
         <button
           onClick={() => router.push(`/dashboard/schedule?eventId=${eventId}`)}
@@ -185,7 +226,6 @@ export default function ScheduleReorderPage() {
 
       {loading ? (
         <ListSkeleton count={4} />
-      
       ) : sessions.length === 0 ? (
         <div className="text-center text-muted-foreground py-16 border rounded-md">
           No sessions to reorder for this event.
@@ -193,15 +233,18 @@ export default function ScheduleReorderPage() {
       ) : (
         <>
           <p className="text-sm text-muted-foreground">
-            Drag the handle to reorder. Note: this only changes display order, not the actual
-            start/end times — edit a session individually to change its time.
+            The schedule is always shown in chronological order — to move a session earlier or
+            later, edit its start/end time.{" "}
+            {hasAnyTies
+              ? "A few sessions here share the exact same start time; drag those against each other to control which one lists first."
+              : "None of the current sessions share a start time, so there's nothing to reorder right now — every position is already fixed by its time."}
           </p>
 
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={sessions.map((s) => s.id)} strategy={verticalListSortingStrategy}>
               <div className="space-y-2">
                 {sessions.map((s, i) => (
-                  <SortableSessionRow key={s.id} session={s} index={i} />
+                  <SortableSessionRow key={s.id} session={s} index={i} locked={isLocked(s)} />
                 ))}
               </div>
             </SortableContext>

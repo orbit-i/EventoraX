@@ -1,63 +1,59 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams, useParams } from "next/navigation";
-import { api } from "@/lib/api";
-import { SponsorForm } from "../../../../../components/sponsors/SponsorForm";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
+import { api, ApiError } from "@/lib/api";
+import { SponsorForm } from "@/components/sponsors/SponsorForm";
+import { RecordFormPage } from "@/components/shared/RecordFormPage";
 import type { Sponsor } from "@/types/sponsor";
-import { Loader2 } from "lucide-react";
 
 export default function EditSponsorPage() {
   const router = useRouter();
-  const params = useParams();
+  const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
-  const sponsorId = params.id as string;
-  const eventId = searchParams.get("eventId") ?? "";
+  const sponsorId = params.id;
+  const eventIdParam = searchParams.get("eventId") ?? "";
 
   const [sponsor, setSponsor] = useState<Sponsor | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let cancelled = false;
     (async () => {
       try {
         const res = await api.get<Sponsor>(`/sponsors/${sponsorId}`);
-        setSponsor(res);
-      } catch (err: any) {
-        setError(err?.message ?? "Failed to load sponsor.");
+        if (!cancelled) setSponsor(res);
+      } catch (err) {
+        if (!cancelled) setError(err instanceof ApiError ? err.message : "Failed to load sponsor.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     })();
+    return () => {
+      cancelled = true;
+    };
   }, [sponsorId]);
 
-  if (loading) {
-    return (
-      <div className="p-6 flex items-center gap-2 text-muted-foreground">
-        <Loader2 className="w-5 h-5 animate-spin" /> Loading sponsor...
-      </div>
-    );
-  }
-
-  if (error || !sponsor) {
-    return (
-      <div className="p-6">
-        <p className="text-red-600">{error ?? "Sponsor not found."}</p>
-      </div>
-    );
-  }
-
-  const backEventId = eventId || sponsor.eventId;
+  const backEventId = eventIdParam || sponsor?.eventId || "";
 
   return (
-    <div className="p-6 max-w-2xl">
-      <h1 className="text-2xl font-semibold mb-6">Edit Sponsor</h1>
-      <SponsorForm
-        eventId={backEventId}
-        initialSponsor={sponsor}
-        onSaved={() => router.push(`/dashboard/sponsors?eventId=${backEventId}`)}
-        onCancel={() => router.push(`/dashboard/sponsors?eventId=${backEventId}`)}
-      />
-    </div>
+    <RecordFormPage
+      title="Edit Sponsor"
+      backHref={`/dashboard/sponsors?eventId=${backEventId}`}
+      backLabel="Back to sponsors"
+      loading={loading}
+      loadingLabel="Loading sponsor…"
+      error={error}
+    >
+      {sponsor && (
+        <SponsorForm
+          eventId={backEventId}
+          initialSponsor={sponsor}
+          onSaved={() => router.push(`/dashboard/sponsors?eventId=${backEventId}`)}
+          onCancel={() => router.push(`/dashboard/sponsors?eventId=${backEventId}`)}
+        />
+      )}
+    </RecordFormPage>
   );
 }

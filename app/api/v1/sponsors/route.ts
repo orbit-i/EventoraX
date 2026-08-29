@@ -22,6 +22,7 @@ export async function GET(req: NextRequest) {
 
     const eventId = searchParams.get("eventId") || undefined;
     const tier = (searchParams.get("tier") as SponsorTier) || undefined;
+    const displayPublicParam = searchParams.get("displayPublic");
     const page = Number(searchParams.get("page") || 1);
     const limit = Number(searchParams.get("limit") || 20);
 
@@ -36,6 +37,7 @@ export async function GET(req: NextRequest) {
       tenantId,
       eventId,
       ...(tier ? { tier } : {}),
+      ...(displayPublicParam !== null ? { displayPublic: displayPublicParam === "true" } : {}),
     };
 
     const [sponsors, total] = await Promise.all([
