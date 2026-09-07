@@ -3,11 +3,35 @@ import Header from "@/components/ui/dashboard/header"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { Input, SelectInput } from "@/components/ui/input"
 import { DataTable, type ColumnDef } from "@/components/ui/data-table"
-import { MoreHorizontal, Mail, UserPlus, Search } from "lucide-react"
+import {
+  Modal,
+  ModalTrigger,
+  ModalContent,
+  ModalHeader,
+  ModalTitle,
+  ModalDescription,
+  ModalBody,
+  ModalFooter,
+  ModalActionButton,
+  ModalCancelButton,
+  ModalDestructiveButton,
+  ModalClose,
+} from "@/components/ui/modal"
+import {
+  MoreHorizontal,
+  Mail,
+  UserPlus,
+  Search,
+  UserCheck,
+  Trash2,
+  Eye,
+  Send,
+  ShieldAlert,
+} from "lucide-react"
 
-// ─── Data ──────────────────────────────────────────────────────────────────────
+// ─── Types & Data ─────────────────────────────────────────────────────────────
 
 type StatusKey = "active" | "away" | "offline"
 
@@ -23,38 +47,173 @@ interface TeamMember {
 }
 
 const ALL_MEMBERS: TeamMember[] = [
-  { id: "1",  name: "Sarah Chen",       role: "Event Director",  email: "sarah@company.com",    status: "active",  initials: "SC", joined: "Jan 2023", events: 42 },
-  { id: "2",  name: "Michael Torres",   role: "Tech Lead",       email: "michael@company.com",  status: "active",  initials: "MT", joined: "Mar 2023", events: 38 },
-  { id: "3",  name: "Emily Watson",     role: "Operations",      email: "emily@company.com",    status: "away",    initials: "EW", joined: "Jun 2023", events: 29 },
-  { id: "4",  name: "James Park",       role: "Marketing",       email: "james@company.com",    status: "offline", initials: "JP", joined: "Aug 2023", events: 17 },
-  { id: "5",  name: "Lisa Wong",        role: "Designer",        email: "lisa@company.com",     status: "active",  initials: "LW", joined: "Sep 2023", events: 24 },
-  { id: "6",  name: "Omar Farooq",      role: "Developer",       email: "omar@company.com",     status: "active",  initials: "OF", joined: "Oct 2023", events: 31 },
-  { id: "7",  name: "Priya Sharma",     role: "Coordinator",     email: "priya@company.com",    status: "active",  initials: "PS", joined: "Nov 2023", events: 19 },
-  { id: "8",  name: "Carlos Mendez",    role: "Sales",           email: "carlos@company.com",   status: "away",    initials: "CM", joined: "Dec 2023", events: 11 },
-  { id: "9",  name: "Aisha Nkosi",      role: "Content Writer",  email: "aisha@company.com",    status: "active",  initials: "AN", joined: "Jan 2024", events: 8  },
-  { id: "10", name: "David Kim",        role: "Analytics Lead",  email: "david@company.com",    status: "offline", initials: "DK", joined: "Jan 2024", events: 14 },
-  { id: "11", name: "Sophie Laurent",   role: "UX Researcher",   email: "sophie@company.com",   status: "active",  initials: "SL", joined: "Feb 2024", events: 7  },
-  { id: "12", name: "Arjun Patel",      role: "Backend Dev",     email: "arjun@company.com",    status: "active",  initials: "AP", joined: "Feb 2024", events: 22 },
-  { id: "13", name: "Nina Reyes",       role: "HR Manager",      email: "nina@company.com",     status: "away",    initials: "NR", joined: "Mar 2024", events: 5  },
-  { id: "14", name: "Tom Okafor",       role: "Finance",         email: "tom@company.com",      status: "offline", initials: "TO", joined: "Apr 2024", events: 3  },
-  { id: "15", name: "Yuki Tanaka",      role: "Event Director",  email: "yuki@company.com",     status: "active",  initials: "YT", joined: "May 2024", events: 16 },
+  { id: "1",  name: "Sarah Chen",     role: "Event Director", email: "sarah@company.com",   status: "active",  initials: "SC", joined: "Jan 2023", events: 42 },
+  { id: "2",  name: "Michael Torres", role: "Tech Lead",      email: "michael@company.com", status: "active",  initials: "MT", joined: "Mar 2023", events: 38 },
+  { id: "3",  name: "Emily Watson",   role: "Operations",     email: "emily@company.com",   status: "away",    initials: "EW", joined: "Jun 2023", events: 29 },
+  { id: "4",  name: "James Park",     role: "Marketing",      email: "james@company.com",   status: "offline", initials: "JP", joined: "Aug 2023", events: 17 },
+  { id: "5",  name: "Lisa Wong",      role: "Designer",       email: "lisa@company.com",    status: "active",  initials: "LW", joined: "Sep 2023", events: 24 },
+  { id: "6",  name: "Omar Farooq",    role: "Developer",      email: "omar@company.com",    status: "active",  initials: "OF", joined: "Oct 2023", events: 31 },
+  { id: "7",  name: "Priya Sharma",   role: "Coordinator",    email: "priya@company.com",   status: "active",  initials: "PS", joined: "Nov 2023", events: 19 },
+  { id: "8",  name: "Carlos Mendez",  role: "Sales",          email: "carlos@company.com",  status: "away",    initials: "CM", joined: "Dec 2023", events: 11 },
+  { id: "9",  name: "Aisha Nkosi",    role: "Content Writer", email: "aisha@company.com",   status: "active",  initials: "AN", joined: "Jan 2024", events: 8  },
+  { id: "10", name: "David Kim",      role: "Analytics Lead", email: "david@company.com",   status: "offline", initials: "DK", joined: "Jan 2024", events: 14 },
+  { id: "11", name: "Sophie Laurent", role: "UX Researcher",  email: "sophie@company.com",  status: "active",  initials: "SL", joined: "Feb 2024", events: 7  },
+  { id: "12", name: "Arjun Patel",    role: "Backend Dev",    email: "arjun@company.com",   status: "active",  initials: "AP", joined: "Feb 2024", events: 22 },
+  { id: "13", name: "Nina Reyes",     role: "HR Manager",     email: "nina@company.com",    status: "away",    initials: "NR", joined: "Mar 2024", events: 5  },
+  { id: "14", name: "Tom Okafor",     role: "Finance",        email: "tom@company.com",     status: "offline", initials: "TO", joined: "Apr 2024", events: 3  },
+  { id: "15", name: "Yuki Tanaka",    role: "Event Director", email: "yuki@company.com",    status: "active",  initials: "YT", joined: "May 2024", events: 16 },
 ]
-
-// ─── Status badge styling ───────────────────────────────────────────────────────
 
 const STATUS_STYLES: Record<StatusKey, string> = {
   active:  "bg-emerald-50 text-emerald-700 border-emerald-200",
-  away:    "bg-amber-50  text-amber-700  border-amber-200",
-  offline: "bg-slate-100 text-slate-500  border-slate-200",
+  away:    "bg-amber-50 text-amber-700 border-amber-200",
+  offline: "bg-slate-100 text-slate-500 border-slate-200",
 }
-
 const STATUS_DOT: Record<StatusKey, string> = {
   active:  "bg-emerald-500",
   away:    "bg-amber-400",
   offline: "bg-slate-400",
 }
 
-// ─── Column definitions ─────────────────────────────────────────────────────────
+// ─── Remove Member modal (isolated component so it gets its own open state) ───
+
+function RemoveMemberModal({ member }: { member: TeamMember }) {
+  return (
+    <Modal>
+      <ModalTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`Remove ${member.name}`}
+          className="rounded-lg w-8 h-8 hover:bg-rose-50 text-[#94a3b8] hover:text-rose-500"
+        >
+          <Trash2 className="w-3.5 h-3.5" />
+        </Button>
+      </ModalTrigger>
+
+      <ModalContent>
+        <ModalHeader icon={<ShieldAlert className="w-5 h-5" />}>
+          <ModalTitle>Remove team member</ModalTitle>
+          <ModalDescription>
+            This will permanently remove{" "}
+            <span className="font-semibold text-[#0f172a]">{member.name}</span>{" "}
+            from the team. They will lose access to all projects and events.
+          </ModalDescription>
+        </ModalHeader>
+
+        {/* Confirmation preview card */}
+        <ModalBody>
+          <div className="flex items-center gap-3 rounded-xl border border-rose-100 bg-rose-50/60 p-4">
+            <Avatar className="w-10 h-10 shrink-0">
+              <AvatarFallback className="bg-gradient-to-br from-[#7c3aed] to-[#a78bfa] text-white text-xs font-bold">
+                {member.initials}
+              </AvatarFallback>
+            </Avatar>
+            <div className="min-w-0">
+              <p className="text-sm font-semibold text-[#0f172a]">{member.name}</p>
+              <p className="text-xs text-[#64748b]">{member.email}</p>
+            </div>
+            <Badge
+              variant="outline"
+              className={`ml-auto ${STATUS_STYLES[member.status]} capitalize text-xs`}
+            >
+              {member.status}
+            </Badge>
+          </div>
+        </ModalBody>
+
+        <ModalFooter>
+          <ModalClose asChild>
+            <ModalCancelButton />
+          </ModalClose>
+          <ModalDestructiveButton>
+            <Trash2 className="w-4 h-4 mr-1.5" />
+            Yes, remove member
+          </ModalDestructiveButton>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  )
+}
+
+// ─── View Member modal ────────────────────────────────────────────────────────
+
+function ViewMemberModal({ member }: { member: TeamMember }) {
+  return (
+    <Modal>
+      <ModalTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          aria-label={`View ${member.name}`}
+          className="rounded-lg w-8 h-8 hover:bg-[#f5f3ff] text-[#94a3b8] hover:text-[#7c3aed]"
+        >
+          <Eye className="w-3.5 h-3.5" />
+        </Button>
+      </ModalTrigger>
+
+      <ModalContent>
+        <ModalHeader icon={<UserCheck className="w-5 h-5" />}>
+          <ModalTitle>Member Profile</ModalTitle>
+          <ModalDescription>
+            View details and activity for this team member.
+          </ModalDescription>
+        </ModalHeader>
+
+        <ModalBody>
+          {/* Avatar + identity */}
+          <div className="flex items-center gap-4 pb-5 mb-5 border-b border-[#e9e4ff]">
+            <Avatar className="w-14 h-14 shrink-0">
+              <AvatarFallback className="bg-gradient-to-br from-[#7c3aed] to-[#a78bfa] text-white text-lg font-bold">
+                {member.initials}
+              </AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="text-base font-bold text-[#0f172a]">{member.name}</p>
+              <p className="text-sm text-[#64748b]">{member.email}</p>
+              <Badge
+                variant="outline"
+                className={`mt-1.5 ${STATUS_STYLES[member.status]} capitalize text-xs inline-flex items-center gap-1.5`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${STATUS_DOT[member.status]}`} />
+                {member.status}
+              </Badge>
+            </div>
+          </div>
+
+          {/* Stats grid */}
+          <div className="grid grid-cols-3 gap-3">
+            {[
+              { label: "Role",         value: member.role },
+              { label: "Events",       value: String(member.events) },
+              { label: "Joined",       value: member.joined },
+            ].map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-xl border border-[#e9e4ff] bg-[#faf8ff] p-3 text-center"
+              >
+                <p className="text-xs text-[#94a3b8] mb-1">{stat.label}</p>
+                <p className="text-sm font-semibold text-[#0f172a] leading-tight">{stat.value}</p>
+              </div>
+            ))}
+          </div>
+        </ModalBody>
+
+        <ModalFooter>
+          <ModalClose asChild>
+            <ModalCancelButton>Close</ModalCancelButton>
+          </ModalClose>
+          <ModalActionButton>
+            <Mail className="w-4 h-4 mr-1.5" />
+            Send Email
+          </ModalActionButton>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  )
+}
+
+// ─── Column definitions ───────────────────────────────────────────────────────
 
 const columns: ColumnDef<TeamMember>[] = [
   {
@@ -79,9 +238,7 @@ const columns: ColumnDef<TeamMember>[] = [
     key: "role",
     label: "Role",
     sortable: true,
-    render: (row) => (
-      <span className="text-sm text-[#475569]">{row.role}</span>
-    ),
+    render: (row) => <span className="text-sm text-[#475569]">{row.role}</span>,
   },
   {
     key: "status",
@@ -104,7 +261,6 @@ const columns: ColumnDef<TeamMember>[] = [
     hideOnMobile: true,
     render: (row) => (
       <div className="flex items-center gap-2">
-        {/* Mini sparkline bar */}
         <div className="w-16 h-1.5 rounded-full bg-[#e9e4ff] overflow-hidden hidden md:block">
           <div
             className="h-full rounded-full bg-gradient-to-r from-[#7c3aed] to-[#a78bfa]"
@@ -122,45 +278,100 @@ const columns: ColumnDef<TeamMember>[] = [
     label: "Joined",
     sortable: false,
     hideOnMobile: true,
-    render: (row) => (
-      <span className="text-sm text-[#94a3b8]">{row.joined}</span>
-    ),
+    render: (row) => <span className="text-sm text-[#94a3b8]">{row.joined}</span>,
   },
   {
     key: "actions",
     label: "",
     sortable: false,
-    className: "w-20 text-right",
+    className: "w-28 text-right",
     render: (row) => (
       <div className="flex items-center justify-end gap-1">
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={`Email ${row.name}`}
-          className="rounded-lg w-8 h-8 hover:bg-[#f5f3ff] text-[#94a3b8] hover:text-[#7c3aed]"
-        >
-          <Mail className="w-3.5 h-3.5" />
-        </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={`More options for ${row.name}`}
-          className="rounded-lg w-8 h-8 hover:bg-[#f5f3ff] text-[#94a3b8] hover:text-[#7c3aed]"
-        >
-          <MoreHorizontal className="w-3.5 h-3.5" />
-        </Button>
+        <ViewMemberModal   member={row} />
+        <RemoveMemberModal member={row} />
       </div>
     ),
   },
 ]
 
-// ─── Page component ─────────────────────────────────────────────────────────────
+// ─── Invite Member modal ──────────────────────────────────────────────────────
+
+function InviteMemberModal() {
+  const [email, setEmail]   = useState("")
+  const [role, setRole]     = useState("")
+
+  return (
+    <Modal>
+      <ModalTrigger asChild>
+        <Button variant="default">
+          <UserPlus className="w-4 h-4 mr-2" />
+          Invite Member
+        </Button>
+      </ModalTrigger>
+
+      <ModalContent>
+        <ModalHeader icon={<UserPlus className="w-5 h-5" />}>
+          <ModalTitle>Invite a team member</ModalTitle>
+          <ModalDescription>
+            Send an invitation email. They'll receive a link to join your
+            workspace and access their assigned events.
+          </ModalDescription>
+        </ModalHeader>
+
+        <ModalBody>
+          <Input
+            label="Email address"
+            type="email"
+            placeholder="colleague@company.com"
+            icon={<Mail className="w-4 h-4" />}
+            required
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <SelectInput
+            label="Role"
+            placeholder="Select a role"
+            options={[
+              { value: "event_director", label: "Event Director"  },
+              { value: "coordinator",    label: "Coordinator"     },
+              { value: "developer",      label: "Developer"       },
+              { value: "designer",       label: "Designer"        },
+              { value: "marketing",      label: "Marketing"       },
+              { value: "operations",     label: "Operations"      },
+              { value: "viewer",         label: "Viewer (read-only)" },
+            ]}
+            value={role}
+            onChange={(e) => setRole(e.target.value)}
+          />
+
+          {/* Permissions hint */}
+          <p className="rounded-xl border border-[#e9e4ff] bg-[#faf8ff] px-4 py-3 text-xs text-[#64748b] leading-relaxed">
+            The invited member will receive an email with a secure link valid for
+            48 hours. You can manage their permissions from the team settings at
+            any time.
+          </p>
+        </ModalBody>
+
+        <ModalFooter>
+          <ModalClose asChild>
+            <ModalCancelButton />
+          </ModalClose>
+          <ModalActionButton disabled={!email || !role}>
+            <Send className="w-4 h-4 mr-1.5" />
+            Send Invitation
+          </ModalActionButton>
+        </ModalFooter>
+      </ModalContent>
+    </Modal>
+  )
+}
+
+// ─── Page component ───────────────────────────────────────────────────────────
 
 export default function Team() {
   const [search, setSearch] = useState("")
-  const [loading] = useState(false)
 
-  // Client-side search filter — runs before DataTable receives data
   const filtered = ALL_MEMBERS.filter((m) => {
     const q = search.toLowerCase()
     return (
@@ -170,7 +381,6 @@ export default function Team() {
     )
   })
 
-  // Summary counts for the stat pills
   const activeCount  = ALL_MEMBERS.filter((m) => m.status === "active").length
   const awayCount    = ALL_MEMBERS.filter((m) => m.status === "away").length
   const offlineCount = ALL_MEMBERS.filter((m) => m.status === "offline").length
@@ -181,7 +391,7 @@ export default function Team() {
 
       <div className="p-6 space-y-6">
 
-        {/* ── Top bar ───────────────────────────────────────────────────────── */}
+        {/* ── Top bar ─────────────────────────────────────────────────────── */}
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
             <h2 className="text-lg font-semibold text-[#0f172a]">Team Members</h2>
@@ -189,19 +399,17 @@ export default function Team() {
               Manage your team and their permissions
             </p>
           </div>
-          <Button variant="default">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Invite Member
-          </Button>
+          {/* Invite modal trigger lives here */}
+          <InviteMemberModal />
         </div>
 
-        {/* ── Status summary pills ──────────────────────────────────────────── */}
+        {/* ── Status summary pills ────────────────────────────────────────── */}
         <div className="flex flex-wrap gap-3">
           {[
-            { label: "Total",   count: ALL_MEMBERS.length, dot: "bg-[#7c3aed]",    text: "text-[#7c3aed]",    bg: "bg-[#f5f3ff] border-[#e9e4ff]" },
-            { label: "Active",  count: activeCount,        dot: "bg-emerald-500",  text: "text-emerald-700",  bg: "bg-emerald-50 border-emerald-200" },
-            { label: "Away",    count: awayCount,          dot: "bg-amber-400",    text: "text-amber-700",    bg: "bg-amber-50 border-amber-200" },
-            { label: "Offline", count: offlineCount,       dot: "bg-slate-400",    text: "text-slate-600",    bg: "bg-slate-50 border-slate-200" },
+            { label: "Total",   count: ALL_MEMBERS.length, dot: "bg-[#7c3aed]",   text: "text-[#7c3aed]",   bg: "bg-[#f5f3ff] border-[#e9e4ff]"     },
+            { label: "Active",  count: activeCount,        dot: "bg-emerald-500", text: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200"   },
+            { label: "Away",    count: awayCount,          dot: "bg-amber-400",   text: "text-amber-700",   bg: "bg-amber-50 border-amber-200"       },
+            { label: "Offline", count: offlineCount,       dot: "bg-slate-400",   text: "text-slate-600",   bg: "bg-slate-50 border-slate-200"       },
           ].map((pill) => (
             <div
               key={pill.label}
@@ -214,12 +422,12 @@ export default function Team() {
           ))}
         </div>
 
-        {/* ── DataTable ─────────────────────────────────────────────────────── */}
+        {/* ── DataTable ───────────────────────────────────────────────────── */}
         <DataTable<TeamMember>
           columns={columns}
           data={filtered}
           rowKey={(row) => row.id}
-          loading={loading}
+          loading={false}
           skeletonRows={5}
           pageSizeOptions={[5, 10, 15]}
           defaultPageSize={5}
