@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Link } from 'react-router';
+import { Link } from 'react-router-dom';
 import {
   Calendar, ClipboardList, Award, QrCode, IdCard,
   BarChart3, Mail, Layers, Shield, Clock, Download, Globe,

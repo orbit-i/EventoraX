@@ -1,8 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
-import { Eye, EyeOff, UserPlus, Check } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, UserPlus, Check, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Register() {
+  const navigate = useNavigate();
+  const { register } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
   const [form, setForm] = useState({
     fullName: '',
@@ -12,30 +15,51 @@ export default function Register() {
     phone: '',
   });
   const [submitted, setSubmitted] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
+    setError(null);
+    setLoading(true);
+
+    try {
+      await register({
+        fullName: form.fullName,
+        orgName: form.orgName,
+        email: form.email,
+        password: form.password,
+        phone: form.phone,
+      });
+      setSubmitted(true);
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 2000);
+    } catch (err: any) {
+      setError(err.message || 'Registration failed. Please check your information.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (submitted) {
     return (
       <main className="min-h-screen flex items-center justify-center bg-[#f3f0ff] px-4">
         <div className="w-full max-w-md text-center">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-[#f5f3ff]">
+          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-[#f5f3ff] animate-bounce">
             <Check size={36} className="text-[#7c3aed]" />
           </div>
           <h2 className="font-heading text-3xl font-bold mb-3 text-[#0f172a]">
             Account created!
           </h2>
           <p className="font-body text-base mb-6 text-[#64748b]">
-            Your free trial has started. Redirecting to your dashboard...
+            Your account has been initialized and 14-day free trial has started. Redirecting to your dashboard...
           </p>
           <Link
-            to="/"
+            to="/dashboard"
             className="inline-flex items-center justify-center px-8 py-3.5 bg-[#7c3aed] text-white font-semibold rounded-xl shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
           >
-            Go to Dashboard
+            Go to Dashboard Now
           </Link>
         </div>
       </main>
@@ -63,6 +87,14 @@ export default function Register() {
           </span>
         </div>
 
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5 text-red-700 text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
+
         {/* Form */}
         <form
           onSubmit={handleSubmit}
@@ -89,11 +121,10 @@ export default function Register() {
               </label>
               <input
                 type="text"
-                required
                 value={form.orgName}
                 onChange={(e) => setForm({ ...form, orgName: e.target.value })}
                 className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                placeholder="Acme University"
+                placeholder="Acme University / Tech Corp"
               />
             </div>
 
@@ -119,10 +150,11 @@ export default function Register() {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
+                  minLength={6}
                   value={form.password}
                   onChange={(e) => setForm({ ...form, password: e.target.value })}
                   className="w-full px-4 py-3 pr-12 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                  placeholder="Create a strong password"
+                  placeholder="At least 6 characters"
                 />
                 <button
                   type="button"
@@ -149,10 +181,17 @@ export default function Register() {
 
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-body font-semibold text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-body font-semibold text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:pointer-events-none transition-all duration-200"
             >
-              <UserPlus size={18} />
-              Create Account
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <UserPlus size={18} />
+                  Create Account
+                </>
+              )}
             </button>
           </div>
 

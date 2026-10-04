@@ -1,14 +1,29 @@
 import { useState } from 'react';
-import { Mail, MapPin, Phone, Clock, Send, MessageCircle } from 'lucide-react';
+import { Mail, MapPin, Phone, Clock, Send, MessageCircle, AlertCircle } from 'lucide-react';
+import { api } from '@/services/api';
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', org: '', message: '' });
+  const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => setSubmitted(false), 3000);
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      const res = await api.contact.send(form);
+      if (res.success) {
+        setSubmitted(true);
+        setForm({ name: '', email: '', org: '', message: '' });
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to submit contact request. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -21,7 +36,7 @@ export default function Contact() {
             Get in touch
           </h1>
           <p className="font-body text-lg md:text-xl max-w-2xl mx-auto text-[#475569] leading-relaxed">
-            Have questions? We&apos;d love to hear from you. Our team is ready to help.
+            Have questions about EventoraX or need a customized deployment? Our engineering team is ready to assist.
           </p>
         </div>
       </section>
@@ -54,7 +69,7 @@ export default function Contact() {
                 href="https://wa.me/923001234567"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl font-body font-semibold text-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-white bg-[#25D366] hover:bg-[#128C7E]"
+                className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-body font-semibold text-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-white bg-[#25D366] hover:bg-[#128C7E]"
               >
                 <MessageCircle size={18} />
                 Chat on WhatsApp
@@ -64,19 +79,33 @@ export default function Contact() {
             {/* Contact Form */}
             <div className="lg:col-span-2">
               <form onSubmit={handleSubmit} className="bg-white rounded-2xl p-8 border border-[#e9e4ff] shadow-sm">
+                {error && (
+                  <div className="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
                 {submitted ? (
                   <div className="text-center py-12">
                     <div className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 bg-[#f0fdf4]">
                       <Send size={28} className="text-[#16a34a]" />
                     </div>
                     <h3 className="font-heading text-2xl font-bold mb-2 text-[#0f172a]">Message sent!</h3>
-                    <p className="font-body text-sm text-[#475569]">We&apos;ll get back to you within 24 hours.</p>
+                    <p className="font-body text-sm text-[#475569] mb-4">We&apos;ve recorded your inquiry in our system and will get back to you within 24 hours.</p>
+                    <button
+                      type="button"
+                      onClick={() => setSubmitted(false)}
+                      className="text-xs font-semibold text-[#7c3aed] hover:underline"
+                    >
+                      Send another message
+                    </button>
                   </div>
                 ) : (
                   <>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <label className="font-body text-sm font-semibold mb-1.5 block text-[#0f172a]">Name</label>
+                        <label className="font-body text-sm font-semibold mb-1.5 block text-[#0f172a]">Name *</label>
                         <input
                           type="text"
                           required
@@ -87,7 +116,7 @@ export default function Contact() {
                         />
                       </div>
                       <div>
-                        <label className="font-body text-sm font-semibold mb-1.5 block text-[#0f172a]">Email</label>
+                        <label className="font-body text-sm font-semibold mb-1.5 block text-[#0f172a]">Email *</label>
                         <input
                           type="email"
                           required
@@ -109,7 +138,7 @@ export default function Contact() {
                       />
                     </div>
                     <div className="mb-6">
-                      <label className="font-body text-sm font-semibold mb-1.5 block text-[#0f172a]">Message</label>
+                      <label className="font-body text-sm font-semibold mb-1.5 block text-[#0f172a]">Message *</label>
                       <textarea
                         required
                         rows={5}
@@ -121,9 +150,17 @@ export default function Contact() {
                     </div>
                     <button
                       type="submit"
-                      className="w-full py-3.5 rounded-xl font-body font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#7c3aed]/25 bg-[#7c3aed] hover:bg-[#6d28d9] active:bg-[#5b21b6]"
+                      disabled={submitting}
+                      className="w-full py-3.5 rounded-xl font-body font-semibold text-white transition-all duration-300 hover:scale-[1.01] hover:shadow-lg hover:shadow-[#7c3aed]/25 bg-[#7c3aed] hover:bg-[#6d28d9] active:bg-[#5b21b6] disabled:opacity-60 flex items-center justify-center gap-2"
                     >
-                      Send Message
+                      {submitting ? (
+                        <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                      ) : (
+                        <>
+                          <Send size={18} />
+                          Send Message
+                        </>
+                      )}
                     </button>
                   </>
                 )}

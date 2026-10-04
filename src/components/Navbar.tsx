@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router';
-import { Menu, X } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Menu, X, LayoutDashboard, LogOut, User as UserIcon } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 const navLinks = [
   { label: 'Features', href: '/features' },
@@ -10,6 +11,7 @@ const navLinks = [
 ];
 
 export default function Navbar() {
+  const { user, isAuthenticated, logout } = useAuth();
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
@@ -34,7 +36,7 @@ export default function Navbar() {
     <nav
       className={`fixed top-0 left-0 w-full z-50 transition-all duration-300 ${
         showBg
-          ? 'bg-white/90 backdrop-blur-xl shadow-sm shadow-[#7c3aed]/5'
+          ? 'bg-white/95 backdrop-blur-xl shadow-sm shadow-[#7c3aed]/5 border-b border-[#e9e4ff]/60'
           : 'bg-transparent'
       }`}
       style={{ height: 64 }}
@@ -55,18 +57,45 @@ export default function Navbar() {
               {link.label}
             </Link>
           ))}
-          <Link
-            to="/login"
-            className="font-body text-sm font-semibold px-5 py-2 rounded-xl border-2 border-[#e9e4ff] text-[#475569] hover:border-[#7c3aed] hover:text-[#7c3aed] hover:bg-[#f5f3ff] transition-all duration-200"
-          >
-            Login
-          </Link>
-          <Link
-            to="/register"
-            className="font-body text-sm font-semibold px-5 py-2 rounded-xl text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
-          >
-            Get Started
-          </Link>
+
+          {isAuthenticated && user ? (
+            <div className="flex items-center gap-3">
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-2 font-body text-sm font-semibold px-4 py-2 rounded-xl text-white bg-[#7c3aed] shadow-md shadow-[#7c3aed]/25 hover:bg-[#6d28d9] transition-all duration-200"
+              >
+                <LayoutDashboard className="w-4 h-4" />
+                Dashboard
+              </Link>
+              <div className="flex items-center gap-2 pl-2 border-l border-[#e9e4ff]">
+                <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#a78bfa] text-white flex items-center justify-center font-bold text-xs shadow-sm">
+                  {user.fullName ? user.fullName[0].toUpperCase() : <UserIcon className="w-4 h-4" />}
+                </div>
+                <button
+                  onClick={logout}
+                  title="Logout"
+                  className="p-1.5 rounded-lg text-[#64748b] hover:text-red-600 hover:bg-red-50 transition-colors"
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-center gap-3">
+              <Link
+                to="/login"
+                className="font-body text-sm font-semibold px-5 py-2 rounded-xl border-2 border-[#e9e4ff] text-[#475569] hover:border-[#7c3aed] hover:text-[#7c3aed] hover:bg-[#f5f3ff] transition-all duration-200"
+              >
+                Login
+              </Link>
+              <Link
+                to="/register"
+                className="font-body text-sm font-semibold px-5 py-2 rounded-xl text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
+              >
+                Get Started
+              </Link>
+            </div>
+          )}
         </div>
 
         {/* Mobile Hamburger */}
@@ -92,19 +121,39 @@ export default function Navbar() {
                 {link.label}
               </Link>
             ))}
-            <div className="flex gap-3 pt-3 border-t border-[#e9e4ff] mt-2">
-              <Link
-                to="/login"
-                className="flex-1 text-center font-body text-sm font-semibold px-4 py-2.5 rounded-xl border-2 border-[#e9e4ff] text-[#475569] hover:border-[#7c3aed] hover:text-[#7c3aed] hover:bg-[#f5f3ff] transition-all duration-200"
-              >
-                Login
-              </Link>
-              <Link
-                to="/register"
-                className="flex-1 text-center font-body text-sm font-semibold px-4 py-2.5 rounded-xl text-white bg-[#7c3aed] shadow-md shadow-[#7c3aed]/20 hover:bg-[#6d28d9] transition-all duration-200"
-              >
-                Get Started
-              </Link>
+            <div className="flex flex-col gap-2 pt-3 border-t border-[#e9e4ff] mt-2">
+              {isAuthenticated && user ? (
+                <>
+                  <Link
+                    to="/dashboard"
+                    className="w-full text-center flex items-center justify-center gap-2 font-body text-sm font-semibold px-4 py-2.5 rounded-xl text-white bg-[#7c3aed] shadow-md transition-all duration-200"
+                  >
+                    <LayoutDashboard className="w-4 h-4" />
+                    Go to Dashboard
+                  </Link>
+                  <button
+                    onClick={logout}
+                    className="w-full text-center font-body text-sm font-semibold px-4 py-2.5 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 transition-colors"
+                  >
+                    Logout ({user.email})
+                  </button>
+                </>
+              ) : (
+                <div className="flex gap-3">
+                  <Link
+                    to="/login"
+                    className="flex-1 text-center font-body text-sm font-semibold px-4 py-2.5 rounded-xl border-2 border-[#e9e4ff] text-[#475569] hover:border-[#7c3aed] hover:text-[#7c3aed] hover:bg-[#f5f3ff] transition-all duration-200"
+                  >
+                    Login
+                  </Link>
+                  <Link
+                    to="/register"
+                    className="flex-1 text-center font-body text-sm font-semibold px-4 py-2.5 rounded-xl text-white bg-[#7c3aed] shadow-md shadow-[#7c3aed]/20 hover:bg-[#6d28d9] transition-all duration-200"
+                  >
+                    Get Started
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>

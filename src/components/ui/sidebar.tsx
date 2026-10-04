@@ -1,8 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { usePathname } from "next/navigation"
-import Link from "next/link"
+import { useLocation, Link } from "react-router-dom"
 import {
   LayoutDashboard,
   Users,
@@ -27,7 +26,7 @@ const navItems = [
 
 export default function Sidebar() {
   const [collapsed, setCollapsed] = useState(false)
-  const pathname = usePathname()
+  const location = useLocation()
 
   return (
     <aside
@@ -51,11 +50,11 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 space-y-1 px-3 py-4">
         {navItems.map((item) => {
-          const isActive = pathname === item.href
+          const isActive = location.pathname === item.href
           return (
             <Link
               key={item.href}
-              href={item.href}
+              to={item.href}
               className={cn(
                 "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-all duration-200",
                 isActive

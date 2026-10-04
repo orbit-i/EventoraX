@@ -1,14 +1,38 @@
 import { useState } from 'react';
-import { Link } from 'react-router';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Eye, EyeOff, LogIn, Sparkles, AlertCircle } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 export default function Login() {
+  const navigate = useNavigate();
+  const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', remember: false });
+  const [form, setForm] = useState({ email: '', password: '', remember: true });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle login logic
+    setError(null);
+    setLoading(true);
+
+    try {
+      await login({ email: form.email, password: form.password });
+      navigate('/dashboard');
+    } catch (err: any) {
+      setError(err.message || 'Invalid email or password. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fillDemo = () => {
+    setForm({
+      email: 'admin@eventorax.com',
+      password: 'admin123',
+      remember: true,
+    });
+    setError(null);
   };
 
   return (
@@ -23,6 +47,28 @@ export default function Login() {
             Welcome back! Sign in to your account.
           </p>
         </div>
+
+        {/* Demo Credentials Quick Pill */}
+        <div 
+          onClick={fillDemo}
+          className="flex items-center justify-between gap-2 p-3 rounded-xl mb-4 bg-gradient-to-r from-[#f5f3ff] to-[#faf8ff] border border-[#e9e4ff] cursor-pointer hover:border-[#7c3aed] transition-all duration-200 shadow-sm group"
+        >
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#7c3aed] animate-pulse" />
+            <span className="text-xs font-semibold text-[#0f172a]">Demo Admin Account</span>
+          </div>
+          <span className="text-xs font-semibold text-[#7c3aed] group-hover:underline">
+            Click to Auto-fill
+          </span>
+        </div>
+
+        {/* Error Alert */}
+        {error && (
+          <div className="mb-4 p-3.5 rounded-xl bg-red-50 border border-red-200 flex items-start gap-2.5 text-red-700 text-sm">
+            <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <span>{error}</span>
+          </div>
+        )}
 
         {/* Form */}
         <form
@@ -89,10 +135,17 @@ export default function Login() {
 
             <button
               type="submit"
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-body font-semibold text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
+              disabled={loading}
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-body font-semibold text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-60 disabled:pointer-events-none transition-all duration-200"
             >
-              <LogIn size={18} />
-              Sign In
+              {loading ? (
+                <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <>
+                  <LogIn size={18} />
+                  Sign In
+                </>
+              )}
             </button>
           </div>
         </form>

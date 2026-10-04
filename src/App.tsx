@@ -1,4 +1,4 @@
-import { Routes, Route, useLocation, Navigate } from 'react-router';
+import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -16,12 +16,15 @@ import NotFound from './pages/NotFound';
 // Dashboard imports
 import DashboardLayout from './pages/Dashboard/DashboardLayout';
 import DashboardHome from './pages/Dashboard/DashboardHome';
+import Events from './pages/Dashboard/Events';
 import Statistics from './pages/Dashboard/Statistics';
 import Charts from './pages/Dashboard/Charts';
 import Team from './pages/Dashboard/Team';
 import Billing from './pages/Dashboard/Billing';
 import Settings from './pages/Dashboard/Settings';
 import Activity from './pages/Dashboard/activity';
+
+import { AuthProvider, useAuth } from './context/AuthContext';
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -31,14 +34,20 @@ function ScrollToTop() {
   return null;
 }
 
-// Auth check
-const isAuthenticated = () => {
-  return localStorage.getItem("token") !== null;
-}
-
 // Protected Route wrapper
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  return isAuthenticated() ? <>{children}</> : <Navigate to="/login" replace />;
+  const { token, isLoading } = useAuth();
+  const hasToken = !!token || !!localStorage.getItem('token');
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#faf8ff]">
+        <div className="w-8 h-8 border-3 border-[#7c3aed] border-t-transparent rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  return hasToken ? <>{children}</> : <Navigate to="/login" replace />;
 }
 
 function Layout({ children }: { children: React.ReactNode }) {
@@ -52,7 +61,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className={`min-h-screen antialiased ${isAuthPage ? 'bg-white' : 'bg-[#f3f0ff]'}`}>
+    <div className="min-h-screen antialiased bg-[#f3f0ff]">
       {!isAuthPage && <Navbar />}
       <main className={isAuthPage ? '' : 'pt-16'}>
         {children}
@@ -62,7 +71,7 @@ function Layout({ children }: { children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+function AppRoutes() {
   return (
     <>
       <ScrollToTop />
@@ -80,21 +89,36 @@ export default function App() {
           <Route path="/privacy" element={<Privacy />} />
 
           {/* Protected Dashboard Routes */}
-       
-          <Route path="/dashboard" element={<DashboardLayout />}>
-  <Route index element={<DashboardHome />} />
-  <Route path="statistics" element={<Statistics />} />
-  <Route path="charts" element={<Charts />} />
-  <Route path="team" element={<Team />} />
-  <Route path="billing" element={<Billing />} />
-  <Route path="settings" element={<Settings />} />
-  <Route path="activity" element={<Activity />} />
-</Route>
+          <Route 
+            path="/dashboard" 
+            element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route index element={<DashboardHome />} />
+            <Route path="events" element={<Events />} />
+            <Route path="statistics" element={<Statistics />} />
+            <Route path="charts" element={<Charts />} />
+            <Route path="team" element={<Team />} />
+            <Route path="billing" element={<Billing />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="activity" element={<Activity />} />
+          </Route>
 
           {/* 404 */}
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>
     </>
+  );
+}
+
+export default function App() {
+  return (
+    <AuthProvider>
+      <AppRoutes />
+    </AuthProvider>
   );
 }
