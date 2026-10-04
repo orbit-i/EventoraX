@@ -1,0 +1,110 @@
+@baseUrl = http://localhost:5000/api/v1
+@email = owner@test.com
+@password = Test@1234
+@token = {{login.response.body.token}}
+@inviteToken = f4fb2504279a756fa1cb6366c9e00134743b609ab28aa1a01afc5fedf61fd203
+@resetToken = 8839641bb77ddeae15e0451ce5b840ffee49ebe512f876348da33aff3ac33d12
+
+### 1. Health check
+GET {{baseUrl}}/health
+
+### 2. Register a new organization
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "fullName": "Test Owner",
+  "organizationName": "Test University",
+  "email": "{{email}}",
+  "phone": "+923001234567",
+  "password": "{{password}}"
+}
+
+### 3. Login (run this again any time your token stops working)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "{{email}}", "password": "{{password}}", "remember": true }
+
+### 4. Who am I
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+### 5. Organization profile
+GET {{baseUrl}}/org/me
+Authorization: Bearer {{token}}
+
+### 6. Update organization settings
+PATCH {{baseUrl}}/org/me
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "phone": "+923331112222",
+  "primaryColor": "#7c3aed",
+  "signatoryName": "Dr. Ayesha Khan",
+  "notificationPrefs": { "newRegistration": true, "certificate": false }
+}
+
+### 7. Enterprise-only feature on a Pro trial (expect 403)
+PATCH {{baseUrl}}/org/me
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "whiteLabelName": "My Brand" }
+
+### 8. Team list (expect 1 member and seat counts)
+GET {{baseUrl}}/team
+Authorization: Bearer {{token}}
+
+### 9. Try inviting a superAdmin (expect 400)
+POST {{baseUrl}}/team/invite
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "email": "hacker@test.com", "role": "superAdmin" }
+
+### 10. Invite a manager (link prints in the SERVER terminal; paste its token into @inviteToken at the top)
+POST {{baseUrl}}/team/invite
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "email": "manager@test.com", "role": "manager" }
+### 10b. Cancel a pending invite
+DELETE {{baseUrl}}/team/invites/cmutwifg10007yotjatrdx28u
+Authorization: Bearer {{token}}
+### 11. Invite details (public)
+GET {{baseUrl}}/auth/invite/{{inviteToken}}
+
+### 12. Accept the invite
+POST {{baseUrl}}/auth/accept-invite
+Content-Type: application/json
+
+{ "token": "{{inviteToken}}", "name": "Test Manager", "password": "Manager@1234" }
+
+### 13. Team list again (expect 2 members, manager seats 1 of 7)
+GET {{baseUrl}}/team
+Authorization: Bearer {{token}}
+
+### 14. Forgot password (link prints in the SERVER terminal; paste its token into @resetToken at the top)
+POST {{baseUrl}}/auth/forgot-password
+Content-Type: application/json
+
+{ "email": "{{email}}" }
+
+### 15. Reset password (same value, so the rest of this file keeps working)
+POST {{baseUrl}}/auth/reset-password
+Content-Type: application/json
+
+{ "token": "{{resetToken}}", "newPassword": "{{password}}" }
+
+### 16. Old token must now fail (expect 401), then re-run request 3
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+### 17. Lockout test on a throwaway email: send 6 times (6th = 429)
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{ "email": "nobody@test.com", "password": "wrong" }
