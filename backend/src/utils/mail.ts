@@ -123,3 +123,16 @@ export function sendWelcomeEmail(to: string, name: string, orgName: string) {
     link
   );
 }
+
+/** Free-text message from an organizer to an attendee (newlines kept, HTML escaped). */
+export function sendAttendeeMessage(to: string, name: string, orgName: string, subject: string, message: string) {
+  const body = escapeHtml(message).replace(/\r?\n/g, "<br>");
+  return sendMail(
+    to,
+    subject,
+    layout(
+      escapeHtml(subject),
+      `<p>Hi ${escapeHtml(name)},</p><p>${body}</p><p style="color:#64748b">— ${escapeHtml(orgName)}</p>`
+    )
+  );
+}

@@ -7,6 +7,7 @@
 @eventId = {{createEvent.response.body.data.id}}
 @copyId = {{duplicateEvent.response.body.data.id}}
 @speakerId = {{createSpeaker.response.body.data.id}}
+@registrationId = {{addAttendee.response.body.data.id}}
 
 ### 1. Health check
 GET {{baseUrl}}/health
@@ -236,4 +237,104 @@ Content-Type: application/json
 
 ### E10. Delete the empty copy (expect deleted: true)
 DELETE {{baseUrl}}/events/{{copyId}}
+Authorization: Bearer {{token}}
+
+### ════════ PHASE 4B: REGISTRATIONS ════════
+
+### G1. Add an attendee manually (gets a ticket automatically)
+# @name addAttendee
+POST {{baseUrl}}/registrations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "eventId": "{{eventId}}", "name": "Hamza Raza", "email": "hamza@test.com", "department": "CS", "rollNo": "CS-22-014" }
+
+### G2. Same email again (expect 409 DUPLICATE)
+POST {{baseUrl}}/registrations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "eventId": "{{eventId}}", "name": "Hamza Again", "email": "HAMZA@test.com" }
+
+### G3. Parse a CSV (note the quoted name containing a comma)
+POST {{baseUrl}}/registrations/csv-import/parse
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=EVXBOUNDARY
+
+--EVXBOUNDARY
+Content-Disposition: form-data; name="file"; filename="attendees.csv"
+Content-Type: text/csv
+
+name,email,phone,category
+"Khan, Ali",ali@test.com,03001234567,VIP
+Sara Ahmed,sara@test.com,,General
+--EVXBOUNDARY--
+
+### G4. Confirm an import (mixed good and bad rows)
+POST {{baseUrl}}/registrations/csv-import/confirm
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "eventId": "{{eventId}}",
+  "rows": [
+    { "name": "Khan, Ali", "email": "ali@test.com", "phone": "03001234567", "categoryLabel": "VIP" },
+    { "name": "Sara Ahmed", "email": "sara@test.com", "categoryLabel": "General" },
+    { "name": "Bilal Shah", "email": "bilal@test.com", "categoryLabel": "Press" },
+    { "name": "Hamza Copy", "email": "hamza@test.com" },
+    { "name": "Bad Email", "email": "not-an-email" },
+    { "name": "Ali Twice", "email": "ali@test.com" }
+  ]
+}
+
+### G5. List registrations (each has category + ticket)
+GET {{baseUrl}}/registrations?eventId={{eventId}}
+Authorization: Bearer {{token}}
+
+### G6. One registration
+GET {{baseUrl}}/registrations/{{registrationId}}
+Authorization: Bearer {{token}}
+
+### G7. Mark attended
+PATCH {{baseUrl}}/registrations/{{registrationId}}/attendance
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "status": "ATTENDED" }
+
+### G8. Event stats now (1 attended, attendance rate 25%)
+GET {{baseUrl}}/events/{{eventId}}
+Authorization: Bearer {{token}}
+
+### G9. Export CSV
+GET {{baseUrl}}/registrations/export?eventId={{eventId}}&format=csv
+Authorization: Bearer {{token}}
+
+### G10. Export Excel (expect 200 + Content-Disposition ...xlsx; the body is binary)
+GET {{baseUrl}}/registrations/export?eventId={{eventId}}&format=xlsx
+Authorization: Bearer {{token}}
+
+### G11. Email the attendee (prints in the SERVER terminal)
+POST {{baseUrl}}/registrations/email
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "ids": ["{{registrationId}}"], "subject": "Venue update", "message": "Hi!\nThe symposium moves to Hall B." }
+
+### G12. Shrink capacity to 4 (4 people are registered now)
+PATCH {{baseUrl}}/events/{{eventId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "maxAttendees": 4 }
+
+### G13. One more attendee (expect 409 EVENT_FULL)
+POST {{baseUrl}}/registrations
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "eventId": "{{eventId}}", "name": "Late Comer", "email": "late@test.com" }
+
+### G14. Try deleting the event (expect archived: true, because it has registrations)
+DELETE {{baseUrl}}/events/{{eventId}}
 Authorization: Bearer {{token}}

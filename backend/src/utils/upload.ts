@@ -18,3 +18,15 @@ export const imageUpload = multer({
     cb(null, true);
   },
 });
+
+/** Accepts one .csv file up to 2 MB, kept in memory (req.file.buffer). */
+export const csvUpload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 2 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    if (!file.originalname.toLowerCase().endsWith(".csv")) {
+      return cb(new UploadError("Only .csv files are supported"));
+    }
+    cb(null, true);
+  },
+});
