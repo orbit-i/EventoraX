@@ -6,6 +6,9 @@ datasource db {
   provider = "mysql"
 }
 
+// ─────────────────────────── ENUMS ───────────────────────────
+// Auth enums keep lowercase values because existing auth code uses them.
+
 enum Role {
   superAdmin
   admin
@@ -13,84 +16,597 @@ enum Role {
   viewer
 }
 
-enum OrgStatus{
+enum OrgStatus {
   trial
   active
   expired
+  suspended
+}
+
+enum EventMode {
+  ONLINE
+  OFFLINE
+  HYBRID
+}
+
+enum EventStatus {
+  DRAFT
+  PUBLISHED
+  ONGOING
+  COMPLETED
+  ARCHIVED
+}
+
+enum RegistrationStatus {
+  REGISTERED
+  ATTENDED
+  ABSENT
+  CANCELLED
+}
+
+enum RegisteredVia {
+  WEB
+  ADMIN
+  CSV_IMPORT
+  API
+}
+
+enum SponsorTier {
+  PLATINUM
+  GOLD
+  SILVER
+  BRONZE
+}
+
+enum CertificateType {
+  PARTICIPATION
+  ACHIEVEMENT
+  APPRECIATION
+  SPEAKER
+  ORGANIZER
+}
+
+enum CertificateStatus {
+  ISSUED
+  REVOKED
+}
+
+enum PaymentMethod {
+  JAZZCASH
+  EASYPAISA
+  BANK_TRANSFER
+  OTHER
+}
+
+enum PaymentStatus {
+  PENDING
+  CONFIRMED
+  REJECTED
+}
+
+enum EmailTemplateType {
+  WELCOME
+  REGISTRATION_CONFIRM
+  CERTIFICATE
+  TICKET
+  RENEWAL
+  EXPIRY_WARNING
+  TEAM_INVITE
+  PASSWORD_RESET
+  EMAIL_VERIFICATION
+  ANNOUNCEMENT
+}
+
+enum AnnouncementStatus {
+  DRAFT
+  SCHEDULED
+  SENT
+}
+
+enum ContactSource {
+  PUBLIC
+  DASHBOARD
+}
+
+enum ContactStatus {
+  NEW
+  READ
+  RESOLVED
+}
+
+// ─────────────────────── PLANS & ORGANIZATIONS ───────────────────────
+
+model Plan {
+  id            String         @id @default(cuid())
+  name          String         @unique
+  price         Decimal        @db.Decimal(10, 2) // PKR per year
+  currency      String         @default("PKR")
+  maxAdmins     Int? // null = unlimited
+  maxManagers   Int? // null = unlimited
+  features      Json?
+  isVisible     Boolean        @default(true) // shown on the public pricing page
+  sortOrder     Int            @default(0)
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  organizations Organization[]
+  payments      Payment[]
+
+  @@map("plans")
 }
 
 model Organization {
-  id                  String   @id @default(uuid())
-  name                String
-  slug                String   @unique
-  logoUrl             String?
-  status              OrgStatus @default(trial)
-  subscriptionEndsAt  DateTime
-  planId              String?
-  plan                Plan?    @relation(fields: [planId], references: [id])
-  createdAt           DateTime @default(now())
-  users               User[]
-  invitations         Invitation[]
+  id                 String    @id @default(cuid())
+  name               String
+  slug               String    @unique
+  email              String?
+  phone              String?
+  logoUrl            String?
+  primaryColor       String?   @default("#7c3aed")
+  accentColor        String?
+  whiteLabelName     String? // Enterprise only
+  customDomain       String?   @unique // Enterprise only
+  signatureUrl       String? // printed on certificates
+  signatoryName      String?
+  signatoryTitle     String?
+  notificationPrefs  Json?
+  status             OrgStatus @default(trial)
+  subscriptionEndsAt DateTime
+  planId             String?
+  plan               Plan?     @relation(fields: [planId], references: [id], onDelete: SetNull)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  users           User[]
+  invitations     Invitation[]
+  events          Event[]
+  payments        Payment[]
+  activityLogs    ActivityLog[]
+  notifications   Notification[]
+  apiTokens       ApiToken[]
+  contactMessages ContactMessage[]
+
+  @@index([status])
+  @@map("organizations")
 }
+
+// ─────────────────────────── AUTH ───────────────────────────
 
 model User {
-  id             String       @id @default(uuid())
+  id             String        @id @default(cuid())
   name           String
-  email          String       @unique
+  email          String        @unique
   password       String
-  phone          String
-  role           Role         @default(admin)
-  organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
-  emailVerified Boolean  @default(false)
-  createdAt      DateTime     @default(now())
+  phone          String?
+  role           Role          @default(admin)
+  organizationId String? // null only for superAdmin
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  emailVerified  Boolean       @default(false)
+  isActive       Boolean       @default(true) // superadmin can disable
+  tokenVersion   Int           @default(0) // bump to force-logout everywhere
+  lastLoginAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 
+  passwordResetTokens     PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  sentInvitations         Invitation[]
+  activityLogs            ActivityLog[]
+  notifications           Notification[]
 
-  passwordRestToken   PasswordResetToken[]
-  emailVerificationToken   EmailVerificationToken[]
-  sentInvitations          Invitation[]
+  @@index([organizationId])
+  @@map("users")
 }
 
-model PasswordResetToken{
-  id            String        @id @default(uuid())
-  token         String        @unique
-  userId        String
-  user          User          @relation(fields: [userId], references: [id])
-  expiresAt     DateTime
-  createdAt     DateTime      @default(now())
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@map("password_reset_tokens")
 }
 
-model EmailVerificationToken{
-  id            String        @id @default(uuid())
-  token         String        @unique
-  userId        String
-  user          User          @relation(fields: [userId], references: [id])
-  expiresAt     DateTime
-  createdAt     DateTime      @default(now())
-}
+model EmailVerificationToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
 
-model Plan{
-  id              String        @id @default(uuid())
-  name            String        @unique
-  maxSeats        Int?
-  features        Json?
-  price           Float?
-  createdAt       DateTime      @default(now())
-  organization    Organization[]
+  @@index([userId])
+  @@map("email_verification_tokens")
 }
 
 model Invitation {
-  id             String       @id @default(uuid())
+  id             String       @id @default(cuid())
   email          String
   role           Role
   token          String       @unique
   organizationId String
-  organization   Organization @relation(fields: [organizationId], references: [id])
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   invitedById    String
-  invitedBy      User         @relation(fields: [invitedById], references: [id])
+  invitedBy      User         @relation(fields: [invitedById], references: [id], onDelete: Cascade)
   expiresAt      DateTime
   acceptedAt     DateTime?
   createdAt      DateTime     @default(now())
 
   @@unique([email, organizationId])
+  @@index([organizationId])
+  @@map("invitations")
+}
+
+// ─────────────────────────── EVENTS ───────────────────────────
+// Child tables of Event keep organizationId as an indexed column for fast,
+// safe tenant filtering. They are deleted automatically with their event.
+
+model Event {
+  id               String       @id @default(cuid())
+  organizationId   String
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  title            String
+  organizer        String?
+  mode             EventMode
+  startDateTime    DateTime
+  endDateTime      DateTime
+  location         String?
+  description      String?      @db.Text
+  topic            String?
+  maxAttendees     Int?
+  ticketPrice      Decimal?     @db.Decimal(10, 2)
+  registrationOpen Boolean      @default(true)
+  meetingLink      String?
+  certTemplateId   String? // key of one of the 50 certificate templates
+  autoIssueCert    Boolean      @default(false)
+  status           EventStatus  @default(DRAFT)
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  categories    EventCategory[]
+  registrations Registration[]
+  speakers      Speaker[]
+  sponsors      Sponsor[]
+  sessions      Session[]
+  certificates  Certificate[]
+  tickets       Ticket[]
+  idCards       IdCard[]
+
+  @@index([organizationId])
+  @@index([organizationId, status])
+  @@map("events")
+}
+
+model EventCategory {
+  id             String         @id @default(cuid())
+  organizationId String
+  eventId        String
+  event          Event          @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  label          String
+  registrations  Registration[]
+
+  @@unique([eventId, label])
+  @@index([organizationId])
+  @@map("event_categories")
+}
+
+model Registration {
+  id               String             @id @default(cuid())
+  organizationId   String
+  eventId          String
+  event            Event              @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  categoryId       String?
+  category         EventCategory?     @relation(fields: [categoryId], references: [id], onDelete: SetNull)
+  refNo            String             @unique
+  name             String
+  email            String
+  phone            String?
+  department       String?
+  rollNo           String?
+  registeredVia    RegisteredVia      @default(WEB)
+  status           RegistrationStatus @default(REGISTERED)
+  registrationDate DateTime           @default(now())
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  ticket       Ticket?
+  certificates Certificate[]
+  idCards      IdCard[]
+
+  @@unique([eventId, email])
+  @@index([organizationId])
+  @@index([eventId, status])
+  @@index([categoryId])
+  @@map("registrations")
+}
+
+model Speaker {
+  id             String    @id @default(cuid())
+  organizationId String
+  eventId        String
+  event          Event     @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  firstName      String
+  lastName       String
+  title          String?
+  company        String?
+  sessionTopic   String?
+  bio            String?   @db.Text
+  photo          String?
+  linkedin       String?
+  displayPublic  Boolean   @default(false)
+  displayOrder   Int       @default(0)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  sessions       Session[]
+
+  @@index([organizationId])
+  @@index([eventId])
+  @@map("speakers")
+}
+
+model Sponsor {
+  id             String      @id @default(cuid())
+  organizationId String
+  eventId        String
+  event          Event       @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  name           String
+  website        String?
+  logo           String?
+  tier           SponsorTier @default(BRONZE)
+  displayPublic  Boolean     @default(false)
+  displayOrder   Int         @default(0)
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  @@index([organizationId])
+  @@index([eventId, tier])
+  @@map("sponsors")
+}
+
+model Session {
+  id             String   @id @default(cuid())
+  organizationId String
+  eventId        String
+  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  speakerId      String?
+  speaker        Speaker? @relation(fields: [speakerId], references: [id], onDelete: SetNull)
+  title          String
+  startTime      DateTime
+  endTime        DateTime
+  location       String?
+  displayPublic  Boolean  @default(false)
+  displayOrder   Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([organizationId])
+  @@index([eventId])
+  @@index([speakerId])
+  @@map("sessions")
+}
+
+// ─────────────────── CERTIFICATES, TICKETS, ID CARDS ───────────────────
+
+model Certificate {
+  id             String            @id @default(cuid())
+  organizationId String
+  eventId        String
+  event          Event             @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  registrationId String
+  registration   Registration      @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  type           CertificateType   @default(PARTICIPATION)
+  recipientName  String // snapshot at issue time
+  recipientEmail String
+  category       String?
+  templateKey    String
+  verifyCode     String            @unique
+  sha256Hash     String            @db.Char(64)
+  pdfUrl         String?
+  status         CertificateStatus @default(ISSUED)
+  revokedAt      DateTime?
+  revokeReason   String?           @db.Text
+  downloadCount  Int               @default(0)
+  emailedAt      DateTime?
+  issuedAt       DateTime          @default(now())
+
+  @@unique([registrationId, type])
+  @@index([organizationId])
+  @@index([eventId])
+  @@map("certificates")
+}
+
+model Ticket {
+  id             String       @id @default(cuid())
+  organizationId String
+  eventId        String
+  event          Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  registrationId String       @unique
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  ticketNo       String       @unique
+  qrCode         String       @unique // the value encoded in the QR image
+  type           String? // e.g. General, VIP (from category)
+  isUsed         Boolean      @default(false)
+  usedAt         DateTime?
+  usedById       String? // user who scanned it
+  emailedAt      DateTime?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([eventId])
+  @@map("tickets")
+}
+
+model IdCard {
+  id             String       @id @default(cuid())
+  organizationId String
+  eventId        String
+  event          Event        @relation(fields: [eventId], references: [id], onDelete: Cascade)
+  registrationId String
+  registration   Registration @relation(fields: [registrationId], references: [id], onDelete: Cascade)
+  templateKey    String // one of the 4 ID card templates
+  fields         Json? // which fields were shown
+  pdfUrl         String?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+  @@index([eventId])
+  @@map("id_cards")
+}
+
+// ─────────────────────────── BILLING ───────────────────────────
+
+model Payment {
+  id             String        @id @default(cuid())
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  planId         String?
+  plan           Plan?         @relation(fields: [planId], references: [id], onDelete: SetNull)
+  amount         Decimal       @db.Decimal(10, 2)
+  currency       String        @default("PKR")
+  method         PaymentMethod
+  status         PaymentStatus @default(PENDING)
+  referenceNo    String? // transaction ID entered by the org
+  proofUrl       String? // uploaded receipt screenshot
+  periodStart    DateTime?
+  periodEnd      DateTime?
+  notes          String?       @db.Text
+  confirmedById  String?
+  confirmedAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  @@index([organizationId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("payments")
+}
+
+// ─────────────────────── ACTIVITY & SECURITY ───────────────────────
+
+model ActivityLog {
+  id             String        @id @default(cuid())
+  organizationId String? // null = platform-level action
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String?
+  user           User?         @relation(fields: [userId], references: [id], onDelete: SetNull)
+  action         String // e.g. "event.create"
+  entityType     String?
+  entityId       String?
+  metadata       Json?
+  ipAddress      String?
+  userAgent      String?       @db.Text
+  createdAt      DateTime      @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([userId])
+  @@index([action])
+  @@map("activity_logs")
+}
+
+model LoginAttempt {
+  id        String   @id @default(cuid())
+  email     String
+  userId    String?
+  ipAddress String?
+  userAgent String?  @db.Text
+  success   Boolean
+  createdAt DateTime @default(now())
+
+  @@index([email, createdAt])
+  @@index([ipAddress, createdAt])
+  @@map("login_attempts")
+}
+
+// ─────────────────────────── PLATFORM ───────────────────────────
+
+model EmailTemplate {
+  id          String            @id @default(cuid())
+  type        EmailTemplateType @unique
+  subject     String
+  bodyHtml    String            @db.Text
+  updatedById String?
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  @@map("email_templates")
+}
+
+model SystemSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt
+
+  @@map("system_settings")
+}
+
+model Announcement {
+  id            String             @id @default(cuid())
+  title         String
+  body          String             @db.Text
+  targetPlanId  String? // null = all tenants
+  sendEmail     Boolean            @default(true)
+  sendInApp     Boolean            @default(true)
+  status        AnnouncementStatus @default(DRAFT)
+  scheduledAt   DateTime?
+  sentAt        DateTime?
+  createdById   String?
+  createdAt     DateTime           @default(now())
+  notifications Notification[]
+
+  @@index([status, scheduledAt])
+  @@map("announcements")
+}
+
+model Notification {
+  id             String        @id @default(cuid())
+  organizationId String
+  organization   Organization  @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  userId         String? // null = everyone in the org
+  user           User?         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  announcementId String?
+  announcement   Announcement? @relation(fields: [announcementId], references: [id], onDelete: SetNull)
+  title          String
+  body           String?       @db.Text
+  link           String?
+  readAt         DateTime?
+  createdAt      DateTime      @default(now())
+
+  @@index([organizationId, createdAt])
+  @@index([userId])
+  @@map("notifications")
+}
+
+model ApiToken {
+  id             String       @id @default(cuid())
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  name           String
+  tokenHash      String       @unique @db.Char(64) // sha256 of the token; raw token shown once
+  prefix         String // first characters, for display
+  lastUsedAt     DateTime?
+  expiresAt      DateTime?
+  revokedAt      DateTime?
+  createdById    String?
+  createdAt      DateTime     @default(now())
+
+  @@index([organizationId])
+  @@map("api_tokens")
+}
+
+model ContactMessage {
+  id             String        @id @default(cuid())
+  organizationId String? // set when sent from the dashboard
+  organization   Organization? @relation(fields: [organizationId], references: [id], onDelete: SetNull)
+  name           String
+  email          String
+  orgName        String?
+  message        String        @db.Text
+  source         ContactSource @default(PUBLIC)
+  status         ContactStatus @default(NEW)
+  createdAt      DateTime      @default(now())
+
+  @@index([status])
+  @@map("contact_messages")
 }
