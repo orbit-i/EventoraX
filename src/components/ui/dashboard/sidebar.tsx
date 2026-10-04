@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import { NavLink, useLocation } from "react-router-dom"
 import { 
   LayoutDashboard, 
@@ -10,7 +11,8 @@ import {
   Settings, 
   Activity,
   LogOut,
-  ChevronRight
+  ChevronRight,
+  ChevronLeft
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 
@@ -24,19 +26,38 @@ const navItems = [
   { to: "/dashboard/activity", label: "Activity Logs", icon: Activity },
 ]
 
-export default function Sidebar() {
+interface SidebarProps {
+  collapsed?: boolean
+  onCollapsedChange?: (collapsed: boolean) => void
+}
+
+export default function Sidebar({
+  collapsed: collapsedProp,
+  onCollapsedChange,
+}: SidebarProps = {}) {
   const location = useLocation()
+  const [internalCollapsed, setInternalCollapsed] = useState(false)
+
+  const collapsed = collapsedProp ?? internalCollapsed
+  const setCollapsed = onCollapsedChange ?? setInternalCollapsed
 
   return (
-    <aside className="fixed left-0 top-0 z-40 h-screen w-64 bg-[#faf8ff] border-r border-[#e9e4ff] flex flex-col">
+    <aside
+      className={cn(
+        "fixed left-0 top-0 z-40 h-screen bg-[#faf8ff] border-r border-[#e9e4ff] flex flex-col transition-all duration-300",
+        collapsed ? "w-20" : "w-64"
+      )}
+    >
       {/* Logo */}
       <div className="flex items-center gap-2 px-6 py-5 border-b border-[#e9e4ff]">
-        <div className="w-8 h-8 bg-[#7c3aed] rounded-lg flex items-center justify-center">
+        <div className="w-8 h-8 shrink-0 bg-[#7c3aed] rounded-lg flex items-center justify-center">
           <span className="text-white font-bold text-sm">E</span>
         </div>
-        <span className="text-xl font-bold text-[#0f172a]">
-          Eventora<span className="text-[#7c3aed]">X</span>
-        </span>
+        {!collapsed && (
+          <span className="text-xl font-bold text-[#0f172a] whitespace-nowrap">
+            Eventora<span className="text-[#7c3aed]">X</span>
+          </span>
+        )}
       </div>
 
       {/* Navigation */}
@@ -52,16 +73,18 @@ export default function Sidebar() {
               key={item.to}
               to={item.to}
               end={item.end}
+              title={collapsed ? item.label : undefined}
               className={cn(
                 "flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                collapsed && "justify-center",
                 isActive 
                   ? "bg-[#7c3aed] text-white shadow-md shadow-[#7c3aed]/25" 
                   : "text-[#475569] hover:bg-[#f5f3ff] hover:text-[#7c3aed]"
               )}
             >
-              <Icon className="w-5 h-5" />
-              {item.label}
-              {isActive && <ChevronRight className="w-4 h-4 ml-auto" />}
+              <Icon className="w-5 h-5 shrink-0" />
+              {!collapsed && item.label}
+              {!collapsed && isActive && <ChevronRight className="w-4 h-4 ml-auto" />}
             </NavLink>
           )
         })}
@@ -69,25 +92,40 @@ export default function Sidebar() {
 
       {/* User Profile */}
       <div className="p-4 border-t border-[#e9e4ff]">
-        <div className="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#f5f3ff] transition-colors cursor-pointer">
-          <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#a78bfa] flex items-center justify-center text-white font-bold text-sm">
+        <div className={cn(
+          "flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-[#f5f3ff] transition-colors cursor-pointer",
+          collapsed && "justify-center"
+        )}>
+          <div className="w-9 h-9 shrink-0 rounded-full bg-gradient-to-br from-[#7c3aed] to-[#a78bfa] flex items-center justify-center text-white font-bold text-sm">
             JD
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-semibold text-[#0f172a] truncate">John Doe</p>
-            <p className="text-xs text-[#94a3b8] truncate">john@company.com</p>
-          </div>
-          <button 
-            onClick={() => {
-              localStorage.removeItem("token")
-              window.location.href = "/login"
-            }}
-            className="p-1.5 rounded-lg hover:bg-red-50 text-[#94a3b8] hover:text-[#dc2626] transition-colors"
-          >
-            <LogOut className="w-4 h-4" />
-          </button>
+          {!collapsed && (
+            <>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-[#0f172a] truncate">John Doe</p>
+                <p className="text-xs text-[#94a3b8] truncate">john@company.com</p>
+              </div>
+              <button 
+                onClick={() => {
+                  localStorage.removeItem("token")
+                  window.location.href = "/login"
+                }}
+                className="p-1.5 rounded-lg hover:bg-red-50 text-[#94a3b8] hover:text-[#dc2626] transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
+            </>
+          )}
         </div>
       </div>
+
+      {/* Collapse Toggle */}
+      <button
+        onClick={() => setCollapsed(!collapsed)}
+        className="absolute -right-3 top-20 flex h-6 w-6 items-center justify-center rounded-full border border-[#e9e4ff] bg-white text-[#7c3aed] shadow-sm hover:shadow-md transition-all"
+      >
+        {collapsed ? <ChevronRight className="h-3 w-3" /> : <ChevronLeft className="h-3 w-3" />}
+      </button>
     </aside>
   )
 }

@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Mail, MapPin, Phone, Clock, Send, MessageCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
 
 export default function Contact() {
   const [form, setForm] = useState({ name: '', email: '', org: '', message: '' });
@@ -119,12 +121,10 @@ export default function Contact() {
                         placeholder="How can we help you?"
                       />
                     </div>
-                    <button
-                      type="submit"
-                      className="w-full py-3.5 rounded-xl font-body font-semibold text-white transition-all duration-300 hover:scale-[1.02] hover:shadow-lg hover:shadow-[#7c3aed]/25 bg-[#7c3aed] hover:bg-[#6d28d9] active:bg-[#5b21b6]"
-                    >
+                    <Button type="submit" variant="default" size="lg" className="w-full">
                       Send Message
-                    </button>
+                    </Button>
+
                   </>
                 )}
               </form>

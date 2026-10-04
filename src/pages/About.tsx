@@ -3,6 +3,8 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router';
 import { Target, Eye, Lightbulb, Users, Award, Zap } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -177,7 +179,10 @@ export default function About() {
           <p className="font-body text-base mb-8 text-[#475569]">
             Be part of the future of event management.
           </p>
-          <Link to="/register" className="btn-primary">Try it free</Link>
+                    <Button asChild variant="default" size="lg">
+            <Link to="/register">Try it free</Link>
+          </Button>
+
         </div>
       </section>
     </main>

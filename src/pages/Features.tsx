@@ -6,6 +6,7 @@ import {
   Calendar, ClipboardList, Award, QrCode, IdCard,
   BarChart3, Mail, Layers, Shield, Clock, Download, Globe,
 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -228,12 +229,10 @@ export default function Features() {
           <p className="font-body text-base mb-8 text-[#64748b]">
             Start your free trial and experience the difference.
           </p>
-          <Link
-            to="/register"
-            className="inline-flex items-center justify-center px-8 py-3.5 bg-[#7c3aed] text-white font-semibold rounded-xl shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
-          >
-            Start Free Trial
-          </Link>
+                    <Button asChild variant="default" size="lg">
+            <Link to="/register">Start Free Trial</Link>
+          </Button>
+
         </div>
       </section>
     </main>
