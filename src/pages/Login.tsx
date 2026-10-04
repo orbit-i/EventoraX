@@ -1,110 +1,96 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
-import { Eye, EyeOff, LogIn } from 'lucide-react';
+import { useState } from "react"
+import { Link, useLocation, useNavigate } from "react-router"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { TextField, PasswordField } from "@/components/ui/form-fields"
+import { AuthShell, FormError, linkClass } from "@/components/auth/AuthShell"
+import { useAuth, homeFor } from "@/context/AuthContext"
+import { errorMessage } from "@/lib/api"
+import { emailSchema } from "@/lib/validation"
+
+const schema = z.object({
+  email: emailSchema,
+  password: z.string().min(1, "Password is required"),
+  remember: z.boolean(),
+})
+type Values = z.infer<typeof schema>
 
 export default function Login() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', remember: false });
+  const { login } = useAuth()
+  const navigate = useNavigate()
+  const location = useLocation()
+  const from = (location.state as { from?: string } | null)?.from
+  const [formError, setFormError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    // Handle login logic
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<Values>({
+    resolver: zodResolver(schema),
+    defaultValues: { email: "", password: "", remember: false },
+  })
+
+  const onSubmit = async (values: Values) => {
+    setFormError(null)
+    try {
+      const user = await login(values.email, values.password, values.remember)
+      toast.success(`Welcome back, ${user.name.split(" ")[0]}!`)
+      navigate(from ?? homeFor(user), { replace: true })
+    } catch (err) {
+      setFormError(errorMessage(err))
+    }
+  }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#f3f0ff] px-4 py-20">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link to="/" className="font-heading text-3xl font-bold text-[#0f172a]">
-            Eventora<span className="text-[#7c3aed]">X</span>
+    <AuthShell
+      title="Welcome back"
+      subtitle="Log in to your EventoraX account"
+      footer={
+        <>
+          New to EventoraX?{" "}
+          <Link to="/register" className={linkClass}>
+            Start your free trial
           </Link>
-          <p className="font-body text-sm mt-2 text-[#64748b]">
-            Welcome back! Sign in to your account.
-          </p>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+        {formError && <FormError message={formError} />}
+
+        <TextField
+          label="Email"
+          type="email"
+          autoComplete="email"
+          placeholder="you@example.com"
+          error={errors.email?.message}
+          {...register("email")}
+        />
+        <PasswordField
+          label="Password"
+          autoComplete="current-password"
+          placeholder="Your password"
+          error={errors.password?.message}
+          {...register("password")}
+        />
+
+        <div className="flex items-center justify-between">
+          <label className="flex items-center gap-2 text-sm text-[#475569] cursor-pointer select-none">
+            <input type="checkbox" className="w-4 h-4 accent-[#7c3aed]" {...register("remember")} />
+            Remember me for 30 days
+          </label>
+          <Link to="/forgot-password" className="text-sm font-medium text-[#7c3aed] hover:underline">
+            Forgot password?
+          </Link>
         </div>
 
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-2xl p-8 border border-[#e9e4ff] shadow-lg shadow-[#7c3aed]/5"
-        >
-          <div className="space-y-5">
-            <div>
-              <label className="font-body text-sm font-semibold mb-2 block text-[#0f172a]">
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                placeholder="you@example.com"
-              />
-            </div>
-
-            <div>
-              <label className="font-body text-sm font-semibold mb-2 block text-[#0f172a]">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full px-4 py-3 pr-12 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                  placeholder="Enter your password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#7c3aed] transition-colors duration-200"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={form.remember}
-                  onChange={(e) => setForm({ ...form, remember: e.target.checked })}
-                  className="size-4 rounded border-2 border-[#ddd6fe] accent-[#7c3aed] text-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/30 cursor-pointer"
-                />
-                <span className="font-body text-sm text-[#475569]">
-                  Remember me
-                </span>
-              </label>
-              <Link
-                to="#"
-                className="font-body text-sm font-medium text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors duration-200"
-              >
-                Forgot password?
-              </Link>
-            </div>
-
-            <button
-              type="submit"
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-body font-semibold text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
-            >
-              <LogIn size={18} />
-              Sign In
-            </button>
-          </div>
-        </form>
-
-        {/* Sign up link */}
-        <p className="text-center mt-6 font-body text-sm text-[#64748b]">
-          Don&apos;t have an account?{' '}
-          <Link to="/register" className="font-semibold text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors duration-200">
-            Sign up
-          </Link>
-        </p>
-      </div>
-    </main>
-  );
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? "Logging in..." : "Log in"}
+        </Button>
+      </form>
+    </AuthShell>
+  )
 }

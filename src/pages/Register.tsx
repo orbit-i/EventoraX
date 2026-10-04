@@ -1,185 +1,136 @@
-import { useState } from 'react';
-import { Link } from 'react-router';
-import { Eye, EyeOff, UserPlus, Check } from 'lucide-react';
+import { useState } from "react"
+import { Link, useNavigate } from "react-router"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { toast } from "sonner"
+import { Button } from "@/components/ui/button"
+import { TextField, PasswordField } from "@/components/ui/form-fields"
+import { AuthShell, FormError, linkClass } from "@/components/auth/AuthShell"
+import { useAuth } from "@/context/AuthContext"
+import { errorMessage } from "@/lib/api"
+import { emailSchema, passwordSchema, phoneSchema, PASSWORD_HINT } from "@/lib/validation"
+
+const schema = z
+  .object({
+    fullName: z.string().trim().min(2, "Enter your full name"),
+    organizationName: z.string().trim().min(2, "Enter your organization's name"),
+    email: emailSchema,
+    phone: phoneSchema,
+    password: passwordSchema,
+    confirmPassword: z.string(),
+    acceptTerms: z.boolean().refine((v) => v, "You must accept the Terms and Privacy Policy"),
+  })
+  .refine((v) => v.password === v.confirmPassword, {
+    message: "Passwords do not match",
+    path: ["confirmPassword"],
+  })
+type Values = z.infer<typeof schema>
 
 export default function Register() {
-  const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({
-    fullName: '',
-    orgName: '',
-    email: '',
-    password: '',
-    phone: '',
-  });
-  const [submitted, setSubmitted] = useState(false);
+  const { register: registerAccount } = useAuth()
+  const navigate = useNavigate()
+  const [formError, setFormError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setSubmitted(true);
-  };
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<Values>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      fullName: "",
+      organizationName: "",
+      email: "",
+      phone: "",
+      password: "",
+      confirmPassword: "",
+      acceptTerms: false,
+    },
+  })
 
-  if (submitted) {
-    return (
-      <main className="min-h-screen flex items-center justify-center bg-[#f3f0ff] px-4">
-        <div className="w-full max-w-md text-center">
-          <div className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-6 bg-[#f5f3ff]">
-            <Check size={36} className="text-[#7c3aed]" />
-          </div>
-          <h2 className="font-heading text-3xl font-bold mb-3 text-[#0f172a]">
-            Account created!
-          </h2>
-          <p className="font-body text-base mb-6 text-[#64748b]">
-            Your free trial has started. Redirecting to your dashboard...
-          </p>
-          <Link
-            to="/"
-            className="inline-flex items-center justify-center px-8 py-3.5 bg-[#7c3aed] text-white font-semibold rounded-xl shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 transition-all duration-200"
-          >
-            Go to Dashboard
-          </Link>
-        </div>
-      </main>
-    );
+  const onSubmit = async (values: Values) => {
+    setFormError(null)
+    try {
+      await registerAccount({
+        fullName: values.fullName,
+        organizationName: values.organizationName,
+        email: values.email,
+        phone: values.phone,
+        password: values.password,
+      })
+      toast.success("Your free trial has started! Check your email to verify your address.")
+      navigate("/dashboard", { replace: true })
+    } catch (err) {
+      setFormError(errorMessage(err))
+    }
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#f3f0ff] px-4 py-20">
-      <div className="w-full max-w-md">
-        {/* Logo */}
-        <div className="text-center mb-8">
-          <Link to="/" className="font-heading text-3xl font-bold text-[#0f172a]">
-            Eventora<span className="text-[#7c3aed]">X</span>
+    <AuthShell
+      title="Start your free trial"
+      subtitle={
+        <>
+          <span className="font-semibold text-[#7c3aed]">1-day free trial</span> · No credit card required
+        </>
+      }
+      footer={
+        <>
+          Already have an account?{" "}
+          <Link to="/login" className={linkClass}>
+            Log in
           </Link>
-          <p className="font-body text-sm mt-2 text-[#64748b]">
-            Create your account and start your free trial.
-          </p>
+        </>
+      }
+    >
+      <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-4">
+        {formError && <FormError message={formError} />}
+
+        <TextField label="Full name" autoComplete="name" placeholder="Ayesha Khan" error={errors.fullName?.message} {...register("fullName")} />
+        <TextField
+          label="Organization name"
+          autoComplete="organization"
+          placeholder="NUST SEECS"
+          error={errors.organizationName?.message}
+          {...register("organizationName")}
+        />
+        <TextField label="Email" type="email" autoComplete="email" placeholder="you@example.com" error={errors.email?.message} {...register("email")} />
+        <TextField label="Phone" type="tel" autoComplete="tel" placeholder="+92 300 1234567" error={errors.phone?.message} {...register("phone")} />
+        <PasswordField
+          label="Password"
+          autoComplete="new-password"
+          helper={PASSWORD_HINT}
+          error={errors.password?.message}
+          {...register("password")}
+        />
+        <PasswordField
+          label="Confirm password"
+          autoComplete="new-password"
+          error={errors.confirmPassword?.message}
+          {...register("confirmPassword")}
+        />
+
+        <div>
+          <label className="flex items-start gap-2 text-sm text-[#475569] cursor-pointer select-none">
+            <input type="checkbox" className="w-4 h-4 mt-0.5 accent-[#7c3aed]" {...register("acceptTerms")} />
+            <span>
+              I agree to the{" "}
+              <Link to="/terms" className={linkClass} target="_blank">
+                Terms of Service
+              </Link>{" "}
+              and{" "}
+              <Link to="/privacy" className={linkClass} target="_blank">
+                Privacy Policy
+              </Link>
+            </span>
+          </label>
+          {errors.acceptTerms && <p className="mt-1 text-xs font-medium text-rose-500">{errors.acceptTerms.message}</p>}
         </div>
 
-        {/* Trial Badge */}
-        <div className="flex items-center justify-center gap-2 py-2.5 px-5 rounded-full mb-6 mx-auto w-fit bg-[#f5f3ff] text-[#7c3aed] border border-[#e9e4ff] shadow-sm">
-          <Check size={16} className="text-[#7c3aed]" />
-          <span className="font-body text-sm font-semibold">
-            14-day free trial — No credit card required
-          </span>
-        </div>
-
-        {/* Form */}
-        <form
-          onSubmit={handleSubmit}
-          className="bg-white rounded-2xl p-8 border border-[#e9e4ff] shadow-lg shadow-[#7c3aed]/5"
-        >
-          <div className="space-y-5">
-            <div>
-              <label className="font-body text-sm font-semibold mb-2 block text-[#0f172a]">
-                Full Name
-              </label>
-              <input
-                type="text"
-                required
-                value={form.fullName}
-                onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                placeholder="John Doe"
-              />
-            </div>
-
-            <div>
-              <label className="font-body text-sm font-semibold mb-2 block text-[#0f172a]">
-                Organization Name
-              </label>
-              <input
-                type="text"
-                required
-                value={form.orgName}
-                onChange={(e) => setForm({ ...form, orgName: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                placeholder="Acme University"
-              />
-            </div>
-
-            <div>
-              <label className="font-body text-sm font-semibold mb-2 block text-[#0f172a]">
-                Email
-              </label>
-              <input
-                type="email"
-                required
-                value={form.email}
-                onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                placeholder="you@example.com"
-              />
-            </div>
-
-            <div>
-              <label className="font-body text-sm font-semibold mb-2 block text-[#0f172a]">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  type={showPassword ? 'text' : 'password'}
-                  required
-                  value={form.password}
-                  onChange={(e) => setForm({ ...form, password: e.target.value })}
-                  className="w-full px-4 py-3 pr-12 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                  placeholder="Create a strong password"
-                />
-                <button
-                  type="button"
-                  onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94a3b8] hover:text-[#7c3aed] transition-colors duration-200"
-                >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
-            </div>
-
-            <div>
-              <label className="font-body text-sm font-semibold mb-2 block text-[#0f172a]">
-                Phone
-              </label>
-              <input
-                type="tel"
-                value={form.phone}
-                onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                className="w-full px-4 py-3 rounded-xl border border-[#e9e4ff] bg-white font-body text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:outline-none focus:ring-2 focus:ring-[#7c3aed]/30 focus:border-[#7c3aed] hover:border-[#c4b5fd] transition-all duration-200"
-                placeholder="+92 300 1234567"
-              />
-            </div>
-
-            <button
-              type="submit"
-              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl font-body font-semibold text-white bg-[#7c3aed] shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200"
-            >
-              <UserPlus size={18} />
-              Create Account
-            </button>
-          </div>
-
-          <p className="text-center mt-5 font-body text-xs text-[#94a3b8]">
-            By signing up, you agree to our{' '}
-            <Link to="/terms" className="text-[#7c3aed] hover:text-[#6d28d9] hover:underline font-medium transition-colors duration-200">
-              Terms
-            </Link>{' '}
-            and{' '}
-            <Link to="/privacy" className="text-[#7c3aed] hover:text-[#6d28d9] hover:underline font-medium transition-colors duration-200">
-              Privacy Policy
-            </Link>
-            .
-          </p>
-        </form>
-
-        {/* Login link */}
-        <p className="text-center mt-6 font-body text-sm text-[#64748b]">
-          Already have an account?{' '}
-          <Link
-            to="/login"
-            className="font-semibold text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors duration-200"
-          >
-            Sign in
-          </Link>
-        </p>
-      </div>
-    </main>
-  );
+        <Button type="submit" className="w-full" disabled={isSubmitting}>
+          {isSubmitting ? "Creating your account..." : "Create account"}
+        </Button>
+      </form>
+    </AuthShell>
+  )
 }
