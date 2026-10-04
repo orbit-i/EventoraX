@@ -15,7 +15,6 @@
   "dependencies": {
     "@prisma/adapter-mariadb": "^7.8.0",
     "@prisma/client": "^7.8.0",
-    "@supabase/supabase-js": "^2.110.7",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^18.0.5",
@@ -24,7 +23,8 @@
     "libphonenumber-js": "^1.13.9",
     "multer": "^2.2.0",
     "mysql2": "^3.22.5",
-    "nodemailer": "^10.0.14"
+    "nodemailer": "^10.0.14",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",

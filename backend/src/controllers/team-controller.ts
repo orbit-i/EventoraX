@@ -1,128 +1,201 @@
 import { Request, Response } from "express";
-import crypto from "crypto";
+import { Role } from "@prisma/client";
 import prisma from "../prisma/client";
-import { ROLE_SEAT_LIMITS, getRoleUsageCount } from "../utils/roleLimit";
+import { seatLimitFor, seatsUsed } from "../utils/roleLimit";
 import { sendInviteEmail } from "../utils/mail";
+import { logActivity } from "../utils/activity";
+import { randomToken, hashToken } from "../utils/tokens";
+import { EMAIL_REGEX } from "../utils/password";
 
 const INVITE_EXPIRY_DAYS = 7;
+const ASSIGNABLE_ROLES: Role[] = ["admin", "manager", "viewer"]; // never superAdmin
 
+function isAssignableRole(value: unknown): value is Role {
+  return typeof value === "string" && (ASSIGNABLE_ROLES as string[]).includes(value);
+}
+
+// GET /api/v1/team
+export async function getTeamMembers(req: Request, res: Response) {
+  const db = req.db!;
+  const org = req.org!;
+
+  const [members, pendingInvites, adminsUsed, managersUsed] = await Promise.all([
+    db.user.findMany({
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        emailVerified: true,
+        isActive: true,
+        lastLoginAt: true,
+        createdAt: true,
+      },
+      orderBy: { createdAt: "asc" },
+    }),
+    db.invitation.findMany({
+      where: { acceptedAt: null, expiresAt: { gt: new Date() } },
+      select: { id: true, email: true, role: true, createdAt: true, expiresAt: true },
+      orderBy: { createdAt: "desc" },
+    }),
+    seatsUsed(db, "admin"),
+    seatsUsed(db, "manager"),
+  ]);
+
+  return res.json({
+    members,
+    pendingInvites,
+    seats: {
+      admin: { used: adminsUsed, limit: seatLimitFor(org, "admin") },
+      manager: { used: managersUsed, limit: seatLimitFor(org, "manager") },
+    },
+  });
+}
+
+// POST /api/v1/team/invite   body: { email, role }
 export async function inviteMember(req: Request, res: Response) {
-  const { email, role } = req.body;
-  const { organizationId, userId } = req.user!; 
+  const db = req.db!;
+  const org = req.org!;
+  const body = req.body ?? {};
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const role = body.role;
 
-  if (!email || !role) {
-    return res.status(400).json({ message: "email and role are required" });
-  }
-
-  if (role === "superAdmin") {
-    return res.status(400).json({ message: "Cannot invite a superAdmin" });
+  if (!EMAIL_REGEX.test(email) || !isAssignableRole(role)) {
+    return res.status(400).json({ error: "A valid email and a role of admin, manager or viewer are required" });
   }
 
   const existingUser = await prisma.user.findUnique({ where: { email } });
   if (existingUser) {
-    return res.status(409).json({ message: "This email is already registered to an organization" });
+    return res.status(409).json({ error: "This email already has an EventoraX account" });
   }
 
-  const existingInvite = await req.db!.invitation.findUnique({
-    where: { email_organizationId: { email, organizationId } },
+  const pending = await db.invitation.findUnique({
+    where: { email_organizationId: { email, organizationId: org.id } },
   });
-  if (existingInvite && !existingInvite.acceptedAt && existingInvite.expiresAt > new Date()) {
-    return res.status(409).json({ message: "An invite is already pending for this email" });
+  if (pending && !pending.acceptedAt && pending.expiresAt > new Date()) {
+    return res.status(409).json({ error: "An invite is already pending for this email" });
   }
 
-  const limit = ROLE_SEAT_LIMITS[role as keyof typeof ROLE_SEAT_LIMITS];
-  if (limit !== undefined) {
-    const currentCount = await getRoleUsageCount(req.db!, organizationId, role);
-    if (currentCount >= limit) {
-      return res.status(403).json({ message: `${role} seat limit (${limit}) reached for this plan` });
-    }
+  const limit = seatLimitFor(org, role);
+  if (limit !== null && (await seatsUsed(db, role)) >= limit) {
+    return res
+      .status(403)
+      .json({ error: `Your plan allows ${limit} ${role} seat(s). Upgrade to add more.`, code: "SEAT_LIMIT" });
   }
 
-  const token = crypto.randomBytes(32).toString("hex");
+  const rawToken = randomToken();
   const expiresAt = new Date(Date.now() + INVITE_EXPIRY_DAYS * 24 * 60 * 60 * 1000);
 
-  const invitation = await req.db!.invitation.upsert({
-    where: { email_organizationId: { email, organizationId } },
-    update: { role, token, expiresAt, acceptedAt: null, invitedById: userId },
-    create: { email, role, organizationId, token, expiresAt, invitedById: userId },
+  const invitation = await db.invitation.upsert({
+    where: { email_organizationId: { email, organizationId: org.id } },
+    update: { role, token: hashToken(rawToken), expiresAt, acceptedAt: null, invitedById: req.user!.userId },
+    create: {
+      email,
+      role,
+      token: hashToken(rawToken),
+      expiresAt,
+      organizationId: org.id,
+      invitedById: req.user!.userId,
+    },
   });
 
-  await sendInviteEmail(email, token);
+  await sendInviteEmail(email, rawToken, org.name, role);
+  await logActivity(req, {
+    action: "team.invite",
+    entityType: "Invitation",
+    entityId: invitation.id,
+    metadata: { email, role },
+  });
 
   return res.status(201).json({ message: "Invite sent", invitationId: invitation.id });
 }
 
-export async function getTeamMembers(req: Request, res: Response) {
-  const { organizationId } = req.user!;
+// DELETE /api/v1/team/invites/:inviteId
+export async function cancelInvite(req: Request, res: Response) {
+  const db = req.db!;
+  const inviteId = String(req.params.inviteId);
 
-  const members = await req.db!.user.findMany({
-    where: { organizationId },
-    select: { id: true, name: true, email: true, role: true, createdAt: true, emailVerified: true },
-  });
+  const result = await db.invitation.deleteMany({ where: { id: inviteId, acceptedAt: null } });
+  if (result.count === 0) {
+    return res.status(404).json({ error: "Pending invite not found" });
+  }
 
-  const pendingInvites = await req.db!.invitation.findMany({
-    where: { organizationId, acceptedAt: null, expiresAt: { gt: new Date() } },
-    select: { id: true, email: true, role: true, createdAt: true, expiresAt: true },
-  });
-
-  return res.json({ members, pendingInvites });
+  await logActivity(req, { action: "team.invite.cancel", entityType: "Invitation", entityId: inviteId });
+  return res.json({ message: "Invite cancelled" });
 }
 
+// PATCH /api/v1/team/:userId/role   body: { role }
 export async function updateMemberRole(req: Request, res: Response) {
-  const targetUserId = req.params.userId as string;
-  const { role: newRole } = req.body;
-  const { organizationId, userId: requesterId } = req.user!;
+  const db = req.db!;
+  const org = req.org!;
+  const targetId = String(req.params.userId);
+  const newRole = (req.body ?? {}).role;
 
-  if (targetUserId === requesterId) {
-    return res.status(400).json({ message: "You cannot change your own role" });
+  if (targetId === req.user!.userId) {
+    return res.status(400).json({ error: "You cannot change your own role" });
+  }
+  if (!isAssignableRole(newRole)) {
+    return res.status(400).json({ error: "Role must be admin, manager or viewer" });
   }
 
-  const targetUser = await req.db!.user.findUnique({ where: { id: targetUserId } });
-  if (!targetUser) {
-    return res.status(404).json({ message: "Member not found" });
+  const target = await db.user.findUnique({ where: { id: targetId } });
+  if (!target) {
+    return res.status(404).json({ error: "Member not found" });
+  }
+  if (target.role === newRole) {
+    return res.json({ message: "No change" });
   }
 
-  if (targetUser.role === newRole) {
-    return res.json({ message: "No change", user: targetUser });
+  if (target.role === "admin" && (await db.user.count({ where: { role: "admin" } })) <= 1) {
+    return res.status(400).json({ error: "An organization must keep at least one admin" });
   }
 
-  const limit = ROLE_SEAT_LIMITS[newRole as keyof typeof ROLE_SEAT_LIMITS];
-  if (limit !== undefined) {
-    const currentCount = await getRoleUsageCount(req.db!, organizationId, newRole);
-    if (currentCount >= limit) {
-      return res.status(403).json({ message: `${newRole} seat limit (${limit}) reached` });
-    }
+  const limit = seatLimitFor(org, newRole);
+  if (limit !== null && (await seatsUsed(db, newRole)) >= limit) {
+    return res.status(403).json({ error: `Your plan allows ${limit} ${newRole} seat(s).`, code: "SEAT_LIMIT" });
   }
 
-  const updated = await req.db!.user.update({
-    where: { id: targetUserId },
+  const updated = await db.user.update({
+    where: { id: targetId },
     data: { role: newRole },
+    select: { id: true, name: true, email: true, role: true },
+  });
+
+  await logActivity(req, {
+    action: "team.role.update",
+    entityType: "User",
+    entityId: targetId,
+    metadata: { from: target.role, to: newRole },
   });
 
   return res.json({ message: "Role updated", user: updated });
 }
 
+// DELETE /api/v1/team/:userId
 export async function removeMember(req: Request, res: Response) {
-  const targetUserId = req.params.userId as string;
-  const { userId: requesterId, organizationId } = req.user!;
+  const db = req.db!;
+  const targetId = String(req.params.userId);
 
-  if (targetUserId === requesterId) {
-    return res.status(400).json({ message: "You cannot remove yourself" });
+  if (targetId === req.user!.userId) {
+    return res.status(400).json({ error: "You cannot remove yourself" });
   }
 
-  const targetUser = await req.db!.user.findUnique({ where: { id: targetUserId } });
-  if (!targetUser) {
-    return res.status(404).json({ message: "Member not found" });
+  const target = await db.user.findUnique({ where: { id: targetId } });
+  if (!target) {
+    return res.status(404).json({ error: "Member not found" });
   }
 
-  if (targetUser.role === "admin") {
-    const adminCount = await req.db!.user.count({ where: { organizationId, role: "admin" } });
-    if (adminCount <= 1) {
-      return res.status(400).json({ message: "Cannot remove the last admin" });
-    }
+  if (target.role === "admin" && (await db.user.count({ where: { role: "admin" } })) <= 1) {
+    return res.status(400).json({ error: "An organization must keep at least one admin" });
   }
 
-  await req.db!.user.delete({ where: { id: targetUserId } });
+  await db.user.delete({ where: { id: targetId } });
+  await logActivity(req, {
+    action: "team.remove",
+    entityType: "User",
+    entityId: targetId,
+    metadata: { email: target.email },
+  });
 
   return res.json({ message: "Member removed" });
 }

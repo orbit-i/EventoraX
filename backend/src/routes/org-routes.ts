@@ -1,21 +1,18 @@
 import { Router } from "express";
-import { authedQuery } from "../middleware/auth";
+import { requireAuth } from "../middleware/auth";
 import { requireRole } from "../middleware/role-check.auth";
 import { checkOrgStatus } from "../middleware/checkOrgStatus";
-import { logoUpload } from "../utils/upload";
-import {
-  getOrgProfile,
-  updateOrgSettings,
-  uploadLogo,
-  assignPlan,
-} from "../controllers/org-controller";
-import { attachScopedPrisma } from "../middleware/scopedPrisma";
+import { imageUpload } from "../utils/upload";
+import { getOrgProfile, updateOrgSettings, uploadOrgImage } from "../controllers/org-controller";
 
 const router = Router();
 
-router.get("/me", authedQuery, checkOrgStatus, attachScopedPrisma, getOrgProfile);
-router.patch("/me", authedQuery, checkOrgStatus, attachScopedPrisma, requireRole(["admin", "superAdmin"]), updateOrgSettings);
-router.post("/me/logo", authedQuery, checkOrgStatus, attachScopedPrisma, requireRole(["admin", "superAdmin"]), logoUpload.single("logo"), uploadLogo);
-router.patch("/me/plan", authedQuery, attachScopedPrisma, requireRole(["superAdmin"]), assignPlan);
+// Expired orgs can still view and edit their profile so they can renew.
+router.use(requireAuth, checkOrgStatus({ allowExpired: true }));
+
+router.get("/me", getOrgProfile);
+router.patch("/me", requireRole(["admin"]), updateOrgSettings);
+router.post("/me/logo", requireRole(["admin"]), imageUpload.single("file"), uploadOrgImage("logo"));
+router.post("/me/signature", requireRole(["admin"]), imageUpload.single("file"), uploadOrgImage("signature"));
 
 export default router;

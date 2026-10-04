@@ -1,18 +1,20 @@
 import { Request, Response, NextFunction } from "express";
-import { getScopedPrisma } from "../prisma/scopedClient";
+import { getScopedPrisma, ScopedPrisma } from "../prisma/scopedClient";
 
 declare global {
   namespace Express {
     interface Request {
-      db?: ReturnType<typeof getScopedPrisma>;
+      db?: ScopedPrisma;
     }
   }
 }
 
+/** Gives the request a Prisma client that can only see its own organization's rows. */
 export function attachScopedPrisma(req: Request, res: Response, next: NextFunction) {
-  if (!req.user) {
-    return res.status(401).json({ error: "Not authenticated" });
+  const orgId = req.org?.id ?? req.user?.organizationId;
+  if (!orgId) {
+    return res.status(403).json({ error: "This action requires an organization account", code: "NO_ORG" });
   }
-  req.db = getScopedPrisma(req.user.organizationId);
+  req.db = getScopedPrisma(orgId);
   next();
 }

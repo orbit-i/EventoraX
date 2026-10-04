@@ -2,7 +2,23 @@ import prisma from "./client";
 
 // Every model that has an organizationId column must be listed here.
 // Queries on these models are automatically limited to one organization.
-const ORG_SCOPED_MODELS = new Set<string>(["User", "Invitation"]);
+const ORG_SCOPED_MODELS = new Set<string>([
+  "User",
+  "Invitation",
+  "Event",
+  "EventCategory",
+  "Registration",
+  "Speaker",
+  "Sponsor",
+  "Session",
+  "Certificate",
+  "Ticket",
+  "IdCard",
+  "Payment",
+  "ActivityLog",
+  "Notification",
+  "ApiToken",
+]);
 
 const WHERE_OPS = new Set([
   "findFirst",
@@ -50,3 +66,5 @@ export function getScopedPrisma(organizationId: string) {
     },
   });
 }
+
+export type ScopedPrisma = ReturnType<typeof getScopedPrisma>;

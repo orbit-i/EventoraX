@@ -1,22 +1,24 @@
 import { Router } from "express";
-import { authedQuery } from "../middleware/auth";
+import { requireAuth } from "../middleware/auth";
 import { requireRole } from "../middleware/role-check.auth";
 import { attachScopedPrisma } from "../middleware/scopedPrisma";
 import { checkOrgStatus } from "../middleware/checkOrgStatus";
 import {
-  inviteMember,
   getTeamMembers,
+  inviteMember,
+  cancelInvite,
   updateMemberRole,
   removeMember,
 } from "../controllers/team-controller";
 
 const router = Router();
 
-router.use(authedQuery, checkOrgStatus, attachScopedPrisma);
+router.use(requireAuth, checkOrgStatus(), attachScopedPrisma);
 
-router.post("/invite", requireRole(["superAdmin", "admin"]), inviteMember);
-router.get("/", requireRole(["superAdmin", "admin", "manager", "viewer"]), getTeamMembers);
-router.patch("/:userId/role", requireRole(["superAdmin", "admin"]), updateMemberRole);
-router.delete("/:userId", requireRole(["superAdmin", "admin"]), removeMember);
+router.get("/", requireRole(["admin", "manager", "viewer"]), getTeamMembers);
+router.post("/invite", requireRole(["admin"]), inviteMember);
+router.delete("/invites/:inviteId", requireRole(["admin"]), cancelInvite);
+router.patch("/:userId/role", requireRole(["admin"]), updateMemberRole);
+router.delete("/:userId", requireRole(["admin"]), removeMember);
 
 export default router;

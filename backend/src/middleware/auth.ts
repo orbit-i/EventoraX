@@ -1,51 +1,56 @@
 import { Request, Response, NextFunction } from "express";
-import jwt from "jsonwebtoken";
+import { Role } from "@prisma/client";
+import prisma from "../prisma/client";
+import { verifyAuthToken, AuthTokenPayload } from "../utils/jwt";
 
-interface AuthPayload {
+export interface AuthUser {
   userId: string;
-  organizationId: string;
-  role: string;
+  email: string;
+  name: string;
+  role: Role;
+  organizationId: string | null; // null only for superAdmin
 }
 
 declare global {
   namespace Express {
     interface Request {
-      user?: AuthPayload;
+      user?: AuthUser;
     }
   }
 }
 
-export function authedQuery(req: Request, res: Response, next: NextFunction) {
-  const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return res.status(401).json({ error: "No token provided" });
+/**
+ * Verifies the Bearer token AND re-checks the user in the database on every request,
+ * so disabled accounts, role changes and "log out everywhere" take effect immediately.
+ */
+export async function requireAuth(req: Request, res: Response, next: NextFunction) {
+  const header = req.headers.authorization;
+  if (!header || !header.startsWith("Bearer ")) {
+    return res.status(401).json({ error: "Not authenticated", code: "NO_TOKEN" });
   }
 
-  const token = authHeader.split(" ")[1];
-
+  let payload: AuthTokenPayload;
   try {
-    const token = authHeader.split(" ")[1];
-
-if (!token) {
-  return res.status(401).json({ error: "Invalid token" });
-}
-
-const secret = process.env.JWT_SECRET;
-
-if (!secret) {
-  throw new Error("JWT_SECRET is not configured");
-}
-
-const payload = jwt.verify(token, secret) as jwt.JwtPayload & AuthPayload;
-
-req.user = {
-  userId: payload.userId,
-  organizationId: payload.organizationId,
-  role: payload.role,
-};
-
-next();
+    payload = verifyAuthToken(header.slice("Bearer ".length));
   } catch {
-    return res.status(401).json({ error: "Invalid or expired token" });
+    return res.status(401).json({ error: "Your session has expired. Please log in again.", code: "BAD_TOKEN" });
   }
+
+  const user = await prisma.user.findUnique({
+    where: { id: payload.userId },
+    select: { id: true, email: true, name: true, role: true, organizationId: true, isActive: true, tokenVersion: true },
+  });
+
+  if (!user || !user.isActive || user.tokenVersion !== payload.tokenVersion) {
+    return res.status(401).json({ error: "Your session is no longer valid. Please log in again.", code: "BAD_TOKEN" });
+  }
+
+  req.user = {
+    userId: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+    organizationId: user.organizationId,
+  };
+  next();
 }
