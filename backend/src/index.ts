@@ -7,6 +7,8 @@ import { UPLOAD_ROOT } from "./utils/storage";
 import authRoutes from "./routes/auth-route";
 import orgRoutes from "./routes/org-routes";
 import teamRoutes from "./routes/team-routes";
+import { eventsRouter, categoriesRouter } from "./routes/events-routes";
+import { speakersRouter, sponsorsRouter, sessionsRouter, reorderRouter } from "./routes/program-routes";
 
 const app = express();
 
@@ -36,6 +38,12 @@ app.get("/api/v1/health", async (_req, res) => {
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/org", orgRoutes);
 app.use("/api/v1/team", teamRoutes);
+app.use("/api/v1/events", eventsRouter);
+app.use("/api/v1/categories", categoriesRouter);
+app.use("/api/v1/speakers", speakersRouter);
+app.use("/api/v1/sponsors", sponsorsRouter);
+app.use("/api/v1/sessions", sessionsRouter);
+app.use("/api/v1/reorder", reorderRouter);
 
 // Unknown API route → JSON 404 (not an HTML page)
 app.use("/api", (_req, res) => {
@@ -66,3 +74,4 @@ const PORT = Number(process.env.PORT) || 5000;
 app.listen(PORT, () => {
   console.log(`API running on http://localhost:${PORT}`);
 });
+

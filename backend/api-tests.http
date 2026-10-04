@@ -4,6 +4,9 @@
 @token = {{login.response.body.token}}
 @inviteToken = f4fb2504279a756fa1cb6366c9e00134743b609ab28aa1a01afc5fedf61fd203
 @resetToken = 8839641bb77ddeae15e0451ce5b840ffee49ebe512f876348da33aff3ac33d12
+@eventId = {{createEvent.response.body.data.id}}
+@copyId = {{duplicateEvent.response.body.data.id}}
+@speakerId = {{createSpeaker.response.body.data.id}}
 
 ### 1. Health check
 GET {{baseUrl}}/health
@@ -108,3 +111,129 @@ POST {{baseUrl}}/auth/login
 Content-Type: application/json
 
 { "email": "nobody@test.com", "password": "wrong" }
+
+### ════════ PHASE 4A: EVENTS ════════
+
+### E1. Create an event with two categories
+# @name createEvent
+POST {{baseUrl}}/events
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Annual Tech Symposium",
+  "organizer": "CS Department",
+  "mode": "OFFLINE",
+  "startDateTime": "2026-11-20T09:00:00.000Z",
+  "endDateTime": "2026-11-20T17:00:00.000Z",
+  "location": "Main Auditorium",
+  "maxAttendees": 200,
+  "categories": ["General", "VIP"]
+}
+
+### E2. Invalid: end before start (expect 400 with fieldErrors.endDateTime)
+POST {{baseUrl}}/events
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Broken",
+  "mode": "ONLINE",
+  "startDateTime": "2026-11-20T17:00:00.000Z",
+  "endDateTime": "2026-11-20T09:00:00.000Z"
+}
+
+### E3. List events (meta has total/page/limit)
+GET {{baseUrl}}/events?search=tech&from=2026-11-01&to=2026-11-30
+Authorization: Bearer {{token}}
+
+### E4. Event detail with stats
+GET {{baseUrl}}/events/{{eventId}}
+Authorization: Bearer {{token}}
+
+### E5. Publish it (partial update)
+PATCH {{baseUrl}}/events/{{eventId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "status": "PUBLISHED", "topic": "AI & Robotics" }
+
+### E6. Duplicate (expect "(Copy)", DRAFT, categories copied)
+# @name duplicateEvent
+POST {{baseUrl}}/events/{{eventId}}/duplicate
+Authorization: Bearer {{token}}
+
+### E7. Add a category
+POST {{baseUrl}}/categories
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "eventId": "{{eventId}}", "label": "Speaker" }
+
+### E8. Same category again (expect 409)
+POST {{baseUrl}}/categories
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "eventId": "{{eventId}}", "label": "Speaker" }
+
+### E9. List categories
+GET {{baseUrl}}/categories?eventId={{eventId}}
+Authorization: Bearer {{token}}
+
+### S1. Create a speaker
+# @name createSpeaker
+POST {{baseUrl}}/speakers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "eventId": "{{eventId}}",
+  "firstName": "Ayesha",
+  "lastName": "Khan",
+  "title": "Professor",
+  "company": "NUST",
+  "sessionTopic": "Future of AI",
+  "linkedin": "https://linkedin.com/in/example",
+  "displayPublic": true
+}
+
+### S2. List speakers
+GET {{baseUrl}}/speakers?eventId={{eventId}}
+Authorization: Bearer {{token}}
+
+### SP1. Create a sponsor
+POST {{baseUrl}}/sponsors
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "eventId": "{{eventId}}", "name": "TechCorp", "website": "https://techcorp.pk", "tier": "GOLD" }
+
+### SE1. Create a session with the speaker
+POST {{baseUrl}}/sessions
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "eventId": "{{eventId}}",
+  "speakerId": "{{speakerId}}",
+  "title": "Keynote: The Future of AI",
+  "startTime": "2026-11-20T09:30:00.000Z",
+  "endTime": "2026-11-20T10:30:00.000Z",
+  "location": "Hall A"
+}
+
+### SE2. List sessions (speaker name included)
+GET {{baseUrl}}/sessions?eventId={{eventId}}
+Authorization: Bearer {{token}}
+
+### R1. Reorder speakers
+POST {{baseUrl}}/reorder
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "type": "speakers", "items": [{ "id": "{{speakerId}}", "displayOrder": 5 }] }
+
+### E10. Delete the empty copy (expect deleted: true)
+DELETE {{baseUrl}}/events/{{copyId}}
+Authorization: Bearer {{token}}
