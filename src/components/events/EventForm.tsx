@@ -1,283 +1,276 @@
-import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { FormSection } from "@/components/shared/FormSection";
-import { ApiError } from "@/lib/api";
-import { fromDatetimeLocal } from "@/lib/date";
-import { type EventFormValues, type EventStatus, EVENT_STATUS_LABELS } from "@/types/event";
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router"
+import { useForm, Controller, useWatch } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { toast } from "sonner"
+import { TextField, SelectField, TextareaField } from "@/components/ui/form-fields"
+import { FormSection, FullWidth, SwitchField, FormFooter } from "@/components/app/form/FormLayout"
+import { applyServerErrors } from "@/components/app/form/serverErrors"
+import { FormError } from "@/components/auth/AuthShell"
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges"
+import { api } from "@/lib/api"
+import { toDatetimeLocal, fromDatetimeLocal } from "@/lib/date"
+import { statusOptions } from "@/lib/status"
+import type { EventItem } from "@/types/event"
+import { CategoriesEditor } from "./CategoriesEditor"
 
-const formSchema = z
+const URL_RE = /^https?:\/\/\S+$/i
+
+const schema = z
   .object({
-    title: z.string().min(1, "Name is required"),
-    organizer: z.string().optional(),
-    mode: z.enum(["ONLINE", "OFFLINE", "HYBRID"]),
-    startDateTime: z.string().min(1, "Start date & time is required"),
-    endDateTime: z.string().min(1, "End date & time is required"),
-    location: z.string().optional(),
-    description: z.string().optional(),
-    topic: z.string().optional(),
-    maxAttendees: z.string().optional(),
-    ticketPrice: z.string().optional(),
+    title: z.string().trim().min(3, "Give the event a title (at least 3 characters)").max(200),
+    organizer: z.string().trim().max(200),
+    topic: z.string().trim().max(200),
+    description: z.string().trim().max(10000),
+    mode: z.enum(["OFFLINE", "ONLINE", "HYBRID"]),
+    status: z.enum(["DRAFT", "PUBLISHED", "ONGOING", "COMPLETED", "ARCHIVED"]),
+    startDateTime: z.string().min(1, "Choose when the event starts"),
+    endDateTime: z.string().min(1, "Choose when the event ends"),
+    location: z.string().trim().max(255),
+    meetingLink: z.string().trim().max(500).refine((v) => v === "" || URL_RE.test(v), "Must be a full link starting with https://"),
+    maxAttendees: z.string().trim().refine((v) => v === "" || (/^\d+$/.test(v) && Number(v) > 0), "Enter a whole number above 0, or leave empty for no limit"),
+    ticketPrice: z.string().trim().refine((v) => v === "" || (/^\d+(\.\d{1,2})?$/.test(v) && Number(v) >= 0), "Enter an amount in PKR, e.g. 1500"),
     registrationOpen: z.boolean(),
-    meetingLink: z.string().optional(),
-    certTemplateId: z.string().optional(),
     autoIssueCert: z.boolean(),
-    status: z
-      .enum(["DRAFT", "PUBLISHED", "ONGOING", "COMPLETED", "ARCHIVED"])
-      .optional(),
   })
-  .refine(
-    (vals) =>
-      !vals.startDateTime ||
-      !vals.endDateTime ||
-      new Date(vals.endDateTime) > new Date(vals.startDateTime),
-    { message: "End must be after start", path: ["endDateTime"] }
-  );
+  .superRefine((v, ctx) => {
+    if (v.startDateTime && v.endDateTime && new Date(v.endDateTime) <= new Date(v.startDateTime)) {
+      ctx.addIssue({ code: "custom", path: ["endDateTime"], message: "The end must be after the start" })
+    }
+    if (v.mode !== "ONLINE" && !v.location) {
+      ctx.addIssue({ code: "custom", path: ["location"], message: "Add the venue for a physical or hybrid event" })
+    }
+    if (v.mode !== "OFFLINE" && !v.meetingLink) {
+      ctx.addIssue({ code: "custom", path: ["meetingLink"], message: "Add the meeting link for an online or hybrid event" })
+    }
+  })
 
-export type EventFormInternalValues = z.infer<typeof formSchema>;
+type Values = z.infer<typeof schema>
 
-export function EventForm({
-  defaultValues,
-  submitLabel,
-  showStatus = false,
-  onSubmit,
-  onCancel,
-  children,
-}: {
-  defaultValues: Partial<EventFormInternalValues>;
-  submitLabel: string;
-  showStatus?: boolean;
-  onSubmit: (values: EventFormValues) => Promise<void>;
-  onCancel?: () => void;
-  children?: React.ReactNode;
-}) {
+function toValues(event?: EventItem): Values {
+  return {
+    title: event?.title ?? "",
+    organizer: event?.organizer ?? "",
+    topic: event?.topic ?? "",
+    description: event?.description ?? "",
+    mode: event?.mode ?? "OFFLINE",
+    status: event?.status ?? "DRAFT",
+    startDateTime: toDatetimeLocal(event?.startDateTime),
+    endDateTime: toDatetimeLocal(event?.endDateTime),
+    location: event?.location ?? "",
+    meetingLink: event?.meetingLink ?? "",
+    maxAttendees: event?.maxAttendees ? String(event.maxAttendees) : "",
+    ticketPrice: event?.ticketPrice && Number(event.ticketPrice) > 0 ? String(Number(event.ticketPrice)) : "",
+    registrationOpen: event?.registrationOpen ?? true,
+    autoIssueCert: event?.autoIssueCert ?? false,
+  }
+}
+
+const STATUS_CHOICES = statusOptions("event").filter((o) => o.value !== "ARCHIVED")
+
+/** Create or edit an event. On success it opens the event's page. */
+export function EventForm({ event, onCategoriesChanged }: { event?: EventItem; onCategoriesChanged?: () => void }) {
+  const navigate = useNavigate()
+  const isEdit = Boolean(event)
+  const archived = event?.status === "ARCHIVED"
+  const [formError, setFormError] = useState<string | null>(null)
+  const [newCategories, setNewCategories] = useState<string[]>(["General"])
+  const [goTo, setGoTo] = useState<string | null>(null)
+
   const {
     register,
     handleSubmit,
     control,
-    watch,
     setError,
-    formState: { errors, isSubmitting },
-  } = useForm<EventFormInternalValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      mode: "OFFLINE",
-      registrationOpen: true,
-      autoIssueCert: false,
-      ...defaultValues,
-    },
-  });
+    formState: { errors, isSubmitting, isDirty },
+  } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: toValues(event) })
 
-  const mode = watch("mode");
-  const [formError, setFormError] = useState<string | null>(null);
+  const mode = useWatch({ control, name: "mode" })
+  const startDateTime = useWatch({ control, name: "startDateTime" })
 
-  async function handleFormSubmit(data: EventFormInternalValues) {
-    setFormError(null);
-    const payload: EventFormValues = {
-      title: data.title.trim(),
-      organizer: data.organizer?.trim() || undefined,
-      mode: data.mode,
-      startDateTime: fromDatetimeLocal(data.startDateTime),
-      endDateTime: fromDatetimeLocal(data.endDateTime),
-      location: data.location?.trim() || undefined,
-      description: data.description?.trim() || undefined,
-      topic: data.topic?.trim() || undefined,
-      maxAttendees: data.maxAttendees ? Number(data.maxAttendees) : undefined,
-      ticketPrice: data.ticketPrice?.trim() || undefined,
-      registrationOpen: data.registrationOpen,
-      meetingLink: data.meetingLink?.trim() || undefined,
-      certTemplateId: data.certTemplateId?.trim() || undefined,
-      autoIssueCert: data.autoIssueCert,
-      status: data.status,
-    };
+  useUnsavedChanges(isDirty && goTo === null)
 
+  // Navigate only after the "saved" render, so the unsaved-changes guard doesn't fire.
+  useEffect(() => {
+    if (goTo) navigate(goTo)
+  }, [goTo, navigate])
+
+  async function onSubmit(v: Values) {
+    setFormError(null)
+    const payload = {
+      title: v.title,
+      organizer: v.organizer || null,
+      topic: v.topic || null,
+      description: v.description || null,
+      mode: v.mode,
+      ...(archived ? {} : { status: v.status }),
+      startDateTime: fromDatetimeLocal(v.startDateTime),
+      endDateTime: fromDatetimeLocal(v.endDateTime),
+      location: v.mode === "ONLINE" ? null : v.location || null,
+      meetingLink: v.mode === "OFFLINE" ? null : v.meetingLink || null,
+      maxAttendees: v.maxAttendees ? Number(v.maxAttendees) : null,
+      ticketPrice: v.ticketPrice ? Number(v.ticketPrice) : null,
+      registrationOpen: v.registrationOpen,
+      autoIssueCert: v.autoIssueCert,
+    }
     try {
-      await onSubmit(payload);
-    } catch (err) {
-      if (err instanceof ApiError) {
-        if (err.fieldErrors) {
-          Object.entries(err.fieldErrors).forEach(([field, message]) => {
-            setError(field as keyof EventFormInternalValues, { message });
-          });
-        }
-        setFormError(err.message);
+      if (event) {
+        await api.patch(`/events/${event.id}`, payload)
+        toast.success("Event updated")
+        setGoTo(`/dashboard/events/${event.id}`)
       } else {
-        setFormError("Something went wrong. Please try again.");
+        const created = await api.post<EventItem>("/events", { ...payload, categories: newCategories })
+        toast.success("Event created")
+        setGoTo(`/dashboard/events/${created.id}`)
       }
+    } catch (err) {
+      setFormError(applyServerErrors(err, setError))
+      window.scrollTo({ top: 0, behavior: "smooth" })
     }
   }
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)} className="space-y-8">
-      {formError && (
-        <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700">
-          {formError}
-        </div>
-      )}
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+      {formError && <FormError message={formError} />}
 
-      <FormSection title="Basic details" description="What the event is called and how it runs.">
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="title">Event name *</Label>
-          <Input id="title" {...register("title")} placeholder="e.g. Annual Tech Symposium" />
-          {errors.title && <p className="text-sm text-red-600">{errors.title.message}</p>}
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="organizer">Organizer</Label>
-          <Input id="organizer" {...register("organizer")} placeholder="e.g. CS Department" />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label>Mode *</Label>
-          <Controller
-            control={control}
-            name="mode"
-            render={({ field }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger><SelectValue placeholder="Select mode" /></SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="ONLINE">Online</SelectItem>
-                  <SelectItem value="OFFLINE">Offline</SelectItem>
-                  <SelectItem value="HYBRID">Hybrid</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
+      <FormSection title="Basics" description="What the event is and who is running it.">
+        <FullWidth>
+          <TextField label="Event title" required placeholder="Annual Tech Symposium 2026" error={errors.title?.message} {...register("title")} />
+        </FullWidth>
+        <TextField label="Organizer" placeholder="CS Department" error={errors.organizer?.message} {...register("organizer")} />
+        <TextField label="Topic" placeholder="AI & Robotics" error={errors.topic?.message} {...register("topic")} />
+        <FullWidth>
+          <TextareaField
+            label="Description"
+            rows={5}
+            placeholder="What attendees can expect, who it's for, what to bring…"
+            error={errors.description?.message}
+            {...register("description")}
           />
-        </div>
-
-        {showStatus && (
-          <div className="space-y-1.5">
-            <Label>Status</Label>
-            <Controller
-              control={control}
-              name="status"
-              render={({ field }) => (
-                <Select value={field.value} onValueChange={field.onChange}>
-                  <SelectTrigger><SelectValue placeholder="Select status" /></SelectTrigger>
-                  <SelectContent>
-                    {(Object.keys(EVENT_STATUS_LABELS) as EventStatus[]).map((s) => (
-                      <SelectItem key={s} value={s}>{EVENT_STATUS_LABELS[s]}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            />
-          </div>
+        </FullWidth>
+        <SelectField label="Mode" required options={[
+          { value: "OFFLINE", label: "Physical (in person)" },
+          { value: "ONLINE", label: "Online" },
+          { value: "HYBRID", label: "Hybrid (both)" },
+        ]} error={errors.mode?.message} {...register("mode")} />
+        {archived ? (
+          <TextField label="Status" value="Archived" disabled helper="Restore the event from its page to change the status." readOnly />
+        ) : (
+          <SelectField
+            label="Status"
+            options={STATUS_CHOICES}
+            helper="Draft events are only visible to your team."
+            error={errors.status?.message}
+            {...register("status")}
+          />
         )}
       </FormSection>
 
-      <FormSection title="Date & location" description="When and where it's happening.">
-        <div className="space-y-1.5">
-          <Label htmlFor="startDateTime">Start date & time *</Label>
-          <Input id="startDateTime" type="datetime-local" {...register("startDateTime")} />
-          {errors.startDateTime && (
-            <p className="text-sm text-red-600">{errors.startDateTime.message}</p>
-          )}
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="endDateTime">End date & time *</Label>
-          <Input id="endDateTime" type="datetime-local" {...register("endDateTime")} />
-          {errors.endDateTime && (
-            <p className="text-sm text-red-600">{errors.endDateTime.message}</p>
-          )}
-        </div>
-
+      <FormSection title="Date & place" description="Times are in your local time zone.">
+        <TextField label="Starts" type="datetime-local" required error={errors.startDateTime?.message} {...register("startDateTime")} />
+        <TextField
+          label="Ends"
+          type="datetime-local"
+          required
+          min={startDateTime || undefined}
+          error={errors.endDateTime?.message}
+          {...register("endDateTime")}
+        />
+        {mode !== "ONLINE" && (
+          <FullWidth>
+            <TextField label="Venue" required placeholder="Main Auditorium, NUST H-12" error={errors.location?.message} {...register("location")} />
+          </FullWidth>
+        )}
         {mode !== "OFFLINE" && (
-          <div className="space-y-1.5 sm:col-span-2">
-            <Label htmlFor="meetingLink">Meeting link</Label>
-            <Input id="meetingLink" {...register("meetingLink")} placeholder="https://zoom.us/..." />
-          </div>
+          <FullWidth>
+            <TextField
+              label="Meeting link"
+              required
+              placeholder="https://meet.google.com/…"
+              helper="Sent to attendees with their confirmation."
+              error={errors.meetingLink?.message}
+              {...register("meetingLink")}
+            />
+          </FullWidth>
         )}
-
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="location">Venue</Label>
-          <Input id="location" {...register("location")} placeholder="e.g. Main Auditorium" />
-        </div>
-
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="topic">Topic</Label>
-          <Input id="topic" {...register("topic")} />
-        </div>
       </FormSection>
 
-      <FormSection title="Capacity & certificate" description="Limits, pricing, and completion rules.">
-        <div className="space-y-1.5">
-          <Label htmlFor="maxAttendees">Max attendees</Label>
-          <Input id="maxAttendees" type="number" min="0" {...register("maxAttendees")} />
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="ticketPrice">Ticket price</Label>
-          <Input id="ticketPrice" type="number" step="0.01" min="0" {...register("ticketPrice")} placeholder="0.00" />
-        </div>
-
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="certTemplateId">Certificate template</Label>
-          <Input id="certTemplateId" disabled placeholder="Certificate templates coming soon" />
-          <p className="text-xs text-slate-400">Populates once the Certificates module ships.</p>
-        </div>
-
-        <div className="flex items-center justify-between rounded-lg border border-[#e9e4ff] p-3">
-          <div>
-            <Label>Registration open</Label>
-            <p className="text-xs text-slate-400">Allow new sign-ups</p>
-          </div>
+      <FormSection title="Registration" description="Who can sign up and how many.">
+        <TextField
+          label="Maximum attendees"
+          inputMode="numeric"
+          placeholder="No limit"
+          helper="Registration closes automatically when full."
+          error={errors.maxAttendees?.message}
+          {...register("maxAttendees")}
+        />
+        <TextField
+          label="Ticket price (PKR)"
+          inputMode="decimal"
+          placeholder="Free"
+          error={errors.ticketPrice?.message}
+          {...register("ticketPrice")}
+        />
+        <FullWidth>
           <Controller
             control={control}
             name="registrationOpen"
             render={({ field }) => (
-              <Switch checked={field.value} onCheckedChange={field.onChange} />
+              <SwitchField
+                label="Registration open"
+                description="Turn off to stop new registrations (organizers can still add attendees)."
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
             )}
           />
-        </div>
+        </FullWidth>
+      </FormSection>
 
-        <div className="flex items-center justify-between rounded-lg border border-[#e9e4ff] p-3">
-          <div>
-            <Label>Auto-issue certificate</Label>
-            <p className="text-xs text-slate-400">On attendance</p>
-          </div>
+      <FormSection title="Certificates" description="Certificates for people who attend.">
+        <FullWidth>
           <Controller
             control={control}
             name="autoIssueCert"
             render={({ field }) => (
-              <Switch checked={field.value} onCheckedChange={field.onChange} />
+              <SwitchField
+                label="Issue certificates automatically"
+                description="Attendees get their certificate as soon as they're marked as attended."
+                checked={field.value}
+                onCheckedChange={field.onChange}
+              />
             )}
           />
-        </div>
+        </FullWidth>
+        <FullWidth>
+          <p className="rounded-xl border border-dashed border-[#d8d0ff] bg-[#faf8ff] px-4 py-3 text-sm text-[#64748b]">
+            Choosing a certificate template becomes available with the Certificates module.
+          </p>
+        </FullWidth>
       </FormSection>
 
-      <FormSection title="Description">
-        <div className="space-y-1.5 sm:col-span-2">
-          <Textarea id="description" rows={4} {...register("description")} />
-        </div>
+      <FormSection title="Attendee categories" description="Group attendees (e.g. VIP, Student). Used on tickets, ID cards and certificates.">
+        <FullWidth>
+          {isEdit && event ? (
+            <CategoriesEditor
+              mode="live"
+              eventId={event.id}
+              categories={event.categories ?? []}
+              onChanged={() => onCategoriesChanged?.()}
+            />
+          ) : (
+            <CategoriesEditor mode="local" value={newCategories} onChange={setNewCategories} />
+          )}
+        </FullWidth>
       </FormSection>
 
-      {children}
-
-      <div className="flex gap-2 pt-2">
-        <Button type="submit" disabled={isSubmitting} className="bg-[#7c3aed] hover:bg-[#6d28d9]">
-          {isSubmitting ? "Saving…" : submitLabel}
-        </Button>
-        {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isSubmitting}>
-            Cancel
-          </Button>
-        )}
-      </div>
+      <FormFooter
+        submitting={isSubmitting}
+        onCancel={() => navigate(event ? `/dashboard/events/${event.id}` : "/dashboard/events")}
+        submitLabel={isEdit ? "Save changes" : "Create event"}
+        dirty={isDirty}
+      />
     </form>
-  );
+  )
 }

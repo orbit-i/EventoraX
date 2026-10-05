@@ -12,6 +12,7 @@ import { PaginationBar } from "@/components/app/PaginationBar"
 import { BulkActionBar } from "@/components/app/BulkActionBar"
 import { RowActions } from "@/components/app/RowActions"
 import { StatusBadge } from "@/components/app/StatusBadge"
+import { CardGrid } from "@/components/app/CardGrid"
 import { EmptyState, NoResults, ErrorState } from "@/components/app/States"
 import { useConfirm } from "@/components/app/ConfirmDialog"
 import { RoleGate } from "@/components/app/RoleGate"
@@ -146,8 +147,31 @@ export default function AppBlocksGallery() {
             <Trash2 /> Delete
           </Button>
         </BulkActionBar>
-        {filtered.length === 0 ? (
+                {filtered.length === 0 ? (
           <NoResults onClear={() => (setSearch(""), setStatus(""))} />
+        ) : view === "grid" ? (
+          <CardGrid>
+            {pageRows.map((r) => (
+              <div key={r.id} className="space-y-3 rounded-2xl border border-[#e9e4ff] bg-white p-5 shadow-sm">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-11 w-11 items-center justify-center rounded-full bg-[#ede9fe] font-bold text-[#7c3aed]">
+                      {r.name.split(" ")[1]}
+                    </div>
+                    <div>
+                      <p className="font-medium text-[#0f172a]">{r.name}</p>
+                      <p className="text-xs text-[#64748b]">{r.email}</p>
+                    </div>
+                  </div>
+                  <RowActions actions={[{ label: "Edit", icon: Pencil, onClick: () => toast(`Edit ${r.name}`) }]} />
+                </div>
+                <div className="flex gap-2">
+                  <StatusBadge kind="registration" value={r.status} />
+                  <span className="text-xs text-[#94a3b8]">{r.category}</span>
+                </div>
+              </div>
+            ))}
+          </CardGrid>
         ) : (
           <ServerTable
             columns={columns}

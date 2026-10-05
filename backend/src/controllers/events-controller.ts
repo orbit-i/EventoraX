@@ -106,7 +106,7 @@ export async function getEvent(req: Request, res: Response) {
   const event = await db.event.findUnique({
     where: { id },
     include: {
-      categories: { orderBy: { label: "asc" } },
+      categories: { orderBy: { label: "asc" }, include: { _count: { select: { registrations: true } } } },
       _count: { select: { registrations: true, speakers: true, sponsors: true, sessions: true, certificates: true } },
     },
   });
