@@ -10,6 +10,7 @@ import teamRoutes from "./routes/team-routes";
 import { eventsRouter, categoriesRouter } from "./routes/events-routes";
 import { speakersRouter, sponsorsRouter, sessionsRouter, reorderRouter } from "./routes/program-routes";
 import { registrationsRouter } from "./routes/registrations-routes";
+import { uploadsRouter } from "./routes/uploads-routes";
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use("/api/v1/sponsors", sponsorsRouter);
 app.use("/api/v1/sessions", sessionsRouter);
 app.use("/api/v1/reorder", reorderRouter);
 app.use("/api/v1/registrations", registrationsRouter);
+app.use("/api/v1/uploads", uploadsRouter);
 
 // Unknown API route → JSON 404 (not an HTML page)
 app.use("/api", (_req, res) => {

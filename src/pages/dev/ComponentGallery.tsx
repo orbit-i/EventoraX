@@ -20,6 +20,7 @@ import {
 import { DataTable, type ColumnDef } from "@/components/ui/data-table"
 import { SearchBar } from "@/components/ui/search-bar"
 import StatCard from "@/components/ui/dashboard/StatCard"
+import AppBlocksGallery from "./AppBlocksGallery"
 
 type Attendee = {
   id: number
@@ -180,6 +181,7 @@ export default function ComponentGallery() {
             emptyTitle="No attendees match your search"
           />
         </Section>
+        <AppBlocksGallery />
       </div>
     </div>
   )
