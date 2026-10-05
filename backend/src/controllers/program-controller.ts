@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { z } from "zod";
-import { ok, fail, validationFail, q } from "../utils/http";
-import { optionalText, optionalUrl, optionalImage } from "../utils/schemas";
+import { Prisma } from "@prisma/client";
+import { ok, fail, validationFail, pagination, q } from "../utils/http";
+import { optionalText, optionalUrl, optionalImage, isOneOf } from "../utils/schemas";
 import { saveUpload, deleteUpload } from "../utils/storage";
 import { logActivity } from "../utils/activity";
 
@@ -10,10 +11,6 @@ const SPONSOR_TIERS = ["PLATINUM", "GOLD", "SILVER", "BRONZE"] as const;
 async function eventExists(req: Request, eventId: string): Promise<boolean> {
   const event = await req.db!.event.findUnique({ where: { id: eventId }, select: { id: true } });
   return event !== null;
-}
-
-function requiredEventId(req: Request): string | undefined {
-  return q((req.query as Record<string, unknown>).eventId);
 }
 
 /** A session's speaker must belong to the same event. */
@@ -44,17 +41,38 @@ const speakerFields = z.object({
 });
 const speakerUpdate = speakerFields.omit({ eventId: true }).partial();
 
-// GET /api/v1/speakers?eventId=&displayPublic=true
+// GET /api/v1/speakers?eventId=&search=&displayPublic=true|false&page=&limit=
 export async function listSpeakers(req: Request, res: Response) {
-  const eventId = requiredEventId(req);
+  const query = req.query as Record<string, unknown>;
+  const eventId = q(query.eventId);
   if (!eventId) return fail(res, 400, "VALIDATION_ERROR", "eventId is required");
-  const displayPublic = q((req.query as Record<string, unknown>).displayPublic);
 
-  const speakers = await req.db!.speaker.findMany({
-    where: { eventId, ...(displayPublic !== undefined && { displayPublic: displayPublic === "true" }) },
-    orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
-  });
-  return ok(res, speakers);
+  const { page, limit, skip } = pagination(query, 500);
+  const search = q(query.search);
+  const displayPublic = q(query.displayPublic);
+
+  const where: Prisma.SpeakerWhereInput = { eventId };
+  if (displayPublic === "true" || displayPublic === "false") where.displayPublic = displayPublic === "true";
+  if (search) {
+    where.OR = [
+      { firstName: { contains: search } },
+      { lastName: { contains: search } },
+      { company: { contains: search } },
+      { sessionTopic: { contains: search } },
+    ];
+  }
+
+  const [speakers, total] = await Promise.all([
+    req.db!.speaker.findMany({
+      where,
+      orderBy: [{ displayOrder: "asc" }, { createdAt: "asc" }],
+      skip,
+      take: limit,
+      include: { _count: { select: { sessions: true } } },
+    }),
+    req.db!.speaker.count({ where }),
+  ]);
+  return ok(res, speakers, 200, { total, page, limit });
 }
 
 // GET /api/v1/speakers/:id
@@ -143,17 +161,32 @@ const sponsorFields = z.object({
 });
 const sponsorUpdate = sponsorFields.omit({ eventId: true }).partial();
 
-// GET /api/v1/sponsors?eventId=&displayPublic=true
+// GET /api/v1/sponsors?eventId=&search=&tier=&displayPublic=&page=&limit=
 export async function listSponsors(req: Request, res: Response) {
-  const eventId = requiredEventId(req);
+  const query = req.query as Record<string, unknown>;
+  const eventId = q(query.eventId);
   if (!eventId) return fail(res, 400, "VALIDATION_ERROR", "eventId is required");
-  const displayPublic = q((req.query as Record<string, unknown>).displayPublic);
 
-  const sponsors = await req.db!.sponsor.findMany({
-    where: { eventId, ...(displayPublic !== undefined && { displayPublic: displayPublic === "true" }) },
-    orderBy: [{ tier: "asc" }, { displayOrder: "asc" }], // PLATINUM first
-  });
-  return ok(res, sponsors);
+  const { page, limit, skip } = pagination(query, 500);
+  const search = q(query.search);
+  const tier = q(query.tier);
+  const displayPublic = q(query.displayPublic);
+
+  const where: Prisma.SponsorWhereInput = { eventId };
+  if (isOneOf(SPONSOR_TIERS, tier)) where.tier = tier;
+  if (displayPublic === "true" || displayPublic === "false") where.displayPublic = displayPublic === "true";
+  if (search) where.name = { contains: search };
+
+  const [sponsors, total] = await Promise.all([
+    req.db!.sponsor.findMany({
+      where,
+      orderBy: [{ tier: "asc" }, { displayOrder: "asc" }], // PLATINUM first
+      skip,
+      take: limit,
+    }),
+    req.db!.sponsor.count({ where }),
+  ]);
+  return ok(res, sponsors, 200, { total, page, limit });
 }
 
 // GET /api/v1/sponsors/:id
@@ -254,18 +287,31 @@ const sessionUpdate = sessionFields.omit({ eventId: true }).partial();
 
 const SPEAKER_SUMMARY = { select: { id: true, firstName: true, lastName: true, photo: true } } as const;
 
-// GET /api/v1/sessions?eventId=&displayPublic=true
+// GET /api/v1/sessions?eventId=&search=&displayPublic=&page=&limit=
 export async function listSessions(req: Request, res: Response) {
-  const eventId = requiredEventId(req);
+  const query = req.query as Record<string, unknown>;
+  const eventId = q(query.eventId);
   if (!eventId) return fail(res, 400, "VALIDATION_ERROR", "eventId is required");
-  const displayPublic = q((req.query as Record<string, unknown>).displayPublic);
 
-  const sessions = await req.db!.session.findMany({
-    where: { eventId, ...(displayPublic !== undefined && { displayPublic: displayPublic === "true" }) },
-    orderBy: [{ displayOrder: "asc" }, { startTime: "asc" }],
-    include: { speaker: SPEAKER_SUMMARY },
-  });
-  return ok(res, sessions);
+  const { page, limit, skip } = pagination(query, 500);
+  const search = q(query.search);
+  const displayPublic = q(query.displayPublic);
+
+  const where: Prisma.SessionWhereInput = { eventId };
+  if (displayPublic === "true" || displayPublic === "false") where.displayPublic = displayPublic === "true";
+  if (search) where.OR = [{ title: { contains: search } }, { location: { contains: search } }];
+
+  const [sessions, total] = await Promise.all([
+    req.db!.session.findMany({
+      where,
+      orderBy: [{ displayOrder: "asc" }, { startTime: "asc" }],
+      skip,
+      take: limit,
+      include: { speaker: SPEAKER_SUMMARY },
+    }),
+    req.db!.session.count({ where }),
+  ]);
+  return ok(res, sessions, 200, { total, page, limit });
 }
 
 // GET /api/v1/sessions/:id

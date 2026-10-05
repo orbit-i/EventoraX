@@ -17,5 +17,6 @@ registrationsRouter.post("/email", canWrite, regs.emailRegistrations);
 
 registrationsRouter.get("/:id", regs.getRegistration);
 registrationsRouter.patch("/:id", canWrite, regs.updateRegistration);
-registrationsRouter.patch("/:id/attendance", canWrite, regs.markAttendance);
+registrationsRouter.patch("/:id/status", canWrite, regs.setRegistrationStatus);
+registrationsRouter.patch("/:id/attendance", canWrite, regs.setRegistrationStatus); // older name, still works
 registrationsRouter.delete("/:id", canWrite, regs.deleteRegistration);

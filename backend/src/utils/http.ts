@@ -30,10 +30,10 @@ export function validationFail(res: Response, error: ZodError) {
   });
 }
 
-/** Reads ?page=&limit= safely. Limit is capped at 100. */
-export function pagination(query: Record<string, unknown>) {
+/** Reads ?page=&limit= safely. Limit is capped (100 by default). */
+export function pagination(query: Record<string, unknown>, maxLimit = 100) {
   const page = Math.max(1, Number.parseInt(String(query.page ?? "1"), 10) || 1);
-  const limit = Math.min(100, Math.max(1, Number.parseInt(String(query.limit ?? "20"), 10) || 20));
+  const limit = Math.min(maxLimit, Math.max(1, Number.parseInt(String(query.limit ?? "20"), 10) || 20));
   return { page, limit, skip: (page - 1) * limit };
 }
 

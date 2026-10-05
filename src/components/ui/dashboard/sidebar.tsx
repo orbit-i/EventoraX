@@ -2,6 +2,11 @@ import { useState } from "react"
 import { NavLink, useLocation, useNavigate } from "react-router"
 import {
   LayoutDashboard,
+  CalendarDays,
+  ClipboardList,
+  Mic2,
+  Handshake,
+  ListOrdered,
   BarChart3,
   PieChart,
   Users,
@@ -17,6 +22,11 @@ import { useAuth } from "@/context/AuthContext"
 
 const navItems = [
   { to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true },
+  { to: "/dashboard/events", label: "Events", icon: CalendarDays },
+  { to: "/dashboard/registrations", label: "Registrations", icon: ClipboardList },
+  { to: "/dashboard/speakers", label: "Speakers", icon: Mic2 },
+  { to: "/dashboard/sponsors", label: "Sponsors", icon: Handshake },
+  { to: "/dashboard/schedule", label: "Schedule", icon: ListOrdered },
   { to: "/dashboard/statistics", label: "Statistics", icon: BarChart3 },
   { to: "/dashboard/charts", label: "Charts", icon: PieChart },
   { to: "/dashboard/team", label: "Team", icon: Users },

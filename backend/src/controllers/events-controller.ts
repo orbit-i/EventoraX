@@ -257,6 +257,115 @@ export async function duplicateEvent(req: Request, res: Response) {
   });
   return ok(res, copy, 201);
 }
+// GET /api/v1/events/stats   (cards on the Events list page)
+export async function getEventsOverview(req: Request, res: Response) {
+  const grouped = await req.db!.event.groupBy({ by: ["status"], _count: { _all: true } });
+
+  const byStatus: Record<string, number> = { DRAFT: 0, PUBLISHED: 0, ONGOING: 0, COMPLETED: 0, ARCHIVED: 0 };
+  for (const g of grouped) byStatus[g.status] = g._count._all;
+  const total = Object.values(byStatus).reduce((sum, n) => sum + n, 0);
+
+  return ok(res, { total, active: total - (byStatus.ARCHIVED ?? 0), byStatus });
+}
+
+// GET /api/v1/events/:id/stats   (every number for one event, used by stat cards and the event hub)
+export async function getEventStats(req: Request, res: Response) {
+  const db = req.db!;
+  const id = String(req.params.id);
+
+  const event = await db.event.findUnique({ where: { id }, select: { id: true, maxAttendees: true } });
+  if (!event) return fail(res, 404, "NOT_FOUND", "Event not found");
+
+  const [
+    regGroups,
+    speakersTotal,
+    speakersPublic,
+    speakersWithSessions,
+    sponsorGroups,
+    sponsorsPublic,
+    sessions,
+    ticketsTotal,
+    ticketsUsed,
+    categories,
+  ] = await Promise.all([
+    db.registration.groupBy({ by: ["status"], where: { eventId: id }, _count: { _all: true } }),
+    db.speaker.count({ where: { eventId: id } }),
+    db.speaker.count({ where: { eventId: id, displayPublic: true } }),
+    db.speaker.count({ where: { eventId: id, sessions: { some: {} } } }),
+    db.sponsor.groupBy({ by: ["tier"], where: { eventId: id }, _count: { _all: true } }),
+    db.sponsor.count({ where: { eventId: id, displayPublic: true } }),
+    db.session.findMany({
+      where: { eventId: id },
+      select: { startTime: true, endTime: true, speakerId: true, displayPublic: true },
+    }),
+    db.ticket.count({ where: { eventId: id } }),
+    db.ticket.count({ where: { eventId: id, isUsed: true } }),
+    db.eventCategory.count({ where: { eventId: id } }),
+  ]);
+
+  const byStatus: Record<string, number> = { REGISTERED: 0, ATTENDED: 0, ABSENT: 0, CANCELLED: 0 };
+  for (const g of regGroups) byStatus[g.status] = g._count._all;
+  const totalRegistrations = Object.values(byStatus).reduce((sum, n) => sum + n, 0);
+  const activeRegistrations = totalRegistrations - (byStatus.CANCELLED ?? 0);
+
+  const byTier: Record<string, number> = { PLATINUM: 0, GOLD: 0, SILVER: 0, BRONZE: 0 };
+  for (const g of sponsorGroups) byTier[g.tier] = g._count._all;
+  const sponsorsTotal = Object.values(byTier).reduce((sum, n) => sum + n, 0);
+
+  const totalMinutes = sessions.reduce(
+    (sum, s) => sum + Math.max(0, (s.endTime.getTime() - s.startTime.getTime()) / 60000),
+    0
+  );
+
+  return ok(res, {
+    registrations: {
+      total: totalRegistrations,
+      active: activeRegistrations,
+      ...byStatus,
+      attendanceRate:
+        activeRegistrations > 0 ? Math.round(((byStatus.ATTENDED ?? 0) / activeRegistrations) * 100) : 0,
+      maxAttendees: event.maxAttendees,
+      seatsLeft: event.maxAttendees === null ? null : Math.max(0, event.maxAttendees - activeRegistrations),
+    },
+    speakers: {
+      total: speakersTotal,
+      public: speakersPublic,
+      hidden: speakersTotal - speakersPublic,
+      withSessions: speakersWithSessions,
+    },
+    sponsors: { total: sponsorsTotal, public: sponsorsPublic, byTier },
+    sessions: {
+      total: sessions.length,
+      withSpeaker: sessions.filter((s) => s.speakerId !== null).length,
+      public: sessions.filter((s) => s.displayPublic).length,
+      totalMinutes: Math.round(totalMinutes),
+    },
+    tickets: { total: ticketsTotal, checkedIn: ticketsUsed },
+    categories,
+  });
+}
+
+// POST /api/v1/events/:id/restore   (archived → Completed if past, Draft if upcoming)
+export async function restoreEvent(req: Request, res: Response) {
+  const db = req.db!;
+  const id = String(req.params.id);
+
+  const event = await db.event.findUnique({ where: { id } });
+  if (!event) return fail(res, 404, "NOT_FOUND", "Event not found");
+  if (event.status !== "ARCHIVED") {
+    return fail(res, 409, "NOT_ARCHIVED", "Only archived events can be restored");
+  }
+
+  const status = event.endDateTime < new Date() ? "COMPLETED" : "DRAFT";
+  const restored = await db.event.update({
+    where: { id },
+    data: { status },
+    include: { categories: true },
+  });
+
+  await logActivity(req, { action: "event.restore", entityType: "Event", entityId: id, metadata: { status } });
+  return ok(res, restored);
+}
 
 // ─────────────────────────── CATEGORIES ───────────────────────────
 

@@ -30,6 +30,32 @@ import Team from './pages/Dashboard/Team';
 import Billing from './pages/Dashboard/Billing';
 import Settings from './pages/Dashboard/Settings';
 import Activity from './pages/Dashboard/activity';
+import ModuleLayout from './pages/Dashboard/ModuleLayout';
+
+// Events module (ported from feature/eventsmodule)
+import EventsPage from './pages/Dashboard/events/EventsPage';
+import NewEventPage from './pages/Dashboard/events/NewEventPage';
+import EventDetailPage from './pages/Dashboard/events/EventDetailPage';
+import EditEventPage from './pages/Dashboard/events/EditEventPage';
+import RegistrationsPage from './pages/Dashboard/registrations/RegistrationsPage';
+import NewRegistrationPage from './pages/Dashboard/registrations/NewRegistrationPage';
+import ImportRegistrationsPage from './pages/Dashboard/registrations/ImportRegistrationsPage';
+import SpeakersPage from './pages/Dashboard/speakers/SpeakersPage';
+import NewSpeakerPage from './pages/Dashboard/speakers/NewSpeakerPage';
+import EditSpeakerPage from './pages/Dashboard/speakers/EditSpeakerPage';
+import ReorderSpeakersPage from './pages/Dashboard/speakers/ReorderSpeakersPage';
+import SponsorsPage from './pages/Dashboard/sponsors/SponsorsPage';
+import NewSponsorPage from './pages/Dashboard/sponsors/NewSponsorPage';
+import EditSponsorPage from './pages/Dashboard/sponsors/EditSponsorPage';
+import SchedulePage from './pages/Dashboard/schedule/SchedulePage';
+import NewSessionPage from './pages/Dashboard/schedule/NewSessionPage';
+import EditSessionPage from './pages/Dashboard/schedule/EditSessionPage';
+import ReorderSessionsPage from './pages/Dashboard/schedule/ReorderSessionsPage';
+
+/** Create/edit pages: viewers are read-only, so only admins and managers may open them. */
+function writer(page: React.ReactNode) {
+  return <ProtectedRoute roles={['admin', 'manager']}>{page}</ProtectedRoute>;
+}
 
 // Pages that use their own full-screen layout (no public Navbar/Footer)
 const BARE_PREFIXES = [
@@ -108,6 +134,32 @@ export default function App() {
             <Route path="billing" element={<Billing />} />
             <Route path="settings" element={<Settings />} />
             <Route path="activity" element={<Activity />} />
+
+            {/* Events module */}
+            <Route element={<ModuleLayout />}>
+              <Route path="events" element={<EventsPage />} />
+              <Route path="events/new" element={writer(<NewEventPage />)} />
+              <Route path="events/:id" element={<EventDetailPage />} />
+              <Route path="events/:id/edit" element={writer(<EditEventPage />)} />
+
+              <Route path="registrations" element={<RegistrationsPage />} />
+              <Route path="registrations/new" element={writer(<NewRegistrationPage />)} />
+              <Route path="registrations/import" element={writer(<ImportRegistrationsPage />)} />
+
+              <Route path="speakers" element={<SpeakersPage />} />
+              <Route path="speakers/new" element={writer(<NewSpeakerPage />)} />
+              <Route path="speakers/reorder" element={writer(<ReorderSpeakersPage />)} />
+              <Route path="speakers/:id/edit" element={writer(<EditSpeakerPage />)} />
+
+              <Route path="sponsors" element={<SponsorsPage />} />
+              <Route path="sponsors/new" element={writer(<NewSponsorPage />)} />
+              <Route path="sponsors/:id/edit" element={writer(<EditSponsorPage />)} />
+
+              <Route path="schedule" element={<SchedulePage />} />
+              <Route path="schedule/new" element={writer(<NewSessionPage />)} />
+              <Route path="schedule/reorder" element={writer(<ReorderSessionsPage />)} />
+              <Route path="schedule/:id/edit" element={writer(<EditSessionPage />)} />
+            </Route>
           </Route>
 
           {/* Superadmin (built in Phase 10) */}

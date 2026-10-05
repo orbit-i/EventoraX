@@ -21,8 +21,7 @@ const buttonVariants = cva(
           "border-2 border-[#e2e8f0] bg-white text-[#0f172a] shadow-sm hover:border-[#c4b5fd] hover:bg-[#f5f3ff] hover:text-[#7c3aed] hover:-translate-y-0.5 active:translate-y-0",
         secondary:
           "bg-[#f5f3ff] text-[#7c3aed] border border-[#e9e4ff] shadow-sm hover:bg-[#ede9fe] hover:-translate-y-0.5 active:translate-y-0",
-        ghost:
-          "text-[#64748b] hover:bg-[#f5f3ff] hover:text-[#7c3aed] hover:-translate-y-0.5 active:translate-y-0",
+        ghost: "text-[#64748b] hover:bg-[#f5f3ff] hover:text-[#7c3aed] hover:-translate-y-0.5 active:translate-y-0",
         link: "text-[#7c3aed] underline-offset-4 hover:underline font-medium",
       },
       size: {
@@ -41,26 +40,44 @@ const buttonVariants = cva(
   }
 )
 
+type ButtonProps = React.ComponentProps<"button"> &
+  VariantProps<typeof buttonVariants> & {
+    /** Render the button styles onto the single child element (e.g. a <Link>). */
+    asChild?: boolean
+    /**
+     * Same idea as asChild, written the Base UI way: <Button render={<Link to="/x" />}>Text</Button>.
+     * Supported so the pages ported from the events module work unchanged.
+     */
+    render?: React.ReactElement<{ children?: React.ReactNode }>
+    /** Base UI option; has no effect here. */
+    nativeButton?: boolean
+  }
+
 function Button({
   className,
   variant = "default",
   size = "default",
   asChild = false,
+  render,
+  nativeButton: _nativeButton,
+  children,
   ...props
-}: React.ComponentProps<"button"> &
-  VariantProps<typeof buttonVariants> & {
-    asChild?: boolean
-  }) {
-  const Comp = asChild ? Slot : "button"
+}: ButtonProps) {
+  const classes = cn(buttonVariants({ variant, size, className }))
 
+  if (render) {
+    return (
+      <Slot data-slot="button" data-variant={variant} data-size={size} className={classes} {...props}>
+        {React.cloneElement(render, undefined, children ?? render.props.children)}
+      </Slot>
+    )
+  }
+
+  const Comp = asChild ? Slot : "button"
   return (
-    <Comp
-      data-slot="button"
-      data-variant={variant}
-      data-size={size}
-      className={cn(buttonVariants({ variant, size, className }))}
-      {...props}
-    />
+    <Comp data-slot="button" data-variant={variant} data-size={size} className={classes} {...props}>
+      {children}
+    </Comp>
   )
 }
 

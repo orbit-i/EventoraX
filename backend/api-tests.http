@@ -338,3 +338,91 @@ Content-Type: application/json
 ### G14. Try deleting the event (expect archived: true, because it has registrations)
 DELETE {{baseUrl}}/events/{{eventId}}
 Authorization: Bearer {{token}}
+
+### ════════ PHASE 7.5: BACKEND ════════
+
+### X1. Restore the archived event (upcoming → DRAFT)
+POST {{baseUrl}}/events/{{eventId}}/restore
+Authorization: Bearer {{token}}
+
+### X2. Restore again (expect 409 NOT_ARCHIVED)
+POST {{baseUrl}}/events/{{eventId}}/restore
+Authorization: Bearer {{token}}
+
+### X3. Events overview cards
+GET {{baseUrl}}/events/stats
+Authorization: Bearer {{token}}
+
+### X4. Everything about one event
+GET {{baseUrl}}/events/{{eventId}}/stats
+Authorization: Bearer {{token}}
+
+### X5. Speakers list now has meta.total
+GET {{baseUrl}}/speakers?eventId={{eventId}}&limit=1
+Authorization: Bearer {{token}}
+
+### X6. Cancel one registration (frees a seat)
+PATCH {{baseUrl}}/registrations/{{registrationId}}/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "status": "CANCELLED" }
+
+### X7. Bulk mark attended on that cancelled row (expect affected 0, skipped 1)
+POST {{baseUrl}}/registrations/bulk
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "action": "mark_attended", "ids": ["{{registrationId}}"] }
+
+### X8. Bulk restore it (seat is free again → affected 1)
+POST {{baseUrl}}/registrations/bulk
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "action": "restore", "ids": ["{{registrationId}}"] }
+
+### X9. Give the event room for the import tests
+PATCH {{baseUrl}}/events/{{eventId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "maxAttendees": 50 }
+
+### X10. CSV dry run: one bad email, duplicate emails, same-name warning, unknown category
+POST {{baseUrl}}/registrations/csv-import/confirm
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "eventId": "{{eventId}}",
+  "dryRun": true,
+  "duplicateStrategy": "last",
+  "rows": [
+    { "name": "Zara Malik", "email": "zara@test.com", "categoryLabel": "VIP" },
+    { "name": "Bad Row", "email": "nope" },
+    { "name": "Omar First", "email": "omar@test.com" },
+    { "name": "Omar Second", "email": "omar@test.com" },
+    { "name": "Ali Raza", "email": "ali.raza1@test.com" },
+    { "name": "ali  raza", "email": "ali.raza2@test.com", "categoryLabel": "Press" }
+  ]
+}
+
+### X11. Same rows for real, creating the missing "Press" category
+POST {{baseUrl}}/registrations/csv-import/confirm
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "eventId": "{{eventId}}",
+  "duplicateStrategy": "last",
+  "createMissingCategories": true,
+  "rows": [
+    { "name": "Zara Malik", "email": "zara@test.com", "categoryLabel": "VIP" },
+    { "name": "Bad Row", "email": "nope" },
+    { "name": "Omar First", "email": "omar@test.com" },
+    { "name": "Omar Second", "email": "omar@test.com" },
+    { "name": "Ali Raza", "email": "ali.raza1@test.com" },
+    { "name": "ali  raza", "email": "ali.raza2@test.com", "categoryLabel": "Press" }
+  ]
+}

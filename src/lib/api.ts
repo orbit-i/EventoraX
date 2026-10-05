@@ -143,7 +143,11 @@ export const api = {
     const result = await request<T[]>(path, opts)
     return { data: result.data ?? [], meta: result.meta ?? { total: 0, page: 1, limit: 20 } }
   },
-
+    /** Same as list() — the name used by the pages ported from the events module. */
+  getList: async <T>(path: string, opts?: RequestOptions) => {
+    const result = await request<T[]>(path, opts)
+    return { data: result.data ?? [], meta: result.meta ?? { total: 0, page: 1, limit: 20 } }
+  },
   post: async <T>(path: string, body?: unknown, opts?: RequestOptions) =>
     (await request<T>(path, { ...opts, method: "POST", body })).data,
 
