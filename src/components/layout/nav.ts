@@ -11,7 +11,9 @@ import {
   LifeBuoy,
   ListOrdered,
   Mic2,
+  ScanLine,
   Settings,
+  Ticket,
   Users,
 } from "lucide-react"
 import type { Permission } from "@/lib/permissions"
@@ -46,7 +48,11 @@ export const NAV: NavGroup[] = [
   },
   {
     title: "Credentials",
-    items: [{ to: "/dashboard/certificates", label: "Certificates", icon: Award }],
+    items: [
+      { to: "/dashboard/certificates", label: "Certificates", icon: Award },
+      { to: "/dashboard/tickets", label: "Tickets", icon: Ticket, end: true },
+      { to: "/dashboard/tickets/scan", label: "Check-in scanner", icon: ScanLine, need: "write" },
+    ],
   },
   {
     title: "Insights",

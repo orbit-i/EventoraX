@@ -53,6 +53,8 @@ import NewSessionPage from './pages/dashboard/schedule/NewSessionPage';
 import EditSessionPage from './pages/dashboard/schedule/EditSessionPage';
 import ReorderSessionsPage from './pages/dashboard/schedule/ReorderSessionsPage';
 import CertificatesPage from './pages/dashboard/certificates/CertificatesPage';
+import TicketsPage from './pages/dashboard/tickets/TicketsPage';
+import ScanPage from './pages/dashboard/tickets/ScanPage';
 
 /** Create/edit pages: viewers are read-only, so only admins and managers may open them. */
 function writer(page: React.ReactNode) {
@@ -170,6 +172,8 @@ export default function App() {
 
             {/* Credentials */}
             <Route path="certificates" element={<CertificatesPage />} />
+            <Route path="tickets" element={<TicketsPage />} />
+            <Route path="tickets/scan" element={writer(<ScanPage />)} />
           </Route>
 
           {/* Superadmin (built in Phase 10) */}

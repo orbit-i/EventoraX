@@ -173,3 +173,19 @@ export function sendCertificateEmail(
     [pdf]
   );
 }
+
+/** Event ticket: PDF attached (the QR is scanned at the entrance). */
+export function sendTicketEmail(to: string, name: string, orgName: string, eventTitle: string, whenText: string, pdf: MailAttachment) {
+  return sendMail(
+    to,
+    `Your ticket — ${eventTitle}`,
+    layout(
+      "Your ticket",
+      `<p>Hi ${escapeHtml(name)},</p><p>Here's your ticket for <strong>${escapeHtml(eventTitle)}</strong> (${escapeHtml(whenText)}), from ${escapeHtml(
+        orgName
+      )}.</p><p>Show the QR code on the attached PDF at the entrance — on your phone or printed.</p>`
+    ),
+    undefined,
+    [pdf]
+  );
+}

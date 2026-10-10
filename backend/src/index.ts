@@ -12,6 +12,7 @@ import { speakersRouter, sponsorsRouter, sessionsRouter, reorderRouter } from ".
 import { registrationsRouter } from "./routes/registrations-routes";
 import { uploadsRouter } from "./routes/uploads-routes";
 import { certificatesRouter, verifyRouter } from "./routes/certificates-routes";
+import { ticketsRouter } from "./routes/tickets-routes";
    import {
      dashboardRouter,
      analyticsRouter,
@@ -58,6 +59,7 @@ app.use("/api/v1/registrations", registrationsRouter);
 app.use("/api/v1/uploads", uploadsRouter);
 app.use("/api/v1/certificates", certificatesRouter);
 app.use("/api/v1/verify", verifyRouter);
+app.use("/api/v1/tickets", ticketsRouter);
    app.use("/api/v1/dashboard", dashboardRouter);
    app.use("/api/v1/analytics", analyticsRouter);
    app.use("/api/v1/activity", activityRouter);

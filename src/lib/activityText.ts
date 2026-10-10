@@ -100,6 +100,16 @@ export function describeActivity(item: ActivityItem): string {
       return `revoked ${s("name")}'s certificate`
     case "certificate.restore":
       return `restored ${s("name")}'s certificate`
+    case "ticket.checkin":
+      return `checked in ${s("name")}`
+    case "ticket.checkin.undo":
+      return `undid ${s("name")}'s check-in`
+    case "ticket.email":
+      return `emailed ${s("name")}'s ticket`
+    case "ticket.email.bulk":
+      return `emailed ${n("count")} ticket${n("count") === 1 ? "" : "s"}`
+    case "ticket.zip":
+      return `downloaded ${n("count")} ticket${n("count") === 1 ? "" : "s"} as a ZIP`
     case "upload.image":
       return "uploaded an image"
     default:
