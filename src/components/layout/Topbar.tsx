@@ -76,7 +76,7 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
             {can("manage") && (
               <>
                 <DropdownMenuItem asChild>
-                  <Link to="/dashboard/settings">
+                  <Link to="/dashboard/settings?tab=organization">
                     <Settings className="h-4 w-4" /> Organization settings
                   </Link>
                 </DropdownMenuItem>

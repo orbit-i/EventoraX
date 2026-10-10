@@ -25,11 +25,12 @@ const DUMMY_HASH = bcrypt.hashSync("dummy-password-for-timing", 10);
 const str = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
 const bodyOf = (req: Request): Record<string, unknown> => (req.body ?? {}) as Record<string, unknown>;
 
-function publicUser(u: Pick<User, "id" | "name" | "email" | "role" | "organizationId" | "emailVerified">) {
+function publicUser(u: Pick<User, "id" | "name" | "email" | "phone" | "role" | "organizationId" | "emailVerified">) {
   return {
     id: u.id,
     name: u.name,
     email: u.email,
+    phone: u.phone,
     role: u.role,
     organizationId: u.organizationId,
     emailVerified: u.emailVerified,
@@ -375,18 +376,21 @@ router.post("/change-password", requireAuth, async (req, res) => {
   const newPassword = b.newPassword;
 
   if (typeof currentPassword !== "string" || !currentPassword) {
-    return res.status(400).json({ error: "Current password is required" });
+    return res.status(400).json({ error: "Current password is required", fieldErrors: { currentPassword: "Enter your current password" } });
   }
   if (!isStrongPassword(newPassword)) {
-    return res.status(400).json({ error: PASSWORD_RULE_MESSAGE });
+    return res.status(400).json({ error: PASSWORD_RULE_MESSAGE, fieldErrors: { newPassword: PASSWORD_RULE_MESSAGE } });
   }
 
   const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
   if (!user || !(await bcrypt.compare(currentPassword, user.password))) {
-    return res.status(400).json({ error: "Current password is incorrect" });
+    return res.status(400).json({ error: "Current password is incorrect", fieldErrors: { currentPassword: "Current password is incorrect" } });
   }
   if (await bcrypt.compare(newPassword, user.password)) {
-    return res.status(400).json({ error: "New password must be different from the current one" });
+    return res.status(400).json({
+      error: "New password must be different from the current one",
+      fieldErrors: { newPassword: "Choose a password you haven't used here" },
+    });
   }
 
   const updated = await prisma.user.update({

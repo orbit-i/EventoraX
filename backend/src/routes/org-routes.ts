@@ -2,11 +2,9 @@ import { Router } from "express";
 import { requireAuth } from "../middleware/auth";
 import { requireRole } from "../middleware/role-check.auth";
 import { checkOrgStatus } from "../middleware/checkOrgStatus";
-import { imageUpload } from "../utils/upload";
 import {
   getOrgProfile,
   updateOrgSettings,
-  uploadOrgImage,
   deleteAllEventData,
   closeOrganization,
 } from "../controllers/org-controller";
@@ -18,8 +16,7 @@ router.use(requireAuth, checkOrgStatus({ allowExpired: true }));
 
 router.get("/me", getOrgProfile);
 router.patch("/me", requireRole(["admin"]), updateOrgSettings);
-router.post("/me/logo", requireRole(["admin"]), imageUpload.single("file"), uploadOrgImage("logo"));
-router.post("/me/signature", requireRole(["admin"]), imageUpload.single("file"), uploadOrgImage("signature"));
+// Logo / signature: upload with POST /uploads/image?kind=logo|signature, then save the URL here.
 
 // Danger zone (admins only, with name + password confirmation inside)
 router.post("/me/delete-data", requireRole(["admin"]), deleteAllEventData);

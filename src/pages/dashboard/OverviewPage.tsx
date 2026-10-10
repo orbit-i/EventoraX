@@ -56,7 +56,7 @@ function GettingStarted({ data }: { data: Overview }) {
     ...(can("manage")
       ? [
           { done: data.totals.teamMembers > 1, label: "Invite a teammate", icon: UserPlus, to: "/dashboard/team" },
-          { done: Boolean(organization?.logoUrl), label: "Add your logo", icon: Image, to: "/dashboard/settings" },
+          { done: Boolean(organization?.logoUrl), label: "Add your logo", icon: Image, to: "/dashboard/settings?tab=branding" },
         ]
       : []),
   ]

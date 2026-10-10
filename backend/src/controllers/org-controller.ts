@@ -1,27 +1,29 @@
 import { Request, Response } from "express";
 import { z } from "zod";
 import { Prisma } from "@prisma/client";
-import prisma from "../prisma/client";
-import { saveUpload, deleteUpload } from "../utils/storage";
-import { logActivity } from "../utils/activity";
-import { fieldErrors } from "../utils/validation";
-import { EMAIL_REGEX } from "../utils/password";
 import bcrypt from "bcrypt";
-import { ok, fail } from "../utils/http";
-import { deleteUploadFolder } from "../utils/storage";
+import prisma from "../prisma/client";
+import { deleteUpload, deleteUploadFolder } from "../utils/storage";
+import { logActivity } from "../utils/activity";
+import { EMAIL_REGEX } from "../utils/password";
+import { optionalImage, isUniqueViolation } from "../utils/schemas";
+import { ok, fail, validationFail } from "../utils/http";
+
 // Empty string from a form means "clear this field".
 const optionalText = (max: number) =>
   z
     .string()
     .trim()
-    .max(max)
+    .max(max, `Keep this under ${max} characters`)
     .transform((v) => (v === "" ? null : v))
     .optional();
 
 const hexColor = z
   .string()
-  .regex(/^#[0-9a-fA-F]{6}$/, "Use a hex color like #7c3aed")
+  .regex(/^#[0-9a-fA-F]{6}$/, "Use a hex colour like #7c3aed")
   .optional();
+
+const HOSTNAME = /^(?=.{1,253}$)([a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z]{2,}$/;
 
 const settingsSchema = z.object({
   name: z.string().trim().min(2, "Organization name must be at least 2 characters").max(150).optional(),
@@ -33,12 +35,21 @@ const settingsSchema = z.object({
     .transform((v) => (v === "" ? null : v))
     .optional(),
   phone: optionalText(30),
+  logoUrl: optionalImage.optional(),
+  signatureUrl: optionalImage.optional(),
   primaryColor: hexColor,
   accentColor: hexColor,
   signatoryName: optionalText(100),
   signatoryTitle: optionalText(100),
   whiteLabelName: optionalText(100),
-  customDomain: optionalText(253),
+  customDomain: z
+    .string()
+    .trim()
+    .toLowerCase()
+    .transform((v) => v.replace(/^https?:\/\//, "").replace(/\/+$/, ""))
+    .refine((v) => v === "" || HOSTNAME.test(v), "Enter a domain like events.university.edu.pk (no http://)")
+    .transform((v) => (v === "" ? null : v))
+    .optional(),
   notificationPrefs: z
     .object({
       newRegistration: z.boolean(),
@@ -51,26 +62,28 @@ const settingsSchema = z.object({
 
 // GET /api/v1/org/me
 export async function getOrgProfile(req: Request, res: Response) {
-  return res.json(req.org);
+  return ok(res, req.org);
 }
 
-// PATCH /api/v1/org/me
+// PATCH /api/v1/org/me   (any subset of the settings fields)
 export async function updateOrgSettings(req: Request, res: Response) {
   const org = req.org!;
   const parsed = settingsSchema.safeParse(req.body ?? {});
-  if (!parsed.success) {
-    return res.status(400).json({ error: "Validation failed", fieldErrors: fieldErrors(parsed.error) });
-  }
+  if (!parsed.success) return validationFail(res, parsed.error);
 
   const { notificationPrefs, ...fields } = parsed.data;
 
-  // Enterprise-only features
+  // Enterprise-only features (sending the current empty value is fine).
   const features = (org.plan?.features ?? {}) as Record<string, unknown>;
-  if (fields.whiteLabelName !== undefined && features.whiteLabel !== true) {
-    return res.status(403).json({ error: "White label is available on the Enterprise plan", code: "PLAN_FEATURE" });
+  if (fields.whiteLabelName !== undefined && fields.whiteLabelName !== org.whiteLabelName && features.whiteLabel !== true) {
+    return fail(res, 403, "PLAN_FEATURE", "White label is available on the Enterprise plan", {
+      fieldErrors: { whiteLabelName: "Available on the Enterprise plan" },
+    });
   }
-  if (fields.customDomain !== undefined && features.customDomain !== true) {
-    return res.status(403).json({ error: "Custom domains are available on the Enterprise plan", code: "PLAN_FEATURE" });
+  if (fields.customDomain !== undefined && fields.customDomain !== org.customDomain && features.customDomain !== true) {
+    return fail(res, 403, "PLAN_FEATURE", "Custom domains are available on the Enterprise plan", {
+      fieldErrors: { customDomain: "Available on the Enterprise plan" },
+    });
   }
 
   const mergedPrefs = notificationPrefs
@@ -84,6 +97,10 @@ export async function updateOrgSettings(req: Request, res: Response) {
       include: { plan: true },
     });
 
+    // Replaced or removed images: delete the old files we stored.
+    if (fields.logoUrl !== undefined && fields.logoUrl !== org.logoUrl) await deleteUpload(org.logoUrl);
+    if (fields.signatureUrl !== undefined && fields.signatureUrl !== org.signatureUrl) await deleteUpload(org.signatureUrl);
+
     await logActivity(req, {
       action: "org.settings.update",
       entityType: "Organization",
@@ -91,36 +108,15 @@ export async function updateOrgSettings(req: Request, res: Response) {
       metadata: { fields: Object.keys(parsed.data) },
     });
 
-    return res.json(updated);
+    return ok(res, updated);
   } catch (err) {
-    if (err instanceof Prisma.PrismaClientKnownRequestError && err.code === "P2002") {
-      return res.status(409).json({ error: "That custom domain is already in use" });
+    if (isUniqueViolation(err)) {
+      return fail(res, 409, "DOMAIN_TAKEN", "That custom domain is already in use", {
+        fieldErrors: { customDomain: "Another organization already uses this domain" },
+      });
     }
     throw err;
   }
-}
-
-// POST /api/v1/org/me/logo  and  /api/v1/org/me/signature   (multipart, field name: "file")
-export function uploadOrgImage(kind: "logo" | "signature") {
-  return async (req: Request, res: Response) => {
-    const org = req.org!;
-    if (!req.file) {
-      return res.status(400).json({ error: "No file uploaded (form field name must be: file)" });
-    }
-
-    const url = await saveUpload(`orgs/${org.id}`, req.file.buffer, req.file.mimetype);
-
-    if (kind === "logo") {
-      await deleteUpload(org.logoUrl);
-      await prisma.organization.update({ where: { id: org.id }, data: { logoUrl: url } });
-    } else {
-      await deleteUpload(org.signatureUrl);
-      await prisma.organization.update({ where: { id: org.id }, data: { signatureUrl: url } });
-    }
-
-    await logActivity(req, { action: `org.${kind}.upload`, entityType: "Organization", entityId: org.id });
-    return res.json({ url });
-  };
 }
 
    const dangerSchema = z.object({

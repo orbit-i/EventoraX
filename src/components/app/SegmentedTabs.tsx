@@ -4,6 +4,8 @@ export interface SegmentOption {
   value: string
   label: string
   count?: number
+  /** Small dot after the label, e.g. "this tab has unsaved changes" */
+  dot?: boolean
 }
 
 /** A row of tab-like buttons for the main filter of a page (e.g. All · Drafts · Upcoming …). */
@@ -38,6 +40,7 @@ export function SegmentedTabs({
             )}
           >
             {o.label}
+            {o.dot && <span className={cn("h-1.5 w-1.5 rounded-full", active ? "bg-white" : "bg-amber-500")} aria-label="unsaved changes" />}
             {o.count !== undefined && (
               <span
                 className={cn(
