@@ -8,7 +8,7 @@ import { api, errorMessage } from "@/lib/api"
 const ACCEPTED = ["image/png", "image/jpeg", "image/webp"]
 const MAX_BYTES = 2 * 1024 * 1024
 
-export type UploadKind = "speaker" | "sponsor" | "logo" | "signature"
+export type UploadKind = "speaker" | "sponsor" | "logo" | "signature" | "payment"
 
 /**
  * Image field: drag & drop or click to upload (PNG/JPG/WEBP, max 2 MB), with preview,

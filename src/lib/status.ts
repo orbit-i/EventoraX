@@ -50,6 +50,12 @@ export const TEAM_ROLE: Record<string, StatusMeta> = {
   viewer: { label: "Viewer", tone: "slate" },
 }
 
+export const PAYMENT_STATUS: Record<string, StatusMeta> = {
+  PENDING: { label: "Awaiting confirmation", tone: "amber" },
+  CONFIRMED: { label: "Confirmed", tone: "green" },
+  REJECTED: { label: "Rejected", tone: "red" },
+}
+
 export const VISIBILITY: Record<string, StatusMeta> = {
   true: { label: "Public", tone: "green" },
   false: { label: "Hidden", tone: "slate" },
@@ -62,6 +68,7 @@ export const STATUS_MAPS = {
   tier: SPONSOR_TIER,
   org: ORG_STATUS,
   role: TEAM_ROLE,
+  payment: PAYMENT_STATUS,
   visibility: VISIBILITY,
 } as const
 

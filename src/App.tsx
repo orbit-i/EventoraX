@@ -25,7 +25,7 @@ import SuperadminHome from './pages/superadmin/SuperadminHome';
 import DashboardLayout from './components/layout/DashboardLayout';
 import OverviewPage from './pages/dashboard/OverviewPage';
 import TeamPage from './pages/dashboard/TeamPage';
-import Billing from './pages/dashboard/Billing';
+import BillingPage from './pages/dashboard/BillingPage';
 import SettingsPage from './pages/dashboard/SettingsPage';
 import AnalyticsPage from './pages/dashboard/AnalyticsPage';
 import ActivityPage from './pages/dashboard/ActivityPage';
@@ -128,7 +128,6 @@ export default function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="billing" element={<Billing />} />
 
             {/* Events module */}
             <Route element={<ModuleLayout />}>
@@ -138,6 +137,7 @@ export default function App() {
               <Route path="contact" element={<ContactPage />} />
               <Route path="team" element={<TeamPage />} />
               <Route path="settings" element={<SettingsPage />} />
+              <Route path="billing" element={<ProtectedRoute roles={['admin']}><BillingPage /></ProtectedRoute>} />
               <Route path="events" element={<EventsPage />} />
               <Route path="events/new" element={writer(<NewEventPage />)} />
               <Route path="events/:id" element={<EventDetailPage />} />
