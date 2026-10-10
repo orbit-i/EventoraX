@@ -6,7 +6,9 @@ import { saveUpload, deleteUpload } from "../utils/storage";
 import { logActivity } from "../utils/activity";
 import { fieldErrors } from "../utils/validation";
 import { EMAIL_REGEX } from "../utils/password";
-
+import bcrypt from "bcrypt";
+import { ok, fail } from "../utils/http";
+import { deleteUploadFolder } from "../utils/storage";
 // Empty string from a form means "clear this field".
 const optionalText = (max: number) =>
   z
@@ -120,3 +122,68 @@ export function uploadOrgImage(kind: "logo" | "signature") {
     return res.json({ url });
   };
 }
+
+   const dangerSchema = z.object({
+     confirm: z.string(),
+     password: z.string().min(1, "Enter your password"),
+   });
+
+   /** Danger-zone actions need the exact organization name AND the admin's password. */
+   async function checkDangerConfirmation(req: Request, res: Response): Promise<boolean> {
+     const org = req.org!;
+     const parsed = dangerSchema.safeParse(req.body ?? {});
+     if (!parsed.success) {
+       fail(res, 400, "VALIDATION_ERROR", "Enter the organization name and your password");
+       return false;
+     }
+     if (parsed.data.confirm.trim() !== org.name) {
+       fail(res, 400, "VALIDATION_ERROR", "The name doesn't match", {
+         fieldErrors: { confirm: `Type "${org.name}" exactly` },
+       });
+       return false;
+     }
+     const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
+     if (!user || !(await bcrypt.compare(parsed.data.password, user.password))) {
+       fail(res, 400, "VALIDATION_ERROR", "Incorrect password", { fieldErrors: { password: "Incorrect password" } });
+       return false;
+     }
+     return true;
+   }
+
+   // POST /api/v1/org/me/delete-data  { confirm, password }
+   // Deletes every event (with its registrations, tickets, certificates, speakers, sponsors, schedule).
+   // Team, settings and billing are kept.
+   export async function deleteAllEventData(req: Request, res: Response) {
+     if (!(await checkDangerConfirmation(req, res))) return;
+     const org = req.org!;
+
+     const result = await prisma.event.deleteMany({ where: { organizationId: org.id } });
+     await Promise.all([
+       deleteUploadFolder(`orgs/${org.id}/speakers`),
+       deleteUploadFolder(`orgs/${org.id}/sponsors`),
+     ]);
+
+     await logActivity(req, { action: "org.data.delete", entityType: "Organization", entityId: org.id, metadata: { events: result.count } });
+     return ok(res, { deletedEvents: result.count });
+   }
+
+   // POST /api/v1/org/me/close  { confirm, password }
+   // Permanently deletes the organization, its team and all its data.
+   export async function closeOrganization(req: Request, res: Response) {
+     if (!(await checkDangerConfirmation(req, res))) return;
+     const org = req.org!;
+
+     await prisma.organization.delete({ where: { id: org.id } });
+     await deleteUploadFolder(`orgs/${org.id}`);
+
+     // Platform-level record (the org's own log is gone with it).
+     await logActivity(req, {
+       action: "org.close",
+       organizationId: null,
+       userId: null,
+       entityType: "Organization",
+       entityId: org.id,
+       metadata: { name: org.name, closedBy: req.user!.email },
+     });
+     return ok(res, { closed: true });
+   }

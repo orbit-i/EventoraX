@@ -344,7 +344,30 @@ router.get("/me", requireAuth, async (req, res) => {
   }
   return res.json({ user: publicUser(user), organization: user.organization });
 });
+// PATCH /api/v1/auth/me  { name?, phone? }   (edit your own profile)
+router.patch("/me", requireAuth, async (req, res) => {
+  const b = bodyOf(req);
+  const data: { name?: string; phone?: string | null } = {};
 
+  if (b.name !== undefined) {
+    const name = str(b.name);
+    if (name.length < 2 || name.length > 100) {
+      return res.status(400).json({ error: "Name must be 2–100 characters", fieldErrors: { name: "Name must be 2–100 characters" } });
+    }
+    data.name = name;
+  }
+  if (b.phone !== undefined) {
+    const phone = str(b.phone);
+    if (phone && !isValidPhoneNumber(phone, "PK")) {
+      return res.status(400).json({ error: "Enter a valid phone number", fieldErrors: { phone: "Enter a valid phone number, e.g. +92 300 1234567" } });
+    }
+    data.phone = phone || null;
+  }
+
+  const user = await prisma.user.update({ where: { id: req.user!.userId }, data });
+  await logActivity(req, { action: "auth.profile.update" });
+  return res.json({ user: publicUser(user) });
+});
 // POST /api/v1/auth/change-password  { currentPassword, newPassword }
 router.post("/change-password", requireAuth, async (req, res) => {
   const b = bodyOf(req);

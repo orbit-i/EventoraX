@@ -10,6 +10,7 @@ import { EMAIL_REGEX } from "../utils/password";
 import { newRefNo, newTicketNo, newQrCode } from "../utils/codes";
 import { sendAttendeeMessage } from "../utils/mail";
 import { logActivity } from "../utils/activity";
+import { csvCell } from "../utils/csv";
 
 export const REG_STATUSES = ["REGISTERED", "ATTENDED", "ABSENT", "CANCELLED"] as const;
 const MAX_IMPORT_ROWS = 5000;
@@ -609,11 +610,6 @@ const EXPORT_COLUMNS = [
 
 type ExportKey = (typeof EXPORT_COLUMNS)[number]["key"];
 
-/** Quotes a CSV cell and neutralises spreadsheet formulas (=, +, -, @). */
-function csvCell(value: string): string {
-  const safe = /^[=+\-@\t\r]/.test(value) ? `'${value}` : value;
-  return `"${safe.replace(/"/g, '""')}"`;
-}
 
 function fileSafe(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "") || "event";

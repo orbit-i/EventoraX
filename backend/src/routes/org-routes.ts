@@ -3,7 +3,13 @@ import { requireAuth } from "../middleware/auth";
 import { requireRole } from "../middleware/role-check.auth";
 import { checkOrgStatus } from "../middleware/checkOrgStatus";
 import { imageUpload } from "../utils/upload";
-import { getOrgProfile, updateOrgSettings, uploadOrgImage } from "../controllers/org-controller";
+import {
+  getOrgProfile,
+  updateOrgSettings,
+  uploadOrgImage,
+  deleteAllEventData,
+  closeOrganization,
+} from "../controllers/org-controller";
 
 const router = Router();
 
@@ -14,5 +20,9 @@ router.get("/me", getOrgProfile);
 router.patch("/me", requireRole(["admin"]), updateOrgSettings);
 router.post("/me/logo", requireRole(["admin"]), imageUpload.single("file"), uploadOrgImage("logo"));
 router.post("/me/signature", requireRole(["admin"]), imageUpload.single("file"), uploadOrgImage("signature"));
+
+// Danger zone (admins only, with name + password confirmation inside)
+router.post("/me/delete-data", requireRole(["admin"]), deleteAllEventData);
+router.post("/me/close", requireRole(["admin"]), closeOrganization);
 
 export default router;

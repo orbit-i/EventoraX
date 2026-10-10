@@ -8,3 +8,9 @@ export const orgScoped = [requireAuth, checkOrgStatus(), attachScopedPrisma];
 
 /** Admins and managers can change data. Viewers are read-only. */
 export const canWrite = requireRole(["admin", "manager"]);
+
+/** Same as orgScoped, but still works after the plan expires (overview, billing, support). */
+export const orgScopedAllowExpired = [requireAuth, checkOrgStatus({ allowExpired: true }), attachScopedPrisma];
+
+/** Organization admins only. */
+export const adminOnly = requireRole(["admin"]);

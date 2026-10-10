@@ -5,12 +5,13 @@ import { saveUpload } from "../utils/storage";
 import { ok, fail } from "../utils/http";
 import { logActivity } from "../utils/activity";
 
-const KIND_FOLDERS: Record<string, string> = {
-  speaker: "speakers",
-  sponsor: "sponsors",
-  logo: "branding",
-  signature: "branding",
-};
+   const KIND_FOLDERS: Record<string, string> = {
+     speaker: "speakers",
+     sponsor: "sponsors",
+     logo: "branding",
+     signature: "branding",
+     payment: "payments",
+   };
 
 export const uploadsRouter = Router();
 uploadsRouter.use(...orgScoped);
@@ -21,9 +22,9 @@ uploadsRouter.post("/image", canWrite, imageUpload.single("file"), async (req, r
   const kind = typeof req.query.kind === "string" ? req.query.kind : "";
   const folder = KIND_FOLDERS[kind];
   if (!folder) {
-    return fail(res, 400, "VALIDATION_ERROR", "kind must be speaker, sponsor, logo or signature");
+    return fail(res, 400, "VALIDATION_ERROR", "kind must be speaker, sponsor, logo, signature or payment");
   }
-  if ((kind === "logo" || kind === "signature") && req.user!.role !== "admin") {
+  if ((kind === "logo" || kind === "signature" || kind === "payment") && req.user!.role !== "admin") {
     return fail(res, 403, "FORBIDDEN", "Only admins can change the organization's branding");
   }
   if (!req.file) {

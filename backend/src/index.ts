@@ -11,7 +11,14 @@ import { eventsRouter, categoriesRouter } from "./routes/events-routes";
 import { speakersRouter, sponsorsRouter, sessionsRouter, reorderRouter } from "./routes/program-routes";
 import { registrationsRouter } from "./routes/registrations-routes";
 import { uploadsRouter } from "./routes/uploads-routes";
-
+   import {
+     dashboardRouter,
+     analyticsRouter,
+     activityRouter,
+     billingRouter,
+     supportRouter,
+     contactRouter,
+   } from "./routes/dashboard-routes";
 const app = express();
 
 // Correct client IPs when running behind a proxy (Hostinger, Nginx, Docker).
@@ -48,6 +55,12 @@ app.use("/api/v1/sessions", sessionsRouter);
 app.use("/api/v1/reorder", reorderRouter);
 app.use("/api/v1/registrations", registrationsRouter);
 app.use("/api/v1/uploads", uploadsRouter);
+   app.use("/api/v1/dashboard", dashboardRouter);
+   app.use("/api/v1/analytics", analyticsRouter);
+   app.use("/api/v1/activity", activityRouter);
+   app.use("/api/v1/billing", billingRouter);
+   app.use("/api/v1/support", supportRouter);
+   app.use("/api/v1/contact", contactRouter);
 
 // Unknown API route → JSON 404 (not an HTML page)
 app.use("/api", (_req, res) => {

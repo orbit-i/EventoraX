@@ -32,3 +32,10 @@ export async function deleteUpload(publicPath: string | null | undefined): Promi
   if (!fullPath.startsWith(UPLOAD_ROOT)) return; // path traversal guard
   await fs.unlink(fullPath).catch(() => undefined);
 }
+
+/** Deletes a whole folder of uploads, e.g. everything belonging to one organization. */
+export async function deleteUploadFolder(folder: string): Promise<void> {
+  const dir = path.resolve(UPLOAD_ROOT, folder);
+  if (!dir.startsWith(UPLOAD_ROOT) || dir === UPLOAD_ROOT) return; // never delete outside / the root itself
+  await fs.rm(dir, { recursive: true, force: true });
+}
