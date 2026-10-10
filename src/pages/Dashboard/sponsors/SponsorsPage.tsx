@@ -1,355 +1,216 @@
-import { useEffect, useState } from "react";
-import Link from "@/compat/next-link";
-import { useSearchParams } from "@/compat/next-navigation";
-import { api, buildQuery, ApiError } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Pagination } from "@/components/layout/Pagination";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { Avatar } from "@/components/shared/Avatar";
-import { StatCard, StatCardSkeleton } from "@/components/shared/StatCard";
-import { CardGridSkeleton, EmptyState } from "@/components/shared/EmptyState";
-import { Globe, Pencil, Trash2, Plus, Handshake, Medal, Award, Eye } from "lucide-react";
-import type { Sponsor, SponsorTier } from "@/types/sponsor";
-import type { EventOption } from "@/types/registration";
+import { useNavigate } from "react-router"
+import { Award, CalendarDays, ExternalLink, Eye, EyeOff, Handshake, Medal, Pencil, Plus, Trash2 } from "lucide-react"
+import { toast } from "sonner"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { PageHeader } from "@/components/app/PageHeader"
+import { EventPicker } from "@/components/app/EventPicker"
+import { StatsRow } from "@/components/app/StatCard"
+import { Toolbar, SearchInput, FilterSelect, FilterChips, type ActiveFilter } from "@/components/app/Toolbar"
+import { RowActions, type RowAction } from "@/components/app/RowActions"
+import { StatusBadge } from "@/components/app/StatusBadge"
+import { EmptyState, ErrorState, NoResults } from "@/components/app/States"
+import { useConfirm } from "@/components/app/ConfirmDialog"
+import { useApi } from "@/hooks/useApi"
+import { useUrlState } from "@/hooks/useUrlState"
+import { useSelectedEvent } from "@/hooks/useSelectedEvent"
+import { useVisibilityToggle } from "@/hooks/useVisibilityToggle"
+import { useCan } from "@/lib/permissions"
+import { api, buildQuery, errorMessage } from "@/lib/api"
+import { plural } from "@/lib/format"
+import { statusLabel, statusOptions } from "@/lib/status"
+import type { EventItem, EventStats } from "@/types/event"
+import { TIER_ORDER, type Sponsor, type SponsorTier } from "@/types/sponsor"
 
-const LIMIT = 20;
+// Bigger tiers get bigger cards, like on the public page.
+const TIER_GRID: Record<SponsorTier, string> = {
+  PLATINUM: "grid-cols-1 sm:grid-cols-2",
+  GOLD: "grid-cols-2 lg:grid-cols-3",
+  SILVER: "grid-cols-2 sm:grid-cols-3 lg:grid-cols-4",
+  BRONZE: "grid-cols-2 sm:grid-cols-4 lg:grid-cols-5",
+}
+const TIER_LOGO: Record<SponsorTier, string> = { PLATINUM: "h-20", GOLD: "h-16", SILVER: "h-12", BRONZE: "h-10" }
 
-const TIER_STYLES: Record<SponsorTier, string> = {
-  PLATINUM: "bg-slate-100 text-slate-700 border border-slate-200",
-  GOLD: "bg-amber-50 text-amber-700 border border-amber-200",
-  SILVER: "bg-gray-100 text-gray-600 border border-gray-200",
-  BRONZE: "bg-orange-50 text-orange-700 border border-orange-200",
-};
-
-const TIER_OPTIONS: { value: SponsorTier | "ALL"; label: string }[] = [
-  { value: "ALL", label: "All Tiers" },
-  { value: "PLATINUM", label: "Platinum" },
-  { value: "GOLD", label: "Gold" },
-  { value: "SILVER", label: "Silver" },
-  { value: "BRONZE", label: "Bronze" },
-];
+function hostOf(url: string): string {
+  try {
+    return new URL(url).hostname.replace(/^www\./, "")
+  } catch {
+    return url
+  }
+}
 
 export default function SponsorsPage() {
-  const searchParams = useSearchParams();
+  const navigate = useNavigate()
+  const can = useCan()
+  const confirm = useConfirm()
+  const [eventId, setEventId] = useSelectedEvent()
+  const { values, set, reset } = useUrlState({ search: "", tier: "", visibility: "" })
 
-  const [events, setEvents] = useState<EventOption[]>([]);
-  const [eventsLoading, setEventsLoading] = useState(true);
-  const [selectedEventId, setSelectedEventId] = useState<string>(
-    () => searchParams.get("eventId") ?? ""
-  );
+  // Sponsor lists are short, so load them all and group by tier.
+  const list = useApi<Sponsor[]>(
+    eventId ? `/sponsors${buildQuery({ eventId, search: values.search, tier: values.tier, displayPublic: values.visibility, limit: 500 })}` : null
+  )
+  const statsQ = useApi<EventStats>(eventId ? `/events/${eventId}/stats` : null)
+  const eventQ = useApi<EventItem>(eventId ? `/events/${eventId}` : null)
 
-  const [tier, setTier] = useState<SponsorTier | "ALL">("ALL");
-  const [page, setPage] = useState(1);
+  const sponsors = list.data ?? []
+  const stats = statsQ.data?.sponsors
+  const write = can("write") && eventQ.data?.status !== "ARCHIVED"
+  const hasFilters = Boolean(values.search || values.tier || values.visibility)
+  const eventQuery = eventId ? `?eventId=${eventId}` : ""
 
-  const [sponsors, setSponsors] = useState<Sponsor[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const [stats, setStats] = useState<{
-    total: number;
-    public: number;
-    platinum: number;
-    gold: number;
-  } | null>(null);
-  const [refetchKey, setRefetchKey] = useState(0);
-
-  const [deleteTarget, setDeleteTarget] = useState<Sponsor | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        setEventsLoading(true);
-        const res = await api.getList<EventOption>(`/events${buildQuery({ limit: 100 })}`);
-        setEvents(res.data);
-      } catch (err) {
-        console.error("Failed to load events", err);
-      } finally {
-        setEventsLoading(false);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    setPage(1);
-  }, [selectedEventId, tier]);
-
-  async function loadSponsors() {
-    if (!selectedEventId) {
-      setSponsors([]);
-      setTotal(0);
-      return;
-    }
-    try {
-      setLoading(true);
-      setError(null);
-      const query = buildQuery({
-        eventId: selectedEventId,
-        tier: tier === "ALL" ? undefined : tier,
-        page,
-        limit: LIMIT,
-      });
-      const res = await api.getList<Sponsor>(`/sponsors${query}`);
-      setSponsors(res.data.sort((a, b) => a.displayOrder - b.displayOrder));
-      setTotal(res.meta.total);
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to load sponsors");
-    } finally {
-      setLoading(false);
-    }
+  const refresh = () => {
+    list.reload()
+    statsQ.reload()
   }
+  const toggleVisibility = useVisibilityToggle("sponsors", refresh)
 
-  useEffect(() => {
-    loadSponsors();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEventId, tier, page]);
-
-  // Stats strip — total, public-facing, and each headline tier shown as
-  // its own card (never lumped together). Depends on refetchKey so it
-  // never goes stale after a delete.
-  useEffect(() => {
-    if (!selectedEventId) {
-      setStats(null);
-      return;
-    }
-    let cancelled = false;
-    (async () => {
-      try {
-        const [all, publicRes, platinum, gold] = await Promise.all([
-          api.getList<Sponsor>(`/sponsors${buildQuery({ eventId: selectedEventId, limit: 1 })}`),
-          api.getList<Sponsor>(
-            `/sponsors${buildQuery({ eventId: selectedEventId, displayPublic: "true", limit: 1 })}`
-          ),
-          api.getList<Sponsor>(
-            `/sponsors${buildQuery({ eventId: selectedEventId, tier: "PLATINUM", limit: 1 })}`
-          ),
-          api.getList<Sponsor>(
-            `/sponsors${buildQuery({ eventId: selectedEventId, tier: "GOLD", limit: 1 })}`
-          ),
-        ]);
-        if (cancelled) return;
-        setStats({
-          total: all.meta.total,
-          public: publicRes.meta.total,
-          platinum: platinum.meta.total,
-          gold: gold.meta.total,
-        });
-      } catch {
-        // Non-critical — skip stats silently on error.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedEventId, refetchKey]);
-
-  async function confirmDelete() {
-    if (!deleteTarget) return;
-    setDeleting(true);
+  async function remove(s: Sponsor) {
+    const ok = await confirm({ title: `Remove ${s.name}?`, description: "They'll be removed from this event.", confirmLabel: "Remove sponsor", tone: "danger" })
+    if (!ok) return
     try {
-      await api.delete(`/sponsors/${deleteTarget.id}`);
-      setDeleteTarget(null);
-      await loadSponsors();
-      setRefetchKey((k) => k + 1);
+      await api.delete(`/sponsors/${s.id}`)
+      toast.success(`${s.name} removed`)
+      refresh()
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : "Failed to delete sponsor.");
-    } finally {
-      setDeleting(false);
+      toast.error(errorMessage(err))
     }
   }
 
-  const noEventSelected = !selectedEventId;
+  const actionsFor = (s: Sponsor): RowAction[] => [
+    { label: "Edit", icon: Pencil, to: `/dashboard/sponsors/${s.id}/edit`, hidden: !write },
+    {
+      label: s.displayPublic ? "Hide from public page" : "Show on public page",
+      icon: s.displayPublic ? EyeOff : Eye,
+      hidden: !write,
+      onClick: () => void toggleVisibility(s, s.name),
+    },
+    { label: "Remove", icon: Trash2, destructive: true, separatorBefore: true, hidden: !write, onClick: () => void remove(s) },
+  ]
+
+  const chips: ActiveFilter[] = [
+    ...(values.search ? [{ key: "search", label: `Search: "${values.search}"`, onRemove: () => set({ search: "" }) }] : []),
+    ...(values.tier ? [{ key: "tier", label: `Tier: ${statusLabel("tier", values.tier)}`, onRemove: () => set({ tier: "" }) }] : []),
+    ...(values.visibility ? [{ key: "vis", label: values.visibility === "true" ? "Public only" : "Hidden only", onRemove: () => set({ visibility: "" }) }] : []),
+  ]
 
   return (
-    <div className="space-y-5">
+    <>
       <PageHeader
         title="Sponsors"
-        subtitle="Manage sponsors for each event."
+        description="Organizations supporting your event, grouped by tier."
+        breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Sponsors" }]}
         actions={
-          <Button
-            disabled={noEventSelected}
-            render={<Link href={`/dashboard/sponsors/new?eventId=${selectedEventId}`} />}
-            nativeButton={false}
-            className="gap-2 w-full sm:w-auto"
-          >
-            <Plus className="w-4 h-4" />
-            Add Sponsor
-          </Button>
+          eventId &&
+          write && (
+            <Button onClick={() => navigate(`/dashboard/sponsors/new${eventQuery}`)}>
+              <Plus /> Add sponsor
+            </Button>
+          )
         }
       />
 
-      {!noEventSelected && (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {stats ? (
-            <>
-              <StatCard label="Total sponsors" value={stats.total} icon={Handshake} accent="purple" />
-              <StatCard label="Public" value={stats.public} icon={Eye} accent="emerald" />
-              <StatCard label="Platinum" value={stats.platinum} icon={Medal} accent="slate" />
-              <StatCard label="Gold" value={stats.gold} icon={Award} accent="blue" />
-            </>
-          ) : (
-            <>
-              <StatCardSkeleton />
-              <StatCardSkeleton />
-              <StatCardSkeleton />
-              <StatCardSkeleton />
-            </>
-          )}
-        </div>
-      )}
+      <EventPicker value={eventId} onChange={setEventId} className="mb-6" />
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center">
-        <Select value={selectedEventId} onValueChange={(v) => setSelectedEventId(v ?? "")}>
-          <SelectTrigger className="w-full sm:w-64">
-            <SelectValue placeholder={eventsLoading ? "Loading events..." : "Select an event"} />
-          </SelectTrigger>
-          <SelectContent>
-            {events.map((ev) => (
-              <SelectItem key={ev.id} value={ev.id}>
-                {ev.title}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-
-        <Select
-          value={tier}
-          onValueChange={(v) => setTier((v ?? "ALL") as SponsorTier | "ALL")}
-          disabled={noEventSelected}
-        >
-          <SelectTrigger className="w-full sm:w-44">
-            <SelectValue placeholder="Tier" />
-          </SelectTrigger>
-          <SelectContent>
-            {TIER_OPTIONS.map((opt) => (
-              <SelectItem key={opt.value} value={opt.value}>
-                {opt.label}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
-      {noEventSelected ? (
-        <EmptyState
-          icon={Handshake}
-          title="No event selected"
-          description="Select an event above to view its sponsors."
-        />
-      ) : error ? (
-        <div className="text-center text-red-600 py-16 border rounded-md">{error}</div>
-      ) : loading ? (
-        <CardGridSkeleton count={6} />
-      ) : sponsors.length === 0 ? (
-        <EmptyState
-          icon={Plus}
-          title="No sponsors yet"
-          description="Add your first sponsor for this event."
-          action={
-            <Button
-              size="sm"
-              render={<Link href={`/dashboard/sponsors/new?eventId=${selectedEventId}`} />}
-              nativeButton={false}
-            >
-              Add Sponsor
-            </Button>
-          }
-        />
+      {!eventId ? (
+        <EmptyState icon={CalendarDays} title="Choose an event" description="Pick an event above to manage its sponsors." />
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {sponsors.map((s) => (
-            <div
-              key={s.id}
-              className="rounded-xl border border-[#e9e4ff] bg-white p-4 flex flex-col gap-3 transition-all duration-200 hover:shadow-md hover:-translate-y-0.5"
-            >
-              <div className="flex items-start gap-3">
-                <Avatar name={s.name} src={s.logo} shape="square" />
-                <div className="min-w-0 flex-1">
-                  <p className="font-medium text-slate-900 truncate">{s.name}</p>
-                  <span
-                    className={"inline-block text-xs px-2 py-0.5 rounded-full mt-1 font-medium " + TIER_STYLES[s.tier]}
-                  >
-                    {s.tier}
-                  </span>
-                </div>
-                {s.displayPublic && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 shrink-0">
-                    Public
-                  </span>
-                )}
-              </div>
+        <>
+          <StatsRow
+            loading={!stats}
+            items={[
+              { label: "Sponsors", value: stats?.total, icon: Handshake, accent: "purple", hint: stats ? `${stats.public} shown publicly` : undefined },
+              { label: "Platinum", value: stats?.byTier.PLATINUM, icon: Award, accent: "slate" },
+              { label: "Gold", value: stats?.byTier.GOLD, icon: Medal, accent: "amber" },
+              {
+                label: "Silver & Bronze",
+                value: stats ? stats.byTier.SILVER + stats.byTier.BRONZE : undefined,
+                icon: Medal,
+                accent: "blue",
+              },
+            ]}
+          />
 
-              <div className="flex items-center justify-between mt-auto pt-2 border-t border-[#e9e4ff]">
-                {s.website ? (
-                  <a
-                    href={s.website}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="text-[#7c3aed] hover:text-[#6d28d9]"
-                    aria-label="Website"
-                  >
-                    <Globe className="w-4 h-4" />
-                  </a>
-                ) : (
-                  <span />
-                )}
-                <div className="flex gap-1">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    render={<Link href={`/dashboard/sponsors/${s.id}/edit?eventId=${selectedEventId}`} />}
-                    nativeButton={false}
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </Button>
-                  <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(s)}>
-                    <Trash2 className="w-4 h-4 text-red-600" />
-                  </Button>
-                </div>
-              </div>
+          <Toolbar>
+            <SearchInput value={values.search} onChange={(search) => set({ search })} placeholder="Search sponsors…" />
+            <FilterSelect value={values.tier} onChange={(tier) => set({ tier })} options={statusOptions("tier")} allLabel="All tiers" />
+            <FilterSelect value={values.visibility} onChange={(visibility) => set({ visibility })} options={statusOptions("visibility")} allLabel="Public & hidden" />
+          </Toolbar>
+          <FilterChips filters={chips} onClearAll={() => reset(["eventId"])} />
+
+          {list.error ? (
+            <ErrorState message={list.error} onRetry={list.reload} />
+          ) : list.initialLoading ? (
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
+              {Array.from({ length: 6 }, (_, i) => (
+                <Skeleton key={i} className="h-36 rounded-2xl" />
+              ))}
             </div>
-          ))}
-        </div>
+          ) : sponsors.length === 0 ? (
+            hasFilters ? (
+              <NoResults onClear={() => reset(["eventId"])} />
+            ) : (
+              <EmptyState
+                icon={Handshake}
+                title="No sponsors yet"
+                description="Add the organizations supporting this event."
+                action={
+                  write && (
+                    <Button onClick={() => navigate(`/dashboard/sponsors/new${eventQuery}`)}>
+                      <Plus /> Add sponsor
+                    </Button>
+                  )
+                }
+              />
+            )
+          ) : (
+            <div className={cn("space-y-8", list.loading && "opacity-60")}>
+              {TIER_ORDER.map((tier) => {
+                const inTier = sponsors.filter((s) => s.tier === tier)
+                if (inTier.length === 0) return null
+                return (
+                  <section key={tier}>
+                    <h2 className="mb-3 flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-[#64748b]">
+                      <StatusBadge kind="tier" value={tier} /> {plural(inTier.length, "sponsor")}
+                    </h2>
+                    <div className={cn("grid gap-4", TIER_GRID[tier])}>
+                      {inTier.map((s) => (
+                        <article key={s.id} className="flex flex-col rounded-2xl border border-[#e9e4ff] bg-white p-4 shadow-sm">
+                          <div className="flex justify-end">
+                            <RowActions actions={actionsFor(s)} />
+                          </div>
+                          <div className={cn("flex items-center justify-center", TIER_LOGO[tier])}>
+                            {s.logo ? (
+                              <img src={s.logo} alt={`${s.name} logo`} className="max-h-full max-w-full object-contain" />
+                            ) : (
+                              <span className="text-center text-lg font-bold text-[#cbd5e1]">{s.name}</span>
+                            )}
+                          </div>
+                          <p className="mt-3 truncate text-center font-medium text-[#0f172a]">{s.name}</p>
+                          <div className="mt-2 flex items-center justify-center gap-2">
+                            <StatusBadge kind="visibility" value={s.displayPublic} />
+                            {s.website && (
+                              <a
+                                href={s.website}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="inline-flex items-center gap-1 truncate text-xs text-[#7c3aed] hover:underline"
+                              >
+                                {hostOf(s.website)} <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                  </section>
+                )
+              })}
+            </div>
+          )}
+        </>
       )}
-
-      {!noEventSelected && total > LIMIT && (
-        <Pagination page={page} limit={LIMIT} total={total} onPageChange={setPage} />
-      )}
-
-      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Sponsor</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Are you sure you want to delete{" "}
-            <span className="font-medium text-foreground">{deleteTarget?.name}</span>? This cannot be undone.
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
-              Cancel
-            </Button>
-            <Button onClick={confirmDelete} disabled={deleting} className="bg-red-600 hover:bg-red-700">
-              {deleting ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+    </>
+  )
 }

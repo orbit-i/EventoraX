@@ -1,57 +1,31 @@
-import { useEffect, useState } from "react";
-import { useParams, useRouter, useSearchParams } from "@/compat/next-navigation";
-import { api, ApiError } from "@/lib/api";
-import { SpeakerForm } from "@/components/speakers/SpeakerForm";
-import { RecordFormPage } from "@/components/shared/RecordFormPage";
-import type { Speaker } from "@/types/speaker";
+import { useParams } from "react-router"
+import { Skeleton } from "@/components/ui/skeleton"
+import { PageHeader } from "@/components/app/PageHeader"
+import { ErrorState } from "@/components/app/States"
+import { SpeakerForm } from "@/components/speakers/SpeakerForm"
+import { useApi } from "@/hooks/useApi"
+import type { Speaker } from "@/types/speaker"
 
 export default function EditSpeakerPage() {
-  const router = useRouter();
-  const params = useParams<{ id: string }>();
-  const searchParams = useSearchParams();
-  const speakerId = params.id;
-  const eventIdParam = searchParams.get("eventId") ?? "";
-
-  const [speaker, setSpeaker] = useState<Speaker | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      try {
-        const res = await api.get<Speaker>(`/speakers/${speakerId}`);
-        if (!cancelled) setSpeaker(res);
-      } catch (err) {
-        if (!cancelled) setError(err instanceof ApiError ? err.message : "Failed to load speaker.");
-      } finally {
-        if (!cancelled) setLoading(false);
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [speakerId]);
-
-  const backEventId = eventIdParam || speaker?.eventId || "";
-
+  const { id = "" } = useParams()
+  const { data: speaker, error, initialLoading, reload } = useApi<Speaker>(`/speakers/${id}`)
   return (
-    <RecordFormPage
-      title="Edit Speaker"
-      backHref={`/dashboard/speakers?eventId=${backEventId}`}
-      backLabel="Back to speakers"
-      loading={loading}
-      loadingLabel="Loading speaker…"
-      error={error}
-    >
-      {speaker && (
-        <SpeakerForm
-          eventId={backEventId}
-          initialSpeaker={speaker}
-          onSaved={() => router.push(`/dashboard/speakers?eventId=${backEventId}`)}
-          onCancel={() => router.push(`/dashboard/speakers?eventId=${backEventId}`)}
-        />
+    <div className="mx-auto max-w-4xl">
+      <PageHeader
+        title={speaker ? `${speaker.firstName} ${speaker.lastName}` : "Edit speaker"}
+        breadcrumbs={[
+          { label: "Dashboard", to: "/dashboard" },
+          { label: "Speakers", to: speaker ? `/dashboard/speakers?eventId=${speaker.eventId}` : "/dashboard/speakers" },
+          { label: "Edit speaker" },
+        ]}
+      />
+      {error ? (
+        <ErrorState message={error} onRetry={reload} />
+      ) : initialLoading || !speaker ? (
+        <Skeleton className="h-96 rounded-2xl" />
+      ) : (
+        <SpeakerForm key={speaker.id} eventId={speaker.eventId} speaker={speaker} />
       )}
-    </RecordFormPage>
-  );
+    </div>
+  )
 }

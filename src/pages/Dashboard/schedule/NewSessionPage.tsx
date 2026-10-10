@@ -1,34 +1,24 @@
-import { useRouter, useSearchParams } from "@/compat/next-navigation";
-import { SessionForm } from "@/components/sessions/SessionForm";
-import { RecordFormPage } from "@/components/shared/RecordFormPage";
+import { CalendarDays } from "lucide-react"
+import { PageHeader } from "@/components/app/PageHeader"
+import { EventPicker } from "@/components/app/EventPicker"
+import { EmptyState } from "@/components/app/States"
+import { SessionForm } from "@/components/sessions/SessionForm"
+import { useSelectedEvent } from "@/hooks/useSelectedEvent"
 
 export default function NewSessionPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const eventId = searchParams.get("eventId") ?? "";
-
-  if (!eventId) {
-    return (
-      <RecordFormPage title="Add Session" backHref="/dashboard/schedule" backLabel="Back to schedule">
-        <p className="text-sm text-red-600">
-          No event selected. Go back to the Schedule list and select an event first.
-        </p>
-      </RecordFormPage>
-    );
-  }
-
+  const [eventId, setEventId] = useSelectedEvent()
   return (
-    <RecordFormPage
-      title="Add Session"
-      subtitle="Add a new session to this event's schedule."
-      backHref={`/dashboard/schedule?eventId=${eventId}`}
-      backLabel="Back to schedule"
-    >
-      <SessionForm
-        eventId={eventId}
-        onSaved={() => router.push(`/dashboard/schedule?eventId=${eventId}`)}
-        onCancel={() => router.push(`/dashboard/schedule?eventId=${eventId}`)}
+    <div className="mx-auto max-w-4xl">
+      <PageHeader
+        title="Add session"
+        breadcrumbs={[
+          { label: "Dashboard", to: "/dashboard" },
+          { label: "Schedule", to: `/dashboard/schedule${eventId ? `?eventId=${eventId}` : ""}` },
+          { label: "Add session" },
+        ]}
       />
-    </RecordFormPage>
-  );
+      <EventPicker value={eventId} onChange={setEventId} className="mb-6" />
+      {eventId ? <SessionForm key={eventId} eventId={eventId} /> : <EmptyState icon={CalendarDays} title="Choose an event first" compact />}
+    </div>
+  )
 }

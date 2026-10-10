@@ -1,192 +1,201 @@
-import { useEffect, useState } from "react";
-import { api, ApiError } from "@/lib/api";
-import { toDatetimeLocal, fromDatetimeLocal } from "@/lib/date";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { FormSection } from "@/components/shared/FormSection";
-import type { Session } from "@/types/session";
+import { useEffect, useMemo, useState } from "react"
+import { useNavigate } from "react-router"
+import { Controller, useForm, useWatch } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { toast } from "sonner"
+import { AlertTriangle } from "lucide-react"
+import { TextField, SelectField } from "@/components/ui/form-fields"
+import { FormSection, FullWidth, SwitchField, FormFooter } from "@/components/app/form/FormLayout"
+import { applyServerErrors } from "@/components/app/form/serverErrors"
+import { FormError } from "@/components/auth/AuthShell"
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges"
+import { useApi } from "@/hooks/useApi"
+import { api, buildQuery } from "@/lib/api"
+import { fromDatetimeLocal, toDatetimeLocal } from "@/lib/date"
+import { formatDateTime, formatDuration } from "@/lib/format"
+import type { EventItem } from "@/types/event"
+import type { Session } from "@/types/session"
+import type { Speaker } from "@/types/speaker"
 
-interface SpeakerOption {
-  id: string;
-  firstName: string;
-  lastName: string;
-}
+const NO_SPEAKER = ""
 
-interface SessionFormProps {
-  eventId: string;
-  initialSession?: Session;
-  onSaved: () => void;
-  onCancel: () => void;
-}
+const schema = z
+  .object({
+    title: z.string().trim().min(2, "Give the session a title").max(200),
+    speakerId: z.string(),
+    startTime: z.string().min(1, "Choose a start time"),
+    endTime: z.string().min(1, "Choose an end time"),
+    location: z.string().trim().max(200),
+    displayPublic: z.boolean(),
+  })
+  .refine((v) => !v.startTime || !v.endTime || new Date(v.endTime) > new Date(v.startTime), {
+    path: ["endTime"],
+    message: "The end must be after the start",
+  })
+type Values = z.infer<typeof schema>
 
-export function SessionForm({ eventId, initialSession, onSaved, onCancel }: SessionFormProps) {
-  const isEdit = !!initialSession;
+/** Add or edit a session in the event schedule. */
+export function SessionForm({ eventId, session }: { eventId: string; session?: Session }) {
+  const navigate = useNavigate()
+  const [formError, setFormError] = useState<string | null>(null)
+  const [goTo, setGoTo] = useState<string | null>(null)
+  const backTo = `/dashboard/schedule?eventId=${eventId}`
 
-  const [title, setTitle] = useState(initialSession?.title ?? "");
-  const [speakerId, setSpeakerId] = useState<string>(initialSession?.speakerId ?? "NONE");
-  const [startTime, setStartTime] = useState(
-    initialSession ? toDatetimeLocal(initialSession.startTime) : ""
-  );
-  const [endTime, setEndTime] = useState(
-    initialSession ? toDatetimeLocal(initialSession.endTime) : ""
-  );
-  const [location, setLocation] = useState(initialSession?.location ?? "");
-  const [displayPublic, setDisplayPublic] = useState(initialSession?.displayPublic ?? false);
+  const eventQ = useApi<EventItem>(`/events/${eventId}`)
+  const speakersQ = useApi<Speaker[]>(`/speakers${buildQuery({ eventId, limit: 500 })}`)
+  const sessionsQ = useApi<Session[]>(`/sessions${buildQuery({ eventId, limit: 500 })}`)
+  const event = eventQ.data
 
-  const [speakers, setSpeakers] = useState<SpeakerOption[]>([]);
-  const [speakersLoading, setSpeakersLoading] = useState(true);
+  const {
+    register,
+    handleSubmit,
+    control,
+    setError,
+    reset,
+    formState: { errors, isSubmitting, isDirty },
+  } = useForm<Values>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      title: session?.title ?? "",
+      speakerId: session?.speakerId ?? NO_SPEAKER,
+      startTime: toDatetimeLocal(session?.startTime),
+      endTime: toDatetimeLocal(session?.endTime),
+      location: session?.location ?? "",
+      displayPublic: session?.displayPublic ?? true,
+    },
+  })
 
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
-
+  // New session: start at the event's start time once the event has loaded.
   useEffect(() => {
-    (async () => {
-      try {
-        setSpeakersLoading(true);
-        const res = await api.getList<SpeakerOption>(
-          `/speakers?${new URLSearchParams({ eventId, limit: "100" }).toString()}`
-        );
-        setSpeakers(res.data);
-      } catch (err) {
-        console.error("Failed to load speakers", err);
-      } finally {
-        setSpeakersLoading(false);
-      }
-    })();
-  }, [eventId]);
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setError(null);
-    setFieldErrors({});
-
-    const start = fromDatetimeLocal(startTime);
-    const end = fromDatetimeLocal(endTime);
-    if (new Date(end) <= new Date(start)) {
-      setError("End time must be after start time.");
-      return;
+    if (!session && event) {
+      const start = new Date(event.startDateTime)
+      const end = new Date(start.getTime() + 60 * 60 * 1000)
+      reset(
+        { title: "", speakerId: NO_SPEAKER, startTime: toDatetimeLocal(start.toISOString()), endTime: toDatetimeLocal(end.toISOString()), location: event.location ?? "", displayPublic: true },
+        { keepDirty: false }
+      )
     }
+  }, [event, session, reset])
 
-    setSubmitting(true);
+  const [startTime, endTime, location] = useWatch({ control, name: ["startTime", "endTime", "location"] })
+
+  // Friendly warnings (don't block saving).
+  const warnings = useMemo(() => {
+    const list: string[] = []
+    if (!startTime || !endTime || !event) return list
+    const start = new Date(startTime)
+    const end = new Date(endTime)
+    if (start < new Date(event.startDateTime) || end > new Date(event.endDateTime)) {
+      list.push(`This is outside the event's dates (${formatDateTime(event.startDateTime)} – ${formatDateTime(event.endDateTime)}).`)
+    }
+    const clash = (sessionsQ.data ?? []).find(
+      (s) =>
+        s.id !== session?.id &&
+        location &&
+        (s.location ?? "").toLowerCase() === location.toLowerCase() &&
+        new Date(s.startTime) < end &&
+        new Date(s.endTime) > start
+    )
+    if (clash) list.push(`"${clash.title}" is in the same room at an overlapping time.`)
+    return list
+  }, [startTime, endTime, location, event, sessionsQ.data, session?.id])
+
+  const duration = startTime && endTime ? (new Date(endTime).getTime() - new Date(startTime).getTime()) / 60000 : 0
+  const roomSuggestions = [...new Set([event?.location, ...(sessionsQ.data ?? []).map((s) => s.location)].filter(Boolean) as string[])]
+
+  useUnsavedChanges(isDirty && goTo === null)
+  useEffect(() => {
+    if (goTo) navigate(goTo)
+  }, [goTo, navigate])
+
+  async function onSubmit(v: Values) {
+    setFormError(null)
+    const payload = {
+      title: v.title,
+      speakerId: v.speakerId || null,
+      startTime: fromDatetimeLocal(v.startTime),
+      endTime: fromDatetimeLocal(v.endTime),
+      location: v.location || null,
+      displayPublic: v.displayPublic,
+    }
     try {
-      const body = {
-        title,
-        speakerId: speakerId === "NONE" ? undefined : speakerId,
-        startTime: start,
-        endTime: end,
-        location: location || undefined,
-        displayPublic,
-      };
-      if (isEdit) {
-        await api.patch(`/sessions/${initialSession!.id}`, body);
-      } else {
-        await api.post("/sessions", { eventId, ...body });
-      }
-      onSaved();
+      if (session) await api.patch(`/sessions/${session.id}`, payload)
+      else await api.post("/sessions", { ...payload, eventId })
+      toast.success(session ? "Session updated" : "Session added to the schedule")
+      setGoTo(backTo)
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-        if (err.fieldErrors) setFieldErrors(err.fieldErrors);
-      } else {
-        setError("Something went wrong.");
-      }
-    } finally {
-      setSubmitting(false);
+      setFormError(applyServerErrors(err, setError))
     }
   }
 
+  const speakerOptions = [
+    { value: NO_SPEAKER, label: "No speaker (e.g. break, registration)" },
+    ...(speakersQ.data ?? []).map((s) => ({ value: s.id, label: `${s.firstName} ${s.lastName}${s.company ? ` · ${s.company}` : ""}` })),
+  ]
+
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <div className="p-3 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
-          {error}
-        </div>
-      )}
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+      {formError && <FormError message={formError} />}
 
-      <FormSection title="Session details">
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="title">Session Title *</Label>
-          <Input id="title" value={title} onChange={(e) => setTitle(e.target.value)} required />
-          {fieldErrors.title && <p className="text-sm text-red-600">{fieldErrors.title}</p>}
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="startTime">Start Time *</Label>
-          <Input
-            id="startTime"
-            type="datetime-local"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-            required
+      <FormSection title="Session" description="One item in the event's agenda.">
+        <FullWidth>
+          <TextField label="Title" required placeholder="Keynote: The Future of AI" error={errors.title?.message} {...register("title")} />
+        </FullWidth>
+        <FullWidth>
+          <SelectField
+            label="Speaker"
+            options={speakerOptions}
+            disabled={speakersQ.initialLoading}
+            helper={(speakersQ.data ?? []).length === 0 ? "This event has no speakers yet — add them on the Speakers page." : undefined}
+            {...register("speakerId")}
           />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="endTime">End Time *</Label>
-          <Input
-            id="endTime"
-            type="datetime-local"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-            required
-          />
-        </div>
+        </FullWidth>
       </FormSection>
 
-      <FormSection title="Speaker & location">
-        <div className="space-y-1.5">
-          <Label>Speaker</Label>
-          <Select value={speakerId} onValueChange={(v) => setSpeakerId(v ?? "NONE")}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={speakersLoading ? "Loading speakers..." : "No speaker"} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="NONE">No speaker</SelectItem>
-              {speakers.map((sp) => (
-                <SelectItem key={sp.id} value={sp.id}>
-                  {sp.firstName} {sp.lastName}
-                </SelectItem>
+      <FormSection title="Time & room">
+        <TextField label="Starts" type="datetime-local" required error={errors.startTime?.message} {...register("startTime")} />
+        <TextField
+          label="Ends"
+          type="datetime-local"
+          required
+          min={startTime || undefined}
+          error={errors.endTime?.message}
+          helper={duration > 0 ? `Duration: ${formatDuration(duration)}` : undefined}
+          {...register("endTime")}
+        />
+        <FullWidth>
+          <TextField label="Room / location" placeholder="Hall A" list="session-rooms" error={errors.location?.message} {...register("location")} />
+          <datalist id="session-rooms">
+            {roomSuggestions.map((r) => (
+              <option key={r} value={r} />
+            ))}
+          </datalist>
+        </FullWidth>
+        {warnings.length > 0 && (
+          <FullWidth>
+            <div className="space-y-1 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              {warnings.map((w) => (
+                <p key={w} className="flex items-start gap-2">
+                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" /> {w}
+                </p>
               ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div className="space-y-1.5">
-          <Label htmlFor="location">Location</Label>
-          <Input
-            id="location"
-            value={location}
-            onChange={(e) => setLocation(e.target.value)}
-            placeholder="e.g. Main Auditorium"
-          />
-        </div>
-
-        <div className="flex items-center justify-between rounded-lg border border-[#e9e4ff] p-3 sm:col-span-2">
-          <div>
-            <Label htmlFor="displayPublic">Show on public event page</Label>
-            <p className="text-xs text-muted-foreground">Visible on the public schedule listing.</p>
-          </div>
-          <Switch id="displayPublic" checked={displayPublic} onCheckedChange={setDisplayPublic} />
-        </div>
+            </div>
+          </FullWidth>
+        )}
       </FormSection>
 
-      <div className="flex gap-2 pt-2">
-        <Button type="submit" disabled={submitting}>
-          {submitting ? "Saving..." : isEdit ? "Save Changes" : "Add Session"}
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-      </div>
+      <FormSection title="Visibility">
+        <FullWidth>
+          <Controller
+            control={control}
+            name="displayPublic"
+            render={({ field }) => <SwitchField label="Show on the public agenda" checked={field.value} onCheckedChange={field.onChange} />}
+          />
+        </FullWidth>
+      </FormSection>
+
+      <FormFooter submitting={isSubmitting} onCancel={() => navigate(backTo)} submitLabel={session ? "Save changes" : "Add session"} dirty={isDirty} />
     </form>
-  );
+  )
 }

@@ -1,192 +1,148 @@
-import { useState } from "react";
-import { api, ApiError } from "@/lib/api";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { FormSection } from "@/components/shared/FormSection";
-import type { Speaker } from "@/types/speaker";
+import { useEffect, useState } from "react"
+import { useNavigate } from "react-router"
+import { Controller, useForm, useWatch } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
+import { z } from "zod"
+import { toast } from "sonner"
+import { TextField, TextareaField } from "@/components/ui/form-fields"
+import { FormSection, FullWidth, SwitchField, FormFooter } from "@/components/app/form/FormLayout"
+import { ImageUploadField } from "@/components/app/form/ImageUploadField"
+import { applyServerErrors } from "@/components/app/form/serverErrors"
+import { FormError } from "@/components/auth/AuthShell"
+import { useUnsavedChanges } from "@/hooks/useUnsavedChanges"
+import { api } from "@/lib/api"
+import type { Speaker } from "@/types/speaker"
 
-interface SpeakerFormProps {
-  eventId: string;
-  initialSpeaker?: Speaker;
-  onSaved: () => void;
-  onCancel: () => void;
-}
+const URL_RE = /^https?:\/\/\S+$/i
+const BIO_MAX = 2000
 
-export function SpeakerForm({ eventId, initialSpeaker, onSaved, onCancel }: SpeakerFormProps) {
-  const isEdit = !!initialSpeaker;
+const schema = z.object({
+  firstName: z.string().trim().min(1, "First name is required").max(100),
+  lastName: z.string().trim().min(1, "Last name is required").max(100),
+  title: z.string().trim().max(150),
+  company: z.string().trim().max(150),
+  sessionTopic: z.string().trim().max(200),
+  bio: z.string().trim().max(BIO_MAX, `Keep the bio under ${BIO_MAX} characters`),
+  photo: z.string().nullable(),
+  linkedin: z
+    .string()
+    .trim()
+    .refine((v) => v === "" || URL_RE.test(v), "Paste the full profile link, e.g. https://linkedin.com/in/name"),
+  displayPublic: z.boolean(),
+})
+type Values = z.infer<typeof schema>
 
-  const [firstName, setFirstName] = useState(initialSpeaker?.firstName ?? "");
-  const [lastName, setLastName] = useState(initialSpeaker?.lastName ?? "");
-  const [title, setTitle] = useState(initialSpeaker?.title ?? "");
-  const [company, setCompany] = useState(initialSpeaker?.company ?? "");
-  const [sessionTopic, setSessionTopic] = useState(initialSpeaker?.sessionTopic ?? "");
-  const [bio, setBio] = useState(initialSpeaker?.bio ?? "");
-  const [photo, setPhoto] = useState(initialSpeaker?.photo ?? "");
-  const [linkedin, setLinkedin] = useState(initialSpeaker?.linkedin ?? "");
-  const [displayPublic, setDisplayPublic] = useState(initialSpeaker?.displayPublic ?? false);
+/** Add or edit a speaker. Returns to the speakers list when saved. */
+export function SpeakerForm({ eventId, speaker }: { eventId: string; speaker?: Speaker }) {
+  const navigate = useNavigate()
+  const [formError, setFormError] = useState<string | null>(null)
+  const [goTo, setGoTo] = useState<string | null>(null)
+  const backTo = `/dashboard/speakers?eventId=${eventId}`
 
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const {
+    register,
+    handleSubmit,
+    control,
+    setError,
+    formState: { errors, isSubmitting, isDirty },
+  } = useForm<Values>({
+    resolver: zodResolver(schema),
+    defaultValues: {
+      firstName: speaker?.firstName ?? "",
+      lastName: speaker?.lastName ?? "",
+      title: speaker?.title ?? "",
+      company: speaker?.company ?? "",
+      sessionTopic: speaker?.sessionTopic ?? "",
+      bio: speaker?.bio ?? "",
+      photo: speaker?.photo ?? null,
+      linkedin: speaker?.linkedin ?? "",
+      displayPublic: speaker?.displayPublic ?? true,
+    },
+  })
+  const bio = useWatch({ control, name: "bio" })
 
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitting(true);
-    setError(null);
-    setFieldErrors({});
+  useUnsavedChanges(isDirty && goTo === null)
+  useEffect(() => {
+    if (goTo) navigate(goTo)
+  }, [goTo, navigate])
+
+  async function onSubmit(v: Values) {
+    setFormError(null)
+    const payload = {
+      firstName: v.firstName,
+      lastName: v.lastName,
+      title: v.title || null,
+      company: v.company || null,
+      sessionTopic: v.sessionTopic || null,
+      bio: v.bio || null,
+      photo: v.photo,
+      linkedin: v.linkedin || null,
+      displayPublic: v.displayPublic,
+    }
     try {
-      const body = {
-        firstName,
-        lastName,
-        title: title || undefined,
-        company: company || undefined,
-        sessionTopic: sessionTopic || undefined,
-        bio: bio || undefined,
-        photo: photo || undefined,
-        linkedin: linkedin || undefined,
-        displayPublic,
-      };
-      if (isEdit) {
-        await api.patch(`/speakers/${initialSpeaker!.id}`, body);
-      } else {
-        await api.post("/speakers", { eventId, ...body });
-      }
-      onSaved();
+      if (speaker) await api.patch(`/speakers/${speaker.id}`, payload)
+      else await api.post("/speakers", { ...payload, eventId })
+      toast.success(speaker ? "Speaker updated" : `${v.firstName} ${v.lastName} added`)
+      setGoTo(backTo)
     } catch (err) {
-      if (err instanceof ApiError) {
-        setError(err.message);
-        if (err.fieldErrors) setFieldErrors(err.fieldErrors);
-      } else {
-        setError("Something went wrong.");
-      }
-    } finally {
-      setSubmitting(false);
+      setFormError(applyServerErrors(err, setError))
     }
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
-      {error && (
-        <div className="p-3 rounded-md bg-red-50 text-red-700 text-sm border border-red-200">
-          {error}
-        </div>
-      )}
+    <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
+      {formError && <FormError message={formError} />}
 
-      <FormSection title="Basic info" description="Who they are.">
-        <div className="space-y-1.5">
-          <Label htmlFor="firstName">First Name *</Label>
-          <Input
-            id="firstName"
-            value={firstName}
-            onChange={(e) => setFirstName(e.target.value)}
-            required
+      <FormSection title="Speaker" description="Shown on the event page and in the schedule.">
+        <FullWidth>
+          <Controller
+            control={control}
+            name="photo"
+            render={({ field }) => (
+              <ImageUploadField label="Photo" kind="speaker" shape="circle" value={field.value} onChange={field.onChange} helper="A square headshot works best · PNG, JPG or WEBP · up to 2 MB" />
+            )}
           />
-          {fieldErrors.firstName && (
-            <p className="text-sm text-red-600">{fieldErrors.firstName}</p>
-          )}
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="lastName">Last Name *</Label>
-          <Input
-            id="lastName"
-            value={lastName}
-            onChange={(e) => setLastName(e.target.value)}
-            required
+        </FullWidth>
+        <TextField label="First name" required error={errors.firstName?.message} {...register("firstName")} />
+        <TextField label="Last name" required error={errors.lastName?.message} {...register("lastName")} />
+        <TextField label="Job title" placeholder="Professor of AI" error={errors.title?.message} {...register("title")} />
+        <TextField label="Organization" placeholder="NUST" error={errors.company?.message} {...register("company")} />
+        <FullWidth>
+          <TextField label="Talk / session topic" placeholder="The future of generative AI" error={errors.sessionTopic?.message} {...register("sessionTopic")} />
+        </FullWidth>
+        <FullWidth>
+          <TextareaField
+            label="Bio"
+            rows={5}
+            placeholder="A short introduction attendees will read."
+            helper={`${bio.length}/${BIO_MAX}`}
+            error={errors.bio?.message}
+            {...register("bio")}
           />
-          {fieldErrors.lastName && (
-            <p className="text-sm text-red-600">{fieldErrors.lastName}</p>
-          )}
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="title">Title</Label>
-          <Input
-            id="title"
-            placeholder="e.g. Senior Engineer"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label htmlFor="company">Company</Label>
-          <Input id="company" value={company} onChange={(e) => setCompany(e.target.value)} />
-        </div>
+        </FullWidth>
+        <FullWidth>
+          <TextField label="LinkedIn profile" placeholder="https://linkedin.com/in/…" error={errors.linkedin?.message} {...register("linkedin")} />
+        </FullWidth>
       </FormSection>
 
-      <FormSection title="Bio & session" description="What they're speaking about.">
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="sessionTopic">Session Topic</Label>
-          <Input
-            id="sessionTopic"
-            value={sessionTopic}
-            onChange={(e) => setSessionTopic(e.target.value)}
-          />
-        </div>
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="bio">Bio</Label>
-          <Textarea
-            id="bio"
-            rows={4}
-            value={bio}
-            onChange={(e) => setBio(e.target.value)}
-            placeholder="Short biography for the public event page..."
-          />
-        </div>
-      </FormSection>
-
-      <FormSection title="Photo, links & visibility">
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="photo">Photo URL</Label>
-          <Input
-            id="photo"
-            value={photo}
-            onChange={(e) => setPhoto(e.target.value)}
-            placeholder="https://..."
-          />
-          {photo && (
-            <div className="mt-2 flex items-center gap-2">
-              <img
-                src={photo}
-                alt="Preview"
-                className="w-12 h-12 rounded-full object-cover border"
-                onError={(e) => ((e.target as HTMLImageElement).style.display = "none")}
+      <FormSection title="Visibility">
+        <FullWidth>
+          <Controller
+            control={control}
+            name="displayPublic"
+            render={({ field }) => (
+              <SwitchField
+                label="Show on the public event page"
+                description="Turn off while details are being confirmed."
+                checked={field.value}
+                onCheckedChange={field.onChange}
               />
-              <span className="text-xs text-muted-foreground">Preview</span>
-            </div>
-          )}
-        </div>
-
-        <div className="space-y-1.5 sm:col-span-2">
-          <Label htmlFor="linkedin">LinkedIn URL</Label>
-          <Input
-            id="linkedin"
-            value={linkedin}
-            onChange={(e) => setLinkedin(e.target.value)}
-            placeholder="https://linkedin.com/in/..."
+            )}
           />
-        </div>
-
-        <div className="flex items-center justify-between rounded-lg border border-[#e9e4ff] p-3 sm:col-span-2">
-          <div>
-            <Label htmlFor="displayPublic">Show on public event page</Label>
-            <p className="text-xs text-muted-foreground">
-              Visible to attendees viewing the public event listing.
-            </p>
-          </div>
-          <Switch id="displayPublic" checked={displayPublic} onCheckedChange={setDisplayPublic} />
-        </div>
+        </FullWidth>
       </FormSection>
 
-      <div className="flex gap-2 pt-2">
-        <Button type="submit" disabled={submitting}>
-          {submitting ? "Saving..." : isEdit ? "Save Changes" : "Add Speaker"}
-        </Button>
-        <Button type="button" variant="outline" onClick={onCancel}>
-          Cancel
-        </Button>
-      </div>
+      <FormFooter submitting={isSubmitting} onCancel={() => navigate(backTo)} submitLabel={speaker ? "Save changes" : "Add speaker"} dirty={isDirty} />
     </form>
-  );
+  )
 }

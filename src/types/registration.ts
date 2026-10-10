@@ -73,9 +73,3 @@ export interface CsvImportReport {
   inserted: number
   skipped: number
 }
-
-/** @deprecated used by the Sponsors / Schedule pages until they are rebuilt */
-export interface EventOption {
-  id: string
-  title: string
-}

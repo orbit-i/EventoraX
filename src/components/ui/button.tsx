@@ -39,45 +39,22 @@ const buttonVariants = cva(
     },
   }
 )
-
 type ButtonProps = React.ComponentProps<"button"> &
   VariantProps<typeof buttonVariants> & {
     /** Render the button styles onto the single child element (e.g. a <Link>). */
     asChild?: boolean
-    /**
-     * Same idea as asChild, written the Base UI way: <Button render={<Link to="/x" />}>Text</Button>.
-     * Supported so the pages ported from the events module work unchanged.
-     */
-    render?: React.ReactElement<{ children?: React.ReactNode }>
-    /** Base UI option; has no effect here. */
-    nativeButton?: boolean
   }
 
-function Button({
-  className,
-  variant = "default",
-  size = "default",
-  asChild = false,
-  render,
-  nativeButton: _nativeButton,
-  children,
-  ...props
-}: ButtonProps) {
-  const classes = cn(buttonVariants({ variant, size, className }))
-
-  if (render) {
-    return (
-      <Slot data-slot="button" data-variant={variant} data-size={size} className={classes} {...props}>
-        {React.cloneElement(render, undefined, children ?? render.props.children)}
-      </Slot>
-    )
-  }
-
+function Button({ className, variant = "default", size = "default", asChild = false, ...props }: ButtonProps) {
   const Comp = asChild ? Slot : "button"
   return (
-    <Comp data-slot="button" data-variant={variant} data-size={size} className={classes} {...props}>
-      {children}
-    </Comp>
+    <Comp
+      data-slot="button"
+      data-variant={variant}
+      data-size={size}
+      className={cn(buttonVariants({ variant, size, className }))}
+      {...props}
+    />
   )
 }
 

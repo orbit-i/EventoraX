@@ -1,21 +1,15 @@
-export interface SessionSpeakerRef {
-  id: string;
-  firstName: string;
-  lastName: string;
-}
-
+// Shape returned by /api/v1/sessions
 export interface Session {
-  id: string;
-  tenantId: string;
-  eventId: string;
-  speakerId: string | null;
-  title: string;
-  startTime: string;
-  endTime: string;
-  location: string | null;
-  displayPublic: boolean;
-  displayOrder: number;
-  createdAt: string;
-  updatedAt: string;
-  speaker?: SessionSpeakerRef | null;
+  id: string
+  eventId: string
+  speakerId: string | null
+  title: string
+  startTime: string
+  endTime: string
+  location: string | null
+  displayPublic: boolean
+  displayOrder: number
+  createdAt: string
+  updatedAt: string
+  speaker: { id: string; firstName: string; lastName: string; photo: string | null } | null
 }

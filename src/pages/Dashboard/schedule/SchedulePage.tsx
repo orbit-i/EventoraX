@@ -1,304 +1,253 @@
-import { useEffect, useState } from "react";
-import Link from "@/compat/next-link";
-import { useSearchParams } from "@/compat/next-navigation";
-import { api, buildQuery, ApiError } from "@/lib/api";
-import { Button } from "@/components/ui/button";
-import { formatTimeRange } from "@/lib/date";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Pagination } from "@/components/layout/Pagination";
-import { PageHeader } from "@/components/shared/PageHeader";
-import { StatCard, StatCardSkeleton } from "@/components/shared/StatCard";
-import { EmptyState } from "@/components/shared/EmptyState";
-import { ListSkeleton } from "@/components/shared/Skeletons";
-import { MapPin, Mic2, Pencil, Trash2, Plus, CalendarClock, Eye } from "lucide-react";
-import type { Session } from "@/types/session";
-import type { EventOption } from "@/types/registration";
+import { useMemo } from "react"
+import { useNavigate } from "react-router"
+import { AlertTriangle, CalendarDays, Clock, Eye, EyeOff, ListOrdered, MapPin, Mic2, Pencil, Plus, Timer, Trash2 } from "lucide-react"
+import { toast } from "sonner"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { Skeleton } from "@/components/ui/skeleton"
+import { PageHeader } from "@/components/app/PageHeader"
+import { EventPicker } from "@/components/app/EventPicker"
+import { StatsRow } from "@/components/app/StatCard"
+import { Toolbar, SearchInput, FilterSelect, FilterChips, type ActiveFilter } from "@/components/app/Toolbar"
+import { RowActions, type RowAction } from "@/components/app/RowActions"
+import { StatusBadge } from "@/components/app/StatusBadge"
+import { EmptyState, ErrorState, NoResults } from "@/components/app/States"
+import { Avatar } from "@/components/app/Avatar"
+import { useConfirm } from "@/components/app/ConfirmDialog"
+import { useApi } from "@/hooks/useApi"
+import { useUrlState } from "@/hooks/useUrlState"
+import { useSelectedEvent } from "@/hooks/useSelectedEvent"
+import { useVisibilityToggle } from "@/hooks/useVisibilityToggle"
+import { useCan } from "@/lib/permissions"
+import { api, buildQuery, errorMessage } from "@/lib/api"
+import { formatDuration, formatTime, plural } from "@/lib/format"
+import { statusOptions } from "@/lib/status"
+import type { EventItem, EventStats } from "@/types/event"
+import type { Session } from "@/types/session"
 
-const LIMIT = 20;
+const dayKey = (iso: string) => new Date(iso).toLocaleDateString("en-CA") // YYYY-MM-DD in local time
+const dayLabel = (iso: string) => new Date(iso).toLocaleDateString("en-PK", { weekday: "long", day: "numeric", month: "long" })
+const minutes = (s: Session) => (new Date(s.endTime).getTime() - new Date(s.startTime).getTime()) / 60000
+
+/** Sessions in the same room whose times overlap. */
+function findClashes(sessions: Session[]): Set<string> {
+  const clashes = new Set<string>()
+  for (let i = 0; i < sessions.length; i++) {
+    for (let j = i + 1; j < sessions.length; j++) {
+      const a = sessions[i]!
+      const b = sessions[j]!
+      if (!a.location || (a.location ?? "").toLowerCase() !== (b.location ?? "").toLowerCase()) continue
+      if (new Date(a.startTime) < new Date(b.endTime) && new Date(b.startTime) < new Date(a.endTime)) {
+        clashes.add(a.id)
+        clashes.add(b.id)
+      }
+    }
+  }
+  return clashes
+}
 
 export default function SchedulePage() {
-  const searchParams = useSearchParams();
+  const navigate = useNavigate()
+  const can = useCan()
+  const confirm = useConfirm()
+  const [eventId, setEventId] = useSelectedEvent()
+  const { values, set, reset } = useUrlState({ search: "", visibility: "" })
 
-  const [events, setEvents] = useState<EventOption[]>([]);
-  const [eventsLoading, setEventsLoading] = useState(true);
-  const [selectedEventId, setSelectedEventId] = useState<string>(
-    () => searchParams.get("eventId") ?? ""
-  );
+  // An agenda needs every session, so load them all (one event rarely has more than a few dozen).
+  const list = useApi<Session[]>(eventId ? `/sessions${buildQuery({ eventId, search: values.search, displayPublic: values.visibility, limit: 500 })}` : null)
+  const statsQ = useApi<EventStats>(eventId ? `/events/${eventId}/stats` : null)
+  const eventQ = useApi<EventItem>(eventId ? `/events/${eventId}` : null)
 
-  const [page, setPage] = useState(1);
-  const [sessions, setSessions] = useState<Session[]>([]);
-  const [total, setTotal] = useState(0);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const sessions = list.data ?? []
+  const stats = statsQ.data?.sessions
+  const write = can("write") && eventQ.data?.status !== "ARCHIVED"
+  const hasFilters = Boolean(values.search || values.visibility)
+  const eventQuery = eventId ? `?eventId=${eventId}` : ""
 
-  const [stats, setStats] = useState<{ total: number; public: number } | null>(null);
-  const [refetchKey, setRefetchKey] = useState(0);
-
-  const [deleteTarget, setDeleteTarget] = useState<Session | null>(null);
-  const [deleting, setDeleting] = useState(false);
-
-  useEffect(() => {
-    (async () => {
-      try {
-        setEventsLoading(true);
-        const res = await api.getList<EventOption>(`/events${buildQuery({ limit: 100 })}`);
-        setEvents(res.data);
-      } catch (err) {
-        console.error("Failed to load events", err);
-      } finally {
-        setEventsLoading(false);
-      }
-    })();
-  }, []);
-
-  useEffect(() => {
-    setPage(1);
-  }, [selectedEventId]);
-
-  async function loadSessions() {
-    if (!selectedEventId) {
-      setSessions([]);
-      setTotal(0);
-      return;
-    }
-    try {
-      setLoading(true);
-      setError(null);
-      const query = buildQuery({ eventId: selectedEventId, page, limit: LIMIT });
-      const res = await api.getList<Session>(`/sessions${query}`);
-      setSessions(
-        res.data.sort((a, b) => {
-          const t = new Date(a.startTime).getTime() - new Date(b.startTime).getTime();
-          return t !== 0 ? t : a.displayOrder - b.displayOrder;
-        })
-      );
-      setTotal(res.meta.total);
-    } catch (err: any) {
-      setError(err?.message ?? "Failed to load schedule");
-    } finally {
-      setLoading(false);
-    }
+  const refresh = () => {
+    list.reload()
+    statsQ.reload()
   }
+  const toggleVisibility = useVisibilityToggle("sessions", refresh)
 
-  useEffect(() => {
-    loadSessions();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedEventId, page]);
-
-  // Stats strip — this module previously had no at-a-glance numbers for
-  // Schedule at all. Depends on refetchKey so it never goes stale after
-  // a delete.
-  useEffect(() => {
-    if (!selectedEventId) {
-      setStats(null);
-      return;
+  const clashes = useMemo(() => findClashes(sessions), [sessions])
+  const days = useMemo(() => {
+    const groups = new Map<string, Session[]>()
+    for (const s of [...sessions].sort((a, b) => a.startTime.localeCompare(b.startTime) || a.displayOrder - b.displayOrder)) {
+      const key = dayKey(s.startTime)
+      groups.set(key, [...(groups.get(key) ?? []), s])
     }
-    let cancelled = false;
-    (async () => {
-      try {
-        const [all, publicRes] = await Promise.all([
-          api.getList<Session>(`/sessions${buildQuery({ eventId: selectedEventId, limit: 1 })}`),
-          api.getList<Session>(
-            `/sessions${buildQuery({ eventId: selectedEventId, displayPublic: "true", limit: 1 })}`
-          ),
-        ]);
-        if (cancelled) return;
-        setStats({ total: all.meta.total, public: publicRes.meta.total });
-      } catch {
-        // Non-critical — skip stats silently on error.
-      }
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [selectedEventId, refetchKey]);
+    return [...groups.entries()]
+  }, [sessions])
 
-  async function confirmDelete() {
-    if (!deleteTarget) return;
-    setDeleting(true);
+  async function remove(s: Session) {
+    const ok = await confirm({ title: `Delete "${s.title}"?`, description: "It will be removed from the schedule.", confirmLabel: "Delete session", tone: "danger" })
+    if (!ok) return
     try {
-      await api.delete(`/sessions/${deleteTarget.id}`);
-      setDeleteTarget(null);
-      await loadSessions();
-      setRefetchKey((k) => k + 1);
+      await api.delete(`/sessions/${s.id}`)
+      toast.success("Session deleted")
+      refresh()
     } catch (err) {
-      alert(err instanceof ApiError ? err.message : "Failed to delete session.");
-    } finally {
-      setDeleting(false);
+      toast.error(errorMessage(err))
     }
   }
 
-  const noEventSelected = !selectedEventId;
+  const actionsFor = (s: Session): RowAction[] => [
+    { label: "Edit", icon: Pencil, to: `/dashboard/schedule/${s.id}/edit`, hidden: !write },
+    {
+      label: s.displayPublic ? "Hide from public agenda" : "Show on public agenda",
+      icon: s.displayPublic ? EyeOff : Eye,
+      hidden: !write,
+      onClick: () => void toggleVisibility(s, `"${s.title}"`),
+    },
+    { label: "Delete", icon: Trash2, destructive: true, separatorBefore: true, hidden: !write, onClick: () => void remove(s) },
+  ]
+
+  const chips: ActiveFilter[] = [
+    ...(values.search ? [{ key: "search", label: `Search: "${values.search}"`, onRemove: () => set({ search: "" }) }] : []),
+    ...(values.visibility ? [{ key: "vis", label: values.visibility === "true" ? "Public only" : "Hidden only", onRemove: () => set({ visibility: "" }) }] : []),
+  ]
 
   return (
-    <div className="space-y-5">
+    <>
       <PageHeader
         title="Schedule"
-        subtitle="Manage the session agenda for each event."
+        description="The event's agenda, grouped by day."
+        breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Schedule" }]}
         actions={
-          <>
-            <Button
-              variant="outline"
-              disabled={noEventSelected}
-              render={<Link href={`/dashboard/schedule/reorder?eventId=${selectedEventId}`} />}
-              nativeButton={false}
-              className="flex-1 sm:flex-none"
-            >
-              Reorder
-            </Button>
-            <Button
-              disabled={noEventSelected}
-              render={<Link href={`/dashboard/schedule/new?eventId=${selectedEventId}`} />}
-              nativeButton={false}
-              className="gap-2 flex-1 sm:flex-none"
-            >
-              <Plus className="w-4 h-4" />
-              Add Session
-            </Button>
-          </>
+          eventId &&
+          write && (
+            <>
+              <Button variant="outline" disabled={(stats?.total ?? 0) < 2} onClick={() => navigate(`/dashboard/schedule/reorder${eventQuery}`)}>
+                <ListOrdered /> Reorder
+              </Button>
+              <Button onClick={() => navigate(`/dashboard/schedule/new${eventQuery}`)}>
+                <Plus /> Add session
+              </Button>
+            </>
+          )
         }
       />
 
-      {!noEventSelected && (
-        <div className="grid grid-cols-2 gap-3 max-w-xs">
-          {stats ? (
-            <>
-              <StatCard label="Total sessions" value={stats.total} icon={CalendarClock} accent="purple" />
-              <StatCard label="Public" value={stats.public} icon={Eye} accent="blue" />
-            </>
-          ) : (
-            <>
-              <StatCardSkeleton />
-              <StatCardSkeleton />
-            </>
-          )}
-        </div>
-      )}
+      <EventPicker value={eventId} onChange={setEventId} className="mb-6" />
 
-      <Select value={selectedEventId} onValueChange={(v) => setSelectedEventId(v ?? "")}>
-        <SelectTrigger className="w-full sm:w-64">
-          <SelectValue placeholder={eventsLoading ? "Loading events..." : "Select an event"} />
-        </SelectTrigger>
-        <SelectContent>
-          {events.map((ev) => (
-            <SelectItem key={ev.id} value={ev.id}>
-              {ev.title}
-            </SelectItem>
-          ))}
-        </SelectContent>
-      </Select>
-
-      {noEventSelected ? (
-        <EmptyState
-          icon={CalendarClock}
-          title="No event selected"
-          description="Select an event above to view its schedule."
-        />
-      ) : error ? (
-        <div className="text-center text-red-600 py-16 border rounded-md">{error}</div>
-      ) : loading ? (
-        <ListSkeleton count={4} />
-      ) : sessions.length === 0 ? (
-        <EmptyState
-          icon={Plus}
-          title="No sessions yet"
-          description="Add your first session for this event."
-          action={
-            <Button
-              size="sm"
-              render={<Link href={`/dashboard/schedule/new?eventId=${selectedEventId}`} />}
-              nativeButton={false}
-            >
-              Add Session
-            </Button>
-          }
-        />
+      {!eventId ? (
+        <EmptyState icon={CalendarDays} title="Choose an event" description="Pick an event above to build its agenda." />
       ) : (
-        <div className="space-y-3">
-          {sessions.map((s) => (
-            <div
-              key={s.id}
-              className="rounded-xl border border-[#e9e4ff] bg-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 transition-all duration-200 hover:shadow-md"
-            >
-              <div className="min-w-0 flex-1">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <p className="font-medium text-slate-900">{s.title}</p>
-                  {s.displayPublic && (
-                    <span className="text-xs px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200">
-                      Public
-                    </span>
-                  )}
-                </div>
-                <p className="text-sm text-slate-500 mt-1">{formatTimeRange(s.startTime, s.endTime)}</p>
-                <div className="flex items-center gap-4 mt-2 text-sm text-slate-500 flex-wrap">
-                  {s.speaker && (
-                    <span className="flex items-center gap-1">
-                      <Mic2 className="w-3.5 h-3.5" />
-                      {s.speaker.firstName} {s.speaker.lastName}
-                    </span>
-                  )}
-                  {s.location && (
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-3.5 h-3.5" />
-                      {s.location}
-                    </span>
-                  )}
-                </div>
-              </div>
-              <div className="flex gap-1 shrink-0 self-end sm:self-auto">
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  render={<Link href={`/dashboard/schedule/${s.id}/edit?eventId=${selectedEventId}`} />}
-                  nativeButton={false}
-                >
-                  <Pencil className="w-4 h-4" />
-                </Button>
-                <Button size="sm" variant="ghost" onClick={() => setDeleteTarget(s)}>
-                  <Trash2 className="w-4 h-4 text-red-600" />
-                </Button>
-              </div>
+        <>
+          <StatsRow
+            loading={!stats}
+            items={[
+              { label: "Sessions", value: stats?.total, icon: ListOrdered, accent: "purple" },
+              { label: "With a speaker", value: stats?.withSpeaker, icon: Mic2, accent: "blue" },
+              { label: "Public", value: stats?.public, icon: Eye, accent: "green", hint: "on the public agenda" },
+              { label: "Total time", value: stats ? formatDuration(stats.totalMinutes) : undefined, icon: Timer, accent: "amber" },
+            ]}
+          />
+
+          <Toolbar>
+            <SearchInput value={values.search} onChange={(search) => set({ search })} placeholder="Search title or room…" />
+            <FilterSelect value={values.visibility} onChange={(visibility) => set({ visibility })} options={statusOptions("visibility")} allLabel="Public & hidden" />
+          </Toolbar>
+          <FilterChips filters={chips} onClearAll={() => reset(["eventId"])} />
+
+          {clashes.size > 0 && (
+            <div className="mb-4 flex items-start gap-2 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
+              {plural(clashes.size, "session")} share a room at overlapping times. They're marked below.
             </div>
-          ))}
-        </div>
-      )}
+          )}
 
-      {!noEventSelected && total > LIMIT && (
-        <Pagination page={page} limit={LIMIT} total={total} onPageChange={setPage} />
+          {list.error ? (
+            <ErrorState message={list.error} onRetry={list.reload} />
+          ) : list.initialLoading ? (
+            <div className="space-y-3">
+              {Array.from({ length: 4 }, (_, i) => (
+                <Skeleton key={i} className="h-20 rounded-2xl" />
+              ))}
+            </div>
+          ) : sessions.length === 0 ? (
+            hasFilters ? (
+              <NoResults onClear={() => reset(["eventId"])} />
+            ) : (
+              <EmptyState
+                icon={ListOrdered}
+                title="No sessions yet"
+                description="Build the agenda: talks, workshops, breaks."
+                action={
+                  write && (
+                    <Button onClick={() => navigate(`/dashboard/schedule/new${eventQuery}`)}>
+                      <Plus /> Add session
+                    </Button>
+                  )
+                }
+              />
+            )
+          ) : (
+            <div className={cn("space-y-8", list.loading && "opacity-60")}>
+              {days.map(([key, daySessions]) => (
+                <section key={key}>
+                  <h2 className="mb-3 flex items-baseline gap-3 text-base font-semibold text-[#0f172a]">
+                    {dayLabel(daySessions[0]!.startTime)}
+                    <span className="text-xs font-normal text-[#94a3b8]">
+                      {plural(daySessions.length, "session")} · {formatDuration(daySessions.reduce((sum, s) => sum + minutes(s), 0))}
+                    </span>
+                  </h2>
+                  <ol className="relative space-y-3 border-l-2 border-[#ede9fe] pl-6">
+                    {daySessions.map((s) => (
+                      <li key={s.id} className="relative">
+                        <span className="absolute -left-[31px] top-5 h-3 w-3 rounded-full border-2 border-white bg-[#7c3aed] ring-2 ring-[#ede9fe]" />
+                        <article
+                          onClick={write ? () => navigate(`/dashboard/schedule/${s.id}/edit`) : undefined}
+                          className={cn(
+                            "flex flex-wrap items-center gap-4 rounded-2xl border bg-white p-4 shadow-sm transition-colors",
+                            write && "cursor-pointer hover:border-[#c4b5fd]",
+                            clashes.has(s.id) ? "border-amber-300" : "border-[#e9e4ff]"
+                          )}
+                        >
+                          <div className="w-28 shrink-0">
+                            <p className="flex items-center gap-1 text-sm font-semibold text-[#7c3aed]">
+                              <Clock className="h-3.5 w-3.5" /> {formatTime(s.startTime)}
+                            </p>
+                            <p className="text-xs text-[#94a3b8]">
+                              to {formatTime(s.endTime)} · {formatDuration(minutes(s))}
+                            </p>
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className="font-medium text-[#0f172a]">{s.title}</p>
+                            <div className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-[#64748b]">
+                              {s.speaker && (
+                                <span className="flex items-center gap-1.5">
+                                  <Avatar name={`${s.speaker.firstName} ${s.speaker.lastName}`} src={s.speaker.photo} size="sm" className="h-5 w-5 text-[9px]" />
+                                  {s.speaker.firstName} {s.speaker.lastName}
+                                </span>
+                              )}
+                              {s.location && (
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="h-3.5 w-3.5" /> {s.location}
+                                </span>
+                              )}
+                              {clashes.has(s.id) && (
+                                <span className="flex items-center gap-1 font-medium text-amber-700">
+                                  <AlertTriangle className="h-3.5 w-3.5" /> Room overlap
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <StatusBadge kind="visibility" value={s.displayPublic} />
+                          <div onClick={(e) => e.stopPropagation()}>
+                            <RowActions actions={actionsFor(s)} />
+                          </div>
+                        </article>
+                      </li>
+                    ))}
+                  </ol>
+                </section>
+              ))}
+            </div>
+          )}
+        </>
       )}
-
-      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Session</DialogTitle>
-          </DialogHeader>
-          <p className="text-sm text-muted-foreground">
-            Are you sure you want to delete{" "}
-            <span className="font-medium text-foreground">{deleteTarget?.title}</span>? This can't be undone.
-          </p>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteTarget(null)} disabled={deleting}>
-              Cancel
-            </Button>
-            <Button onClick={confirmDelete} disabled={deleting} className="bg-red-600 hover:bg-red-700">
-              {deleting ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
-  );
+    </>
+  )
 }

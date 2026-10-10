@@ -1,34 +1,24 @@
-import { useRouter, useSearchParams } from "@/compat/next-navigation";
-import { SponsorForm } from "@/components/sponsors/SponsorForm";
-import { RecordFormPage } from "@/components/shared/RecordFormPage";
+import { CalendarDays } from "lucide-react"
+import { PageHeader } from "@/components/app/PageHeader"
+import { EventPicker } from "@/components/app/EventPicker"
+import { EmptyState } from "@/components/app/States"
+import { SponsorForm } from "@/components/sponsors/SponsorForm"
+import { useSelectedEvent } from "@/hooks/useSelectedEvent"
 
 export default function NewSponsorPage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const eventId = searchParams.get("eventId") ?? "";
-
-  if (!eventId) {
-    return (
-      <RecordFormPage title="Add Sponsor" backHref="/dashboard/sponsors" backLabel="Back to sponsors">
-        <p className="text-sm text-red-600">
-          No event selected. Go back to the Sponsors list and select an event first.
-        </p>
-      </RecordFormPage>
-    );
-  }
-
+  const [eventId, setEventId] = useSelectedEvent()
   return (
-    <RecordFormPage
-      title="Add Sponsor"
-      subtitle="Add a new sponsor to this event."
-      backHref={`/dashboard/sponsors?eventId=${eventId}`}
-      backLabel="Back to sponsors"
-    >
-      <SponsorForm
-        eventId={eventId}
-        onSaved={() => router.push(`/dashboard/sponsors?eventId=${eventId}`)}
-        onCancel={() => router.push(`/dashboard/sponsors?eventId=${eventId}`)}
+    <div className="mx-auto max-w-4xl">
+      <PageHeader
+        title="Add sponsor"
+        breadcrumbs={[
+          { label: "Dashboard", to: "/dashboard" },
+          { label: "Sponsors", to: `/dashboard/sponsors${eventId ? `?eventId=${eventId}` : ""}` },
+          { label: "Add sponsor" },
+        ]}
       />
-    </RecordFormPage>
-  );
+      <EventPicker value={eventId} onChange={setEventId} className="mb-6" />
+      {eventId ? <SponsorForm key={eventId} eventId={eventId} /> : <EmptyState icon={CalendarDays} title="Choose an event first" compact />}
+    </div>
+  )
 }
