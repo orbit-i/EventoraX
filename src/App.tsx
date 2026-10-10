@@ -22,36 +22,34 @@ import ComponentGallery from './pages/dev/ComponentGallery';
 import SuperadminHome from './pages/superadmin/SuperadminHome';
 
 // Dashboard imports
-import DashboardLayout from './pages/Dashboard/DashboardLayout';
-import DashboardHome from './pages/Dashboard/DashboardHome';
-import Statistics from './pages/Dashboard/Statistics';
-import Charts from './pages/Dashboard/Charts';
-import Team from './pages/Dashboard/Team';
-import Billing from './pages/Dashboard/Billing';
-import Settings from './pages/Dashboard/Settings';
-import Activity from './pages/Dashboard/activity';
-import ModuleLayout from './pages/Dashboard/ModuleLayout';
+import DashboardLayout from './components/layout/DashboardLayout';
+import OverviewPage from './pages/dashboard/OverviewPage';
+import Team from './pages/dashboard/Team';
+import Billing from './pages/dashboard/Billing';
+import Settings from './pages/dashboard/Settings';
+import Activity from './pages/dashboard/activity';
+import ModuleLayout from './pages/dashboard/ModuleLayout';
 
 // Events module (ported from feature/eventsmodule)
-import EventsPage from './pages/Dashboard/events/EventsPage';
-import NewEventPage from './pages/Dashboard/events/NewEventPage';
-import EventDetailPage from './pages/Dashboard/events/EventDetailPage';
-import EditEventPage from './pages/Dashboard/events/EditEventPage';
-import RegistrationsPage from './pages/Dashboard/registrations/RegistrationsPage';
-import EditRegistrationPage from './pages/Dashboard/registrations/EditRegistrationPage';
-import NewRegistrationPage from './pages/Dashboard/registrations/NewRegistrationPage';
-import ImportRegistrationsPage from './pages/Dashboard/registrations/ImportRegistrationsPage';
-import SpeakersPage from './pages/Dashboard/speakers/SpeakersPage';
-import NewSpeakerPage from './pages/Dashboard/speakers/NewSpeakerPage';
-import EditSpeakerPage from './pages/Dashboard/speakers/EditSpeakerPage';
-import ReorderSpeakersPage from './pages/Dashboard/speakers/ReorderSpeakersPage';
-import SponsorsPage from './pages/Dashboard/sponsors/SponsorsPage';
-import NewSponsorPage from './pages/Dashboard/sponsors/NewSponsorPage';
-import EditSponsorPage from './pages/Dashboard/sponsors/EditSponsorPage';
-import SchedulePage from './pages/Dashboard/schedule/SchedulePage';
-import NewSessionPage from './pages/Dashboard/schedule/NewSessionPage';
-import EditSessionPage from './pages/Dashboard/schedule/EditSessionPage';
-import ReorderSessionsPage from './pages/Dashboard/schedule/ReorderSessionsPage';
+import EventsPage from './pages/dashboard/events/EventsPage';
+import NewEventPage from './pages/dashboard/events/NewEventPage';
+import EventDetailPage from './pages/dashboard/events/EventDetailPage';
+import EditEventPage from './pages/dashboard/events/EditEventPage';
+import RegistrationsPage from './pages/dashboard/registrations/RegistrationsPage';
+import NewRegistrationPage from './pages/dashboard/registrations/NewRegistrationPage';
+import ImportRegistrationsPage from './pages/dashboard/registrations/ImportRegistrationsPage';
+import EditRegistrationPage from './pages/dashboard/registrations/EditRegistrationPage';
+import SpeakersPage from './pages/dashboard/speakers/SpeakersPage';
+import NewSpeakerPage from './pages/dashboard/speakers/NewSpeakerPage';
+import EditSpeakerPage from './pages/dashboard/speakers/EditSpeakerPage';
+import ReorderSpeakersPage from './pages/dashboard/speakers/ReorderSpeakersPage';
+import SponsorsPage from './pages/dashboard/sponsors/SponsorsPage';
+import NewSponsorPage from './pages/dashboard/sponsors/NewSponsorPage';
+import EditSponsorPage from './pages/dashboard/sponsors/EditSponsorPage';
+import SchedulePage from './pages/dashboard/schedule/SchedulePage';
+import NewSessionPage from './pages/dashboard/schedule/NewSessionPage';
+import EditSessionPage from './pages/dashboard/schedule/EditSessionPage';
+import ReorderSessionsPage from './pages/dashboard/schedule/ReorderSessionsPage';
 
 /** Create/edit pages: viewers are read-only, so only admins and managers may open them. */
 function writer(page: React.ReactNode) {
@@ -128,9 +126,6 @@ export default function App() {
               </ProtectedRoute>
             }
           >
-            <Route index element={<DashboardHome />} />
-            <Route path="statistics" element={<Statistics />} />
-            <Route path="charts" element={<Charts />} />
             <Route path="team" element={<Team />} />
             <Route path="billing" element={<Billing />} />
             <Route path="settings" element={<Settings />} />
@@ -138,6 +133,7 @@ export default function App() {
 
             {/* Events module */}
             <Route element={<ModuleLayout />}>
+              <Route index element={<OverviewPage />} />
               <Route path="events" element={<EventsPage />} />
               <Route path="events/new" element={writer(<NewEventPage />)} />
               <Route path="events/:id" element={<EventDetailPage />} />
@@ -147,7 +143,7 @@ export default function App() {
               <Route path="registrations/new" element={writer(<NewRegistrationPage />)} />
               <Route path="registrations/import" element={writer(<ImportRegistrationsPage />)} />
               <Route path="registrations/:id/edit" element={writer(<EditRegistrationPage />)} />
-              
+
               <Route path="speakers" element={<SpeakersPage />} />
               <Route path="speakers/new" element={writer(<NewSpeakerPage />)} />
               <Route path="speakers/reorder" element={writer(<ReorderSpeakersPage />)} />

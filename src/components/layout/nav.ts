@@ -1,0 +1,56 @@
+import type { LucideIcon } from "lucide-react"
+import {
+  Activity,
+  CalendarDays,
+  ClipboardList,
+  CreditCard,
+  Handshake,
+  LayoutDashboard,
+  ListOrdered,
+  Mic2,
+  Settings,
+  Users,
+} from "lucide-react"
+import type { Permission } from "@/lib/permissions"
+
+export interface NavItem {
+  to: string
+  label: string
+  icon: LucideIcon
+  /** Only highlight on an exact match (for "/dashboard") */
+  end?: boolean
+  /** Hide from people without this permission */
+  need?: Permission
+}
+
+export interface NavGroup {
+  title?: string
+  items: NavItem[]
+}
+
+/** The dashboard menu, in order. */
+export const NAV: NavGroup[] = [
+  { items: [{ to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true }] },
+  {
+    title: "Events",
+    items: [
+      { to: "/dashboard/events", label: "Events", icon: CalendarDays },
+      { to: "/dashboard/registrations", label: "Registrations", icon: ClipboardList },
+      { to: "/dashboard/speakers", label: "Speakers", icon: Mic2 },
+      { to: "/dashboard/sponsors", label: "Sponsors", icon: Handshake },
+      { to: "/dashboard/schedule", label: "Schedule", icon: ListOrdered },
+    ],
+  },
+  {
+    title: "Insights",
+    items: [{ to: "/dashboard/activity", label: "Activity log", icon: Activity, need: "manage" }],
+  },
+  {
+    title: "Organization",
+    items: [
+      { to: "/dashboard/team", label: "Team", icon: Users },
+      { to: "/dashboard/billing", label: "Billing", icon: CreditCard, need: "manage" },
+      { to: "/dashboard/settings", label: "Settings", icon: Settings },
+    ],
+  },
+]
