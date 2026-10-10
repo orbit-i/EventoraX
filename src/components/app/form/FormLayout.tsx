@@ -54,7 +54,7 @@ export function SwitchField({
   )
 }
 
-/** Save / Cancel bar that stays visible at the bottom while scrolling a long form. */
+/** Save / Cancel row at the end of a form (sits in the page flow, same width as the sections). */
 export function FormFooter({
   submitting,
   onCancel,
@@ -67,17 +67,15 @@ export function FormFooter({
   dirty?: boolean
 }) {
   return (
-    <div className="sticky bottom-0 z-10 -mx-6 mt-6 flex items-center justify-between gap-3 border-t border-[#e9e4ff] bg-white/90 px-6 py-4 backdrop-blur">
-      <p className="text-xs text-[#94a3b8]">{dirty ? "You have unsaved changes" : ""}</p>
-      <div className="flex gap-2">
-        <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={submitting}>
-          {submitting && <Loader2 className="animate-spin" />}
-          {submitting ? "Saving…" : submitLabel}
-        </Button>
-      </div>
+    <div className="flex flex-wrap items-center justify-end gap-3 rounded-2xl border border-[#e9e4ff] bg-white px-5 py-3 shadow-sm">
+      {dirty && <p className="mr-auto text-xs text-amber-600">You have unsaved changes</p>}
+      <Button type="button" variant="outline" onClick={onCancel} disabled={submitting}>
+        Cancel
+      </Button>
+      <Button type="submit" disabled={submitting}>
+        {submitting && <Loader2 className="animate-spin" />}
+        {submitting ? "Saving…" : submitLabel}
+      </Button>
     </div>
   )
 }

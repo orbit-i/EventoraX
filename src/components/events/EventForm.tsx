@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react"
-import { useNavigate } from "react-router"
+import { Link, useNavigate } from "react-router"
 import { useForm, Controller, useWatch } from "react-hook-form"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { z } from "zod"
 import { toast } from "sonner"
+import { Palette } from "lucide-react"
+import { Button } from "@/components/ui/button"
 import { TextField, SelectField, TextareaField } from "@/components/ui/form-fields"
 import { FormSection, FullWidth, SwitchField, FormFooter } from "@/components/app/form/FormLayout"
 import { applyServerErrors } from "@/components/app/form/serverErrors"
@@ -13,6 +15,9 @@ import { api } from "@/lib/api"
 import { toDatetimeLocal, fromDatetimeLocal } from "@/lib/date"
 import { statusOptions } from "@/lib/status"
 import type { EventItem } from "@/types/event"
+import { TemplatePickerDialog } from "@/components/certificates/TemplatePickerDialog"
+import { useApi } from "@/hooks/useApi"
+import type { TemplatesResponse } from "@/types/certificate"
 import { CategoriesEditor } from "./CategoriesEditor"
 
 const URL_RE = /^https?:\/\/\S+$/i
@@ -33,6 +38,7 @@ const schema = z
     ticketPrice: z.string().trim().refine((v) => v === "" || (/^\d+(\.\d{1,2})?$/.test(v) && Number(v) >= 0), "Enter an amount in PKR, e.g. 1500"),
     registrationOpen: z.boolean(),
     autoIssueCert: z.boolean(),
+    certTemplateId: z.string().nullable(),
   })
   .superRefine((v, ctx) => {
     if (v.startDateTime && v.endDateTime && new Date(v.endDateTime) <= new Date(v.startDateTime)) {
@@ -64,6 +70,7 @@ function toValues(event?: EventItem): Values {
     ticketPrice: event?.ticketPrice && Number(event.ticketPrice) > 0 ? String(Number(event.ticketPrice)) : "",
     registrationOpen: event?.registrationOpen ?? true,
     autoIssueCert: event?.autoIssueCert ?? false,
+    certTemplateId: event?.certTemplateId ?? null,
   }
 }
 
@@ -77,17 +84,22 @@ export function EventForm({ event, onCategoriesChanged }: { event?: EventItem; o
   const [formError, setFormError] = useState<string | null>(null)
   const [newCategories, setNewCategories] = useState<string[]>(["General"])
   const [goTo, setGoTo] = useState<string | null>(null)
+  const [designOpen, setDesignOpen] = useState(false)
+  const catalogue = useApi<TemplatesResponse>("/certificates/templates")
 
   const {
     register,
     handleSubmit,
     control,
     setError,
+    setValue,
     formState: { errors, isSubmitting, isDirty },
   } = useForm<Values>({ resolver: zodResolver(schema), defaultValues: toValues(event) })
 
   const mode = useWatch({ control, name: "mode" })
   const startDateTime = useWatch({ control, name: "startDateTime" })
+  const certTemplateId = useWatch({ control, name: "certTemplateId" })
+  const design = catalogue.data?.templates.find((t) => t.key === (certTemplateId ?? "classic-royal"))
 
   useUnsavedChanges(isDirty && goTo === null)
 
@@ -113,6 +125,7 @@ export function EventForm({ event, onCategoriesChanged }: { event?: EventItem; o
       ticketPrice: v.ticketPrice ? Number(v.ticketPrice) : null,
       registrationOpen: v.registrationOpen,
       autoIssueCert: v.autoIssueCert,
+      certTemplateId: v.certTemplateId,
     }
     try {
       if (event) {
@@ -230,13 +243,30 @@ export function EventForm({ event, onCategoriesChanged }: { event?: EventItem; o
 
       <FormSection title="Certificates" description="Certificates for people who attend.">
         <FullWidth>
+          <div className="flex flex-wrap items-center gap-3 rounded-xl border border-[#e9e4ff] bg-[#faf8ff] p-4">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white text-[#7c3aed]">
+              <Palette className="h-5 w-5" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-medium text-[#0f172a]">Certificate design</p>
+              <p className="text-xs text-[#64748b]">
+                {design ? `${design.layoutName} · ${design.variantName}` : "Classic · Royal"}
+                {certTemplateId ? "" : " (default)"}
+              </p>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={() => setDesignOpen(true)}>
+              Choose design
+            </Button>
+          </div>
+        </FullWidth>
+        <FullWidth>
           <Controller
             control={control}
             name="autoIssueCert"
             render={({ field }) => (
               <SwitchField
                 label="Issue certificates automatically"
-                description="Attendees get their certificate as soon as they're marked as attended."
+                description="When someone is marked Attended (or their ticket is scanned), they get a Participation certificate by email."
                 checked={field.value}
                 onCheckedChange={field.onChange}
               />
@@ -244,11 +274,22 @@ export function EventForm({ event, onCategoriesChanged }: { event?: EventItem; o
           />
         </FullWidth>
         <FullWidth>
-          <p className="rounded-xl border border-dashed border-[#d8d0ff] bg-[#faf8ff] px-4 py-3 text-sm text-[#64748b]">
-            Choosing a certificate template becomes available with the Certificates module.
+          <p className="text-xs text-[#94a3b8]">
+            Logo, signatory name and signature come from{" "}
+            <Link to="/dashboard/settings?tab=certificates" className="text-[#7c3aed] hover:underline">
+              Settings → Certificates
+            </Link>
+            .
           </p>
         </FullWidth>
       </FormSection>
+      <TemplatePickerDialog
+        open={designOpen}
+        onOpenChange={setDesignOpen}
+        eventId={event?.id ?? ""}
+        value={certTemplateId}
+        onSave={async (key) => setValue("certTemplateId", key, { shouldDirty: true })}
+      />
 
       <FormSection title="Attendee categories" description="Group attendees (e.g. VIP, Student). Used on tickets, ID cards and certificates.">
         <FullWidth>
