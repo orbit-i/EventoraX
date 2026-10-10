@@ -3,7 +3,7 @@
  *
  * - Adds the login token to every request.
  * - Understands both response shapes the API uses:
- *     { data, error, meta }  (events module)   and   plain objects (auth/org/team).
+ *     { data, error, meta }  (everything else)   and   plain objects (/auth routes).
  * - Turns every failure into an ApiError with a readable message.
  * - Tells the app to log out when the server says the session is no longer valid.
  */

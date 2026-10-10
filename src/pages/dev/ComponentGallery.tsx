@@ -1,47 +1,9 @@
-import { useState } from "react"
-import { Mail, Users, Calendar, Award } from "lucide-react"
+import { Mail } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { TextField, PasswordField, SelectField, TextareaField } from "@/components/ui/form-fields"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import {
-  Modal,
-  ModalTrigger,
-  ModalClose,
-  ModalContent,
-  ModalHeader,
-  ModalTitle,
-  ModalDescription,
-  ModalBody,
-  ModalFooter,
-  ModalActionButton,
-  ModalCancelButton,
-} from "@/components/ui/modal"
-import { DataTable, type ColumnDef } from "@/components/ui/data-table"
-import { SearchBar } from "@/components/ui/search-bar"
-import StatCard from "@/components/ui/dashboard/StatCard"
 import AppBlocksGallery from "./AppBlocksGallery"
-
-type Attendee = {
-  id: number
-  name: string
-  email: string
-  status: string
-}
-
-const attendees: Attendee[] = Array.from({ length: 23 }, (_, i) => ({
-  id: i + 1,
-  name: `Attendee ${i + 1}`,
-  email: `attendee${i + 1}@test.com`,
-  status: i % 3 === 0 ? "ATTENDED" : "REGISTERED",
-}))
-
-const columns: ColumnDef<Attendee>[] = [
-  { key: "id", label: "#", sortable: true },
-  { key: "name", label: "Name", sortable: true },
-  { key: "email", label: "Email", sortable: true, hideOnMobile: true },
-  { key: "status", label: "Status", sortable: true },
-]
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -54,10 +16,6 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 /** Development-only page at /dev/components showing every shared component. */
 export default function ComponentGallery() {
-  const [search, setSearch] = useState("")
-  const [loading, setLoading] = useState(false)
-  const filtered = attendees.filter((a) => a.name.toLowerCase().includes(search.toLowerCase()))
-
   return (
     <div className="min-h-screen bg-[#f3f0ff] p-8">
       <div className="max-w-5xl mx-auto space-y-10">
@@ -125,37 +83,8 @@ export default function ComponentGallery() {
           </div>
         </Section>
 
-        <Section title="Stat cards">
-          <div className="grid md:grid-cols-4 gap-4">
-            <StatCard title="Total Events" value="12" change="+2 this month" icon={Calendar} trend="up" />
-            <StatCard title="Registrations" value="1,284" change="+18%" icon={Users} trend="up" />
-            <StatCard title="Certificates" value="940" change="+5%" icon={Award} trend="up" />
-            <StatCard title="No-shows" value="64" change="-3%" icon={Users} trend="down" />
-          </div>
-        </Section>
-
-        <Section title="Modal + toast">
+        <Section title="Toasts">
           <div className="flex gap-3">
-            <Modal>
-              <ModalTrigger asChild>
-                <Button>Open modal</Button>
-              </ModalTrigger>
-              <ModalContent>
-                <ModalHeader>
-                  <ModalTitle>Delete event?</ModalTitle>
-                  <ModalDescription>This action cannot be undone.</ModalDescription>
-                </ModalHeader>
-                <ModalBody>Body content of the modal.</ModalBody>
-                <ModalFooter>
-                  <ModalClose asChild>
-                    <ModalCancelButton />
-                  </ModalClose>
-                  <ModalClose asChild>
-                    <ModalActionButton onClick={() => toast.success("Confirmed!")} />
-                  </ModalClose>
-                </ModalFooter>
-              </ModalContent>
-            </Modal>
             <Button variant="outline" onClick={() => toast.success("Saved successfully")}>
               Success toast
             </Button>
@@ -165,22 +94,6 @@ export default function ComponentGallery() {
           </div>
         </Section>
 
-        <Section title="Search bar + data table">
-          <div className="flex gap-3 items-center">
-            <SearchBar placeholder="Search attendees..." onSearch={setSearch} className="max-w-sm" />
-            <Button variant="outline" size="sm" onClick={() => setLoading((v) => !v)}>
-              Toggle loading
-            </Button>
-          </div>
-          <DataTable
-            columns={columns}
-            data={filtered}
-            rowKey={(row) => row.id}
-            loading={loading}
-            defaultPageSize={5}
-            emptyTitle="No attendees match your search"
-          />
-        </Section>
         <AppBlocksGallery />
       </div>
     </div>

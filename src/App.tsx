@@ -30,9 +30,8 @@ import SettingsPage from './pages/dashboard/SettingsPage';
 import AnalyticsPage from './pages/dashboard/AnalyticsPage';
 import ActivityPage from './pages/dashboard/ActivityPage';
 import ContactPage from './pages/dashboard/ContactPage';
-import ModuleLayout from './pages/dashboard/ModuleLayout';
 
-// Events module (ported from feature/eventsmodule)
+// Events module
 import EventsPage from './pages/dashboard/events/EventsPage';
 import NewEventPage from './pages/dashboard/events/NewEventPage';
 import EventDetailPage from './pages/dashboard/events/EventDetailPage';
@@ -128,40 +127,42 @@ export default function App() {
               </ProtectedRoute>
             }
           >
+            <Route index element={<OverviewPage />} />
 
-            {/* Events module */}
-            <Route element={<ModuleLayout />}>
-              <Route index element={<OverviewPage />} />
-              <Route path="analytics" element={<AnalyticsPage />} />
-              <Route path="activity" element={<ProtectedRoute roles={['admin']}><ActivityPage /></ProtectedRoute>} />
-              <Route path="contact" element={<ContactPage />} />
-              <Route path="team" element={<TeamPage />} />
-              <Route path="settings" element={<SettingsPage />} />
-              <Route path="billing" element={<ProtectedRoute roles={['admin']}><BillingPage /></ProtectedRoute>} />
-              <Route path="events" element={<EventsPage />} />
-              <Route path="events/new" element={writer(<NewEventPage />)} />
-              <Route path="events/:id" element={<EventDetailPage />} />
-              <Route path="events/:id/edit" element={writer(<EditEventPage />)} />
+            {/* Insights */}
+            <Route path="analytics" element={<AnalyticsPage />} />
+            <Route path="activity" element={<ProtectedRoute roles={['admin']}><ActivityPage /></ProtectedRoute>} />
 
-              <Route path="registrations" element={<RegistrationsPage />} />
-              <Route path="registrations/new" element={writer(<NewRegistrationPage />)} />
-              <Route path="registrations/import" element={writer(<ImportRegistrationsPage />)} />
-              <Route path="registrations/:id/edit" element={writer(<EditRegistrationPage />)} />
+            {/* Organization */}
+            <Route path="team" element={<TeamPage />} />
+            <Route path="settings" element={<SettingsPage />} />
+            <Route path="billing" element={<ProtectedRoute roles={['admin']}><BillingPage /></ProtectedRoute>} />
+            <Route path="contact" element={<ContactPage />} />
 
-              <Route path="speakers" element={<SpeakersPage />} />
-              <Route path="speakers/new" element={writer(<NewSpeakerPage />)} />
-              <Route path="speakers/reorder" element={writer(<ReorderSpeakersPage />)} />
-              <Route path="speakers/:id/edit" element={writer(<EditSpeakerPage />)} />
+            {/* Events */}
+            <Route path="events" element={<EventsPage />} />
+            <Route path="events/new" element={writer(<NewEventPage />)} />
+            <Route path="events/:id" element={<EventDetailPage />} />
+            <Route path="events/:id/edit" element={writer(<EditEventPage />)} />
 
-              <Route path="sponsors" element={<SponsorsPage />} />
-              <Route path="sponsors/new" element={writer(<NewSponsorPage />)} />
-              <Route path="sponsors/:id/edit" element={writer(<EditSponsorPage />)} />
+            <Route path="registrations" element={<RegistrationsPage />} />
+            <Route path="registrations/new" element={writer(<NewRegistrationPage />)} />
+            <Route path="registrations/import" element={writer(<ImportRegistrationsPage />)} />
+            <Route path="registrations/:id/edit" element={writer(<EditRegistrationPage />)} />
 
-              <Route path="schedule" element={<SchedulePage />} />
-              <Route path="schedule/new" element={writer(<NewSessionPage />)} />
-              <Route path="schedule/reorder" element={writer(<ReorderSessionsPage />)} />
-              <Route path="schedule/:id/edit" element={writer(<EditSessionPage />)} />
-            </Route>
+            <Route path="speakers" element={<SpeakersPage />} />
+            <Route path="speakers/new" element={writer(<NewSpeakerPage />)} />
+            <Route path="speakers/reorder" element={writer(<ReorderSpeakersPage />)} />
+            <Route path="speakers/:id/edit" element={writer(<EditSpeakerPage />)} />
+
+            <Route path="sponsors" element={<SponsorsPage />} />
+            <Route path="sponsors/new" element={writer(<NewSponsorPage />)} />
+            <Route path="sponsors/:id/edit" element={writer(<EditSponsorPage />)} />
+
+            <Route path="schedule" element={<SchedulePage />} />
+            <Route path="schedule/new" element={writer(<NewSessionPage />)} />
+            <Route path="schedule/reorder" element={writer(<ReorderSessionsPage />)} />
+            <Route path="schedule/:id/edit" element={writer(<EditSessionPage />)} />
           </Route>
 
           {/* Superadmin (built in Phase 10) */}

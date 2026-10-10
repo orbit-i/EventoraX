@@ -47,7 +47,7 @@ export default function DashboardLayout() {
       <div className={cn("flex min-h-screen flex-col transition-[padding] duration-200", collapsed ? "md:pl-20" : "md:pl-64")}>
         <Topbar onOpenMenu={() => setDrawerOpen(true)} />
         <AccountBanners />
-        <main className="flex-1">
+        <main className="flex-1 p-4 sm:p-6">
           <Outlet />
         </main>
       </div>

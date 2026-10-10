@@ -94,8 +94,8 @@ utils/              http (ok/fail/validationFail/pagination/q), schemas (optiona
   Use base `prisma` only for platform tables (plans, settings) or raw SQL (always filter `organizationId` yourself).
 - Validate input with **zod**. Return with `ok(res, data, status?, meta?)` / `fail(res, status, CODE, message, { fieldErrors })` /
   `validationFail(res, zodError)`. Field errors are `Record<string, string>` so the UI can show them under each field.
-- **Newer endpoints use the envelope** `{ data, error, meta }`. **Older auth/org/team endpoints return plain JSON**
-  (`{ error, code, fieldErrors }`). The frontend client handles both. Convert org/team to the envelope when you next rewrite them.
+- **Every endpoint except `/auth/*` uses the envelope** `{ data, error, meta }`. Auth routes still return plain JSON
+  (`{ error, code, fieldErrors }`); the frontend client handles both.
 - Log meaningful actions with `logActivity(req, { action: "area.verb", entityType, entityId, metadata })`.
   The frontend turns action codes into sentences in `src/lib/activityText.ts`. Add a case there for new actions.
 - Lists: `pagination(query, max)` + `meta: { total, page, limit }`. Fixed paths (`/stats`, `/export`, `/bulk`) go before `/:id`.
@@ -107,8 +107,10 @@ utils/              http (ok/fail/validationFail/pagination/q), schemas (optiona
 **Mounted API (`/api/v1`)**: health, auth, org, team, events (+ /stats, /:id/stats, /:id/restore, /:id/duplicate),
 categories, speakers, sponsors, sessions, reorder, registrations (+ /:id/status, /bulk, /export, /email,
 /csv-import/parse, /csv-import/confirm with `dryRun` + `duplicateStrategy`), uploads, dashboard/overview, analytics,
-activity (+ /export), billing (+ /payments), support, contact (public, rate-limited 5/h),
+activity (+ /export), billing (+ /payments), support, contact (public, rate-limited 5/h) + GET contact/info (public),
+team (+ /invite, /invites/:id/resend, /invites/:id), PATCH org/me (incl. logoUrl/signatureUrl from the generic upload),
 org/me/delete-data, org/me/close (name + password confirmation), PATCH auth/me.
+- Uploads for `payment`, `logo` and `signature` still work when the plan has expired; other kinds return 402.
 
 ---
 
@@ -119,10 +121,11 @@ main.tsx            createBrowserRouter([{ path: "*", element: <AuthProvider><Co
 App.tsx             all routes (<Routes>); writer(page) wraps create/edit pages (admins + managers only)
 context/AuthContext.tsx   user, organization, status, login/register/acceptInvite/logout/refresh; homeFor(user)
 lib/api.ts          api.get/list/getList/post/patch/delete/upload/download, buildQuery, ApiError, errorMessage, tokenStore
-lib/status.ts       ONE place for every status label + colour (event, mode, registration, tier, org, visibility)
+lib/status.ts       ONE place for every status label + colour (event, mode, registration, tier, org, role, payment, visibility)
 lib/format.ts       formatDate/DateTime/Time/PKR/Duration/Relative/TimeLeft/Month, plural  (locale en-PK)
 lib/permissions.ts  useCan()("write" | "manage")   write = admin/manager, manage = admin
-lib/                validation.ts (zod email/password/phone), date.ts (datetime-local), csv.ts (downloadCsv), activityText.ts
+lib/                validation.ts (zod email/password/phone), date.ts (datetime-local), csv.ts (downloadCsv), activityText.ts,
+                    contact.ts (whatsappLink)
 hooks/              useApi (cancellable fetch, reload, initialLoading), useUrlState (filters in URL; resets page),
                     useSelectedEvent (eventId in URL + remembered), useUnsavedChanges (useBlocker + beforeunload),
                     useVisibilityToggle (show/hide public with Undo), useNow
@@ -130,13 +133,15 @@ components/ui/      shadcn primitives + our button.tsx + form-fields.tsx (TextFi
 components/app/     PageHeader, EventPicker, StatsRow/StatCard, SegmentedTabs, Toolbar (SearchInput, FilterSelect,
                     FilterChips, ViewToggle), ServerTable, CardGrid, PaginationBar, BulkActionBar, RowActions,
                     StatusBadge, States (EmptyState, NoResults, ErrorState), ConfirmDialog (useConfirm), RoleGate,
-                    Avatar, ReorderList, form/ (FormLayout: FormSection, FullWidth, SwitchField, FormFooter;
+                    Avatar, ReorderList, Panel/PanelLink (titled card), form/ (FormLayout: FormSection, FullWidth, SwitchField, FormFooter;
                     ImageUploadField; serverErrors.applyServerErrors)
 components/layout/  DashboardLayout, Sidebar (grouped nav, collapsible, plan card), Topbar (account menu),
                     AccountBanners (trial / expiring / expired / verify email), nav.ts (menu config)
-components/<feature>/  events, registrations, speakers, sponsors, sessions — feature forms and pieces
-pages/              public pages (root), auth pages, dashboard/<module>/*Page.tsx, superadmin/, dev/ (ComponentGallery at /dev/components)
-types/              API shapes (auth, event, registration, speaker, sponsor, session, dashboard)
+components/<feature>/  events, registrations, speakers, sponsors, sessions, team (InviteDialog, roles), settings (one file
+                    per tab + shared SaveBar/saveOrg), billing (PayDialog, paymentInfo) — feature forms and pieces
+pages/              public pages (root), auth pages, dashboard/*Page.tsx + dashboard/<module>/*Page.tsx, superadmin/,
+                    dev/ (ComponentGallery at /dev/components)
+types/              API shapes (auth, event, registration, speaker, sponsor, session, dashboard, team, billing)
 ```
 
 **Page templates (follow them for every new page)**
@@ -148,6 +153,9 @@ types/              API shapes (auth, event, registration, speaker, sponsor, ses
   (so the unsaved guard doesn't fire); a toast on success.
 - **Destructive actions:** `await confirm({ title, description, confirmLabel, tone: "danger" })`.
 - Viewers never see write actions. Archived events are read-only.
+- **Tabbed settings-style pages:** keep every tab mounted (hidden), each tab reports `onDirtyChange`, the page owns ONE
+  `useUnsavedChanges` (react-router allows only one blocker at a time).
+- Page padding comes from `DashboardLayout` (`p-4 sm:p-6`); pages don't add their own.
 - **Colours:** brand `#7c3aed` (hover `#6d28d9`), text `#0f172a`, muted `#64748b`/`#94a3b8`, borders `#e9e4ff`,
   page background `#f3f0ff`, cards white with `rounded-2xl border shadow-sm`.
 
@@ -159,29 +167,15 @@ types/              API shapes (auth, event, registration, speaker, sponsor, ses
 login with lockout + remember-me, verify, reset, change password, logout-all, invites); org/team API; events
 module API; shared components; real auth pages; the whole **events module UI rebuilt on the design system**
 (events list + hub + form, registrations + CSV import wizard with dry-run review, speakers, sponsors, schedule,
-reorder); knip clean-up (only deliberately kept: `ui/popover`, `ui/scroll-area`, `ui/separator`); **Phase 8A backend**
-(overview, analytics, activity, billing, support/contact, profile edit, danger zone).
+reorder); **Phase 8 complete**: dashboard layout + Overview (8B), Analytics, Activity log, Help & support, public
+contact form (8C), Team, Settings (6 tabs), Billing with manual payments (8D); old mock pages and unused UI files
+removed; knip clean (only deliberately kept: `ui/popover`, `ui/scroll-area`, `ui/separator`).
 
-⏳ **Step 8B (layout + Overview page)** was written in chat and may not be applied yet. Check for
-`src/components/layout/DashboardLayout.tsx`, `src/pages/dashboard/OverviewPage.tsx` and the lowercase
-`src/pages/dashboard` folder. If they're missing, ask the user before redoing it.
+Notes for later phases:
+- Notification preferences (`notificationPrefs`) are saved but nothing sends those emails yet (Phase 11).
+- Analytics shows the generic 402 error for expired orgs; a friendlier "renew to see analytics" screen would be nicer.
 
 ## Remaining work
-
-**8C** — Analytics page (`GET /analytics`: 12-month registrations + certificates, events by status, attendance per event,
-category breakdown, registered-via, top events; recharts); Activity log page (replaces `pages/dashboard/activity.tsx`;
-filters person/action/date, pagination, CSV export via `api.download`); Contact page in the dashboard (`POST /support`);
-wire the public `pages/Contact.tsx` form to `POST /contact`. Add Analytics (Insights) and Contact/Help to `components/layout/nav.ts`.
-
-**8D** — Team page (replaces mock: members + pending invites + seat usage, invite, cancel invite, change role,
-remove; respects plan seat limits and the last-admin rule); Settings with tabs (`?tab=`): My account (PATCH /auth/me,
-change password → `tokenStore.replace(newToken)`), Organization profile, Branding (logo, colours, white-label name,
-custom domain — Enterprise only), Certificates (signatory name/title, signature upload), Notifications, Danger zone
-(type org name + password); Billing (plans, payment accounts — show a "contact support" notice if
-`payments.accounts` is empty — submit payment with receipt upload `kind=payment`, pending payment card with cancel,
-history). Then delete the now-unused `ui/dashboard/header.tsx`, `ui/dashboard/StatCard.tsx`, `ui/data-table.tsx`,
-`ui/modal.tsx` and `ui/search-bar.tsx` if knip confirms; move `p-6` into DashboardLayout and drop `ModuleLayout`;
-convert org/team responses to the envelope.
 
 **9** — Certificates: template system (~8–10 layouts × variants), PDF generation, SHA-256 hash + public verify code,
 bulk generate, email delivery, revoke, auto-issue when attendance becomes ATTENDED (hook marked in
