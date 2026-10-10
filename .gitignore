@@ -35,3 +35,6 @@ dist-ssr
 uploads/
 backend/uploads/
 backend/private-files/
+
+# Local database backups (may contain personal data)
+backups/

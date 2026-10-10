@@ -110,9 +110,10 @@ export async function issueCertificate(
   org: OrgBranding,
   event: CertEvent,
   registration: IssueTarget,
-  opts: { type: CertType; templateKey: string }
+  opts: { type: CertType; templateKey: string; /** Backdating (demo data only) */ issuedAt?: Date }
 ) {
-  const issuedAt = new Date(Math.floor(Date.now() / 1000) * 1000); // whole seconds: survives the DB round trip exactly
+  // Whole seconds, so the value survives the database round trip exactly (the hash depends on it).
+  const issuedAt = new Date(Math.floor((opts.issuedAt ?? new Date()).getTime() / 1000) * 1000);
 
   for (let attempt = 0; ; attempt++) {
     const verifyCode = newVerifyCode();

@@ -44,7 +44,17 @@ npm run dev
 - **Backend env** (`backend/.env`): `DATABASE_URL`, `DB_HOST/PORT/USER/PASSWORD/NAME`, `JWT_SECRET` (32+ chars),
   `PORT=5000`, `FRONTEND_URL=http://localhost:5173`, `EMAIL_HOST/PORT/USER/PASS/FROM`, `UPLOAD_DIR=uploads`,
   `SEED_SUPERADMIN_EMAIL`, `SEED_SUPERADMIN_PASSWORD`. **No Supabase** (removed).
-- **No SMTP configured → emails print to the backend terminal** as `DEV EMAIL` (with links). Used for testing.
+- **Email:** with `EMAIL_USER/PASS` empty, emails print to the backend terminal as `DEV EMAIL` (links + attachment names).
+  **The local `.env` now has real Gmail SMTP (app password) → emails are really sent.** Use `willkariim+<anything>@gmail.com`
+  addresses for test attendees; never email made-up domains. Restart the backend after editing `.env`.
+- **Demo data:** `cd backend && npm run seed:demo -- --yes` wipes ALL organizations (+ their uploads/private files) and builds
+  "Margalla University Computer Society" (Pro, active): 5 team members + pending invite, 7 events in every status,
+  ~125 registrations (all sources/statuses), tickets with check-ins, ~37 real certificate PDFs (1 revoked), speakers,
+  sponsors, schedule, payments, activity, support messages. Login `willkariim@gmail.com` / `Demo@12345` (admin);
+  `willkariim+hira` (admin), `+usman`/`+ayesha` (manager), `+bilal` (viewer), same password. Never sends email.
+  Plans/settings/superadmin are kept. Back up first if the data matters (local backups go in `backups/`, git-ignored).
+- **After `npm install` of a new frontend package, restart `npm run dev`** (Vite pre-bundles deps at start → 504
+  "Outdated Optimize Dep" and an in-app 404 otherwise).
 - **Manual API tests:** `backend/api-tests.http` (VS Code REST Client). Variables: `{{baseUrl}}`, `{{token}}`, `{{eventId}}`, etc.
 - **Prisma:** `npx prisma migrate dev --name <name>`, `npx prisma generate`, `npx prisma db seed`, `npx prisma studio`.
 - **Windows gotcha:** case-only renames need two steps (`git mv A tmp && git mv tmp a`).
@@ -58,7 +68,11 @@ npm run dev
   and support still work; everything else returns `402 ORG_EXPIRED`. Nothing is deleted.
 - **Payments are manual only:** JazzCash / Easypaisa / bank transfer. The org submits a transaction ID + receipt;
   the **superadmin confirms** (Phase 10). No payment gateway.
-- **Certificates:** ~8–10 well-designed base layouts × colour/style variants ≈ 50 choices (not 50 hand-made designs).
+- **Certificates:** 10 layouts × 5 colours + a "brand" colour per layout = 60 templates (key `<layout>-<variant>`).
+  PARTICIPATION/ACHIEVEMENT need ATTENDED; other types any non-cancelled registration. One certificate per
+  registration per type. Revoke keeps the record (public verify shows REVOKED + reason); restore undoes it.
+- **Tickets:** every registration has one. QR content is `EVXT:<qrCode>`. Check-in (scan or typed `TKT-…`) marks
+  the ticket used AND the registration ATTENDED (→ certificate auto-issue if the event has it on). First scan wins.
 - **Add a public event page with self-registration** (Phase 11). The spec implies it: `displayPublic` toggles, "Public User: register".
 - Roles: `superAdmin` (platform, `organizationId = null`), `admin`, `manager`, `viewer` (read-only).
 - Registration statuses: REGISTERED, ATTENDED, ABSENT (keeps the seat), **CANCELLED (frees the seat;
@@ -72,6 +86,11 @@ npm run dev
 
 ```
 index.ts            app setup, route mounting, /uploads static, JSON 404, error handler
+pdf/                assets (fonts from @fontsource WOFF, loadImage PNG/JPEG only, toBuffer), certificate (60 templates,
+                    renderCertificate), ticket (A6 ticket, TICKET_QR_PREFIX)
+services/           certificates (verify code, SHA-256 over frozen facts, issue/email/autoIssueForAttended, private PDF
+                    storage), tickets (ticket PDF/email, parseScanned)
+prisma/seed.ts      plans, settings, superadmin    prisma/seed-demo.ts  demo organization (see above)
 prisma/client.ts    default export `prisma` (base client)
 prisma/scopedClient.ts   org-scoped client: auto-injects organizationId into queries for org models
 middleware/
@@ -81,11 +100,13 @@ middleware/
   role-check.auth.ts requireRole(["admin", ...])
   orgChain.ts       orgScoped, orgScopedAllowExpired, canWrite (blocks viewers), adminOnly
 controllers/        auth (in routes/auth-route.ts), org, team, events, program (speakers/sponsors/sessions/reorder),
-                    registrations, dashboard (overview + analytics), activity, billing, support (contact + support)
+                    registrations, dashboard (overview + analytics), activity, billing, support (contact + support),
+                    certificates (incl. public verify), tickets (incl. check-in)
 routes/             one router file per area; mounted under /api/v1
 utils/              http (ok/fail/validationFail/pagination/q), schemas (optionalText/optionalUrl/optionalImage/
                     parseDate/isUniqueViolation/isOneOf), activity (logActivity), mail (sendMail/escapeHtml + templates),
-                    storage (saveUpload/deleteUpload/deleteUploadFolder), upload (multer imageUpload/csvUpload),
+                    storage (saveUpload/deleteUpload/deleteUploadFolder + PRIVATE files: savePrivate/readPrivate/
+                    deletePrivateFolder in backend/private-files, never served statically), upload (multer imageUpload/csvUpload),
                     settings (getSetting), tokens, jwt, password, roleLimit, codes (refNo/ticketNo/qr), csv (csvCell/toCsv)
 ```
 
@@ -101,7 +122,9 @@ utils/              http (ok/fail/validationFail/pagination/q), schemas (optiona
 - Lists: `pagination(query, max)` + `meta: { total, page, limit }`. Fixed paths (`/stats`, `/export`, `/bulk`) go before `/:id`.
 - Tokens (reset/verify/invite) are stored only as SHA-256 hashes. Password changes bump `tokenVersion` (logs out other sessions).
 - MySQL table names are lowercase via `@@map` (needed on Linux hosting). Column names = Prisma field names.
-- Uploads go to local disk `uploads/orgs/<orgId>/<folder>` and are served at `/uploads/...`.
+- Uploads go to local disk `uploads/orgs/<orgId>/<folder>` and are served at `/uploads/...`. Logo/signature must be
+  PNG/JPEG (they're printed on PDFs). Certificate PDFs live in `private-files/orgs/<orgId>/certificates/` (API only).
+- Long jobs (bulk emails) run in the background after the response (`void (async () => …)()`), errors only logged.
   Generic pre-upload: `POST /api/v1/uploads/image?kind=speaker|sponsor|logo|signature|payment` → `{ url }`.
 
 **Mounted API (`/api/v1`)**: health, auth, org, team, events (+ /stats, /:id/stats, /:id/restore, /:id/duplicate),
@@ -109,7 +132,10 @@ categories, speakers, sponsors, sessions, reorder, registrations (+ /:id/status,
 /csv-import/parse, /csv-import/confirm with `dryRun` + `duplicateStrategy`), uploads, dashboard/overview, analytics,
 activity (+ /export), billing (+ /payments), support, contact (public, rate-limited 5/h) + GET contact/info (public),
 team (+ /invite, /invites/:id/resend, /invites/:id), PATCH org/me (incl. logoUrl/signatureUrl from the generic upload),
-org/me/delete-data, org/me/close (name + password confirmation), PATCH auth/me.
+org/me/delete-data, org/me/close (name + password confirmation), PATCH auth/me,
+certificates (+ /templates, /preview, /stats, /candidates, /bulk, /email, /:id/pdf, /:id/email, /:id/revoke, /:id/restore),
+verify/:code and verify/:code/pdf (public, 30/min), tickets (+ /stats, /zip, /email, /check-in, /:id/pdf, /:id/email,
+/:id/undo-check-in).
 - Uploads for `payment`, `logo` and `signature` still work when the plan has expired; other kinds return 402.
 
 ---
@@ -120,8 +146,8 @@ org/me/delete-data, org/me/close (name + password confirmation), PATCH auth/me.
 main.tsx            createBrowserRouter([{ path: "*", element: <AuthProvider><ConfirmProvider><App/> }]) — data router (needed by useBlocker)
 App.tsx             all routes (<Routes>); writer(page) wraps create/edit pages (admins + managers only)
 context/AuthContext.tsx   user, organization, status, login/register/acceptInvite/logout/refresh; homeFor(user)
-lib/api.ts          api.get/list/getList/post/patch/delete/upload/download, buildQuery, ApiError, errorMessage, tokenStore
-lib/status.ts       ONE place for every status label + colour (event, mode, registration, tier, org, role, payment, visibility)
+lib/api.ts          api.get/list/getList/post/patch/delete/upload/download/blob, buildQuery, ApiError, errorMessage, tokenStore
+lib/status.ts       ONE place for every status label + colour (event, mode, registration, tier, org, role, payment, cert, certType, visibility)
 lib/format.ts       formatDate/DateTime/Time/PKR/Duration/Relative/TimeLeft/Month, plural  (locale en-PK)
 lib/permissions.ts  useCan()("write" | "manage")   write = admin/manager, manage = admin
 lib/                validation.ts (zod email/password/phone), date.ts (datetime-local), csv.ts (downloadCsv), activityText.ts,
@@ -138,10 +164,11 @@ components/app/     PageHeader, EventPicker, StatsRow/StatCard, SegmentedTabs, T
 components/layout/  DashboardLayout, Sidebar (grouped nav, collapsible, plan card), Topbar (account menu),
                     AccountBanners (trial / expiring / expired / verify email), nav.ts (menu config)
 components/<feature>/  events, registrations, speakers, sponsors, sessions, team (InviteDialog, roles), settings (one file
-                    per tab + shared SaveBar/saveOrg), billing (PayDialog, paymentInfo) — feature forms and pieces
+                    per tab + shared SaveBar/saveOrg), billing (PayDialog, paymentInfo), certificates (TemplatePickerDialog,
+                    IssueDialogs, pdf.ts usePdfUrl/openPdf), tickets (QrCode, TicketDialog) — feature forms and pieces
 pages/              public pages (root), auth pages, dashboard/*Page.tsx + dashboard/<module>/*Page.tsx, superadmin/,
                     dev/ (ComponentGallery at /dev/components)
-types/              API shapes (auth, event, registration, speaker, sponsor, session, dashboard, team, billing)
+types/              API shapes (auth, event, registration, speaker, sponsor, session, dashboard, team, billing, certificate, ticket)
 ```
 
 **Page templates (follow them for every new page)**
@@ -150,7 +177,7 @@ types/              API shapes (auth, event, registration, speaker, sponsor, ses
   PaginationBar; with ErrorState / NoResults / EmptyState.
 - **Form page:** RHF + zodResolver; fields from `ui/form-fields`; `FormSection`s; `applyServerErrors(err, setError)`;
   `useUnsavedChanges(isDirty && goTo === null)`; after saving, `setGoTo(url)` and navigate in a `useEffect`
-  (so the unsaved guard doesn't fire); a toast on success.
+  (so the unsaved guard doesn't fire); a toast on success. `FormFooter` sits at the end of the form (not sticky).
 - **Destructive actions:** `await confirm({ title, description, confirmLabel, tone: "danger" })`.
 - Viewers never see write actions. Archived events are read-only.
 - **Tabbed settings-style pages:** keep every tab mounted (hidden), each tab reports `onDirtyChange`, the page owns ONE
@@ -170,17 +197,21 @@ module API; shared components; real auth pages; the whole **events module UI reb
 reorder); **Phase 8 complete**: dashboard layout + Overview (8B), Analytics, Activity log, Help & support, public
 contact form (8C), Team, Settings (6 tabs), Billing with manual payments (8D); old mock pages and unused UI files
 removed; knip clean (only deliberately kept: `ui/popover`, `ui/scroll-area`, `ui/separator`).
+**Phase 9 (in progress):** ✅ 9A certificate engine, ✅ 9B Certificates page + design picker + public `/verify`,
+✅ 9C QR tickets + Tickets page + camera check-in scanner (`/dashboard/tickets/scan`, qr-scanner; needs https or
+localhost for the camera). Event form has the certificate design picker. Demo seed added.
 
 Notes for later phases:
 - Notification preferences (`notificationPrefs`) are saved but nothing sends those emails yet (Phase 11).
 - Analytics shows the generic 402 error for expired orgs; a friendlier "renew to see analytics" screen would be nicer.
+- Phones can't use the scanner over plain http on the LAN — works once deployed with https (Phase 12).
+- Gmail SMTP allows ~500 emails/day; use a transactional email service in production (Phase 12).
 
 ## Remaining work
 
-**9** — Certificates: template system (~8–10 layouts × variants), PDF generation, SHA-256 hash + public verify code,
-bulk generate, email delivery, revoke, auto-issue when attendance becomes ATTENDED (hook marked in
-`setRegistrationStatus`), public `/verify` page. QR tickets: QR images, ticket PDFs, ZIP download, camera scanner
-check-in page (marks `ticket.isUsed`). ID cards: 4 templates, bulk PDF. Analytics PDF report export.
+**9D** — ID cards (`/dashboard/idcards`): 4 templates, choose fields (name, category, department, roll no),
+org logo, preview, PDF for one / selected / whole event (several cards per A4 page). `IdCard` table exists.
+**9E** — Analytics PDF report export (button on the Analytics page). Then mark Phase 9 done here.
 
 **10** — Superadmin panel (`/superadmin`, role superAdmin): dashboard, tenants (suspend, extend trial, change plan,
 impersonate), plans CRUD, revenue + **payment confirmation** (sets plan, `status = active`, `subscriptionEndsAt` +1 year),
