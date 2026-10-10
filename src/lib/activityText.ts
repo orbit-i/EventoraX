@@ -88,6 +88,18 @@ export function describeActivity(item: ActivityItem): string {
       return "cancelled a pending payment"
     case "support.request":
       return "contacted support"
+    case "certificate.issue":
+      return `issued a certificate to ${s("name")}`
+    case "certificate.bulk":
+      return `issued ${n("issued")} certificate${n("issued") === 1 ? "" : "s"} for "${s("title")}"`
+    case "certificate.email":
+      return `emailed ${s("name")}'s certificate`
+    case "certificate.email.bulk":
+      return `emailed ${n("count")} certificate${n("count") === 1 ? "" : "s"}`
+    case "certificate.revoke":
+      return `revoked ${s("name")}'s certificate`
+    case "certificate.restore":
+      return `restored ${s("name")}'s certificate`
     case "upload.image":
       return "uploaded an image"
     default:

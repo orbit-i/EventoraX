@@ -164,6 +164,13 @@ export const api = {
     return (await request<T>(path, { method: "POST", body: form })).data
   },
 
+  /** Fetch a file (e.g. a PDF to preview) with the login token; returns it as a Blob. */
+  blob: async (path: string, opts?: RequestOptions) => {
+    const { res, sentToken } = await rawRequest(path, opts ?? {})
+    if (!res.ok) throw await toApiError(res, sentToken)
+    return res.blob()
+  },
+
   /** Download a file (CSV, Excel, PDF...) with the login token and save it. */
   download: async (path: string, fallbackName: string) => {
     const { res, sentToken } = await rawRequest(path, {})

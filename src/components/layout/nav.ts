@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react"
 import {
   Activity,
+  Award,
   BarChart3,
   CalendarDays,
   ClipboardList,
@@ -42,6 +43,10 @@ export const NAV: NavGroup[] = [
       { to: "/dashboard/sponsors", label: "Sponsors", icon: Handshake },
       { to: "/dashboard/schedule", label: "Schedule", icon: ListOrdered },
     ],
+  },
+  {
+    title: "Credentials",
+    items: [{ to: "/dashboard/certificates", label: "Certificates", icon: Award }],
   },
   {
     title: "Insights",

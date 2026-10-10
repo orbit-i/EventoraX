@@ -56,6 +56,19 @@ export const PAYMENT_STATUS: Record<string, StatusMeta> = {
   REJECTED: { label: "Rejected", tone: "red" },
 }
 
+export const CERT_STATUS: Record<string, StatusMeta> = {
+  ISSUED: { label: "Valid", tone: "green" },
+  REVOKED: { label: "Revoked", tone: "red" },
+}
+
+export const CERT_TYPE: Record<string, StatusMeta> = {
+  PARTICIPATION: { label: "Participation", tone: "purple" },
+  ACHIEVEMENT: { label: "Achievement", tone: "amber" },
+  APPRECIATION: { label: "Appreciation", tone: "blue" },
+  SPEAKER: { label: "Speaker", tone: "teal" },
+  ORGANIZER: { label: "Organizer", tone: "slate" },
+}
+
 export const VISIBILITY: Record<string, StatusMeta> = {
   true: { label: "Public", tone: "green" },
   false: { label: "Hidden", tone: "slate" },
@@ -69,6 +82,8 @@ export const STATUS_MAPS = {
   org: ORG_STATUS,
   role: TEAM_ROLE,
   payment: PAYMENT_STATUS,
+  cert: CERT_STATUS,
+  certType: CERT_TYPE,
   visibility: VISIBILITY,
 } as const
 

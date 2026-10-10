@@ -104,7 +104,7 @@ export function BrandingTab({ onDirtyChange }: TabProps) {
             control={control}
             name="logoUrl"
             render={({ field }) => (
-              <ImageUploadField label="Logo" kind="logo" value={field.value} onChange={field.onChange} helper="A square or wide logo on a transparent background · PNG, JPG or WEBP · up to 2 MB" />
+              <ImageUploadField label="Logo" kind="logo" value={field.value} onChange={field.onChange} helper="A square or wide logo, ideally a transparent PNG · PNG or JPG (printed on certificates) · up to 2 MB" />
             )}
           />
         </FullWidth>

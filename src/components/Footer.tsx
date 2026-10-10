@@ -3,6 +3,7 @@ import { Link } from 'react-router';
 const productLinks = [
   { label: 'Features', href: '/features' },
   { label: 'Pricing', href: '/pricing' },
+  { label: 'Verify a certificate', href: '/verify' },
   { label: 'API', href: '#' },
   { label: 'Changelog', href: '#' },
 ];

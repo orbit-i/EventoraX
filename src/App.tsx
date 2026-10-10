@@ -17,6 +17,7 @@ import VerifyEmail from './pages/VerifyEmail';
 import AcceptInvite from './pages/AcceptInvite';
 import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
+import Verify from './pages/Verify';
 import NotFound from './pages/NotFound';
 import ComponentGallery from './pages/dev/ComponentGallery';
 import SuperadminHome from './pages/superadmin/SuperadminHome';
@@ -51,6 +52,7 @@ import SchedulePage from './pages/dashboard/schedule/SchedulePage';
 import NewSessionPage from './pages/dashboard/schedule/NewSessionPage';
 import EditSessionPage from './pages/dashboard/schedule/EditSessionPage';
 import ReorderSessionsPage from './pages/dashboard/schedule/ReorderSessionsPage';
+import CertificatesPage from './pages/dashboard/certificates/CertificatesPage';
 
 /** Create/edit pages: viewers are read-only, so only admins and managers may open them. */
 function writer(page: React.ReactNode) {
@@ -107,6 +109,8 @@ export default function App() {
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
+          <Route path="/verify" element={<Verify />} />
+          <Route path="/verify/:code" element={<Verify />} />
 
           {/* Auth (logged-in users are sent to their dashboard) */}
           <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />
@@ -163,6 +167,9 @@ export default function App() {
             <Route path="schedule/new" element={writer(<NewSessionPage />)} />
             <Route path="schedule/reorder" element={writer(<ReorderSessionsPage />)} />
             <Route path="schedule/:id/edit" element={writer(<EditSessionPage />)} />
+
+            {/* Credentials */}
+            <Route path="certificates" element={<CertificatesPage />} />
           </Route>
 
           {/* Superadmin (built in Phase 10) */}
