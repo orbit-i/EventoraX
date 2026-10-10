@@ -38,6 +38,7 @@ import NewEventPage from './pages/Dashboard/events/NewEventPage';
 import EventDetailPage from './pages/Dashboard/events/EventDetailPage';
 import EditEventPage from './pages/Dashboard/events/EditEventPage';
 import RegistrationsPage from './pages/Dashboard/registrations/RegistrationsPage';
+import EditRegistrationPage from './pages/Dashboard/registrations/EditRegistrationPage';
 import NewRegistrationPage from './pages/Dashboard/registrations/NewRegistrationPage';
 import ImportRegistrationsPage from './pages/Dashboard/registrations/ImportRegistrationsPage';
 import SpeakersPage from './pages/Dashboard/speakers/SpeakersPage';
@@ -145,7 +146,8 @@ export default function App() {
               <Route path="registrations" element={<RegistrationsPage />} />
               <Route path="registrations/new" element={writer(<NewRegistrationPage />)} />
               <Route path="registrations/import" element={writer(<ImportRegistrationsPage />)} />
-
+              <Route path="registrations/:id/edit" element={writer(<EditRegistrationPage />)} />
+              
               <Route path="speakers" element={<SpeakersPage />} />
               <Route path="speakers/new" element={writer(<NewSpeakerPage />)} />
               <Route path="speakers/reorder" element={writer(<ReorderSpeakersPage />)} />

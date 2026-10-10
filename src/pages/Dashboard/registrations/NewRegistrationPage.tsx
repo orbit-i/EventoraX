@@ -1,38 +1,30 @@
-import { useRouter, useSearchParams } from "@/compat/next-navigation";
-import { RegistrationForm } from "@/components/registrations/RegistrationForm";
-import { RecordFormPage } from "@/components/shared/RecordFormPage";
+import { PageHeader } from "@/components/app/PageHeader"
+import { EventPicker } from "@/components/app/EventPicker"
+import { EmptyState } from "@/components/app/States"
+import { RegistrationForm } from "@/components/registrations/RegistrationForm"
+import { useSelectedEvent } from "@/hooks/useSelectedEvent"
+import { CalendarDays } from "lucide-react"
 
-export default function AddAttendeePage() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const eventId = searchParams.get("eventId") ?? "";
-
-  if (!eventId) {
-    return (
-      <RecordFormPage
-        title="Add Attendee"
-        backHref="/dashboard/registrations"
-        backLabel="Back to registrations"
-      >
-        <p className="text-sm text-red-600">
-          No event selected. Go back to the Registrations list and select an event first.
-        </p>
-      </RecordFormPage>
-    );
-  }
+export default function NewRegistrationPage() {
+  const [eventId, setEventId] = useSelectedEvent()
 
   return (
-    <RecordFormPage
-      title="Add Attendee"
-      subtitle="Register a new attendee for this event."
-      backHref={`/dashboard/registrations?eventId=${eventId}`}
-      backLabel="Back to registrations"
-    >
-      <RegistrationForm
-        eventId={eventId}
-        onSaved={() => router.push(`/dashboard/registrations?eventId=${eventId}`)}
-        onCancel={() => router.push(`/dashboard/registrations?eventId=${eventId}`)}
+    <div className="mx-auto max-w-4xl">
+      <PageHeader
+        title="Add attendee"
+        description="Organizers can add attendees even when public registration is closed."
+        breadcrumbs={[
+          { label: "Dashboard", to: "/dashboard" },
+          { label: "Registrations", to: `/dashboard/registrations${eventId ? `?eventId=${eventId}` : ""}` },
+          { label: "Add attendee" },
+        ]}
       />
-    </RecordFormPage>
-  );
+      <EventPicker value={eventId} onChange={setEventId} className="mb-6" />
+      {eventId ? (
+        <RegistrationForm key={eventId} eventId={eventId} />
+      ) : (
+        <EmptyState icon={CalendarDays} title="Choose an event first" description="Pick which event this attendee is registering for." compact />
+      )}
+    </div>
+  )
 }
