@@ -44,6 +44,12 @@ export const ORG_STATUS: Record<string, StatusMeta> = {
   suspended: { label: "Suspended", tone: "red" },
 }
 
+export const TEAM_ROLE: Record<string, StatusMeta> = {
+  admin: { label: "Admin", tone: "purple" },
+  manager: { label: "Manager", tone: "blue" },
+  viewer: { label: "Viewer", tone: "slate" },
+}
+
 export const VISIBILITY: Record<string, StatusMeta> = {
   true: { label: "Public", tone: "green" },
   false: { label: "Hidden", tone: "slate" },
@@ -55,6 +61,7 @@ export const STATUS_MAPS = {
   registration: REGISTRATION_STATUS,
   tier: SPONSOR_TIER,
   org: ORG_STATUS,
+  role: TEAM_ROLE,
   visibility: VISIBILITY,
 } as const
 

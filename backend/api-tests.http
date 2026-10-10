@@ -62,7 +62,7 @@ Content-Type: application/json
 GET {{baseUrl}}/team
 Authorization: Bearer {{token}}
 
-### 9. Try inviting a superAdmin (expect 400)
+### 9. Try inviting a superAdmin (expect 400 VALIDATION_ERROR with fieldErrors.role)
 POST {{baseUrl}}/team/invite
 Authorization: Bearer {{token}}
 Content-Type: application/json
@@ -75,8 +75,14 @@ Authorization: Bearer {{token}}
 Content-Type: application/json
 
 { "email": "manager@test.com", "role": "manager" }
-### 10b. Cancel a pending invite
-DELETE {{baseUrl}}/team/invites/cmutwifg10007yotjatrdx28u
+
+### 10a. Resend a pending invite (new link prints in the SERVER terminal; the old one stops working).
+###      Put the invite id from step 10 (data.id) into the URL.
+POST {{baseUrl}}/team/invites/PASTE_INVITE_ID/resend
+Authorization: Bearer {{token}}
+
+### 10b. Cancel a pending invite (same id)
+DELETE {{baseUrl}}/team/invites/PASTE_INVITE_ID
 Authorization: Bearer {{token}}
 ### 11. Invite details (public)
 GET {{baseUrl}}/auth/invite/{{inviteToken}}

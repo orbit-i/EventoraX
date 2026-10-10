@@ -6,6 +6,7 @@ import { checkOrgStatus } from "../middleware/checkOrgStatus";
 import {
   getTeamMembers,
   inviteMember,
+  resendInvite,
   cancelInvite,
   updateMemberRole,
   removeMember,
@@ -17,6 +18,7 @@ router.use(requireAuth, checkOrgStatus(), attachScopedPrisma);
 
 router.get("/", requireRole(["admin", "manager", "viewer"]), getTeamMembers);
 router.post("/invite", requireRole(["admin"]), inviteMember);
+router.post("/invites/:inviteId/resend", requireRole(["admin"]), resendInvite);
 router.delete("/invites/:inviteId", requireRole(["admin"]), cancelInvite);
 router.patch("/:userId/role", requireRole(["admin"]), updateMemberRole);
 router.delete("/:userId", requireRole(["admin"]), removeMember);

@@ -24,7 +24,7 @@ import SuperadminHome from './pages/superadmin/SuperadminHome';
 // Dashboard imports
 import DashboardLayout from './components/layout/DashboardLayout';
 import OverviewPage from './pages/dashboard/OverviewPage';
-import Team from './pages/dashboard/Team';
+import TeamPage from './pages/dashboard/TeamPage';
 import Billing from './pages/dashboard/Billing';
 import Settings from './pages/dashboard/Settings';
 import AnalyticsPage from './pages/dashboard/AnalyticsPage';
@@ -128,7 +128,6 @@ export default function App() {
               </ProtectedRoute>
             }
           >
-            <Route path="team" element={<Team />} />
             <Route path="billing" element={<Billing />} />
             <Route path="settings" element={<Settings />} />
 
@@ -138,6 +137,7 @@ export default function App() {
               <Route path="analytics" element={<AnalyticsPage />} />
               <Route path="activity" element={<ProtectedRoute roles={['admin']}><ActivityPage /></ProtectedRoute>} />
               <Route path="contact" element={<ContactPage />} />
+              <Route path="team" element={<TeamPage />} />
               <Route path="events" element={<EventsPage />} />
               <Route path="events/new" element={writer(<NewEventPage />)} />
               <Route path="events/:id" element={<EventDetailPage />} />

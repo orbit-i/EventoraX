@@ -16,6 +16,7 @@ import { api, buildQuery, errorMessage } from "@/lib/api"
 import { describeActivity } from "@/lib/activityText"
 import { formatDate, formatDateTime, formatRelative } from "@/lib/format"
 import type { ActivityItem } from "@/types/dashboard"
+import type { TeamResponse } from "@/types/team"
 
 /** Action filter: the backend matches by prefix, so "event" covers event.create, event.update… */
 const ACTION_OPTIONS = [
@@ -58,10 +59,6 @@ function dayStart(day: string) {
 }
 function dayEnd(day: string) {
   return day ? new Date(`${day}T23:59:59.999`).toISOString() : ""
-}
-
-interface TeamResponse {
-  members: { id: string; name: string; email: string }[]
 }
 
 export default function ActivityPage() {

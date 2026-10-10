@@ -65,13 +65,15 @@ export function describeActivity(item: ActivityItem): string {
     case "team.invite":
       return `invited ${s("email")} as ${s("role")}`
     case "team.invite.cancel":
-      return "cancelled an invite"
+      return s("email") ? `cancelled the invite for ${s("email")}` : "cancelled an invite"
+    case "team.invite.resend":
+      return `resent the invite to ${s("email")}`
     case "team.invite.accept":
       return "joined the team"
     case "team.role.update":
-      return `changed a member's role to ${s("to")}`
+      return `changed ${s("name") || "a member"}'s role to ${s("to")}`
     case "team.remove":
-      return `removed ${s("email") || "a member"} from the team`
+      return `removed ${s("name") || s("email") || "a member"} from the team`
     case "org.settings.update":
       return "updated the organization settings"
     case "org.logo.upload":
