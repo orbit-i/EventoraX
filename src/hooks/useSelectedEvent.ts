@@ -43,8 +43,3 @@ export function useSelectedEvent(): [string, (eventId: string) => void] {
 
   return [fromUrl, select]
 }
-
-/** Forget the remembered event (e.g. it was deleted). */
-export function clearSelectedEvent() {
-  localStorage.removeItem(STORAGE_KEY)
-}
