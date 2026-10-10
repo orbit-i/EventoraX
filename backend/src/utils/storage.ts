@@ -39,3 +39,31 @@ export async function deleteUploadFolder(folder: string): Promise<void> {
   if (!dir.startsWith(UPLOAD_ROOT) || dir === UPLOAD_ROOT) return; // never delete outside / the root itself
   await fs.rm(dir, { recursive: true, force: true });
 }
+// ── Private files (certificate PDFs): never served statically, only through the API ──
+
+/** Folder for files that must not be public. Keys look like "orgs/<orgId>/certificates/<code>.pdf". */
+export const PRIVATE_ROOT = path.resolve(process.env.PRIVATE_DIR || "private-files");
+
+function privatePath(key: string): string | null {
+  const full = path.resolve(PRIVATE_ROOT, key);
+  return full.startsWith(PRIVATE_ROOT + path.sep) ? full : null; // path traversal guard
+}
+
+export async function savePrivate(key: string, buffer: Buffer): Promise<void> {
+  const full = privatePath(key);
+  if (!full) throw new Error("Invalid private file key");
+  await fs.mkdir(path.dirname(full), { recursive: true });
+  await fs.writeFile(full, buffer);
+}
+
+/** null if the file is missing. */
+export async function readPrivate(key: string | null | undefined): Promise<Buffer | null> {
+  const full = key ? privatePath(key) : null;
+  if (!full) return null;
+  return fs.readFile(full).catch(() => null);
+}
+
+export async function deletePrivateFolder(folder: string): Promise<void> {
+  const dir = privatePath(folder);
+  if (dir) await fs.rm(dir, { recursive: true, force: true });
+}

@@ -36,6 +36,10 @@ uploadsRouter.post("/image", canWrite, imageUpload.single("file"), async (req, r
   if (!req.file) {
     return fail(res, 400, "NO_FILE", "No file uploaded (form field name must be: file)");
   }
+  // Logos and signatures are printed on PDFs, which can only embed PNG or JPEG.
+  if ((kind === "logo" || kind === "signature") && req.file.mimetype === "image/webp") {
+    return fail(res, 400, "UNSUPPORTED_IMAGE", "Please use a PNG or JPG for logos and signatures (they're printed on certificates)");
+  }
 
   const url = await saveUpload(`orgs/${req.org!.id}/${folder}`, req.file.buffer, req.file.mimetype);
   await logActivity(req, { action: "upload.image", metadata: { kind, url } });

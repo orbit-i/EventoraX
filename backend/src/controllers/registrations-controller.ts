@@ -11,6 +11,7 @@ import { newRefNo, newTicketNo, newQrCode } from "../utils/codes";
 import { sendAttendeeMessage } from "../utils/mail";
 import { logActivity } from "../utils/activity";
 import { csvCell } from "../utils/csv";
+import { autoIssueForAttended } from "../services/certificates";
 
 export const REG_STATUSES = ["REGISTERED", "ATTENDED", "ABSENT", "CANCELLED"] as const;
 const MAX_IMPORT_ROWS = 5000;
@@ -256,7 +257,10 @@ export async function setRegistrationStatus(req: Request, res: Response) {
 
   const updated = await db.registration.update({ where: { id }, data: { status: next }, include: REG_INCLUDE });
 
-  // Phase 9: auto-issue a certificate here when status becomes ATTENDED and the event has autoIssueCert.
+  // Auto-issue: events with "issue certificates automatically" get one on check-in (in the background).
+  if (next === "ATTENDED") {
+    void autoIssueForAttended(db, req.org!, existing.eventId, [id]).catch((err) => console.error("Auto-issue failed:", err));
+  }
   await logActivity(req, {
     action: "registration.status",
     entityType: "Registration",
@@ -326,6 +330,16 @@ export async function bulkAction(req: Request, res: Response) {
         data: { status },
       })
     ).count;
+
+    if (status === "ATTENDED" && affected > 0) {
+      const attended = await db.registration.findMany({ where: { id: { in: ids }, status: "ATTENDED" }, select: { id: true, eventId: true } });
+      const byEvent = new Map<string, string[]>();
+      for (const r of attended) byEvent.set(r.eventId, [...(byEvent.get(r.eventId) ?? []), r.id]);
+      const org = req.org!;
+      void (async () => {
+        for (const [eventId, regIds] of byEvent) await autoIssueForAttended(db, org, eventId, regIds);
+      })().catch((err) => console.error("Auto-issue failed:", err));
+    }
   }
 
   await logActivity(req, {

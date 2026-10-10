@@ -34,3 +34,4 @@ dist-ssr
 # The backend creates these folders itself.
 uploads/
 backend/uploads/
+backend/private-files/

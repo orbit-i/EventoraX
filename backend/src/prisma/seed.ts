@@ -95,7 +95,7 @@ async function seedSettings() {
     "contact.hours": "Mon–Fri, 9:00 am – 6:00 pm (PKT)",
     "payments.accounts": { jazzcash: "", easypaisa: "", bankIban: "" },
     "uploads.maxMb": 5,
-    "certificates.defaultTemplate": "classic-01",
+    "certificates.defaultTemplate": "classic-royal",
   };
 
   for (const [key, value] of Object.entries(defaults)) {

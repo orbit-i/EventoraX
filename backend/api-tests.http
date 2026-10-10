@@ -437,3 +437,57 @@ Content-Type: application/json
 
 ### C1. Public contact details (no login; empty strings are hidden by the UI)
 GET {{baseUrl}}/contact/info
+
+
+### ════════ PHASE 9A: CERTIFICATES ════════
+### Put an attendee's id in @regId (Prisma Studio → Registration) and a certificate id in @certId after issuing.
+@regId = PASTE_REGISTRATION_ID
+@certId = PASTE_CERTIFICATE_ID
+
+### CE1. All 60 templates (10 layouts × 5 colours + "your brand")
+GET {{baseUrl}}/certificates/templates
+Authorization: Bearer {{token}}
+
+### CE2. Preview (opens a PDF with a SAMPLE watermark)
+GET {{baseUrl}}/certificates/preview?eventId={{eventId}}&templateKey=elegant-emerald
+Authorization: Bearer {{token}}
+
+### CE3. Issue one (PARTICIPATION / ACHIEVEMENT need the attendee marked ATTENDED; expect 400 NOT_ATTENDED otherwise)
+POST {{baseUrl}}/certificates
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "registrationId": "{{regId}}", "type": "APPRECIATION", "sendEmail": true }
+
+### CE4. Issue for everyone who attended the event
+POST {{baseUrl}}/certificates/bulk
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "eventId": "{{eventId}}", "sendEmail": false }
+
+### CE5. List + stats
+GET {{baseUrl}}/certificates?eventId={{eventId}}
+Authorization: Bearer {{token}}
+
+###
+GET {{baseUrl}}/certificates/stats?eventId={{eventId}}
+Authorization: Bearer {{token}}
+
+### CE6. Download (counts as a download)
+GET {{baseUrl}}/certificates/{{certId}}/pdf
+Authorization: Bearer {{token}}
+
+### CE7. Revoke (reason is shown publicly), then restore
+POST {{baseUrl}}/certificates/{{certId}}/revoke
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "reason": "Issued by mistake" }
+
+###
+POST {{baseUrl}}/certificates/{{certId}}/restore
+Authorization: Bearer {{token}}
+
+### CE8. Public verify — no login (paste a verify code; lower case / spaces are fine)
+GET {{baseUrl}}/verify/EVX-XXXX-XXXX

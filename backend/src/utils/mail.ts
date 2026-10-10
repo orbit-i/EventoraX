@@ -58,18 +58,33 @@ function button(href: string, label: string): string {
  * Sends an email. When SMTP isn't configured (local development), the email is
  * printed to the terminal instead, so verify / reset / invite links can still be tested.
  */
-export async function sendMail(to: string, subject: string, html: string, devLink?: string): Promise<void> {
+export interface MailAttachment {
+  filename: string;
+  content: Buffer;
+  contentType?: string;
+}
+
+export async function sendMail(
+  to: string,
+  subject: string,
+  html: string,
+  devLink?: string,
+  attachments: MailAttachment[] = []
+): Promise<void> {
   const t = getTransporter();
   if (!t) {
     console.log(
       `\n──────── DEV EMAIL (SMTP not configured) ────────\nTo:      ${to}\nSubject: ${subject}\n` +
         (devLink ? `Link:    ${devLink}\n` : "") +
+        (attachments.length
+          ? `Attach:  ${attachments.map((a) => `${a.filename} (${Math.round(a.content.length / 1024)} KB)`).join(", ")}\n`
+          : "") +
         `─────────────────────────────────────────────────\n`
     );
     return;
   }
   const from = process.env.EMAIL_FROM || `"EventoraX" <${process.env.EMAIL_USER}>`;
-  await t.sendMail({ from, to, subject, html });
+  await t.sendMail({ from, to, subject, html, attachments });
 }
 
 export function sendVerificationEmail(to: string, token: string) {
@@ -134,5 +149,27 @@ export function sendAttendeeMessage(to: string, name: string, orgName: string, s
       escapeHtml(subject),
       `<p>Hi ${escapeHtml(name)},</p><p>${body}</p><p style="color:#64748b">— ${escapeHtml(orgName)}</p>`
     )
+  );
+}
+/** Certificate email: PDF attached, plus a link anyone can use to check it's genuine. */
+export function sendCertificateEmail(
+  to: string,
+  name: string,
+  orgName: string,
+  eventTitle: string,
+  verifyUrl: string,
+  pdf: MailAttachment
+) {
+  return sendMail(
+    to,
+    `Your certificate — ${eventTitle}`,
+    layout(
+      "Your certificate is ready",
+      `<p>Hi ${escapeHtml(name)},</p><p>Thank you for being part of <strong>${escapeHtml(eventTitle)}</strong>. Your certificate from ${escapeHtml(
+        orgName
+      )} is attached as a PDF.</p>${button(verifyUrl, "View &amp; verify online")}<p style="color:#64748b">Anyone can confirm it's genuine with the link above or by scanning the QR code on the certificate.</p>`
+    ),
+    verifyUrl,
+    [pdf]
   );
 }

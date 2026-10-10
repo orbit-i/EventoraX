@@ -13,8 +13,12 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@fontsource/great-vibes": "^5.3.0",
+    "@fontsource/inter": "^5.3.0",
+    "@fontsource/playfair-display": "^5.3.0",
     "@prisma/adapter-mariadb": "^7.8.0",
     "@prisma/client": "^7.8.0",
+    "archiver": "^8.0.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^18.0.5",
@@ -26,9 +30,12 @@
     "multer": "^2.2.0",
     "nodemailer": "^10.0.14",
     "papaparse": "^5.7.0",
+    "pdfkit": "^0.20.2",
+    "qrcode": "^1.5.4",
     "zod": "^4.6.5"
   },
   "devDependencies": {
+    "@types/archiver": "^8.0.0",
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
@@ -37,6 +44,8 @@
     "@types/node": "^26.1.0",
     "@types/nodemailer": "^8.0.2",
     "@types/papaparse": "^5.5.2",
+    "@types/pdfkit": "^0.17.6",
+    "@types/qrcode": "^1.5.6",
     "prisma": "^7.8.0",
     "tsx": "^4.23.1",
     "typescript": "^6.0.3"

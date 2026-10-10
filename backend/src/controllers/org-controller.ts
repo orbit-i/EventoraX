@@ -3,7 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import bcrypt from "bcrypt";
 import prisma from "../prisma/client";
-import { deleteUpload, deleteUploadFolder } from "../utils/storage";
+import { deleteUpload, deleteUploadFolder, deletePrivateFolder } from "../utils/storage";
 import { logActivity } from "../utils/activity";
 import { EMAIL_REGEX } from "../utils/password";
 import { optionalImage, isUniqueViolation } from "../utils/schemas";
@@ -157,6 +157,7 @@ export async function updateOrgSettings(req: Request, res: Response) {
      await Promise.all([
        deleteUploadFolder(`orgs/${org.id}/speakers`),
        deleteUploadFolder(`orgs/${org.id}/sponsors`),
+       deletePrivateFolder(`orgs/${org.id}`),
      ]);
 
      await logActivity(req, { action: "org.data.delete", entityType: "Organization", entityId: org.id, metadata: { events: result.count } });
@@ -170,7 +171,7 @@ export async function updateOrgSettings(req: Request, res: Response) {
      const org = req.org!;
 
      await prisma.organization.delete({ where: { id: org.id } });
-     await deleteUploadFolder(`orgs/${org.id}`);
+     await Promise.all([deleteUploadFolder(`orgs/${org.id}`), deletePrivateFolder(`orgs/${org.id}`)]);
 
      // Platform-level record (the org's own log is gone with it).
      await logActivity(req, {
