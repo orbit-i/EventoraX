@@ -5,7 +5,7 @@ import { fail } from "../utils/http";
 import { getOverview, getAnalytics } from "../controllers/dashboard-controller";
 import { listActivity, exportActivity } from "../controllers/activity-controller";
 import { getBilling, listPayments, submitPayment, cancelPayment } from "../controllers/billing-controller";
-import { publicContact, dashboardSupport } from "../controllers/support-controller";
+import { publicContact, dashboardSupport, contactInfo } from "../controllers/support-controller";
 
 // Overview works even after the plan expires (so the org can see what's happening and renew).
 export const dashboardRouter = Router();
@@ -42,4 +42,5 @@ const contactLimiter = rateLimit({
 });
 
 export const contactRouter = Router();
+contactRouter.get("/info", contactInfo);
 contactRouter.post("/", contactLimiter, publicContact);

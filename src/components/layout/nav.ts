@@ -1,11 +1,13 @@
 import type { LucideIcon } from "lucide-react"
 import {
   Activity,
+  BarChart3,
   CalendarDays,
   ClipboardList,
   CreditCard,
   Handshake,
   LayoutDashboard,
+  LifeBuoy,
   ListOrdered,
   Mic2,
   Settings,
@@ -43,7 +45,10 @@ export const NAV: NavGroup[] = [
   },
   {
     title: "Insights",
-    items: [{ to: "/dashboard/activity", label: "Activity log", icon: Activity, need: "manage" }],
+    items: [
+      { to: "/dashboard/analytics", label: "Analytics", icon: BarChart3 },
+      { to: "/dashboard/activity", label: "Activity log", icon: Activity, need: "manage" },
+    ],
   },
   {
     title: "Organization",
@@ -51,6 +56,7 @@ export const NAV: NavGroup[] = [
       { to: "/dashboard/team", label: "Team", icon: Users },
       { to: "/dashboard/billing", label: "Billing", icon: CreditCard, need: "manage" },
       { to: "/dashboard/settings", label: "Settings", icon: Settings },
+      { to: "/dashboard/contact", label: "Help & support", icon: LifeBuoy },
     ],
   },
 ]

@@ -47,3 +47,22 @@ export interface Overview {
   recentActivity: ActivityItem[]
   registrationTrend: MonthCount[]
 }
+/** GET /analytics */
+export interface Analytics {
+  totals: { events: number; registrations: number; attended: number; attendanceRate: number; certificatesIssued: number }
+  eventsByStatus: { status: EventStatus; count: number }[]
+  registrationsByStatus: Record<"REGISTERED" | "ATTENDED" | "ABSENT" | "CANCELLED", number>
+  registeredVia: { via: string; count: number }[]
+  monthlyRegistrations: MonthCount[]
+  monthlyCertificates: MonthCount[]
+  attendanceByEvent: { id: string; title: string; startDateTime: string; registered: number; attended: number; rate: number }[]
+  categoryBreakdown: { label: string; count: number }[]
+  topEvents: { id: string; title: string; startDateTime: string; maxAttendees: number | null; registrations: number }[]
+}
+
+/** GET /contact/info — empty strings mean "not configured" */
+export interface ContactInfo {
+  email: string
+  whatsapp: string
+  hours: string
+}

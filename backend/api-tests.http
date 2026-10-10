@@ -426,3 +426,8 @@ Content-Type: application/json
     { "name": "ali  raza", "email": "ali.raza2@test.com", "categoryLabel": "Press" }
   ]
 }
+
+### ════════ PHASE 8C: CONTACT INFO ════════
+
+### C1. Public contact details (no login; empty strings are hidden by the UI)
+GET {{baseUrl}}/contact/info

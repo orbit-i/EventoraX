@@ -27,7 +27,9 @@ import OverviewPage from './pages/dashboard/OverviewPage';
 import Team from './pages/dashboard/Team';
 import Billing from './pages/dashboard/Billing';
 import Settings from './pages/dashboard/Settings';
-import Activity from './pages/dashboard/activity';
+import AnalyticsPage from './pages/dashboard/AnalyticsPage';
+import ActivityPage from './pages/dashboard/ActivityPage';
+import ContactPage from './pages/dashboard/ContactPage';
 import ModuleLayout from './pages/dashboard/ModuleLayout';
 
 // Events module (ported from feature/eventsmodule)
@@ -129,11 +131,13 @@ export default function App() {
             <Route path="team" element={<Team />} />
             <Route path="billing" element={<Billing />} />
             <Route path="settings" element={<Settings />} />
-            <Route path="activity" element={<Activity />} />
 
             {/* Events module */}
             <Route element={<ModuleLayout />}>
               <Route index element={<OverviewPage />} />
+              <Route path="analytics" element={<AnalyticsPage />} />
+              <Route path="activity" element={<ProtectedRoute roles={['admin']}><ActivityPage /></ProtectedRoute>} />
+              <Route path="contact" element={<ContactPage />} />
               <Route path="events" element={<EventsPage />} />
               <Route path="events/new" element={writer(<NewEventPage />)} />
               <Route path="events/:id" element={<EventDetailPage />} />

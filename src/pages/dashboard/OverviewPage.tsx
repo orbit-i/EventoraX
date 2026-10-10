@@ -27,6 +27,7 @@ import { StatusBadge } from "@/components/app/StatusBadge"
 import { EmptyState, ErrorState } from "@/components/app/States"
 import { RoleGate } from "@/components/app/RoleGate"
 import { Avatar } from "@/components/app/Avatar"
+import { Panel, PanelLink } from "@/components/app/Panel"
 import { CapacityBar } from "@/components/events/CapacityBar"
 import { useAuth } from "@/context/AuthContext"
 import { useApi } from "@/hooks/useApi"
@@ -38,26 +39,6 @@ import type { Overview } from "@/types/dashboard"
 function greeting(): string {
   const hour = new Date().getHours()
   return hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening"
-}
-
-function Panel({ title, action, children, className }: { title: string; action?: React.ReactNode; children: React.ReactNode; className?: string }) {
-  return (
-    <section className={cn("rounded-2xl border border-[#e9e4ff] bg-white p-5 shadow-sm", className)}>
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <h2 className="text-base font-semibold text-[#0f172a]">{title}</h2>
-        {action}
-      </div>
-      {children}
-    </section>
-  )
-}
-
-function PanelLink({ to, children }: { to: string; children: React.ReactNode }) {
-  return (
-    <Link to={to} className="inline-flex items-center gap-1 text-sm font-medium text-[#7c3aed] hover:underline">
-      {children} <ArrowRight className="h-3.5 w-3.5" />
-    </Link>
-  )
 }
 
 // ─────────────────────────── Getting started ───────────────────────────

@@ -23,6 +23,16 @@ async function notifyTeam(subject: string, lines: string[]) {
   await sendMail(to, subject, html).catch((err) => console.error("Contact notification failed:", err));
 }
 
+// GET /api/v1/contact/info   (public — shown on both contact pages; empty values are simply hidden)
+export async function contactInfo(_req: Request, res: Response) {
+  const [email, whatsapp, hours] = await Promise.all([
+    getSetting<string>("contact.email", ""),
+    getSetting<string>("contact.whatsapp", ""),
+    getSetting<string>("contact.hours", ""),
+  ]);
+  return ok(res, { email, whatsapp, hours });
+}
+
 const publicSchema = z.object({
   name: z.string().trim().min(2, "Enter your name").max(150),
   email: emailField,

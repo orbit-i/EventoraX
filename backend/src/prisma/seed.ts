@@ -92,6 +92,7 @@ async function seedSettings() {
     "maintenance.enabled": false,
     "contact.email": "",
     "contact.whatsapp": "",
+    "contact.hours": "Mon–Fri, 9:00 am – 6:00 pm (PKT)",
     "payments.accounts": { jazzcash: "", easypaisa: "", bankIban: "" },
     "uploads.maxMb": 5,
     "certificates.defaultTemplate": "classic-01",
