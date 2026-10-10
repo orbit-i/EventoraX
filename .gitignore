@@ -30,4 +30,7 @@ dist-ssr
 *.sln
 *.sw?
 
-uploads/*
+# User-uploaded files (logos, photos, receipts) are data, not code.
+# The backend creates these folders itself.
+uploads/
+backend/uploads/
