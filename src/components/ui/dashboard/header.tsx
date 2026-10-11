@@ -6,10 +6,15 @@ import {
   Check, 
   Bell, 
   Search, 
-  ExternalLink,
-  Sparkles,
-  X,
-  Menu
+  ExternalLink, 
+  Sparkles, 
+  X, 
+  Menu,
+  ShieldAlert,
+  CheckCircle2,
+  Ticket,
+  Calendar,
+  Globe
 } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -32,12 +37,52 @@ export default function Header({ title }: HeaderProps) {
   const [creating, setCreating] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
 
+  // Live Notifications State
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const notifRef = useRef<HTMLDivElement>(null);
 
   // Strictly filter workspaces: Non-admin clients NEVER see or access Tenant 1 (EventoraX HQ)
   const accessibleTenants = isSuperAdmin
     ? userTenants
     : userTenants.filter(t => t.id !== 1 && !t.name.toLowerCase().includes('eventorax hq'));
+
+  const loadNotifications = async () => {
+    try {
+      if (isSuperAdmin) {
+        const res = await api.platformAdmin.getNotifications({ limit: 15 });
+        if (res.success) {
+          setNotifications(res.notifications || []);
+          setUnreadCount(res.unreadCount || 0);
+        }
+      } else {
+        const res = await api.activity.get({ limit: 10 });
+        if (res.success) {
+          const acts = (res.activities || []).map((a: any) => ({
+            id: a.id,
+            title: a.action,
+            message: a.detail,
+            category: a.type || 'event',
+            severity: 'info',
+            read: true,
+            created_at: a.created_at
+          }));
+          setNotifications(acts);
+        }
+      }
+    } catch {
+      // quiet fallback
+    }
+  };
+
+  useEffect(() => {
+    loadNotifications();
+    const interval = setInterval(loadNotifications, 8000); // 8s live polling
+    return () => clearInterval(interval);
+  }, [isSuperAdmin]);
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -45,10 +90,33 @@ export default function Header({ title }: HeaderProps) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
         setDropdownOpen(false);
       }
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setNotifOpen(false);
+      }
     }
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  const handleMarkAllRead = async () => {
+    try {
+      if (isSuperAdmin) {
+        await api.platformAdmin.markAllNotificationsRead();
+      }
+      setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadCount(0);
+    } catch {}
+  };
+
+  const handleMarkSingleRead = async (id: number) => {
+    try {
+      if (isSuperAdmin) {
+        await api.platformAdmin.markNotificationRead(id);
+      }
+      setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+      setUnreadCount(prev => Math.max(0, prev - 1));
+    } catch {}
+  };
 
   const handleCreateTenant = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -221,14 +289,111 @@ export default function Header({ title }: HeaderProps) {
               />
             </div>
 
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="relative rounded-xl hover:bg-[#f5f3ff] text-[#64748b] hover:text-[#7c3aed] w-9 h-9"
-            >
-              <Bell className="w-4 h-4" />
-              <span className="absolute top-2 right-2 w-2 h-2 bg-[#dc2626] rounded-full" />
-            </Button>
+            {/* Interactive Live Notifications Bell */}
+            <div className="relative" ref={notifRef}>
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={() => setNotifOpen(!notifOpen)}
+                className="relative rounded-xl hover:bg-[#f5f3ff] text-[#64748b] hover:text-[#7c3aed] w-9 h-9"
+              >
+                <Bell className="w-4 h-4" />
+                {unreadCount > 0 ? (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-600 text-white rounded-full text-[10px] font-extrabold flex items-center justify-center animate-pulse shadow-sm">
+                    {unreadCount > 9 ? '9+' : unreadCount}
+                  </span>
+                ) : (
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-emerald-500 rounded-full" />
+                )}
+              </Button>
+
+              {/* Notification Popover Panel */}
+              {notifOpen && (
+                <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 z-50 overflow-hidden animate-in fade-in zoom-in-95">
+                  <div className="p-3.5 bg-slate-50 border-b border-slate-100 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                      <h4 className="text-xs font-bold text-slate-900">
+                        Live System Alerts
+                        {unreadCount > 0 && (
+                          <span className="ml-1.5 px-2 py-0.5 rounded-full bg-red-100 text-red-700 text-[10px] font-black">
+                            {unreadCount} new
+                          </span>
+                        )}
+                      </h4>
+                    </div>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={handleMarkAllRead}
+                        className="text-[11px] text-blue-600 hover:text-blue-800 font-semibold"
+                      >
+                        Mark all read
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                    {notifications.length === 0 ? (
+                      <div className="p-6 text-center text-xs text-slate-400">
+                        <CheckCircle2 className="w-6 h-6 text-slate-300 mx-auto mb-1.5" />
+                        No alerts at this moment. System normal.
+                      </div>
+                    ) : (
+                      notifications.map((n) => (
+                        <div
+                          key={n.id}
+                          onClick={() => handleMarkSingleRead(n.id)}
+                          className={`p-3 text-xs transition-colors cursor-pointer hover:bg-slate-50 flex items-start gap-2.5 ${
+                            !n.read ? 'bg-blue-50/40' : ''
+                          }`}
+                        >
+                          <div className={`w-7 h-7 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                            n.severity === 'critical' ? 'bg-red-100 text-red-600' :
+                            n.severity === 'warning' ? 'bg-amber-100 text-amber-600' :
+                            n.severity === 'success' ? 'bg-emerald-100 text-emerald-600' :
+                            'bg-blue-100 text-blue-600'
+                          }`}>
+                            {n.category === 'security' ? <ShieldAlert className="w-3.5 h-3.5" /> :
+                             n.category === 'attendee' ? <Ticket className="w-3.5 h-3.5" /> :
+                             n.category === 'event' ? <Calendar className="w-3.5 h-3.5" /> :
+                             n.category === 'cms' ? <Globe className="w-3.5 h-3.5" /> :
+                             <Sparkles className="w-3.5 h-3.5" />}
+                          </div>
+
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center justify-between gap-1">
+                              <p className={`font-bold truncate ${!n.read ? 'text-slate-900' : 'text-slate-700'}`}>
+                                {n.title}
+                              </p>
+                              {!n.read && (
+                                <span className="w-1.5 h-1.5 rounded-full bg-blue-600 shrink-0" />
+                              )}
+                            </div>
+                            <p className="text-[11px] text-slate-500 mt-0.5 leading-snug break-words">
+                              {n.message}
+                            </p>
+                            <span className="text-[9px] text-slate-400 mt-1 block">
+                              {new Date(n.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {isSuperAdmin && (
+                    <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
+                      <a
+                        href="/dashboard/platform"
+                        className="text-[11px] text-blue-700 hover:text-blue-900 font-bold block"
+                      >
+                        Open Governance Sentinel &rarr;
+                      </a>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </header>

@@ -20,14 +20,18 @@ import {
   Globe,
   Save,
   ExternalLink,
-  X
+  X,
+  Bell,
+  Ticket,
+  Sparkles,
+  Check
 } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 
 export default function PlatformAdmin() {
   const { isSuperAdmin } = useAuth();
-  const [activeTab, setActiveTab] = useState<'tenants' | 'security' | 'cms'>('tenants');
+  const [activeTab, setActiveTab] = useState<'tenants' | 'security' | 'cms' | 'notifications'>('tenants');
   const [metrics, setMetrics] = useState<any>(null);
   const [tenants, setTenants] = useState<any[]>([]);
   const [search, setSearch] = useState("");
@@ -50,6 +54,73 @@ export default function PlatformAdmin() {
   const [cmsContent, setCmsContent] = useState<any>({});
   const [cmsSaving, setCmsSaving] = useState(false);
   const [cmsMsg, setCmsMsg] = useState<string | null>(null);
+
+  // Live Notifications Feed State
+  const [adminNotifs, setAdminNotifs] = useState<any[]>([]);
+  const [unreadAdminNotifCount, setUnreadAdminNotifCount] = useState(0);
+  const [notifCategoryFilter, setNotifCategoryFilter] = useState("all");
+  const [testNotifLoading, setTestNotifLoading] = useState(false);
+
+  const loadAdminNotifications = async () => {
+    try {
+      const res = await api.platformAdmin.getNotifications({ limit: 50 });
+      if (res.success) {
+        setAdminNotifs(res.notifications || []);
+        setUnreadAdminNotifCount(res.unreadCount || 0);
+      }
+    } catch (err) {
+      console.error("Failed to load notifications:", err);
+    }
+  };
+
+  useEffect(() => {
+    loadAdminNotifications();
+    const interval = setInterval(loadAdminNotifications, 6000); // 6s real-time live polling
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleMarkAllNotifsRead = async () => {
+    try {
+      await api.platformAdmin.markAllNotificationsRead();
+      setAdminNotifs(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadAdminNotifCount(0);
+    } catch {}
+  };
+
+  const handleMarkSingleNotifRead = async (id: number) => {
+    try {
+      await api.platformAdmin.markNotificationRead(id);
+      setAdminNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+      setUnreadAdminNotifCount(prev => Math.max(0, prev - 1));
+    } catch {}
+  };
+
+  const handleClearNotifs = async () => {
+    try {
+      await api.platformAdmin.clearNotifications();
+      setAdminNotifs([]);
+      setUnreadAdminNotifCount(0);
+    } catch {}
+  };
+
+  const handleTriggerTestAlert = async () => {
+    setTestNotifLoading(true);
+    try {
+      const res = await api.platformAdmin.sendTestNotification({
+        title: 'Superadmin Live Pipeline Verified',
+        message: 'Real-time multi-tenant notification stream is 100% active and firing live.',
+        category: 'system',
+        severity: 'success'
+      });
+      if (res.success) {
+        loadAdminNotifications();
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to trigger test notification.");
+    } finally {
+      setTestNotifLoading(false);
+    }
+  };
 
   const loadData = async () => {
     try {
@@ -338,6 +409,22 @@ export default function PlatformAdmin() {
           >
             <Globe className="w-4 h-4 text-amber-500" />
             Official Website CMS &amp; Content Manager
+          </button>
+          <button
+            onClick={() => setActiveTab('notifications')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'notifications'
+                ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <Bell className="w-4 h-4 text-rose-500" />
+            Live System Notifications &amp; Alerts
+            {unreadAdminNotifCount > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-black animate-pulse">
+                {unreadAdminNotifCount}
+              </span>
+            )}
           </button>
         </div>
 
@@ -661,6 +748,163 @@ export default function PlatformAdmin() {
                 </Button>
               </div>
             </form>
+          </div>
+        )}
+
+        {/* TAB 4: Live System Notifications & Real-Time Alerts */}
+        {activeTab === 'notifications' && (
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#0f172a] flex items-center gap-2">
+                  <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
+                  Live Platform Event &amp; Notification Sentinel
+                </h2>
+                <p className="text-xs text-[#64748b]">
+                  Real-time broadcast of all organization signups, attendee registrations, pass issuances, security blocks, and CMS mutations.
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleTriggerTestAlert}
+                  disabled={testNotifLoading}
+                  className="rounded-xl text-xs h-9 border-slate-200"
+                >
+                  <Sparkles className="w-3.5 h-3.5 mr-1 text-amber-500" />
+                  {testNotifLoading ? "Dispatching..." : "Dispatch Test Alert"}
+                </Button>
+
+                {unreadAdminNotifCount > 0 && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleMarkAllNotifsRead}
+                    className="rounded-xl text-xs h-9 border-slate-200 text-blue-600"
+                  >
+                    <Check className="w-3.5 h-3.5 mr-1" />
+                    Mark All Read
+                  </Button>
+                )}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleClearNotifs}
+                  className="rounded-xl text-xs h-9 border-slate-200 text-rose-600 hover:bg-rose-50"
+                >
+                  Clear Feed
+                </Button>
+              </div>
+            </div>
+
+            {/* Filter Pills */}
+            <div className="flex flex-wrap gap-2 pt-1 border-b border-slate-100 pb-3">
+              {[
+                { id: 'all', label: 'All Alerts' },
+                { id: 'tenant', label: 'Organizations' },
+                { id: 'event', label: 'Events' },
+                { id: 'attendee', label: 'Attendees & Passes' },
+                { id: 'security', label: 'Security' },
+                { id: 'cms', label: 'CMS Updates' },
+                { id: 'system', label: 'System' }
+              ].map((cat) => (
+                <button
+                  key={cat.id}
+                  type="button"
+                  onClick={() => setNotifCategoryFilter(cat.id)}
+                  className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                    notifCategoryFilter === cat.id
+                      ? 'bg-blue-600 text-white shadow-xs'
+                      : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  }`}
+                >
+                  {cat.label}
+                </button>
+              ))}
+            </div>
+
+            {/* Notification Stream Cards */}
+            <div className="space-y-3">
+              {adminNotifs
+                .filter(n => notifCategoryFilter === 'all' || n.category === notifCategoryFilter)
+                .length === 0 ? (
+                <div className="p-16 text-center bg-slate-50/50 rounded-2xl border border-dashed border-slate-200">
+                  <CheckCircle2 className="w-10 h-10 text-emerald-400 mx-auto mb-2" />
+                  <h4 className="font-bold text-slate-700 text-sm">All Clean • No Active Alerts</h4>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    Live system mutations will automatically populate here in real-time.
+                  </p>
+                </div>
+              ) : (
+                adminNotifs
+                  .filter(n => notifCategoryFilter === 'all' || n.category === notifCategoryFilter)
+                  .map((n) => (
+                    <div
+                      key={n.id}
+                      className={`p-4 rounded-2xl border transition-all flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ${
+                        !n.read 
+                          ? 'bg-blue-50/30 border-blue-200/80 shadow-xs' 
+                          : 'bg-white border-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-start gap-3.5">
+                        <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 mt-0.5 ${
+                          n.severity === 'critical' ? 'bg-red-100 text-red-600' :
+                          n.severity === 'warning' ? 'bg-amber-100 text-amber-600' :
+                          n.severity === 'success' ? 'bg-emerald-100 text-emerald-600' :
+                          'bg-blue-100 text-blue-600'
+                        }`}>
+                          {n.category === 'security' ? <ShieldAlert className="w-4 h-4" /> :
+                           n.category === 'attendee' ? <Ticket className="w-4 h-4" /> :
+                           n.category === 'event' ? <Calendar className="w-4 h-4" /> :
+                           n.category === 'cms' ? <Globe className="w-4 h-4" /> :
+                           n.category === 'tenant' ? <Building2 className="w-4 h-4" /> :
+                           <Sparkles className="w-4 h-4" />}
+                        </div>
+
+                        <div>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <h4 className="text-xs font-bold text-slate-900">{n.title}</h4>
+                            <Badge className={`text-[9px] uppercase font-bold py-0 px-2 ${
+                              n.severity === 'critical' ? 'bg-red-100 text-red-700' :
+                              n.severity === 'warning' ? 'bg-amber-100 text-amber-700' :
+                              n.severity === 'success' ? 'bg-emerald-100 text-emerald-700' :
+                              'bg-slate-100 text-slate-700'
+                            }`}>
+                              {n.category}
+                            </Badge>
+                            {!n.read && (
+                              <span className="w-2 h-2 rounded-full bg-blue-600 shrink-0" />
+                            )}
+                          </div>
+                          <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                            {n.message}
+                          </p>
+                          <span className="text-[10px] text-slate-400 mt-1 block">
+                            Logged: {new Date(n.created_at).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end sm:self-center">
+                        {!n.read && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleMarkSingleNotifRead(n.id)}
+                            className="text-xs h-8 text-blue-600 hover:bg-blue-50"
+                          >
+                            Mark Read
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
           </div>
         )}
 

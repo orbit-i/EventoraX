@@ -3,6 +3,7 @@ import { query } from '../db/db.js';
 import { verifyToken } from '../middleware/auth.js';
 import { resolveTenant } from '../middleware/tenant.js';
 import { contentPolicyGuard } from '../middleware/securityScanner.js';
+import { dispatchNotification } from '../services/notificationsService.js';
 
 const router = express.Router();
 
@@ -168,6 +169,14 @@ router.post('/', verifyToken, resolveTenant, contentPolicyGuard, async (req, res
        VALUES (?, ?, ?, 'event', 'Event created', ?)`,
       [tenantId, req.user.id, req.user.email, `Created event: "${title.trim()}"`]
     );
+
+    await dispatchNotification({
+      title: 'New Event Published',
+      message: `Event "${title.trim()}" (${category || 'General'}) published by Tenant #${tenantId}`,
+      category: 'event',
+      severity: 'info',
+      metadata: { eventId: result.insertId, tenantId, title: title.trim(), category }
+    });
 
     const [newEvent] = await query('SELECT * FROM `events` WHERE `id` = ?', [result.insertId]);
 
@@ -364,6 +373,14 @@ router.post('/:id/register', contentPolicyGuard, async (req, res) => {
     );
 
     await query('UPDATE `events` SET `registered_count` = `registered_count` + 1 WHERE `id` = ?', [eventId]);
+
+    await dispatchNotification({
+      title: 'New Attendee Registered',
+      message: `${name.trim()} booked ${ticketType || 'Pass'} for "${ev.title}" (Code: ${ticketCode})`,
+      category: 'attendee',
+      severity: 'success',
+      metadata: { eventId, attendeeId: result.insertId, name: name.trim(), ticketCode, ticketType }
+    });
 
     return res.status(201).json({
       success: true,

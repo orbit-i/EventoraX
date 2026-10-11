@@ -2,6 +2,7 @@ import express from 'express';
 import bcrypt from 'bcryptjs';
 import { query } from '../db/db.js';
 import { generateToken, verifyToken } from '../middleware/auth.js';
+import { dispatchNotification } from '../services/notificationsService.js';
 
 const router = express.Router();
 
@@ -89,6 +90,14 @@ router.post('/register', async (req, res) => {
        VALUES (?, ?, ?, 'user', 'Account & Organization created', 'Registered new organizer tenant')`,
       [tenantId, userId, fullName]
     );
+
+    await dispatchNotification({
+      title: 'New Client Organization Registered',
+      message: `${workspaceName} registered by ${fullName.trim()} (${email.toLowerCase().trim()})`,
+      category: 'tenant',
+      severity: 'info',
+      metadata: { tenantId, userId, workspaceName, email: email.toLowerCase().trim() }
+    });
 
     const user = {
       id: userId,

@@ -5,6 +5,7 @@
  */
 
 import { query, memoryStore } from '../db/db.js';
+import { dispatchNotification } from '../services/notificationsService.js';
 
 // Suspicious, illegal, and fraudulent pattern dictionary
 const PROHIBITED_PATTERNS = [
@@ -96,6 +97,16 @@ export async function logSecurityEvent({ severity = 'INFO', type, action, detail
        VALUES (?, ?, ?, 'security', ?, ?)`,
       [tenantId || 1, userId || 1, logEntry.actor, action, detail]
     );
+
+    if (severity === 'CRITICAL' || severity === 'HIGH' || severity === 'WARNING') {
+      await dispatchNotification({
+        title: `Security Alert: ${action}`,
+        message: detail,
+        category: 'security',
+        severity: severity === 'CRITICAL' ? 'critical' : 'warning',
+        metadata: { type, ip, actor: logEntry.actor }
+      });
+    }
   } catch (err) {
     // Non-blocking fallback
   }

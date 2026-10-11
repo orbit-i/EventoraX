@@ -155,6 +155,34 @@ export const api = {
         method: 'PUT',
         body: JSON.stringify(data),
       }),
+
+    getNotifications: (params: { limit?: number; unreadOnly?: boolean } = {}) => {
+      const q = new URLSearchParams();
+      if (params.limit) q.append('limit', params.limit.toString());
+      if (params.unreadOnly) q.append('unreadOnly', 'true');
+      return request<{ success: boolean; notifications: any[]; totalCount: number; unreadCount: number }>(`/admin/notifications?${q.toString()}`);
+    },
+
+    markNotificationRead: (id: number) =>
+      request<{ success: boolean; message: string }>(`/admin/notifications/${id}/read`, {
+        method: 'PATCH',
+      }),
+
+    markAllNotificationsRead: () =>
+      request<{ success: boolean; message: string }>('/admin/notifications/mark-all-read', {
+        method: 'POST',
+      }),
+
+    clearNotifications: () =>
+      request<{ success: boolean; message: string }>('/admin/notifications', {
+        method: 'DELETE',
+      }),
+
+    sendTestNotification: (data: { title?: string; message?: string; category?: string; severity?: string }) =>
+      request<{ success: boolean; message: string; notification: any }>('/admin/notifications/test', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   },
 
   // Public CMS

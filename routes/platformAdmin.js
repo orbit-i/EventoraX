@@ -2,6 +2,13 @@ import express from 'express';
 import { query } from '../db/db.js';
 import { verifyToken } from '../middleware/auth.js';
 import { logSecurityEvent, getSecurityMetrics, scanContentPolicy, liveAuditLogs } from '../middleware/securityScanner.js';
+import { 
+  getNotifications, 
+  markNotificationAsRead, 
+  markAllNotificationsAsRead, 
+  clearNotifications, 
+  dispatchNotification 
+} from '../services/notificationsService.js';
 
 const router = express.Router();
 
@@ -242,6 +249,9 @@ router.post('/security/scan-all', verifyToken, requireSuperAdmin, async (req, re
   } catch (error) {
     console.error('[Platform Security Scan All Error]:', error);
     return res.status(500).json({ success: false, message: 'Failed to execute full compliance scan.' });
+  }
+});
+
 // =====================================================
 // CMS CONTENT MANAGEMENT (Public Official Website CMS)
 // =====================================================
@@ -310,6 +320,14 @@ router.put('/cms/:pageKey', verifyToken, requireSuperAdmin, async (req, res) => 
       userId: req.user.id
     });
 
+    await dispatchNotification({
+      title: `Website CMS Updated: ${pageKey.toUpperCase()}`,
+      message: `Superadmin updated public page '${pageKey}' content live on production.`,
+      category: 'cms',
+      severity: 'info',
+      metadata: { pageKey, updatedBy: req.user.id }
+    });
+
     const [updated] = await query('SELECT * FROM `website_cms` WHERE `page_key` = ?', [pageKey.toLowerCase()]);
 
     return res.json({
@@ -321,6 +339,53 @@ router.put('/cms/:pageKey', verifyToken, requireSuperAdmin, async (req, res) => 
     console.error('[Admin CMS Update Error]:', error);
     return res.status(500).json({ success: false, message: 'Failed to update CMS page.' });
   }
+});
+
+// ================= REAL-TIME LIVE NOTIFICATIONS (SUPERADMIN) =================
+
+// GET /api/admin/notifications - Retrieve live platform notification stream
+router.get('/notifications', verifyToken, requireSuperAdmin, (req, res) => {
+  const { limit, unreadOnly } = req.query;
+  const data = getNotifications({
+    limit: limit ? Number(limit) : 50,
+    unreadOnly: unreadOnly === 'true'
+  });
+  return res.json({
+    success: true,
+    ...data
+  });
+});
+
+// PATCH /api/admin/notifications/:id/read - Mark single notification as read
+router.patch('/notifications/:id/read', verifyToken, requireSuperAdmin, (req, res) => {
+  const { id } = req.params;
+  const ok = markNotificationAsRead(id);
+  return res.json({ success: ok, message: ok ? 'Notification marked as read.' : 'Notification not found.' });
+});
+
+// POST /api/admin/notifications/mark-all-read - Mark all as read
+router.post('/notifications/mark-all-read', verifyToken, requireSuperAdmin, (req, res) => {
+  markAllNotificationsAsRead();
+  return res.json({ success: true, message: 'All notifications marked as read.' });
+});
+
+// DELETE /api/admin/notifications - Clear notifications
+router.delete('/notifications', verifyToken, requireSuperAdmin, (req, res) => {
+  clearNotifications();
+  return res.json({ success: true, message: 'Notification stream cleared.' });
+});
+
+// POST /api/admin/notifications/test - Trigger a live test alert
+router.post('/notifications/test', verifyToken, requireSuperAdmin, async (req, res) => {
+  const { title, message, category, severity } = req.body;
+  const notif = await dispatchNotification({
+    title: title || 'Live System Test Alert',
+    message: message || 'Real-time multi-tenant event pipeline is fully operational.',
+    category: category || 'system',
+    severity: severity || 'info',
+    metadata: { triggeredBy: req.user.email, timestamp: new Date().toISOString() }
+  });
+  return res.json({ success: true, message: 'Test notification dispatched live!', notification: notif });
 });
 
 export default router;
