@@ -213,6 +213,8 @@ export function describeActivity(item: ActivityItem): string {
       return `cancelled the schedule of "${s("title")}"`
     case "announcement.delete":
       return `deleted the announcement draft "${s("title")}"`
+    case "registration.self":
+      return `received a registration from ${s("name")} on the public event page`
     case "upload.image":
       return "uploaded an image"
     default:

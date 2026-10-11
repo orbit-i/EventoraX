@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react"
+import { useNavigate } from "react-router"
 import { Bell, CheckCheck, Megaphone } from "lucide-react"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
@@ -24,6 +25,7 @@ export function NotificationBell() {
   const [unread, setUnread] = useState(0)
   const [open, setOpen] = useState(false)
   const [expanded, setExpanded] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   const load = useCallback(() => {
     api
@@ -41,8 +43,14 @@ export function NotificationBell() {
     return () => clearInterval(timer)
   }, [load])
 
+  /** Click: mark as read, then open its page (if it has one) or show the full text. */
   async function read(n: NotificationItem) {
-    setExpanded((id) => (id === n.id ? null : n.id))
+    if (n.link) {
+      setOpen(false)
+      navigate(n.link)
+    } else {
+      setExpanded((id) => (id === n.id ? null : n.id))
+    }
     if (n.readAt) return
     setItems((list) => list.map((x) => (x.id === n.id ? { ...x, readAt: new Date().toISOString() } : x)))
     setUnread((u) => Math.max(0, u - 1))
@@ -102,7 +110,7 @@ export function NotificationBell() {
                       <span className={cn("mt-0.5 block whitespace-pre-line text-xs text-[#64748b]", expanded !== n.id && "line-clamp-2")}>{n.body}</span>
                     )}
                     <span className="mt-1 block text-[11px] text-[#94a3b8]" title={formatDateTime(n.createdAt)}>
-                      EventoraX team · {formatRelative(n.createdAt)}
+                      {n.link ? "Your organization" : "EventoraX team"} · {formatRelative(n.createdAt)}
                     </span>
                   </span>
                 </button>

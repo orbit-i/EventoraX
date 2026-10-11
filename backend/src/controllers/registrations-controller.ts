@@ -47,14 +47,14 @@ const updateRegistrationSchema = registrationFields.omit({ eventId: true }).part
 // ─────────────────────────── helpers ───────────────────────────
 
 /** Nested create for the QR ticket that every registration gets. */
-function ticketFor(organizationId: string, eventId: string, type: string) {
+export function ticketFor(organizationId: string, eventId: string, type: string) {
   return {
     create: { organizationId, eventId, ticketNo: newTicketNo(), qrCode: newQrCode(), type },
   };
 }
 
 /** Seats left (Infinity when the event has no limit). Cancelled registrations don't take a seat. */
-async function seatsLeft(db: ScopedPrisma, eventId: string, maxAttendees: number | null): Promise<number> {
+export async function seatsLeft(db: ScopedPrisma, eventId: string, maxAttendees: number | null): Promise<number> {
   if (maxAttendees === null) return Infinity;
   const active = await db.registration.count({ where: { eventId, status: { not: "CANCELLED" } } });
   return Math.max(0, maxAttendees - active);

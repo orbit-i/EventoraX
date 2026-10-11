@@ -20,6 +20,8 @@ import Privacy from './pages/Privacy';
 import Verify from './pages/Verify';
 import NotFound from './pages/NotFound';
 import { SiteBanner } from './components/layout/SiteBanner';
+import EventPage from './pages/public/EventPage';
+import OrgPage from './pages/public/OrgPage';
 import ComponentGallery from './pages/dev/ComponentGallery';
 import SuperadminLayout from './components/superadmin/SuperadminLayout';
 import SuperadminDashboardPage from './pages/superadmin/SuperadminDashboardPage';
@@ -79,6 +81,8 @@ function writer(page: React.ReactNode) {
 // Pages that use their own full-screen layout (no public Navbar/Footer)
 const BARE_PREFIXES = [
   '/dashboard',
+  '/e/',
+  '/o/',
   '/superadmin',
   '/dev',
   '/login',
@@ -131,6 +135,10 @@ export default function App() {
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/verify" element={<Verify />} />
           <Route path="/verify/:code" element={<Verify />} />
+
+          {/* An organization's public pages: event list and event page with self-registration */}
+          <Route path="/o/:slug" element={<OrgPage />} />
+          <Route path="/e/:id" element={<EventPage />} />
 
           {/* Auth (logged-in users are sent to their dashboard) */}
           <Route path="/login" element={<GuestRoute><Login /></GuestRoute>} />

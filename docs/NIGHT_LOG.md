@@ -401,3 +401,38 @@ sees it under the bell) and "Scheduled test (Enterprise only)" (reached nobody).
 2. Superadmin → System settings → **Website** → add a testimonial (real one) and a logo → Save → the home page shows them.
 3. Switch "Show live numbers" on → the home page shows real counts.
 4. Add a Facebook link → it appears in the footer and on `/contact`.
+
+---
+
+## 11B — Public event page + self-registration ✅
+
+**What was built**
+- **Event page** `/e/<eventId>` (no login, in the organization's colours and logo): title, organizer, date and time, venue
+  (or "Online — the link is on your ticket"; the meeting link itself is never public), seats left, ticket price if set,
+  description, schedule, speakers and sponsors — only the ones marked "show on public page". Share button (phone share
+  sheet or copy link) and **Add to calendar** (.ics file).
+- **Self-registration form** on that page: name, email, phone, department, roll no., category. After registering the person
+  sees their **QR ticket on screen** right away, and gets the **"Registration confirmation" email with the ticket PDF
+  attached** (editable in Superadmin → Email templates). Clear messages when the event is full, closed, over, or the
+  organization is suspended/expired. Same email twice → "already registered".
+- **Organization page** `/o/<slug>`: upcoming events (with Register) and past events.
+- Only **Upcoming / Active / Completed** events are public; drafts and archived events return "not found".
+- Protection: max 10 registrations per hour per IP, 120 page views per minute, and a hidden "honeypot" field that bots fill in
+  (those are silently ignored). Seat limits and categories use the same rules as the dashboard.
+- **Dashboard → event page**: new "Public page" card with the link, **Copy link**, **QR for posters** (PNG download) and
+  Open. Drafts show how to get a public page (set the status to Upcoming).
+- **New-registration alert** (Settings → Notifications → "New registrations", on by default): admins get an email and a bell
+  notification; clicking a bell notification with a link now opens that page.
+- Activity log: "received a registration from X on the public event page"; the registration shows as "Public page" in the list.
+
+**Test data:** I created the event **"Self-registration test event"** in the "Night Pay Test" org and registered
+`willkariim+selftest@gmail.com` — you should have received the confirmation email with the ticket PDF and the admin alert
+(at `willkariim+paytest@gmail.com`).
+
+**Test it**
+1. Dashboard → Events → open an Upcoming event → the **Public page** card → **Open**.
+2. Register with a `willkariim+something@gmail.com` address → the QR ticket shows → check the email (PDF attached).
+3. Register again with the same email → "already registered".
+4. Dashboard → Registrations for that event → the new person, source "Public page". The bell shows "New registration".
+5. Open `/o/margalla-cs` → the organization's event list.
+6. In the event's settings switch "Registration open" off → the public form becomes "Registration is closed".

@@ -16,6 +16,7 @@ import { ticketsRouter } from "./routes/tickets-routes";
 import { idCardsRouter } from "./routes/idcards-routes";
 import { superadminRouter } from "./routes/superadmin-routes";
 import { notificationsRouter } from "./routes/notifications-routes";
+import { publicRouter } from "./routes/public-routes";
 import { publicPlans } from "./controllers/superadmin/plans-controller";
 import { publicPlatform, publicWebsite } from "./controllers/superadmin/settings-controller";
 import { maintenanceGate } from "./middleware/maintenance";
@@ -76,6 +77,7 @@ app.use("/api/v1/tickets", ticketsRouter);
 app.use("/api/v1/idcards", idCardsRouter);
 app.use("/api/v1/superadmin", superadminRouter);
 app.use("/api/v1/notifications", notificationsRouter);
+app.use("/api/v1/public", publicRouter);
 app.get("/api/v1/plans", publicPlans); // public: pricing page
    app.use("/api/v1/dashboard", dashboardRouter);
    app.use("/api/v1/analytics", analyticsRouter);

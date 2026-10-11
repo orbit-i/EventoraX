@@ -164,6 +164,16 @@ export function sendTicketEmail(to: string, name: string, orgName: string, event
   return sendTemplate(to, "TICKET", { name, orgName, eventTitle, when: whenText }, undefined, [pdf]);
 }
 
+/** Someone registered themselves on a public event page: confirmation + QR ticket PDF. */
+export function sendRegistrationConfirmEmail(
+  to: string,
+  vars: { name: string; eventTitle: string; when: string; orgName: string; refNo: string; eventPath: string },
+  pdf: MailAttachment
+) {
+  const link = `${frontendUrl()}${vars.eventPath}`;
+  return sendTemplate(to, "REGISTRATION_CONFIRM", { name: vars.name, eventTitle: vars.eventTitle, when: vars.when, orgName: vars.orgName, refNo: vars.refNo, link }, link, [pdf]);
+}
+
 /** Payment confirmed (the "Renewal" template). */
 export function sendRenewalEmail(to: string, vars: { orgName: string; plan: string; amount: string; until: string; note: string }) {
   const link = `${frontendUrl()}/dashboard/billing`;

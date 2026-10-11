@@ -79,12 +79,14 @@ export const TEMPLATE_DEFINITIONS: TemplateDefinition[] = [
     type: "REGISTRATION_CONFIRM",
     name: "Registration confirmation",
     description: "Confirms an attendee's registration for an event.",
-    usedFor: "Public event registration (Phase 11)",
-    variables: [v("name", "Attendee", "Bilal Ahmed"), v("eventTitle", "Event", "Tech Summit 2026"), v("when", "Date and time", "19 Sept 2026, 10:00 am"), v("orgName", "Organizer", "FAST Computing Society"), v("refNo", "Registration number", "REG-7F3K2A")],
+    usedFor: "Public event page → Register (QR ticket PDF attached)",
+    variables: [v("name", "Attendee", "Bilal Ahmed"), v("eventTitle", "Event", "Tech Summit 2026"), v("when", "Date and time", "19 Sept 2026, 10:00 am"), v("orgName", "Organizer", "FAST Computing Society"), v("refNo", "Registration number", "REG-7F3K2A"), v("link", "Public event page", "https://eventorax.com/e/abc123")],
     subject: "You're registered — {{eventTitle}}",
     bodyHtml: `<h2 style="margin-top:0">You're registered!</h2>
 <p>Hi {{name}},</p>
 <p>Your place at <strong>{{eventTitle}}</strong> ({{when}}) is confirmed. Your registration number is <strong>{{refNo}}</strong>.</p>
+<p>Your QR ticket is attached as a PDF — show it at the entrance, on your phone or printed.</p>
+{{button "View event page" link}}
 <p style="color:#64748b">— {{orgName}}</p>`,
   },
   {

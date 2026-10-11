@@ -27,6 +27,7 @@ import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { PageHeader } from "@/components/app/PageHeader"
+import { PublicLinkCard } from "@/components/events/PublicLinkCard"
 import { StatsRow } from "@/components/app/StatCard"
 import { StatusBadge } from "@/components/app/StatusBadge"
 import { RowActions } from "@/components/app/RowActions"
@@ -241,6 +242,8 @@ export default function EventDetailPage() {
           )}
         </div>
       )}
+
+      <PublicLinkCard event={event} />
 
       <StatsRow
         loading={!stats}
