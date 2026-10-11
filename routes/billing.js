@@ -154,33 +154,17 @@ router.post('/purchase', verifyToken, resolveTenant, requireTenantRole(['owner',
     const finalAmount = amount || (planInfo.price * (billingCycle === 'yearly' ? 10 : 1));
     const finalRef = transactionRef || `TXN-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    const isFreeTier = plan === 'Starter' || finalAmount === 0;
-    const initialStatus = isFreeTier ? 'active' : 'pending_approval';
+    const initialStatus = 'pending_approval';
 
-    // Insert subscription record (awaiting SuperAdmin verification if paid)
+    // Insert subscription record (awaiting SuperAdmin verification & license key generation)
     await query(
       'INSERT INTO `subscriptions` (`tenant_id`, `user_id`, `plan`, `price`, `billing_cycle`, `attendees_limit`, `status`, `payment_method`, `transaction_ref`, `currency`, `notes`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
       [tenant.id, req.user.id, plan, finalAmount, billingCycle, planInfo.attendees, initialStatus, paymentMethod, finalRef, currency, notes || '']
     );
 
-    // If Starter (free tier), auto-activate; paid tiers require SuperAdmin verification
-    if (isFreeTier) {
-      await query(
-        'UPDATE `tenants` SET `plan` = ?, `status` = "active", `max_events` = ?, `max_attendees` = ?, `white_label_enabled` = ? WHERE `id` = ?',
-        [plan, planInfo.maxEvents, planInfo.attendees, 0, tenant.id]
-      );
-      return res.json({
-        success: true,
-        message: 'Starter tier activated successfully!',
-        plan,
-        status: 'active',
-        invoiceNumber: finalRef
-      });
-    }
-
-    // For paid tier, update tenant plan and set status to pending_approval
+    // Update tenant plan and enforce pending_approval status until SuperAdmin approves & issues license key
     await query(
-      'UPDATE `tenants` SET `plan` = ?, `status` = "pending_approval" WHERE `id` = ?',
+      'UPDATE `tenants` SET `plan` = ?, `status` = "pending_approval", `license_status` = "pending" WHERE `id` = ?',
       [plan, tenant.id]
     );
 

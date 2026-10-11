@@ -249,3 +249,23 @@ export function requireTenantRole(allowedRoles = ['owner', 'admin']) {
     next();
   };
 }
+
+/**
+ * Ensures that the tenant has been approved and activated by SuperAdmin
+ */
+export function requireActiveTenant(req, res, next) {
+  if (req.user && req.user.role === 'admin') {
+    return next();
+  }
+
+  if (req.tenant && req.tenant.status === 'pending_approval') {
+    return res.status(403).json({
+      success: false,
+      code: 'TENANT_PENDING_ACTIVATION',
+      message: 'This organization workspace is pending SuperAdmin approval and license key activation.',
+      tenantStatus: 'pending_approval'
+    });
+  }
+
+  next();
+}

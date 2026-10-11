@@ -1,6 +1,7 @@
 import express from 'express';
+import bcrypt from 'bcryptjs';
 import { query } from '../db/db.js';
-import { verifyToken } from '../middleware/auth.js';
+import { verifyToken, generateToken } from '../middleware/auth.js';
 import { logSecurityEvent, getSecurityMetrics, scanContentPolicy, liveAuditLogs } from '../middleware/securityScanner.js';
 import { 
   getNotifications, 
@@ -11,6 +12,84 @@ import {
 } from '../services/notificationsService.js';
 
 const router = express.Router();
+
+function generateActivationLicenseKey(plan = 'Starter') {
+  const code = (plan || 'STR').substring(0, 3).toUpperCase();
+  const rand1 = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const rand2 = Math.random().toString(36).substring(2, 6).toUpperCase();
+  const rand3 = Math.floor(1000 + Math.random() * 9000);
+  return `EVX-${code}-${rand1}-${rand2}-${rand3}`;
+}
+
+// POST /api/admin/gateway/login - Secret ORBIT-I Platform Master Authority Gateway Login
+router.post('/gateway/login', async (req, res) => {
+  try {
+    const { email, password, masterKey } = req.body || {};
+
+    if (!email || !password) {
+      return res.status(400).json({ success: false, message: 'Master Administrator email and password required.' });
+    }
+
+    const [rows] = await query('SELECT * FROM `users` WHERE `email` = ?', [email.toLowerCase().trim()]);
+    if (rows.length === 0) {
+      return res.status(401).json({ success: false, message: 'Invalid Master Authority credentials.' });
+    }
+
+    const userRow = rows[0];
+    if (userRow.role !== 'admin') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access Denied: Only EventoraX (ORBIT-I) Platform Master Authority can enter this private gateway.'
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, userRow.password);
+    if (!isMatch) {
+      return res.status(401).json({ success: false, message: 'Invalid Master Authority credentials.' });
+    }
+
+    // Master Key validation (accepts default ORBIT-I master authorization passcode)
+    if (masterKey && masterKey.trim() !== '' && masterKey.trim() !== 'ORBIT-I-HQ-2026' && masterKey.trim() !== 'admin123') {
+      return res.status(401).json({ success: false, message: 'Invalid Master Security Access Key.' });
+    }
+
+    const [hq] = await query('SELECT * FROM `tenants` WHERE `id` = 1');
+    const masterTenant = hq[0] || { id: 1, name: 'EventoraX HQ', slug: 'eventorax-hq', plan: 'Platform Authority' };
+
+    const token = generateToken({
+      id: userRow.id,
+      email: userRow.email,
+      role: 'admin',
+      tenantId: 1
+    });
+
+    logSecurityEvent({
+      severity: 'INFO',
+      type: 'MASTER_GATEWAY_LOGIN',
+      action: 'SuperAdmin Authenticated via Secret Gateway',
+      detail: `SuperAdmin ${userRow.email} signed into ORBIT-I Master Authority Gateway from IP: ${req.ip || 'local'}`,
+      userId: userRow.id,
+      tenantId: 1
+    });
+
+    return res.json({
+      success: true,
+      message: 'Master Authority authenticated successfully. Welcome to EventoraX HQ.',
+      token,
+      user: {
+        id: userRow.id,
+        fullName: userRow.full_name,
+        email: userRow.email,
+        role: 'admin',
+        orgName: 'EventoraX (ORBIT-I)'
+      },
+      tenant: masterTenant
+    });
+  } catch (error) {
+    console.error('[Master Gateway Login Error]:', error);
+    return res.status(500).json({ success: false, message: 'Master gateway authentication error.' });
+  }
+});
 
 // Middleware: Strictly ensure caller is Platform Superadmin
 function requireSuperAdmin(req, res, next) {
@@ -386,16 +465,16 @@ router.delete('/notifications', verifyToken, requireSuperAdmin, (req, res) => {
 // =========================================================================
 
 const SA_PLAN_LIMITS = {
-  Starter: { price: 0, attendees: 500, maxEvents: 5, whiteLabel: false },
-  Professional: { price: 99, attendees: 5000, maxEvents: 25, whiteLabel: true },
-  Enterprise: { price: 299, attendees: 50000, maxEvents: 500, whiteLabel: true }
+  Starter: { price: 0, attendees: 500, maxEvents: 5, maxCerts: 50, whiteLabel: false },
+  Professional: { price: 99, attendees: 5000, maxEvents: 25, maxCerts: 2500, whiteLabel: true },
+  Enterprise: { price: 299, attendees: 50000, maxEvents: 500, maxCerts: 999999, whiteLabel: true }
 };
 
 // GET /api/admin/subscriptions - List all client subscription & payment requests
 router.get('/subscriptions', verifyToken, requireSuperAdmin, async (req, res) => {
   try {
     const [subRows] = await query('SELECT * FROM `subscriptions` ORDER BY `created_at` DESC');
-    const [tenants] = await query('SELECT id, name, slug, plan, status FROM `tenants`');
+    const [tenants] = await query('SELECT id, name, slug, plan, status, license_key, license_status FROM `tenants`');
     const [users] = await query('SELECT id, full_name, email, phone FROM `users`');
 
     const tenantMap = {};
@@ -416,7 +495,9 @@ router.get('/subscriptions', verifyToken, requireSuperAdmin, async (req, res) =>
         ownerPhone: u.phone || '',
         price: s.price || 0,
         currency: s.currency || 'USD',
-        status: s.status || 'pending_approval'
+        status: s.status || 'pending_approval',
+        licenseKey: s.license_key || t.license_key || null,
+        licenseStatus: t.license_status || 'pending'
       };
     });
 
@@ -430,7 +511,7 @@ router.get('/subscriptions', verifyToken, requireSuperAdmin, async (req, res) =>
   }
 });
 
-// POST /api/admin/subscriptions/:id/approve - Approve client plan & grant full platform access
+// POST /api/admin/subscriptions/:id/approve - Approve client plan, issue Activation License Key & grant full platform access
 router.post('/subscriptions/:id/approve', verifyToken, requireSuperAdmin, async (req, res) => {
   try {
     const subId = parseInt(req.params.id, 10);
@@ -443,46 +524,73 @@ router.post('/subscriptions/:id/approve', verifyToken, requireSuperAdmin, async 
 
     const plan = subscription.plan || 'Professional';
     const planConfig = SA_PLAN_LIMITS[plan] || SA_PLAN_LIMITS.Professional;
+    const isYearly = subscription.billing_cycle === 'yearly';
 
-    // 1. Mark subscription as active & approved
+    // 1. Generate Unique Cryptographic Activation License Key
+    const licenseKey = req.body?.customLicenseKey || generateActivationLicenseKey(plan);
+
+    // Calculate expiry (1 year for annual, 30 days for monthly, 365 days for starter trial)
+    const expiryDate = new Date();
+    if (isYearly || plan === 'Starter') {
+      expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+    } else {
+      expiryDate.setDate(expiryDate.getDate() + 30);
+    }
+    const expiresAt = expiryDate.toISOString();
+
+    // 2. Mark subscription as active & approved with license key
     await query(
-      'UPDATE `subscriptions` SET `status` = ?, `approved_by` = ? WHERE `id` = ?',
-      ['active', req.user.id, subId]
+      'UPDATE `subscriptions` SET `status` = ?, `license_key` = ?, `approved_by` = ?, `approved_at` = NOW() WHERE `id` = ?',
+      ['active', licenseKey, req.user.id, subId]
     );
 
-    // 2. Activate tenant and set official plan limits
+    // 3. Activate tenant and bind license key & quota allocations
     await query(
-      'UPDATE `tenants` SET `plan` = ?, `status` = ?, `max_events` = ?, `max_attendees` = ?, `white_label_enabled` = ? WHERE `id` = ?',
-      [plan, 'active', planConfig.maxEvents, planConfig.attendees, planConfig.whiteLabel ? 1 : 0, subscription.tenant_id]
+      'UPDATE `tenants` SET `plan` = ?, `status` = ?, `license_key` = ?, `license_status` = ?, `license_activated_at` = NOW(), `license_expires_at` = ?, `max_events` = ?, `max_attendees` = ?, `max_certs` = ?, `white_label_enabled` = ? WHERE `id` = ?',
+      [
+        plan,
+        'active',
+        licenseKey,
+        'active',
+        expiresAt,
+        planConfig.maxEvents,
+        planConfig.attendees,
+        planConfig.maxCerts,
+        planConfig.whiteLabel ? 1 : 0,
+        subscription.tenant_id
+      ]
     );
 
-    // 3. Dispatch Live Alert to Platform SuperAdmin Notification Stream
+    // 4. Dispatch Live Alert to Platform SuperAdmin Notification Stream
     await dispatchNotification({
-      title: 'Client Subscription Approved & Activated',
-      message: `Tenant #${subscription.tenant_id} has been activated on ${plan} tier by SuperAdmin.`,
+      title: 'Activation License Issued & Subscription Approved',
+      message: `Tenant #${subscription.tenant_id} activated on ${plan} tier with License Key: ${licenseKey}`,
       category: 'billing',
       severity: 'success',
-      metadata: { subscriptionId: subId, plan, approvedBy: req.user.email }
+      metadata: { subscriptionId: subId, tenantId: subscription.tenant_id, plan, licenseKey, approvedBy: req.user.email }
     });
 
     logSecurityEvent({
       severity: 'INFO',
-      type: 'SUBSCRIPTION_APPROVED',
-      action: 'SuperAdmin Activated Client Subscription',
-      detail: `SuperAdmin ${req.user.email} approved ${plan} subscription #${subId} for tenant #${subscription.tenant_id}`,
+      type: 'LICENSE_KEY_ISSUED',
+      action: 'SuperAdmin Activated Organization License',
+      detail: `SuperAdmin ${req.user.email} approved ${plan} subscription #${subId} and issued License Key ${licenseKey} for tenant #${subscription.tenant_id}`,
       userId: req.user.id,
       tenantId: subscription.tenant_id
     });
 
     return res.json({
       success: true,
-      message: `Subscription approved successfully! Client organization upgraded to ${plan} tier.`,
+      message: `Subscription approved successfully! Issued Activation License Key: ${licenseKey}`,
       subscriptionId: subId,
+      tenantId: subscription.tenant_id,
+      licenseKey,
+      expiresAt,
       plan
     });
   } catch (error) {
     console.error('[Platform Admin Approve Subscription Error]:', error);
-    return res.status(500).json({ success: false, message: 'Failed to approve subscription.' });
+    return res.status(500).json({ success: false, message: 'Failed to approve subscription and issue license.' });
   }
 });
 
@@ -508,21 +616,164 @@ router.post('/subscriptions/:id/reject', verifyToken, requireSuperAdmin, async (
   }
 });
 
+// =========================================================================
+// SUPERADMIN CLIENT LICENSE KEYS & RESOURCE UTILIZATION TRACKING
+// =========================================================================
+
+// GET /api/admin/licenses - Track all client organization licenses, status & resource utilization
+router.get('/licenses', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const [tenants] = await query('SELECT * FROM `tenants` WHERE `id` != 1 ORDER BY `created_at` DESC');
+    const [users] = await query('SELECT id, full_name, email, phone FROM `users`');
+    const [eventStats] = await query('SELECT tenant_id, COUNT(*) as event_count, COALESCE(SUM(registered_count), 0) as attendee_count FROM `events` GROUP BY tenant_id');
+    const [certStats] = await query('SELECT organization_id, COUNT(*) as cert_count FROM `certificates` GROUP BY organization_id');
+
+    const userMap = {};
+    users.forEach(u => { userMap[u.id] = u; });
+
+    const eventMap = {};
+    eventStats.forEach(e => { eventMap[e.tenant_id] = e; });
+
+    const certMap = {};
+    certStats.forEach(c => { certMap[c.organization_id] = c.cert_count; });
+
+    const licenses = tenants.map(t => {
+      const owner = userMap[t.owner_id] || { full_name: 'Client Owner', email: 'owner@client.com' };
+      const e = eventMap[t.id] || { event_count: 0, attendee_count: 0 };
+      const cCount = certMap[t.id] || 0;
+      const planConfig = SA_PLAN_LIMITS[t.plan] || SA_PLAN_LIMITS.Starter;
+
+      return {
+        tenantId: t.id,
+        name: t.name,
+        slug: t.slug,
+        ownerName: owner.full_name,
+        ownerEmail: owner.email,
+        ownerPhone: owner.phone || '',
+        plan: t.plan || 'Starter',
+        status: t.status || 'pending_approval',
+        licenseKey: t.license_key || null,
+        licenseStatus: t.license_status || (t.status === 'active' ? 'active' : 'pending'),
+        licenseActivatedAt: t.license_activated_at || t.created_at,
+        licenseExpiresAt: t.license_expires_at,
+        eventsUsed: e.event_count || 0,
+        eventsLimit: t.max_events || planConfig.maxEvents,
+        attendeesUsed: e.attendee_count || 0,
+        attendeesLimit: t.max_attendees || planConfig.attendees,
+        certsUsed: cCount,
+        certsLimit: t.max_certs || planConfig.maxCerts,
+        whiteLabelEnabled: Boolean(t.white_label_enabled),
+        customDomain: t.custom_domain || ''
+      };
+    });
+
+    return res.json({
+      success: true,
+      licenses
+    });
+  } catch (error) {
+    console.error('[Platform Admin Get Licenses Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve licenses.' });
+  }
+});
+
+// POST /api/admin/tenants/:id/license/regenerate - Re-issue a new license key
+router.post('/tenants/:id/license/regenerate', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const tenantId = parseInt(req.params.id, 10);
+    const [tRows] = await query('SELECT * FROM `tenants` WHERE `id` = ?', [tenantId]);
+    const tenant = tRows[0];
+    if (!tenant) return res.status(404).json({ success: false, message: 'Organization not found.' });
+
+    const newKey = generateActivationLicenseKey(tenant.plan || 'Starter');
+    await query('UPDATE `tenants` SET `license_key` = ?, `license_status` = "active" WHERE `id` = ?', [newKey, tenantId]);
+
+    logSecurityEvent({
+      severity: 'WARNING',
+      type: 'LICENSE_KEY_REGENERATED',
+      action: 'SuperAdmin Regenerated Client License Key',
+      detail: `SuperAdmin ${req.user.email} generated new License Key ${newKey} for tenant #${tenantId}`,
+      userId: req.user.id,
+      tenantId
+    });
+
+    return res.json({
+      success: true,
+      message: 'New Activation License Key issued successfully!',
+      licenseKey: newKey
+    });
+  } catch (error) {
+    console.error('[Regenerate License Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to regenerate license key.' });
+  }
+});
+
+// POST /api/admin/tenants/:id/license/revoke - Suspend / Revoke client license
+router.post('/tenants/:id/license/revoke', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const tenantId = parseInt(req.params.id, 10);
+    await query('UPDATE `tenants` SET `license_status` = "suspended", `status` = "suspended" WHERE `id` = ?', [tenantId]);
+
+    logSecurityEvent({
+      severity: 'CRITICAL',
+      type: 'LICENSE_KEY_SUSPENDED',
+      action: 'SuperAdmin Suspended Client License',
+      detail: `SuperAdmin ${req.user.email} suspended License for tenant #${tenantId}`,
+      userId: req.user.id,
+      tenantId
+    });
+
+    return res.json({
+      success: true,
+      message: 'Organization license suspended successfully.'
+    });
+  } catch (error) {
+    console.error('[Revoke License Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to revoke license.' });
+  }
+});
+
+// POST /api/admin/tenants/:id/license/renew - Renew / Extend client license expiration
+router.post('/tenants/:id/license/renew', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const tenantId = parseInt(req.params.id, 10);
+    const { days = 365 } = req.body || {};
+
+    const expiryDate = new Date();
+    expiryDate.setDate(expiryDate.getDate() + parseInt(days, 10));
+
+    await query(
+      'UPDATE `tenants` SET `license_status` = "active", `status` = "active", `license_expires_at` = ? WHERE `id` = ?',
+      [expiryDate.toISOString(), tenantId]
+    );
+
+    return res.json({
+      success: true,
+      message: `License extended by ${days} days!`,
+      expiresAt: expiryDate.toISOString()
+    });
+  } catch (error) {
+    console.error('[Renew License Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to renew license.' });
+  }
+});
+
 // PUT /api/admin/tenants/:id/permissions - Fine-tune specific client features & quotas
 router.put('/tenants/:id/permissions', verifyToken, requireSuperAdmin, async (req, res) => {
   try {
     const tenantId = parseInt(req.params.id, 10);
-    const { maxEvents, maxAttendees, whiteLabel, customDomain } = req.body;
+    const { maxEvents, maxAttendees, maxCerts, whiteLabel, customDomain } = req.body;
 
     if (tenantId === 1) {
       return res.status(400).json({ success: false, message: 'SuperAdmin workspace has unconditional master authority.' });
     }
 
     await query(
-      'UPDATE `tenants` SET `max_events` = ?, `max_attendees` = ?, `white_label_enabled` = ? WHERE `id` = ?',
+      'UPDATE `tenants` SET `max_events` = ?, `max_attendees` = ?, `max_certs` = ?, `white_label_enabled` = ? WHERE `id` = ?',
       [
         maxEvents !== undefined ? parseInt(maxEvents, 10) : 25,
         maxAttendees !== undefined ? parseInt(maxAttendees, 10) : 5000,
+        maxCerts !== undefined ? parseInt(maxCerts, 10) : 2500,
         whiteLabel ? 1 : 0,
         tenantId
       ]
@@ -535,6 +786,105 @@ router.put('/tenants/:id/permissions', verifyToken, requireSuperAdmin, async (re
   } catch (error) {
     console.error('[Platform Admin Permissions Error]:', error);
     return res.status(500).json({ success: false, message: 'Failed to update tenant permissions.' });
+  }
+});
+
+// =====================================================
+// AUTHENTIC INSTITUTIONAL TESTIMONIALS CMS
+// =====================================================
+
+// GET /api/admin/testimonials - List all verified testimonials
+router.get('/testimonials', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const [rows] = await query('SELECT * FROM `testimonials` ORDER BY `created_at` DESC');
+    return res.json({
+      success: true,
+      testimonials: rows || []
+    });
+  } catch (error) {
+    console.error('[Platform Admin Testimonials List Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve testimonials list.' });
+  }
+});
+
+// POST /api/admin/testimonials - Publish a new authentic testimonial
+router.post('/testimonials', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const { client_name, organization, role, logo_url, rating, feedback, is_featured } = req.body || {};
+
+    if (!client_name || !organization || !feedback) {
+      return res.status(400).json({
+        success: false,
+        message: 'Client Name, Organization/Institute, and Feedback text are required.'
+      });
+    }
+
+    const ratingVal = Math.max(1, Math.min(5, parseInt(rating || 5, 10)));
+    const isFeaturedVal = is_featured !== undefined ? (is_featured ? 1 : 0) : 1;
+
+    const [result] = await query(
+      'INSERT INTO `testimonials` (`client_name`, `organization`, `role`, `logo_url`, `rating`, `feedback`, `is_featured`, `created_at`, `updated_at`) VALUES (?, ?, ?, ?, ?, ?, ?, NOW(), NOW())',
+      [
+        client_name.trim(),
+        organization.trim(),
+        (role || 'Organizer').trim(),
+        (logo_url || '').trim(),
+        ratingVal,
+        feedback.trim(),
+        isFeaturedVal
+      ]
+    );
+
+    logSecurityEvent({
+      severity: 'INFO',
+      type: 'TESTIMONIAL_PUBLISHED',
+      action: 'Authentic Testimonial Published',
+      detail: `SuperAdmin published testimonial for "${organization.trim()}" by "${client_name.trim()}".`,
+      userId: req.user.id,
+      tenantId: 1
+    });
+
+    dispatchNotification({
+      category: 'SYSTEM',
+      title: 'Institutional Testimonial Published',
+      message: `Verified review for ${organization.trim()} has been published to the EventoraX landing page.`,
+      severity: 'LOW',
+      tenantId: 1
+    });
+
+    return res.json({
+      success: true,
+      message: 'Authentic testimonial published successfully!',
+      testimonialId: result.insertId
+    });
+  } catch (error) {
+    console.error('[Platform Admin Testimonial Create Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to create testimonial.' });
+  }
+});
+
+// DELETE /api/admin/testimonials/:id - Remove a testimonial
+router.delete('/testimonials/:id', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const id = parseInt(req.params.id, 10);
+    await query('DELETE FROM `testimonials` WHERE `id` = ?', [id]);
+
+    logSecurityEvent({
+      severity: 'INFO',
+      type: 'TESTIMONIAL_DELETED',
+      action: 'Testimonial Deleted',
+      detail: `SuperAdmin deleted testimonial #${id}.`,
+      userId: req.user.id,
+      tenantId: 1
+    });
+
+    return res.json({
+      success: true,
+      message: 'Testimonial removed successfully.'
+    });
+  } catch (error) {
+    console.error('[Platform Admin Testimonial Delete Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to delete testimonial.' });
   }
 });
 

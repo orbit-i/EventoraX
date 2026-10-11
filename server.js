@@ -145,9 +145,19 @@ app.get('/api/public/cms/:pageKey', async (req, res) => {
   } catch (err) {
     return res.status(500).json({ success: false, message: 'Failed to fetch CMS content' });
   }
+// Public Testimonials endpoint for verified client reviews
+app.get('/api/public/testimonials', async (req, res) => {
+  try {
+    const { query: dbQuery } = await import('./db/db.js');
+    const [rows] = await dbQuery('SELECT * FROM `testimonials` WHERE `is_featured` = 1 ORDER BY `created_at` DESC');
+    return res.json({ success: true, testimonials: rows || [] });
+  } catch (err) {
+    console.error('[Public Testimonials Error]:', err);
+    return res.status(500).json({ success: false, message: 'Failed to fetch testimonials' });
+  }
 });
 
-// Health check endpoint (for Hostinger, Docker, and Kubernetes monitoring)
+// Health check endpoint (for Cloud, Docker, and Production monitoring)
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',

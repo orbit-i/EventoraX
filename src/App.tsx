@@ -35,6 +35,7 @@ import Billing from './pages/Dashboard/Billing';
 import Settings from './pages/Dashboard/Settings';
 import Activity from './pages/Dashboard/activity';
 import PlatformAdmin from './pages/Dashboard/PlatformAdmin';
+import OrbitMasterGatewayLogin from './pages/OrbitMasterGatewayLogin';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SidebarProvider } from './context/SidebarContext';
@@ -77,7 +78,7 @@ function SuperAdminRoute({ children }: { children: React.ReactNode }) {
   }
 
   if (!isSuperAdmin) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/orbit-i-master-gateway/login" replace />;
   }
 
   return <>{children}</>;
@@ -86,13 +87,14 @@ function SuperAdminRoute({ children }: { children: React.ReactNode }) {
 function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
-  const isDashboard = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/superadmin');
+  const isDashboard = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/orbit-i-master-gateway/console');
+  const isMasterGateway = location.pathname.startsWith('/orbit-i-master-gateway');
   const isTenantPortal = location.pathname.startsWith('/t/') || location.pathname.startsWith('/c/');
   const isVerifyPage = location.pathname.startsWith('/verify');
   const isPublicEvent = location.pathname.startsWith('/e/') || location.pathname.startsWith('/events/');
 
-  // Dashboard, Tenant portal, Event Landing Page, and Verification portal have their own custom headers/layouts
-  if (isDashboard || isTenantPortal || isVerifyPage || isPublicEvent) {
+  // Dashboard, Tenant portal, Event Landing Page, Verification portal, and Secret Master Gateway have their own custom headers/layouts
+  if (isDashboard || isMasterGateway || isTenantPortal || isVerifyPage || isPublicEvent) {
     return <>{children}</>;
   }
 
@@ -173,7 +175,7 @@ function AppRoutes() {
             } 
           />
 
-          {/* Protected Multi-Tenant Dashboard Routes */}
+          {/* Protected Multi-Tenant Organization Dashboard Routes */}
           <Route 
             path="/dashboard" 
             element={
@@ -194,17 +196,18 @@ function AppRoutes() {
             <Route path="activity" element={<Activity />} />
             <Route 
               path="platform" 
-              element={
-                <SuperAdminRoute>
-                  <PlatformAdmin />
-                </SuperAdminRoute>
-              } 
+              element={<Navigate to="/orbit-i-master-gateway/console" replace />} 
             />
           </Route>
 
-          {/* Dedicated SuperAdmin Platform Authority Console */}
+          {/* Block public root /superadmin access */}
+          <Route path="/superadmin" element={<Navigate to="/" replace />} />
+          <Route path="/superadmin/*" element={<Navigate to="/" replace />} />
+
+          {/* Secret ORBIT-I Platform Master Gateway (Isolated from client org login) */}
+          <Route path="/orbit-i-master-gateway/login" element={<OrbitMasterGatewayLogin />} />
           <Route 
-            path="/superadmin" 
+            path="/orbit-i-master-gateway/console" 
             element={
               <SuperAdminRoute>
                 <DashboardLayout />

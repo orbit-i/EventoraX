@@ -1,9 +1,17 @@
 import { Outlet } from "react-router-dom";
 import Sidebar from "@/components/ui/dashboard/sidebar";
 import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
+import { useAuth } from "@/context/AuthContext";
+import ActivationPendingGatekeeper from "@/components/ActivationPendingGatekeeper";
 
 function DashboardContent() {
   const { isOpen, closeSidebar } = useSidebar();
+  const { user, currentTenant } = useAuth();
+
+  // If client organization has pending approval status, enforce activation gatekeeper
+  if (user?.role !== 'admin' && currentTenant?.status === 'pending_approval') {
+    return <ActivationPendingGatekeeper />;
+  }
 
   return (
     <div className="min-h-screen bg-[#f3f0ff] relative flex">

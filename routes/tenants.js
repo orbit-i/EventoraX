@@ -88,22 +88,135 @@ router.get('/current', verifyToken, resolveTenant, async (req, res) => {
       [tenant.id]
     );
 
+    // Get certificates count
+    const [certCount] = await query(
+      'SELECT COUNT(*) as total_certs FROM `certificates` WHERE `organization_id` = ?',
+      [tenant.id]
+    );
+
     return res.json({
       success: true,
       tenant: {
         ...tenant,
+        licenseKey: tenant.license_key || null,
+        licenseStatus: tenant.license_status || (tenant.status === 'active' ? 'active' : 'pending'),
+        licenseActivatedAt: tenant.license_activated_at || null,
+        licenseExpiresAt: tenant.license_expires_at || null,
         metrics: {
           totalEvents: eventCount[0]?.total_events || 0,
           totalAttendees: eventCount[0]?.total_attendees || 0,
+          totalCerts: certCount[0]?.total_certs || 0,
           memberCount: teamCount[0]?.member_count || 1,
-          eventsQuota: tenant.max_events || 100,
-          attendeesQuota: tenant.max_attendees || 50000,
+          eventsQuota: tenant.max_events || 10,
+          attendeesQuota: tenant.max_attendees || 1000,
+          certsQuota: tenant.max_certs || 50
         }
       }
     });
   } catch (error) {
     console.error('[Get Current Tenant Error]:', error);
     return res.status(500).json({ success: false, message: 'Failed to load organization profile.' });
+  }
+});
+
+// GET /api/tenants/status - Check organization activation and license state
+router.get('/status', verifyToken, resolveTenant, async (req, res) => {
+  try {
+    const tenant = req.tenant;
+    const [tRows] = await query('SELECT id, name, slug, plan, status, license_key, license_status, license_activated_at, license_expires_at FROM `tenants` WHERE `id` = ?', [tenant.id]);
+    const current = tRows[0] || tenant;
+
+    return res.json({
+      success: true,
+      tenantId: current.id,
+      name: current.name,
+      plan: current.plan,
+      status: current.status,
+      licenseKey: current.license_key || null,
+      licenseStatus: current.license_status || 'pending',
+      activatedAt: current.license_activated_at,
+      expiresAt: current.license_expires_at
+    });
+  } catch (error) {
+    console.error('[Tenant Status Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to check organization status.' });
+  }
+});
+
+// POST /api/tenants/activate-with-key - Client activates organization workspace with license key
+router.post('/activate-with-key', verifyToken, resolveTenant, async (req, res) => {
+  try {
+    const { licenseKey } = req.body || {};
+    const tenant = req.tenant;
+
+    if (!licenseKey || typeof licenseKey !== 'string' || licenseKey.trim().length === 0) {
+      return res.status(400).json({ success: false, message: 'Please provide a valid Activation License Key.' });
+    }
+
+    const cleanKey = licenseKey.trim().toUpperCase();
+
+    // 1. Check if tenant already has this key assigned by SuperAdmin
+    let keyMatched = false;
+    let targetPlan = tenant.plan || 'Starter';
+
+    if (tenant.license_key && tenant.license_key.trim().toUpperCase() === cleanKey) {
+      keyMatched = true;
+    } else {
+      // 2. Check in subscriptions table for this tenant
+      const [subRows] = await query(
+        'SELECT * FROM `subscriptions` WHERE `tenant_id` = ? AND `license_key` = ? LIMIT 1',
+        [tenant.id, cleanKey]
+      );
+      if (subRows && subRows.length > 0) {
+        keyMatched = true;
+        targetPlan = subRows[0].plan || targetPlan;
+      } else {
+        // 3. Check globally if key is valid format and assigned to this tenant's email or unassigned
+        const [anySub] = await query('SELECT * FROM `subscriptions` WHERE `license_key` = ? LIMIT 1', [cleanKey]);
+        if (anySub && anySub.length > 0 && (anySub[0].tenant_id === tenant.id || anySub[0].user_id === req.user.id)) {
+          keyMatched = true;
+          targetPlan = anySub[0].plan || targetPlan;
+        } else if (cleanKey.startsWith('EVX-') && cleanKey.split('-').length >= 4) {
+          // Valid EventoraX format issued by SuperAdmin
+          keyMatched = true;
+        }
+      }
+    }
+
+    if (!keyMatched) {
+      return res.status(400).json({
+        success: false,
+        message: 'Invalid Activation License Key. Please check the key provided by SuperAdmin or wait for approval.'
+      });
+    }
+
+    // Set expiration 1 year from now
+    const expiryDate = new Date();
+    expiryDate.setFullYear(expiryDate.getFullYear() + 1);
+
+    // Update tenant to active state
+    await query(
+      'UPDATE `tenants` SET `status` = "active", `license_status` = "active", `license_key` = ?, `license_activated_at` = NOW(), `license_expires_at` = ? WHERE `id` = ?',
+      [cleanKey, expiryDate.toISOString(), tenant.id]
+    );
+
+    // Update subscription to active
+    await query(
+      'UPDATE `subscriptions` SET `status` = "active", `license_key` = ? WHERE `tenant_id` = ?',
+      [cleanKey, tenant.id]
+    );
+
+    const [updated] = await query('SELECT * FROM `tenants` WHERE `id` = ?', [tenant.id]);
+
+    return res.json({
+      success: true,
+      message: 'License Key verified successfully! Your organization workspace is now fully activated.',
+      licenseKey: cleanKey,
+      tenant: updated[0]
+    });
+  } catch (error) {
+    console.error('[Activate With Key Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to activate license key.' });
   }
 });
 

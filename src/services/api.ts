@@ -106,10 +106,25 @@ export const api = {
 
     getPublicPortal: (slug: string) =>
       request<{ success: boolean; tenant: any; events: any[] }>(`/tenants/public/${slug}`),
+
+    checkStatus: () =>
+      request<{ success: boolean; tenantId: number; name: string; plan: string; status: string; licenseKey: string | null; licenseStatus: string; activatedAt: string | null; expiresAt: string | null }>('/tenants/status'),
+
+    activateWithKey: (licenseKey: string) =>
+      request<{ success: boolean; message: string; licenseKey: string; tenant: any }>('/tenants/activate-with-key', {
+        method: 'POST',
+        body: JSON.stringify({ licenseKey }),
+      }),
   },
 
   // Super Admin Platform Console (SaaS Owner)
   platformAdmin: {
+    gatewayLogin: (credentials: { email: string; password: string; masterKey?: string }) =>
+      request<{ success: boolean; message: string; token: string; user: any; tenant: any }>('/admin/gateway/login', {
+        method: 'POST',
+        body: JSON.stringify(credentials),
+      }),
+
     getOverview: () =>
       request<{ success: boolean; metrics: any }>('/admin/overview'),
 
@@ -188,9 +203,10 @@ export const api = {
     getSubscriptions: () =>
       request<{ success: boolean; subscriptions: any[] }>('/admin/subscriptions'),
 
-    approveSubscription: (id: number) =>
-      request<{ success: boolean; message: string; plan?: string }>(`/admin/subscriptions/${id}/approve`, {
+    approveSubscription: (id: number, customLicenseKey?: string) =>
+      request<{ success: boolean; message: string; licenseKey: string; expiresAt: string; plan?: string }>(`/admin/subscriptions/${id}/approve`, {
         method: 'POST',
+        body: JSON.stringify({ customLicenseKey }),
       }),
 
     rejectSubscription: (id: number, reason?: string) =>
@@ -199,11 +215,53 @@ export const api = {
         body: JSON.stringify({ reason }),
       }),
 
-    updateTenantPermissions: (id: number, permissions: { maxEvents?: number; maxAttendees?: number; whiteLabel?: boolean; customDomain?: boolean }) =>
+    // License Tracking & Management
+    getLicenses: () =>
+      request<{ success: boolean; licenses: any[] }>('/admin/licenses'),
+
+    regenerateLicense: (id: number) =>
+      request<{ success: boolean; message: string; licenseKey: string }>(`/admin/tenants/${id}/license/regenerate`, {
+        method: 'POST',
+      }),
+
+    revokeLicense: (id: number, reason?: string) =>
+      request<{ success: boolean; message: string }>(`/admin/tenants/${id}/license/revoke`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      }),
+
+    renewLicense: (id: number, days?: number) =>
+      request<{ success: boolean; message: string; expiresAt: string }>(`/admin/tenants/${id}/license/renew`, {
+        method: 'POST',
+        body: JSON.stringify({ days: days || 365 }),
+      }),
+
+    updateTenantPermissions: (id: number, permissions: { maxEvents?: number; maxAttendees?: number; maxCerts?: number; whiteLabel?: boolean; customDomain?: boolean }) =>
       request<{ success: boolean; message: string }>(`/admin/tenants/${id}/permissions`, {
         method: 'PUT',
         body: JSON.stringify(permissions),
       }),
+
+    // Institutional Testimonials Management
+    getTestimonials: () =>
+      request<{ success: boolean; testimonials: any[] }>('/admin/testimonials'),
+
+    createTestimonial: (data: { client_name: string; organization: string; role?: string; logo_url?: string; rating?: number; feedback: string; is_featured?: boolean }) =>
+      request<{ success: boolean; message: string; testimonialId: number }>('/admin/testimonials', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    deleteTestimonial: (id: number) =>
+      request<{ success: boolean; message: string }>(`/admin/testimonials/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  // Public Testimonials & Reviews
+  testimonials: {
+    getPublic: () =>
+      request<{ success: boolean; testimonials: any[] }>('/public/testimonials'),
   },
 
   // Public CMS

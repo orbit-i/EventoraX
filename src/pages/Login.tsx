@@ -21,7 +21,11 @@ export default function Login() {
       await login({ email: form.email, password: form.password });
       navigate('/dashboard');
     } catch (err: any) {
-      setError(err.message || 'Invalid email or password. Please try again.');
+      if (err.message?.includes('SUPERADMIN_PORTAL_REQUIRED') || err.message?.includes('Master Gateway')) {
+        setError('This portal is reserved for Client Organizations. EventoraX Platform SuperAdmin must authenticate exclusively via the private Master Gateway URL.');
+      } else {
+        setError(err.message || 'Invalid email or password. Please try again.');
+      }
     } finally {
       setLoading(false);
     }
@@ -35,8 +39,11 @@ export default function Login() {
           <Link to="/" className="inline-block mb-2">
             <BrandLogo variant="compact" size="lg" showTagline={true} />
           </Link>
+          <div className="inline-block px-2.5 py-0.5 rounded-full bg-blue-100 text-[#1d4ed8] text-[11px] font-bold mt-1">
+            Client Organization Portal
+          </div>
           <p className="font-body text-sm mt-2 text-[#64748b]">
-            Sign in to your organization workspace.
+            Sign in to your dedicated organization workspace.
           </p>
         </div>
 

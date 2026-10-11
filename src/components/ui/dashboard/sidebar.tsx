@@ -51,16 +51,17 @@ export default function Sidebar() {
     tab?: string;
   }
 
-  // PLATFORM SUPERADMIN (SaaS Governance, Revenue, Approvals & CMS)
+  // PLATFORM SUPERADMIN (SaaS Governance, Revenue, Approvals, License Tracking & CMS)
   const superAdminNavItems: NavItem[] = [
-    { to: "/superadmin", label: "Platform Overview", icon: ShieldCheck, end: true },
-    { to: "/superadmin?tab=tenants", tab: "tenants", label: "Client Organizations", icon: Building2 },
-    { to: "/superadmin?tab=approvals", tab: "approvals", label: "Subscription Approvals", icon: CreditCard, badge: "Approvals" },
-    { to: "/superadmin?tab=billing", tab: "billing", label: "Revenue & Financials", icon: DollarSign },
-    { to: "/superadmin?tab=pricing", tab: "pricing", label: "Pricing & Plans", icon: Tag },
-    { to: "/superadmin?tab=cms", tab: "cms", label: "Website & Portal CMS", icon: Globe },
-    { to: "/superadmin?tab=security", tab: "security", label: "Security & Anti-Fraud", icon: ShieldAlert },
-    { to: "/superadmin?tab=notifications", tab: "notifications", label: "Live System Alerts", icon: Bell },
+    { to: "/orbit-i-master-gateway/console", label: "Platform Overview", icon: ShieldCheck, end: true },
+    { to: "/orbit-i-master-gateway/console?tab=licenses", tab: "licenses", label: "License Keys & Quotas", icon: Award, badge: "Track" },
+    { to: "/orbit-i-master-gateway/console?tab=tenants", tab: "tenants", label: "Client Organizations", icon: Building2 },
+    { to: "/orbit-i-master-gateway/console?tab=approvals", tab: "approvals", label: "Subscription Approvals", icon: CreditCard, badge: "Approvals" },
+    { to: "/orbit-i-master-gateway/console?tab=billing", tab: "billing", label: "Revenue & Financials", icon: DollarSign },
+    { to: "/orbit-i-master-gateway/console?tab=pricing", tab: "pricing", label: "Pricing & Plans", icon: Tag },
+    { to: "/orbit-i-master-gateway/console?tab=cms", tab: "cms", label: "Website & Portal CMS", icon: Globe },
+    { to: "/orbit-i-master-gateway/console?tab=security", tab: "security", label: "Security & Anti-Fraud", icon: ShieldAlert },
+    { to: "/orbit-i-master-gateway/console?tab=notifications", tab: "notifications", label: "Live System Alerts", icon: Bell },
   ];
 
   // CLIENT ORGANIZATIONS (Paid Event Managers, Seminars, ID passes & Certificates)
@@ -124,7 +125,7 @@ export default function Sidebar() {
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const isActive = item.tab
-            ? location.pathname === '/superadmin' && location.search.includes(`tab=${item.tab}`)
+            ? (location.pathname.includes('/orbit-i-master-gateway') || location.pathname === '/superadmin') && location.search.includes(`tab=${item.tab}`)
             : item.end 
               ? (location.pathname === item.to && (!location.search || location.search === ''))
               : location.pathname.startsWith(item.to);

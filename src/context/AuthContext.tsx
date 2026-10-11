@@ -32,6 +32,13 @@ export interface Tenant {
   status?: string;
   user_role?: string;
   userRole?: string;
+  license_key?: string;
+  license_status?: string;
+  license_activated_at?: string;
+  license_expires_at?: string;
+  max_events?: number;
+  max_attendees?: number;
+  max_certs?: number;
 }
 
 interface AuthContextType {

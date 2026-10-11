@@ -57,8 +57,13 @@ export const memoryStore = {
       owner_id: 1,
       plan: 'Platform Authority',
       status: 'active',
+      license_key: 'EVX-HQ-MASTER-KEY-2026',
+      license_status: 'active',
+      license_activated_at: new Date().toISOString(),
+      license_expires_at: '2099-12-31T23:59:59.000Z',
       max_events: 999999999,
       max_attendees: 999999999,
+      max_certs: 999999999,
       api_access_enabled: 0,
       white_label_enabled: 1,
       trial_ends_at: null,
@@ -213,7 +218,8 @@ export const memoryStore = {
   certificates: [],
   delivery_attempts: [],
   check_ins: [],
-  ticket_types: []
+  ticket_types: [],
+  testimonials: []
 };
 
 export function getPool() {
@@ -242,6 +248,11 @@ function handleMemoryQuery(sql, params = []) {
     if (s.includes('where `custom_domain` =')) {
       const domain = String(params[0]).toLowerCase();
       const t = memoryStore.tenants.find(x => x.custom_domain && x.custom_domain.toLowerCase() === domain);
+      return [t ? [t] : []];
+    }
+    if (s.includes('where `license_key` =') || s.includes('where license_key =')) {
+      const key = String(params[0]).trim().toUpperCase();
+      const t = memoryStore.tenants.find(x => x.license_key && x.license_key.trim().toUpperCase() === key);
       return [t ? [t] : []];
     }
     // Match queries filtering by owner_id or tenant membership user_id
@@ -280,11 +291,16 @@ function handleMemoryQuery(sql, params = []) {
       secondary_color: '#6d28d9',
       owner_id: ownerId,
       plan: planName,
-      status: 'active',
-      max_events: 10,
-      max_attendees: 1000,
-      api_access_enabled: 1,
-      white_label_enabled: 1,
+      status: 'pending_approval',
+      license_key: null,
+      license_status: 'pending',
+      license_activated_at: null,
+      license_expires_at: null,
+      max_events: 5,
+      max_attendees: 500,
+      max_certs: 50,
+      api_access_enabled: 0,
+      white_label_enabled: 0,
       created_at: new Date().toISOString()
     };
     memoryStore.tenants.push(newTenant);
@@ -304,7 +320,17 @@ function handleMemoryQuery(sql, params = []) {
     const id = parseInt(params[params.length - 1], 10);
     const tenant = memoryStore.tenants.find(t => t.id === id);
     if (tenant) {
-      if (s.includes('set `plan` = ?, `status` = ?')) {
+      if (s.includes('license_key = ?') || s.includes('`license_key` = ?')) {
+        // e.g. UPDATE tenants SET status = ?, license_status = ?, license_key = ?, license_activated_at = ?, license_expires_at = ? WHERE id = ?
+        tenant.status = params[0] || tenant.status;
+        tenant.license_status = params[1] || 'active';
+        tenant.license_key = params[2] || tenant.license_key;
+        tenant.license_activated_at = params[3] || new Date().toISOString();
+        tenant.license_expires_at = params[4] || tenant.license_expires_at;
+        if (params[5]) tenant.max_events = params[5];
+        if (params[6]) tenant.max_attendees = params[6];
+        if (params[7]) tenant.max_certs = params[7];
+      } else if (s.includes('set `plan` = ?, `status` = ?')) {
         tenant.plan = params[0];
         tenant.status = params[1];
         if (params[2]) tenant.max_events = params[2];
@@ -787,7 +813,11 @@ function handleMemoryQuery(sql, params = []) {
     if (sub) {
       if (s.includes('`status` = ?') || s.includes('status = ?')) {
         sub.status = params[0];
-        if (s.includes('approved_by') || s.includes('approved_at')) {
+        if (s.includes('license_key = ?') || s.includes('`license_key` = ?')) {
+          sub.license_key = params[1];
+          sub.approved_by = params[2] || 1;
+          sub.approved_at = new Date().toISOString();
+        } else if (s.includes('approved_by') || s.includes('approved_at')) {
           sub.approved_by = params[1] || 1;
           sub.approved_at = new Date().toISOString();
         }
@@ -817,6 +847,46 @@ function handleMemoryQuery(sql, params = []) {
     };
     memoryStore.subscriptions.unshift(newSub);
     return [{ insertId: newSub.id }];
+  }
+
+  // TESTIMONIALS (Authentic Client & Institute Reviews)
+  if (s.includes('from `testimonials`') || s.includes('from testimonials')) {
+    if (s.includes('where `id` =') || s.includes('where id =')) {
+      const id = parseInt(params[0], 10);
+      const item = memoryStore.testimonials.find(x => x.id === id);
+      return [item ? [item] : []];
+    }
+    if (s.includes('is_featured = 1') || s.includes('`is_featured` = 1')) {
+      return [memoryStore.testimonials.filter(x => x.is_featured === 1)];
+    }
+    return [memoryStore.testimonials];
+  }
+
+  if (s.includes('insert into `testimonials`') || s.includes('insert into testimonials')) {
+    const newTestimonial = {
+      id: memoryStore.testimonials.length + 1,
+      client_name: params[0] || 'Client Name',
+      organization: params[1] || 'Organization',
+      role: params[2] || 'Organizer',
+      logo_url: params[3] || '',
+      rating: parseInt(params[4] || 5, 10),
+      feedback: params[5] || '',
+      is_featured: params[6] !== undefined ? (params[6] ? 1 : 0) : 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    memoryStore.testimonials.unshift(newTestimonial);
+    return [{ insertId: newTestimonial.id }];
+  }
+
+  if (s.includes('delete from `testimonials`') || s.includes('delete from testimonials')) {
+    const id = parseInt(params[0], 10);
+    const idx = memoryStore.testimonials.findIndex(x => x.id === id);
+    if (idx !== -1) {
+      memoryStore.testimonials.splice(idx, 1);
+      return [{ affectedRows: 1 }];
+    }
+    return [{ affectedRows: 0 }];
   }
 
   // CERTIFICATE TEMPLATES (PRD Section 3.1 & 5)
@@ -1371,13 +1441,40 @@ export async function initDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    // Auto-migrate column `tenant_id` if missing on existing tables
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`testimonials\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`client_name\` VARCHAR(150) NOT NULL,
+        \`organization\` VARCHAR(150) NOT NULL,
+        \`role\` VARCHAR(100) DEFAULT 'Organizer',
+        \`logo_url\` MEDIUMTEXT DEFAULT NULL,
+        \`rating\` INT DEFAULT 5,
+        \`feedback\` TEXT NOT NULL,
+        \`is_featured\` BOOLEAN DEFAULT TRUE,
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // Auto-migrate columns if missing on existing tables
     const checkColumns = [
       { table: 'events', col: 'tenant_id', def: 'INT NOT NULL DEFAULT 1' },
       { table: 'event_attendees', col: 'tenant_id', def: 'INT NOT NULL DEFAULT 1' },
       { table: 'team_members', col: 'tenant_id', def: 'INT NOT NULL DEFAULT 1' },
       { table: 'activity_logs', col: 'tenant_id', def: 'INT NOT NULL DEFAULT 1' },
       { table: 'subscriptions', col: 'tenant_id', def: 'INT NOT NULL DEFAULT 1' },
+      { table: 'tenants', col: 'license_key', def: 'VARCHAR(64) NULL' },
+      { table: 'tenants', col: 'license_status', def: 'ENUM("pending", "active", "suspended", "expired") DEFAULT "pending"' },
+      { table: 'tenants', col: 'license_activated_at', def: 'TIMESTAMP NULL DEFAULT NULL' },
+      { table: 'tenants', col: 'license_expires_at', def: 'TIMESTAMP NULL DEFAULT NULL' },
+      { table: 'tenants', col: 'max_certs', def: 'INT DEFAULT 50' },
+      { table: 'subscriptions', col: 'license_key', def: 'VARCHAR(64) NULL' },
+      { table: 'subscriptions', col: 'payment_method', def: 'VARCHAR(50) DEFAULT "card"' },
+      { table: 'subscriptions', col: 'transaction_ref', def: 'VARCHAR(100) NULL' },
+      { table: 'subscriptions', col: 'currency', def: 'VARCHAR(10) DEFAULT "USD"' },
+      { table: 'subscriptions', col: 'approved_by', def: 'INT NULL' },
+      { table: 'subscriptions', col: 'approved_at', def: 'TIMESTAMP NULL DEFAULT NULL' },
+      { table: 'subscriptions', col: 'notes', def: 'TEXT NULL' },
     ];
 
     for (const item of checkColumns) {

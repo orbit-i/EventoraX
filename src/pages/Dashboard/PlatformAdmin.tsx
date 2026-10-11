@@ -35,12 +35,17 @@ import {
   Smartphone,
   QrCode,
   AlertTriangle,
-  Receipt
+  Receipt,
+  Award,
+  KeyRound,
+  Star,
+  Trash2,
+  Plus
 } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 
-type AdminTab = 'overview' | 'tenants' | 'approvals' | 'billing' | 'pricing' | 'cms' | 'security' | 'notifications';
+type AdminTab = 'overview' | 'licenses' | 'approvals' | 'tenants' | 'billing' | 'pricing' | 'testimonials' | 'cms' | 'security' | 'notifications';
 
 export default function PlatformAdmin() {
   const { isSuperAdmin } = useAuth();
@@ -57,6 +62,20 @@ export default function PlatformAdmin() {
   const [filterPlan, setFilterPlan] = useState("All");
   const [filterStatus, setFilterStatus] = useState("All");
   const [actionLoading, setActionLoading] = useState<number | null>(null);
+
+  // License Keys & Resource Quotas Tracking State
+  const [licenses, setLicenses] = useState<any[]>([]);
+  const [licenseLoading, setLicenseLoading] = useState(false);
+  const [licenseSearch, setLicenseSearch] = useState('');
+  const [licensePlanFilter, setLicensePlanFilter] = useState('All');
+  const [licenseStatusFilter, setLicenseStatusFilter] = useState('All');
+  const [approvedLicenseModal, setApprovedLicenseModal] = useState<{
+    open: boolean;
+    tenantName: string;
+    licenseKey: string;
+    expiresAt?: string;
+    plan: string;
+  } | null>(null);
 
   // Tenant Inspector Modal State
   const [inspectingTenant, setInspectingTenant] = useState<any | null>(null);
@@ -106,6 +125,21 @@ export default function PlatformAdmin() {
   const [notifCategoryFilter, setNotifCategoryFilter] = useState("all");
   const [testNotifLoading, setTestNotifLoading] = useState(false);
 
+  // Verified Institutional Testimonials State
+  const [adminTestimonials, setAdminTestimonials] = useState<any[]>([]);
+  const [testimonialsLoading, setTestimonialsLoading] = useState(false);
+  const [showAddTestimonialModal, setShowAddTestimonialModal] = useState(false);
+  const [newTestimonial, setNewTestimonial] = useState({
+    client_name: '',
+    organization: '',
+    role: 'Organizer',
+    logo_url: '',
+    rating: 5,
+    feedback: '',
+    is_featured: true,
+  });
+  const [testimonialSubmitting, setTestimonialSubmitting] = useState(false);
+
   // Sync tab with URL
   useEffect(() => {
     const currentTab = (searchParams.get('tab') as AdminTab) || 'overview';
@@ -144,6 +178,34 @@ export default function PlatformAdmin() {
       console.error("Failed to load subscriptions:", err);
     } finally {
       setSubsLoading(false);
+    }
+  };
+
+  const loadLicenses = async () => {
+    setLicenseLoading(true);
+    try {
+      const res = await api.platformAdmin.getLicenses();
+      if (res.success && res.licenses) {
+        setLicenses(res.licenses);
+      }
+    } catch (err) {
+      console.error("Failed to load licenses:", err);
+    } finally {
+      setLicenseLoading(false);
+    }
+  };
+
+  const loadAdminTestimonials = async () => {
+    setTestimonialsLoading(true);
+    try {
+      const res = await api.platformAdmin.getTestimonials();
+      if (res.success && res.testimonials) {
+        setAdminTestimonials(res.testimonials);
+      }
+    } catch (err) {
+      console.error("Failed to load testimonials:", err);
+    } finally {
+      setTestimonialsLoading(false);
     }
   };
 
@@ -193,6 +255,8 @@ export default function PlatformAdmin() {
   useEffect(() => {
     loadAdminNotifications();
     loadSubscriptions();
+    loadLicenses();
+    loadAdminTestimonials();
     const interval = setInterval(() => {
       loadAdminNotifications();
       loadSubscriptions();
@@ -210,6 +274,12 @@ export default function PlatformAdmin() {
     }
     if (activeTab === 'approvals' || activeTab === 'billing') {
       loadSubscriptions();
+    }
+    if (activeTab === 'licenses') {
+      loadLicenses();
+    }
+    if (activeTab === 'testimonials') {
+      loadAdminTestimonials();
     }
   }, [activeTab]);
 
@@ -232,13 +302,13 @@ export default function PlatformAdmin() {
           Platform Superadmin Privileges Required
         </h2>
         <p className="text-sm text-[#64748b] leading-relaxed mb-6">
-          Access strictly denied. Client organization workspaces are cryptographically isolated from the root platform administration console.
+          Access strictly denied. Public users and client organizations cannot access the Platform Master console. Use the secret ORBIT-I gateway to log in.
         </p>
         <Button 
-          onClick={() => window.location.href = '/dashboard'}
+          onClick={() => window.location.href = '/orbit-i-master-gateway/login'}
           className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs font-bold"
         >
-          Return to Workspace Dashboard
+          Go to Platform Master Gateway
         </Button>
       </div>
     );
@@ -250,14 +320,65 @@ export default function PlatformAdmin() {
     try {
       const res = await api.platformAdmin.approveSubscription(subId);
       if (res.success) {
+        const sub = subscriptions.find(s => s.id === subId);
+        setApprovedLicenseModal({
+          open: true,
+          tenantName: sub?.tenantName || 'Client Organization',
+          licenseKey: res.licenseKey,
+          expiresAt: res.expiresAt,
+          plan: sub?.plan || 'Professional'
+        });
         await loadSubscriptions();
         await loadData();
+        await loadLicenses();
         loadAdminNotifications();
       }
     } catch (err: any) {
       alert(err.message || "Failed to approve subscription.");
     } finally {
       setApprovingSubId(null);
+    }
+  };
+
+  const handleRegenerateKey = async (tenantId: number) => {
+    if (!confirm('Are you sure you want to regenerate this license key? The previous key will immediately stop working.')) return;
+    try {
+      const res = await api.platformAdmin.regenerateLicense(tenantId);
+      if (res.success) {
+        alert(`New License Key Generated: ${res.licenseKey}`);
+        await loadLicenses();
+        await loadData();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to regenerate license key.');
+    }
+  };
+
+  const handleRevokeLicense = async (tenantId: number) => {
+    const reason = prompt('Enter revocation reason (e.g. Policy Violation, Payment Default):');
+    if (!reason) return;
+    try {
+      const res = await api.platformAdmin.revokeLicense(tenantId, reason);
+      if (res.success) {
+        alert('License has been suspended / revoked.');
+        await loadLicenses();
+        await loadData();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to revoke license.');
+    }
+  };
+
+  const handleRenewLicense = async (tenantId: number, days: number = 365) => {
+    try {
+      const res = await api.platformAdmin.renewLicense(tenantId, days);
+      if (res.success) {
+        alert(`License renewed successfully until ${new Date(res.expiresAt).toLocaleDateString()}`);
+        await loadLicenses();
+        await loadData();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to renew license.');
     }
   };
 
@@ -358,6 +479,48 @@ export default function PlatformAdmin() {
       setCmsMsg(err.message || "Failed to save CMS page content.");
     } finally {
       setCmsSaving(false);
+    }
+  };
+
+  const handleCreateTestimonial = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTestimonial.client_name.trim() || !newTestimonial.organization.trim() || !newTestimonial.feedback.trim()) {
+      alert("Please provide Client Name, Organization/Institute, and Feedback text.");
+      return;
+    }
+    setTestimonialSubmitting(true);
+    try {
+      const res = await api.platformAdmin.createTestimonial(newTestimonial);
+      if (res.success) {
+        setShowAddTestimonialModal(false);
+        setNewTestimonial({
+          client_name: '',
+          organization: '',
+          role: 'Organizer',
+          logo_url: '',
+          rating: 5,
+          feedback: '',
+          is_featured: true,
+        });
+        await loadAdminTestimonials();
+        loadAdminNotifications();
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to create testimonial.");
+    } finally {
+      setTestimonialSubmitting(false);
+    }
+  };
+
+  const handleDeleteTestimonial = async (id: number) => {
+    if (!confirm("Are you sure you want to remove this verified institutional review?")) return;
+    try {
+      const res = await api.platformAdmin.deleteTestimonial(id);
+      if (res.success) {
+        setAdminTestimonials(prev => prev.filter(t => t.id !== id));
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to delete testimonial.");
     }
   };
 
@@ -588,6 +751,18 @@ export default function PlatformAdmin() {
           </button>
 
           <button
+            onClick={() => switchTab('licenses')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'licenses'
+                ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <KeyRound className="w-4 h-4 text-indigo-500" />
+            License Keys &amp; Quotas ({licenses.length || tenants.length})
+          </button>
+
+          <button
             onClick={() => switchTab('approvals')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
               activeTab === 'approvals'
@@ -650,6 +825,18 @@ export default function PlatformAdmin() {
           >
             <Globe className="w-4 h-4 text-blue-500" />
             Website &amp; Portal CMS
+          </button>
+
+          <button
+            onClick={() => switchTab('testimonials')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'testimonials'
+                ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <Award className="w-4 h-4 text-purple-500" />
+            Institutional Testimonials ({adminTestimonials.length})
           </button>
 
           <button
@@ -778,6 +965,320 @@ export default function PlatformAdmin() {
                     <strong>Client Organizations:</strong> Event managers, seminar hosts, universities, and companies pay subscription fees to host events, print ID cards, issue verifiable certificates, and use the Canva design studio within their isolated workspaces.
                   </p>
                 </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 0.5: LICENSE KEYS & RESOURCE TRACKING (SUPERADMIN OVERSIGHT) */}
+        {/* ============================================================== */}
+        {activeTab === 'licenses' && (
+          <div className="space-y-6">
+            {/* Header & Metric Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Provisioned Licenses</span>
+                  <div className="w-9 h-9 rounded-xl bg-blue-50 text-[#1d4ed8] flex items-center justify-center">
+                    <KeyRound className="w-4 h-4" />
+                  </div>
+                </div>
+                <p className="text-2xl font-black text-slate-900 mt-2">{licenses.length}</p>
+                <span className="text-[11px] text-slate-500">Cryptographically isolated organization workspaces</span>
+              </div>
+
+              <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active &amp; Verified</span>
+                  <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                    <CheckCircle2 className="w-4 h-4" />
+                  </div>
+                </div>
+                <p className="text-2xl font-black text-emerald-600 mt-2">
+                  {licenses.filter(l => l.license_status === 'active' || l.status === 'active').length}
+                </p>
+                <span className="text-[11px] text-emerald-700">Unlocked and generating live event passes</span>
+              </div>
+
+              <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-xs">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Pending / Suspended</span>
+                  <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center">
+                    <AlertTriangle className="w-4 h-4" />
+                  </div>
+                </div>
+                <p className="text-2xl font-black text-amber-600 mt-2">
+                  {licenses.filter(l => l.license_status !== 'active' && l.status !== 'active').length}
+                </p>
+                <span className="text-[11px] text-amber-700">Requires SuperAdmin verification or renewal</span>
+              </div>
+            </div>
+
+            {/* License Directory Table */}
+            <div className="bg-white rounded-3xl border border-slate-200 shadow-xs p-6 space-y-6">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <Award className="w-5 h-5 text-[#1d4ed8]" />
+                    Client Organization License Keys &amp; Resource Utilization
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Track each client organization by their Activation License Key. Monitor real-time resource quotas (events used, attendee registrations, certificate generation) and enforce authorization.
+                  </p>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-3 w-full sm:w-auto">
+                  {/* Search */}
+                  <div className="relative flex-1 sm:w-64">
+                    <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                    <Input
+                      placeholder="Search key, organization, email..."
+                      value={licenseSearch}
+                      onChange={(e) => setLicenseSearch(e.target.value)}
+                      className="pl-9 rounded-xl text-xs bg-slate-50 border-slate-200 h-9"
+                    />
+                  </div>
+
+                  {/* Plan Filter */}
+                  <select
+                    value={licensePlanFilter}
+                    onChange={(e) => setLicensePlanFilter(e.target.value)}
+                    className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700 h-9 focus:outline-none"
+                  >
+                    <option value="All">All Plans</option>
+                    <option value="Starter">Starter</option>
+                    <option value="Professional">Professional</option>
+                    <option value="Enterprise">Enterprise</option>
+                  </select>
+
+                  {/* Status Filter */}
+                  <select
+                    value={licenseStatusFilter}
+                    onChange={(e) => setLicenseStatusFilter(e.target.value)}
+                    className="px-3 py-1.5 rounded-xl border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-700 h-9 focus:outline-none"
+                  >
+                    <option value="All">All Statuses</option>
+                    <option value="active">Active</option>
+                    <option value="pending_approval">Pending Approval</option>
+                    <option value="suspended">Suspended</option>
+                  </select>
+
+                  {/* Refresh */}
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={loadLicenses}
+                    disabled={licenseLoading}
+                    className="rounded-xl h-9 text-xs"
+                  >
+                    <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${licenseLoading ? 'animate-spin' : ''}`} />
+                    Refresh
+                  </Button>
+                </div>
+              </div>
+
+              {/* Table */}
+              <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                    <tr>
+                      <th className="p-3.5 pl-4">Client Organization</th>
+                      <th className="p-3.5">Activation License Key</th>
+                      <th className="p-3.5">Plan / Status</th>
+                      <th className="p-3.5">Resource Quota Utilization</th>
+                      <th className="p-3.5">Validity &amp; Expiry</th>
+                      <th className="p-3.5 text-right pr-4">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {licenses
+                      .filter(lic => {
+                        if (licensePlanFilter !== 'All' && lic.plan?.toLowerCase() !== licensePlanFilter.toLowerCase()) return false;
+                        if (licenseStatusFilter !== 'All' && (lic.license_status || lic.status) !== licenseStatusFilter) return false;
+                        if (licenseSearch) {
+                          const q = licenseSearch.toLowerCase();
+                          const matchKey = (lic.license_key || '').toLowerCase().includes(q);
+                          const matchName = (lic.name || '').toLowerCase().includes(q);
+                          const matchEmail = (lic.owner_email || '').toLowerCase().includes(q);
+                          return matchKey || matchName || matchEmail;
+                        }
+                        return true;
+                      })
+                      .map((lic) => {
+                        const eventPercent = Math.min(100, Math.round(((lic.events_count || 0) / (lic.max_events || 25)) * 100));
+                        const attendeePercent = Math.min(100, Math.round(((lic.attendees_count || 0) / (lic.max_attendees || 5000)) * 100));
+                        const certPercent = Math.min(100, Math.round(((lic.certs_count || 0) / (lic.max_certs || 5000)) * 100));
+
+                        const isActive = lic.license_status === 'active' || lic.status === 'active';
+                        const isPending = lic.status === 'pending_approval';
+
+                        return (
+                          <tr key={lic.id} className="hover:bg-slate-50/80 transition-colors">
+                            {/* Client Org */}
+                            <td className="p-3.5 pl-4">
+                              <div className="flex items-center gap-2.5">
+                                <div className="w-8 h-8 rounded-lg bg-blue-100 text-[#1d4ed8] font-bold flex items-center justify-center text-xs">
+                                  {(lic.name || 'EX').slice(0, 2).toUpperCase()}
+                                </div>
+                                <div>
+                                  <p className="font-bold text-slate-900 text-xs">{lic.name}</p>
+                                  <p className="text-[11px] text-slate-500">{lic.owner_email || lic.slug}</p>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* License Key */}
+                            <td className="p-3.5">
+                              {lic.license_key ? (
+                                <div className="inline-flex items-center gap-1.5 bg-slate-100 border border-slate-300 px-2.5 py-1 rounded-lg">
+                                  <span className="font-mono font-bold text-slate-900 text-xs tracking-wider">
+                                    {lic.license_key}
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() => copyToClipboard(lic.license_key)}
+                                    className="p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors"
+                                    title="Copy Key"
+                                  >
+                                    {copiedTid === lic.license_key ? (
+                                      <Check className="w-3.5 h-3.5 text-emerald-600" />
+                                    ) : (
+                                      <Copy className="w-3.5 h-3.5" />
+                                    )}
+                                  </button>
+                                </div>
+                              ) : (
+                                <span className="text-amber-700 font-semibold bg-amber-50 px-2 py-0.5 rounded border border-amber-200 text-[11px]">
+                                  Pending Key Issue
+                                </span>
+                              )}
+                            </td>
+
+                            {/* Plan & Status */}
+                            <td className="p-3.5">
+                              <div className="space-y-1">
+                                <Badge className="bg-slate-100 text-slate-800 border border-slate-300 text-[10px] font-bold">
+                                  {lic.plan || 'Starter'}
+                                </Badge>
+                                <div>
+                                  <span className={`inline-flex items-center gap-1 text-[10px] font-bold uppercase ${
+                                    isActive ? 'text-emerald-700' : isPending ? 'text-amber-700' : 'text-rose-700'
+                                  }`}>
+                                    <span className={`w-1.5 h-1.5 rounded-full ${
+                                      isActive ? 'bg-emerald-500' : isPending ? 'bg-amber-500' : 'bg-rose-500'
+                                    }`} />
+                                    {lic.license_status || lic.status || 'active'}
+                                  </span>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Resource Quota Utilization */}
+                            <td className="p-3.5 min-w-[200px]">
+                              <div className="space-y-2 text-[11px]">
+                                <div>
+                                  <div className="flex justify-between text-slate-600 mb-0.5">
+                                    <span>Events:</span>
+                                    <span className="font-semibold text-slate-800">{lic.events_count || 0} / {lic.max_events || 25}</span>
+                                  </div>
+                                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div 
+                                      className={`h-full rounded-full ${eventPercent > 80 ? 'bg-amber-500' : 'bg-blue-600'}`} 
+                                      style={{ width: `${eventPercent}%` }}
+                                    />
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <div className="flex justify-between text-slate-600 mb-0.5">
+                                    <span>Attendees:</span>
+                                    <span className="font-semibold text-slate-800">{(lic.attendees_count || 0).toLocaleString()} / {(lic.max_attendees || 5000).toLocaleString()}</span>
+                                  </div>
+                                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div 
+                                      className={`h-full rounded-full ${attendeePercent > 80 ? 'bg-amber-500' : 'bg-emerald-600'}`} 
+                                      style={{ width: `${attendeePercent}%` }}
+                                    />
+                                  </div>
+                                </div>
+
+                                <div>
+                                  <div className="flex justify-between text-slate-600 mb-0.5">
+                                    <span>Certificates:</span>
+                                    <span className="font-semibold text-slate-800">{(lic.certs_count || 0).toLocaleString()} / {(lic.max_certs || 5000).toLocaleString()}</span>
+                                  </div>
+                                  <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                                    <div 
+                                      className={`h-full rounded-full ${certPercent > 80 ? 'bg-amber-500' : 'bg-purple-600'}`} 
+                                      style={{ width: `${certPercent}%` }}
+                                    />
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+
+                            {/* Validity */}
+                            <td className="p-3.5 text-slate-600 text-[11px]">
+                              <div>
+                                <span className="font-semibold block text-slate-800">
+                                  {lic.license_expires_at ? new Date(lic.license_expires_at).toLocaleDateString() : '1 Year Active'}
+                                </span>
+                                <span className="text-slate-400 text-[10px]">
+                                  Issued: {lic.license_activated_at ? new Date(lic.license_activated_at).toLocaleDateString() : 'Auto-Provisioned'}
+                                </span>
+                              </div>
+                            </td>
+
+                            {/* Actions */}
+                            <td className="p-3.5 text-right pr-4">
+                              <div className="inline-flex items-center gap-1.5">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleRenewLicense(lic.id, 365)}
+                                  className="h-7 px-2 text-[11px] rounded-lg text-emerald-700 hover:bg-emerald-50 border-emerald-300"
+                                  title="Renew License for 365 days"
+                                >
+                                  +1 Yr
+                                </Button>
+
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleRegenerateKey(lic.id)}
+                                  className="h-7 px-2 text-[11px] rounded-lg text-blue-700 hover:bg-blue-50 border-blue-300"
+                                  title="Regenerate Activation Key"
+                                >
+                                  Regen Key
+                                </Button>
+
+                                {isActive ? (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleRevokeLicense(lic.id)}
+                                    className="h-7 px-2 text-[11px] rounded-lg text-rose-700 hover:bg-rose-50 border-rose-300"
+                                    title="Suspend Organization License"
+                                  >
+                                    Suspend
+                                  </Button>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    onClick={() => handleRenewLicense(lic.id, 365)}
+                                    className="h-7 px-2 text-[11px] rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white"
+                                  >
+                                    Activate
+                                  </Button>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                  </tbody>
+                </table>
               </div>
             </div>
           </div>
@@ -1748,6 +2249,245 @@ export default function PlatformAdmin() {
           </div>
         )}
 
+        {/* ================= TAB 7: INSTITUTIONAL TESTIMONIALS CMS ================= */}
+        {activeTab === 'testimonials' && (
+          <div className="space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white p-6 rounded-3xl border border-slate-200 shadow-xs">
+              <div>
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-purple-50 text-[#7c3aed] border border-purple-200 text-xs font-bold mb-2">
+                  <Award className="w-3.5 h-3.5" />
+                  Verified Review Governance
+                </div>
+                <h3 className="text-lg font-bold text-slate-900">
+                  Authentic Institutional Testimonials &amp; Client Feedback
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
+                  Manage real reviews from universities, academic societies, and corporate clients using EventoraX. Placeholders and fake reviews are forbidden. All approved entries display live on the official landing page.
+                </p>
+              </div>
+
+              <Button
+                onClick={() => setShowAddTestimonialModal(true)}
+                className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs font-bold h-10 px-4 shadow-sm shrink-0 flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add Institutional Review
+              </Button>
+            </div>
+
+            {/* Testimonials List */}
+            {testimonialsLoading ? (
+              <div className="py-16 text-center text-xs text-[#7c3aed] flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-[#7c3aed] border-t-transparent rounded-full animate-spin" />
+                <span>Loading verified testimonials...</span>
+              </div>
+            ) : adminTestimonials.length === 0 ? (
+              <div className="bg-white rounded-3xl border border-dashed border-slate-300 p-12 text-center shadow-xs">
+                <div className="w-16 h-16 rounded-2xl bg-purple-50 text-[#7c3aed] flex items-center justify-center mx-auto mb-4 border border-purple-200">
+                  <Award className="w-8 h-8" />
+                </div>
+                <h4 className="text-base font-bold text-slate-900 mb-1">
+                  No Institutional Testimonials Added Yet (0 Data)
+                </h4>
+                <p className="text-xs text-slate-500 max-w-md mx-auto mb-6 leading-relaxed">
+                  The platform adheres strictly to 0 fake reviews. When real educational institutes or partner clients submit feedback, use the "Add Institutional Review" button above to publish their logo, name, and testimony.
+                </p>
+                <Button
+                  onClick={() => setShowAddTestimonialModal(true)}
+                  className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs font-bold h-9 px-5 shadow-sm inline-flex items-center gap-2"
+                >
+                  <Plus className="w-4 h-4" />
+                  Publish First Real Testimonial
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {adminTestimonials.map((t) => (
+                  <div
+                    key={t.id}
+                    className="bg-white rounded-2xl border border-slate-200 p-6 shadow-xs flex flex-col justify-between hover:border-purple-300 transition-all"
+                  >
+                    <div>
+                      <div className="flex items-center justify-between mb-3">
+                        <div className="flex items-center gap-1">
+                          {[...Array(t.rating || 5)].map((_, i) => (
+                            <Star key={i} className="w-4 h-4 fill-amber-400 text-amber-400" />
+                          ))}
+                        </div>
+                        <Badge className={`text-[10px] font-bold ${t.is_featured ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}`}>
+                          {t.is_featured ? 'Live on Landing Page' : 'Draft'}
+                        </Badge>
+                      </div>
+
+                      <p className="text-xs text-slate-700 italic leading-relaxed mb-4">
+                        "{t.feedback}"
+                      </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
+                      <div className="flex items-center gap-3 min-w-0">
+                        {t.logo_url ? (
+                          <img
+                            src={t.logo_url}
+                            alt={t.organization}
+                            className="w-10 h-10 rounded-xl object-contain bg-slate-50 border border-slate-200 p-1 shrink-0"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded-xl bg-purple-50 text-[#7c3aed] flex items-center justify-center font-bold text-xs shrink-0 border border-purple-200">
+                            <Building2 className="w-5 h-5" />
+                          </div>
+                        )}
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-900 truncate">{t.client_name}</p>
+                          <p className="text-[11px] font-semibold text-[#7c3aed] truncate">{t.organization}</p>
+                          {t.role && <p className="text-[10px] text-slate-400 truncate">{t.role}</p>}
+                        </div>
+                      </div>
+
+                      <button
+                        onClick={() => handleDeleteTestimonial(t.id)}
+                        className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-xl transition-colors shrink-0 ml-2"
+                        title="Delete testimonial"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Add Testimonial Modal */}
+        {showAddTestimonialModal && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-purple-100 text-[#7c3aed] flex items-center justify-center font-bold">
+                    <Award className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">Add Verified Institutional Review</h3>
+                    <p className="text-xs text-slate-500">Authentic client / institute testimonial</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setShowAddTestimonialModal(false)}
+                  className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleCreateTestimonial} className="space-y-4 text-xs">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Client / Representative Name *</label>
+                  <Input
+                    required
+                    value={newTestimonial.client_name}
+                    onChange={(e) => setNewTestimonial({ ...newTestimonial, client_name: e.target.value })}
+                    placeholder="e.g. Dr. Salman Khan or Engr. Bilal Aslam"
+                    className="rounded-xl h-10 border-slate-200"
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Organization / Institute *</label>
+                    <Input
+                      required
+                      value={newTestimonial.organization}
+                      onChange={(e) => setNewTestimonial({ ...newTestimonial, organization: e.target.value })}
+                      placeholder="e.g. FAST NUCES or IEEE Summit"
+                      className="rounded-xl h-10 border-slate-200"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Role / Designation</label>
+                    <Input
+                      value={newTestimonial.role}
+                      onChange={(e) => setNewTestimonial({ ...newTestimonial, role: e.target.value })}
+                      placeholder="e.g. Dean of CS / Conference Convener"
+                      className="rounded-xl h-10 border-slate-200"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Institute Logo / Crest URL</label>
+                    <Input
+                      value={newTestimonial.logo_url}
+                      onChange={(e) => setNewTestimonial({ ...newTestimonial, logo_url: e.target.value })}
+                      placeholder="https://.../logo.png"
+                      className="rounded-xl h-10 border-slate-200"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Rating (1 to 5 Stars)</label>
+                    <select
+                      value={newTestimonial.rating}
+                      onChange={(e) => setNewTestimonial({ ...newTestimonial, rating: parseInt(e.target.value, 10) })}
+                      className="w-full h-10 rounded-xl border border-slate-200 bg-white px-3 text-xs font-semibold text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#7c3aed]"
+                    >
+                      <option value={5}>⭐⭐⭐⭐⭐ (5 Stars - Exceptional)</option>
+                      <option value={4}>⭐⭐⭐⭐ (4 Stars - Highly Satisfied)</option>
+                      <option value={3}>⭐⭐⭐ (3 Stars - Satisfied)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Authentic Feedback / Quote *</label>
+                  <textarea
+                    required
+                    rows={4}
+                    value={newTestimonial.feedback}
+                    onChange={(e) => setNewTestimonial({ ...newTestimonial, feedback: e.target.value })}
+                    placeholder="Write the authentic institutional feedback regarding EventoraX's certificate issuance, badge generation, or attendance..."
+                    className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#7c3aed]"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="featured-check"
+                    checked={newTestimonial.is_featured}
+                    onChange={(e) => setNewTestimonial({ ...newTestimonial, is_featured: e.target.checked })}
+                    className="w-4 h-4 rounded text-[#7c3aed] focus:ring-[#7c3aed]"
+                  />
+                  <label htmlFor="featured-check" className="text-xs font-bold text-slate-700 cursor-pointer">
+                    Feature immediately on live official landing page
+                  </label>
+                </div>
+
+                <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setShowAddTestimonialModal(false)}
+                    className="flex-1 rounded-xl text-xs h-10 border-slate-200"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={testimonialSubmitting}
+                    className="flex-1 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs h-10 font-bold"
+                  >
+                    {testimonialSubmitting ? "Publishing..." : "Publish Review"}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
         {/* ================= MODAL 1: TENANT INSPECTOR MODAL ================= */}
         {inspectingTenant && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -1955,6 +2695,89 @@ export default function PlatformAdmin() {
                   className="flex-1 bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs h-10 font-bold"
                 >
                   Save Quotas
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Approved License Key Modal */}
+        {approvedLicenseModal?.open && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/70 backdrop-blur-sm animate-in fade-in">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-9 h-9 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-slate-900">Subscription Approved &amp; License Issued</h3>
+                    <p className="text-[11px] text-slate-500">Cryptographic workspace key generated</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setApprovedLicenseModal(null)}
+                  className="p-1 text-slate-400 hover:text-slate-600 rounded-lg"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 space-y-2 text-xs">
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Client Organization:</span>
+                  <strong className="text-slate-900">{approvedLicenseModal.tenantName}</strong>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-slate-500">Plan Tier:</span>
+                  <strong className="text-slate-900">{approvedLicenseModal.plan}</strong>
+                </div>
+                {approvedLicenseModal.expiresAt && (
+                  <div className="flex justify-between">
+                    <span className="text-slate-500">Expires On:</span>
+                    <strong className="text-slate-900">{new Date(approvedLicenseModal.expiresAt).toLocaleDateString()}</strong>
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1.5">
+                  Activation License Key (Provide to Client):
+                </label>
+                <div className="flex items-center gap-2 p-3 bg-blue-50 border-2 border-blue-200 rounded-2xl">
+                  <span className="font-mono font-bold text-base text-[#1d4ed8] tracking-wider flex-1 truncate">
+                    {approvedLicenseModal.licenseKey}
+                  </span>
+                  <Button
+                    size="sm"
+                    onClick={() => copyToClipboard(approvedLicenseModal.licenseKey)}
+                    className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs font-bold h-8 px-3 shrink-0 flex items-center gap-1.5"
+                  >
+                    {copiedTid === approvedLicenseModal.licenseKey ? (
+                      <>
+                        <Check className="w-3.5 h-3.5" />
+                        Copied
+                      </>
+                    ) : (
+                      <>
+                        <Copy className="w-3.5 h-3.5" />
+                        Copy Key
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
+
+              <p className="text-[11px] text-slate-500">
+                This key has been cryptographically associated with the client tenant. They can enter this key in their Activation Gateway to instantly unlock their dashboard.
+              </p>
+
+              <div className="pt-2">
+                <Button
+                  onClick={() => setApprovedLicenseModal(null)}
+                  className="w-full bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-bold h-10"
+                >
+                  Done &amp; Close
                 </Button>
               </div>
             </div>

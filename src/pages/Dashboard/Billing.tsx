@@ -16,7 +16,9 @@ import {
   DollarSign, 
   Clock, 
   Receipt,
-  Download
+  Download,
+  KeyRound,
+  Copy
 } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
@@ -74,7 +76,8 @@ const clientPlans: PlanData[] = [
 ];
 
 export default function Billing() {
-  const { user, isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin, currentTenant } = useAuth();
+  const [copiedKey, setCopiedKey] = useState(false);
   const [currentPlan, setCurrentPlan] = useState("Starter");
   const [attendeesUsed, setAttendeesUsed] = useState(0);
   const [attendeesLimit, setAttendeesLimit] = useState(500);
@@ -183,7 +186,7 @@ export default function Billing() {
                     </div>
 
                     <Link
-                      to="/superadmin?tab=approvals"
+                      to="/orbit-i-master-gateway/console?tab=approvals"
                       className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-md shadow-amber-600/20 transition-all"
                     >
                       <CreditCard className="w-4 h-4" />
@@ -196,19 +199,37 @@ export default function Billing() {
             </Card>
 
             {/* Quick Action Navigation for SuperAdmin */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
               <Link 
-                to="/superadmin?tab=approvals"
+                to="/orbit-i-master-gateway/console?tab=licenses"
+                className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-indigo-400 hover:shadow-md transition-all group"
+              >
+                <div className="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-700 flex items-center justify-center mb-3">
+                  <KeyRound className="w-5 h-5" />
+                </div>
+                <h4 className="text-sm font-bold text-slate-900 group-hover:text-indigo-700 transition-colors">
+                  License Keys &amp; Quotas
+                </h4>
+                <p className="text-xs text-slate-500 mt-1">
+                  Track client activation keys, monitor live resource usage, and regenerate keys.
+                </p>
+                <span className="text-xs font-bold text-indigo-600 mt-3 inline-flex items-center gap-1">
+                  Track Licenses &rarr;
+                </span>
+              </Link>
+
+              <Link 
+                to="/orbit-i-master-gateway/console?tab=approvals"
                 className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-amber-400 hover:shadow-md transition-all group"
               >
                 <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center mb-3">
                   <CreditCard className="w-5 h-5" />
                 </div>
                 <h4 className="text-sm font-bold text-slate-900 group-hover:text-amber-700 transition-colors">
-                  Subscription Approvals Queue
+                  Subscription Approvals
                 </h4>
                 <p className="text-xs text-slate-500 mt-1">
-                  Verify client payments (Card, Bank IBFT, JazzCash, Easypaisa, Raast) and activate their accounts.
+                  Verify client payments (Card, Bank IBFT, JazzCash, Easypaisa, Raast) and activate keys.
                 </p>
                 <span className="text-xs font-bold text-amber-600 mt-3 inline-flex items-center gap-1">
                   {pendingApprovalsCount} Pending Verification &rarr;
@@ -216,7 +237,7 @@ export default function Billing() {
               </Link>
 
               <Link 
-                to="/superadmin?tab=tenants"
+                to="/orbit-i-master-gateway/console?tab=tenants"
                 className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-blue-400 hover:shadow-md transition-all group"
               >
                 <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center mb-3">
@@ -234,7 +255,7 @@ export default function Billing() {
               </Link>
 
               <Link 
-                to="/superadmin?tab=billing"
+                to="/orbit-i-master-gateway/console?tab=billing"
                 className="p-5 rounded-2xl bg-white border border-slate-200 hover:border-emerald-400 hover:shadow-md transition-all group"
               >
                 <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center mb-3">
@@ -272,6 +293,57 @@ export default function Billing() {
                 </div>
               </div>
             )}
+
+            {/* Active Workspace License Key Card */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-wrap items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1d4ed8] flex items-center justify-center shrink-0">
+                  <KeyRound className="w-6 h-6" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-bold text-slate-900 text-sm">Activation License Key</h3>
+                    <Badge className="bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                      {currentTenant?.license_status || 'Active'}
+                    </Badge>
+                  </div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span className="font-mono font-bold text-sm text-[#1d4ed8] bg-blue-50 px-3 py-1 rounded-xl border border-blue-200">
+                      {currentTenant?.license_key || 'EVX-ACT-9821-4402-1109'}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        navigator.clipboard.writeText(currentTenant?.license_key || 'EVX-ACT-9821-4402-1109');
+                        setCopiedKey(true);
+                        setTimeout(() => setCopiedKey(false), 2000);
+                      }}
+                      className="p-1.5 rounded-lg border border-slate-200 hover:bg-slate-50 text-slate-600 flex items-center gap-1 text-xs font-semibold"
+                      title="Copy License Key"
+                    >
+                      {copiedKey ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      {copiedKey ? 'Copied' : 'Copy'}
+                    </button>
+                  </div>
+                  <p className="text-[11px] text-slate-500 mt-1">
+                    Cryptographic key assigned by Platform Authority. Valid until {currentTenant?.license_expires_at ? new Date(currentTenant.license_expires_at).toLocaleDateString() : 'Annual Expiration'}.
+                  </p>
+                </div>
+              </div>
+
+              <div className="text-right text-xs space-y-1">
+                <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Provisioned Quotas</span>
+                <p className="font-bold text-slate-800">
+                  Events: {currentTenant?.max_events || 25} Concurrent
+                </p>
+                <p className="font-bold text-slate-800">
+                  Attendees: {(currentTenant?.max_attendees || attendeesLimit).toLocaleString()} Max
+                </p>
+                <p className="font-bold text-slate-800">
+                  Certificates: {(currentTenant?.max_certs || 5000).toLocaleString()} Verified
+                </p>
+              </div>
+            </div>
 
             <Card className="border-[#7c3aed] bg-gradient-to-r from-[#f5f3ff] via-white to-white shadow-lg shadow-[#7c3aed]/10 rounded-3xl">
               <CardContent className="p-6">

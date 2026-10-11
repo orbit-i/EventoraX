@@ -18,17 +18,20 @@ import {
   Sparkles,
   Ticket,
   BarChart3,
-  Clock
+  Clock,
+  KeyRound,
+  Copy
 } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 
 export default function DashboardHome() {
   const { user, currentTenant } = useAuth();
+  const [copiedKey, setCopiedKey] = useState(false);
 
-  // Strict role isolation: Superadmin authority belongs in /superadmin
+  // Strict role isolation: Superadmin authority belongs in secret gateway console
   if (user?.role === 'admin') {
-    return <Navigate to="/superadmin" replace />;
+    return <Navigate to="/orbit-i-master-gateway/console" replace />;
   }
 
   const [stats, setStats] = useState<any>(null);
@@ -137,6 +140,53 @@ export default function DashboardHome() {
           </div>
           {/* Subtle background glow */}
           <div className="absolute right-0 top-0 -mr-20 -mt-20 w-80 h-80 rounded-full bg-purple-400/20 blur-3xl pointer-events-none" />
+        </div>
+
+        {/* Active Organization License Key & Resource Quota Tracking Widget */}
+        <div className="bg-white rounded-2xl border border-slate-200 p-4 shadow-xs flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-blue-50 text-[#1d4ed8] flex items-center justify-center font-bold">
+              <KeyRound className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold text-slate-800">Workspace Activation License:</span>
+                <span className="text-xs font-mono font-bold text-[#1d4ed8] bg-blue-50 px-2 py-0.5 rounded-md border border-blue-200">
+                  {currentTenant?.license_key || 'EVX-ACT-9821-4402-1109'}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    navigator.clipboard.writeText(currentTenant?.license_key || 'EVX-ACT-9821-4402-1109');
+                    setCopiedKey(true);
+                    setTimeout(() => setCopiedKey(false), 2000);
+                  }}
+                  className="text-[11px] text-slate-500 hover:text-blue-600 flex items-center gap-1 font-semibold"
+                  title="Copy License Key"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                  {copiedKey ? 'Copied' : 'Copy'}
+                </button>
+              </div>
+              <p className="text-[11px] text-slate-500">
+                Tier: <strong className="text-slate-800">{currentTenant?.plan || 'Professional'}</strong> • Status: <span className="text-emerald-700 font-bold">Licensed &amp; Active</span> • Tracked by Platform Authority (ORBIT-I)
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4 text-xs">
+            <div className="text-right">
+              <span className="text-[10px] text-slate-400 font-bold uppercase block">Resource Quotas</span>
+              <span className="font-bold text-slate-700">
+                {totalEvents} / {currentTenant?.max_events || 25} Events • {totalAttendees.toLocaleString()} / {(currentTenant?.max_attendees || 5000).toLocaleString()} Attendees
+              </span>
+            </div>
+            <Link to="/dashboard/billing">
+              <Button size="sm" variant="outline" className="rounded-xl text-xs h-8">
+                Plan Details
+              </Button>
+            </Link>
+          </div>
         </div>
 
         {/* Stat Cards */}

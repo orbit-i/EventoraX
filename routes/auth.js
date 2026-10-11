@@ -56,8 +56,8 @@ router.post('/register', async (req, res) => {
     tenantSlug = `${tenantSlug}-${Math.floor(100 + Math.random() * 900)}`;
 
     const [tenantResult] = await query(
-      `INSERT INTO \`tenants\` (\`name\`, \`slug\`, \`custom_domain\`, \`logo_url\`, \`primary_color\`, \`secondary_color\`, \`owner_id\`, \`plan\`)
-       VALUES (?, ?, '', '', '#7c3aed', '#6d28d9', ?, 'Starter')`,
+      `INSERT INTO \`tenants\` (\`name\`, \`slug\`, \`custom_domain\`, \`logo_url\`, \`primary_color\`, \`secondary_color\`, \`owner_id\`, \`plan\`, \`status\`, \`license_status\`)
+       VALUES (?, ?, '', '', '#7c3aed', '#6d28d9', ?, 'Starter', 'pending_approval', 'pending')`,
       [workspaceName, tenantSlug, userId]
     );
     const tenantId = tenantResult.insertId;
@@ -77,26 +77,27 @@ router.post('/register', async (req, res) => {
       [tenantId, apiKey]
     );
 
-    // 4. Create default subscription for this tenant
+    // 4. Create default subscription for this tenant in pending_approval state
+    const regTrx = `REG-${Date.now().toString(36).toUpperCase()}`;
     await query(
-      `INSERT INTO \`subscriptions\` (\`tenant_id\`, \`user_id\`, \`plan\`, \`price\`, \`billing_cycle\`, \`attendees_limit\`, \`status\`)
-       VALUES (?, ?, 'Starter', 0.00, 'monthly', 500, 'active')`,
-      [tenantId, userId]
+      `INSERT INTO \`subscriptions\` (\`tenant_id\`, \`user_id\`, \`plan\`, \`price\`, \`billing_cycle\`, \`attendees_limit\`, \`status\`, \`payment_method\`, \`transaction_ref\`)
+       VALUES (?, ?, 'Starter', 0.00, 'monthly', 500, 'pending_approval', 'starter_tier', ?)`,
+      [tenantId, userId, regTrx]
     );
 
     // 5. Log activity
     await query(
       `INSERT INTO \`activity_logs\` (\`tenant_id\`, \`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
-       VALUES (?, ?, ?, 'user', 'Account & Organization created', 'Registered new organizer tenant')`,
+       VALUES (?, ?, ?, 'user', 'Account & Organization created', 'Registered new organizer tenant - pending SuperAdmin approval')`,
       [tenantId, userId, fullName]
     );
 
     await dispatchNotification({
-      title: 'New Client Organization Registered',
-      message: `${workspaceName} registered by ${fullName.trim()} (${email.toLowerCase().trim()})`,
+      title: 'New Client Organization Awaiting Plan Approval',
+      message: `${workspaceName} registered by ${fullName.trim()} (${email.toLowerCase().trim()}). Awaiting SuperAdmin license activation.`,
       category: 'tenant',
-      severity: 'info',
-      metadata: { tenantId, userId, workspaceName, email: email.toLowerCase().trim() }
+      severity: 'warning',
+      metadata: { tenantId, userId, workspaceName, email: email.toLowerCase().trim(), transactionRef: regTrx }
     });
 
     const user = {
@@ -114,6 +115,9 @@ router.post('/register', async (req, res) => {
       name: workspaceName,
       slug: tenantSlug,
       plan: 'Starter',
+      status: 'pending_approval',
+      license_status: 'pending',
+      license_key: null,
       userRole: 'owner'
     };
 
@@ -121,11 +125,12 @@ router.post('/register', async (req, res) => {
 
     return res.status(201).json({
       success: true,
-      message: 'Account and organization workspace created successfully!',
+      message: 'Account registered! Your organization workspace is pending SuperAdmin approval & license activation.',
       token,
       user,
       tenant: activeTenant,
-      tenants: [activeTenant]
+      tenants: [activeTenant],
+      orderRef: regTrx
     });
   } catch (error) {
     console.error('[Auth Register Error]:', error);
@@ -154,22 +159,26 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
+    // STRICT ISOLATION: SuperAdmin (ORBIT-I) CANNOT log in through public client portal!
+    if (userRow.role === 'admin') {
+      return res.status(403).json({
+        success: false,
+        code: 'SUPERADMIN_PORTAL_REQUIRED',
+        message: 'Platform SuperAdmin (ORBIT-I) authentication must be performed exclusively via the private Master Gateway URL.'
+      });
+    }
+
     // Get user's tenants
     let userTenants = [];
-    if (userRow.role === 'admin') {
-      const [allTenants] = await query('SELECT * FROM `tenants` ORDER BY `created_at` ASC');
-      userTenants = allTenants;
-    } else {
-      const [myTenants] = await query(
-        `SELECT t.*, tm.role as user_role 
-         FROM \`tenants\` t 
-         LEFT JOIN \`tenant_members\` tm ON t.id = tm.tenant_id 
-         WHERE t.owner_id = ? OR tm.user_id = ? 
-         GROUP BY t.id`,
-        [userRow.id, userRow.id]
-      );
-      userTenants = (myTenants || []).filter(t => t.id !== 1 && t.slug !== 'eventorax-hq');
-    }
+    const [myTenants] = await query(
+      `SELECT t.*, tm.role as user_role 
+       FROM \`tenants\` t 
+       LEFT JOIN \`tenant_members\` tm ON t.id = tm.tenant_id 
+       WHERE t.owner_id = ? OR tm.user_id = ? 
+       GROUP BY t.id`,
+      [userRow.id, userRow.id]
+    );
+    userTenants = (myTenants || []).filter(t => t.id !== 1 && t.slug !== 'eventorax-hq');
 
     let activeTenant = userTenants[0];
     if (!activeTenant) {

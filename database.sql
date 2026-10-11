@@ -43,9 +43,14 @@ CREATE TABLE IF NOT EXISTS `tenants` (
   `secondary_color` VARCHAR(20) DEFAULT '#6d28d9',
   `owner_id` INT NOT NULL,
   `plan` ENUM('Starter', 'Professional', 'Enterprise', 'PaaS Developer') DEFAULT 'Starter',
-  `status` ENUM('active', 'suspended', 'trial') DEFAULT 'active',
+  `status` ENUM('active', 'pending_approval', 'suspended', 'trial') DEFAULT 'pending_approval',
+  `license_key` VARCHAR(64) DEFAULT NULL UNIQUE,
+  `license_status` ENUM('pending', 'active', 'suspended', 'expired') DEFAULT 'pending',
+  `license_activated_at` TIMESTAMP NULL DEFAULT NULL,
+  `license_expires_at` TIMESTAMP NULL DEFAULT NULL,
   `max_events` INT DEFAULT 10,
   `max_attendees` INT DEFAULT 1000,
+  `max_certs` INT DEFAULT 50,
   `api_access_enabled` BOOLEAN DEFAULT FALSE,
   `white_label_enabled` BOOLEAN DEFAULT FALSE,
   `trial_ends_at` TIMESTAMP NULL DEFAULT NULL,
@@ -202,9 +207,16 @@ CREATE TABLE IF NOT EXISTS `subscriptions` (
   `user_id` INT NOT NULL,
   `plan` VARCHAR(50) NOT NULL DEFAULT 'Starter',
   `price` DECIMAL(10, 2) DEFAULT 0.00,
+  `currency` VARCHAR(10) DEFAULT 'USD',
   `billing_cycle` VARCHAR(20) DEFAULT 'monthly',
   `attendees_limit` INT DEFAULT 500,
-  `status` VARCHAR(20) DEFAULT 'active',
+  `status` VARCHAR(30) DEFAULT 'pending_approval',
+  `license_key` VARCHAR(64) DEFAULT NULL,
+  `payment_method` VARCHAR(50) DEFAULT 'card',
+  `transaction_ref` VARCHAR(100) DEFAULT NULL,
+  `approved_by` INT DEFAULT NULL,
+  `approved_at` TIMESTAMP NULL DEFAULT NULL,
+  `notes` TEXT DEFAULT NULL,
   `renews_at` DATE DEFAULT NULL,
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT `fk_sub_tenant` FOREIGN KEY (`tenant_id`) REFERENCES `tenants` (`id`) ON DELETE CASCADE
@@ -509,4 +521,21 @@ VALUES
 (2, 2, 1, '{"theme":"modern_diploma","elements":[{"id":"el-title","type":"title","text":"DIPLOMA OF COMPLETION","x":525,"y":160,"fontSize":34,"fontFamily":"Playfair Display","fontWeight":"bold","color":"#1d4ed8","align":"center"},{"id":"el-subtitle","type":"text","text":"CONFERRED UPON","x":525,"y":225,"fontSize":13,"fontFamily":"Montserrat","fontWeight":"600","color":"#64748b","align":"center"},{"id":"el-name","type":"variable","text":"{{recipient_name}}","x":525,"y":305,"fontSize":36,"fontFamily":"Playfair Display","fontWeight":"bold","color":"#0f172a","align":"center"},{"id":"el-body","type":"text","text":"in recognition of demonstrated expertise and mastery in {{event_name}}.","x":525,"y":385,"fontSize":15,"fontFamily":"Inter","fontWeight":"normal","color":"#475569","align":"center"},{"id":"el-date","type":"variable","text":"Date: {{issue_date}}","x":260,"y":540,"fontSize":13,"fontFamily":"Inter","fontWeight":"500","color":"#64748b","align":"center"},{"id":"el-id","type":"variable","text":"Verify: {{certificate_id}}","x":790,"y":540,"fontSize":13,"fontFamily":"Space Grotesk","fontWeight":"600","color":"#1d4ed8","align":"center"}]}', 'preset:modern_diploma')
 ON DUPLICATE KEY UPDATE `id` = `id`;
 
+-- -----------------------------------------------------
+-- Table: testimonials (Authentic Client & Institute Reviews)
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `testimonials` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `client_name` VARCHAR(150) NOT NULL,
+  `organization` VARCHAR(150) NOT NULL,
+  `role` VARCHAR(100) DEFAULT 'Organizer',
+  `logo_url` MEDIUMTEXT DEFAULT NULL,
+  `rating` INT DEFAULT 5,
+  `feedback` TEXT NOT NULL,
+  `is_featured` BOOLEAN DEFAULT TRUE,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 SET FOREIGN_KEY_CHECKS = 1;
+
