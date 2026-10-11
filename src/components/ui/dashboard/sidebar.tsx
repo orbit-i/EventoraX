@@ -12,7 +12,14 @@ import {
   LogOut,
   ChevronRight,
   Palette,
-  X
+  X,
+  ShieldCheck,
+  Building2,
+  DollarSign,
+  Globe,
+  ShieldAlert,
+  Bell,
+  Tag
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/AuthContext";
@@ -23,6 +30,8 @@ export default function Sidebar() {
   const location = useLocation();
   const { user, currentTenant, logout } = useAuth();
   const { isOpen, closeSidebar } = useSidebar();
+
+  const isMaster = user?.role === 'admin' || currentTenant?.id === 1 || currentTenant?.slug === 'eventorax-hq';
 
   const userInitials = user?.fullName
     ? user.fullName
@@ -39,24 +48,37 @@ export default function Sidebar() {
     icon: any;
     badge?: string;
     end?: boolean;
+    tab?: string;
   }
 
-  // Base navigation items for all organizations
-  const navItems: NavItem[] = [
+  // PLATFORM SUPERADMIN (SaaS Governance, Revenue, Approvals & CMS)
+  const superAdminNavItems: NavItem[] = [
+    { to: "/superadmin", label: "Platform Overview", icon: ShieldCheck, end: true },
+    { to: "/superadmin?tab=tenants", tab: "tenants", label: "Client Organizations", icon: Building2 },
+    { to: "/superadmin?tab=approvals", tab: "approvals", label: "Subscription Approvals", icon: CreditCard, badge: "Approvals" },
+    { to: "/superadmin?tab=billing", tab: "billing", label: "Revenue & Financials", icon: DollarSign },
+    { to: "/superadmin?tab=pricing", tab: "pricing", label: "Pricing & Plans", icon: Tag },
+    { to: "/superadmin?tab=cms", tab: "cms", label: "Website & Portal CMS", icon: Globe },
+    { to: "/superadmin?tab=security", tab: "security", label: "Security & Anti-Fraud", icon: ShieldAlert },
+    { to: "/superadmin?tab=notifications", tab: "notifications", label: "Live System Alerts", icon: Bell },
+  ];
+
+  // CLIENT ORGANIZATIONS (Paid Event Managers, Seminars, ID passes & Certificates)
+  const clientNavItems: NavItem[] = [
     { to: "/dashboard", label: "Overview", icon: LayoutDashboard, end: true },
-    { to: "/dashboard/events", label: "Events", icon: Calendar },
-    { to: "/dashboard/id-cards", label: "ID Cards & Badges", icon: CreditCard, badge: "Print" },
+    { to: "/dashboard/events", label: "Events & Seminars", icon: Calendar },
+    { to: "/dashboard/id-cards", label: "ID Cards & Passes", icon: CreditCard, badge: "Print" },
     { to: "/dashboard/certificates", label: "Certificates", icon: Award, badge: "100+ Designs" },
     { to: "/dashboard/design-studio", label: "Canva Design Studio", icon: Palette, badge: "Studio" },
-    { to: "/dashboard/statistics", label: "Statistics", icon: BarChart3 },
-    { to: "/dashboard/charts", label: "Charts", icon: PieChart },
-    { to: "/dashboard/team", label: "Team", icon: Users },
-    { to: "/dashboard/billing", label: "Billing & Plans", icon: CreditCard },
+    { to: "/dashboard/statistics", label: "Attendance & Stats", icon: BarChart3 },
+    { to: "/dashboard/charts", label: "Analytics Charts", icon: PieChart },
+    { to: "/dashboard/team", label: "Team & Staff", icon: Users },
+    { to: "/dashboard/billing", label: "Plan & Billing", icon: CreditCard },
     { to: "/dashboard/settings", label: "Settings & Domain", icon: Settings },
     { to: "/dashboard/activity", label: "Activity Logs", icon: Activity },
   ];
 
-  const isMaster = user?.role === 'admin' || currentTenant?.id === 1 || currentTenant?.slug === 'eventorax-hq';
+  const navItems = isMaster ? superAdminNavItems : clientNavItems;
 
   return (
     <aside 
@@ -89,11 +111,11 @@ export default function Sidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[11px] font-bold text-[#0f172a] truncate">
-              {currentTenant?.name || "EventoraX Workspace"}
+              {isMaster ? "EventoraX Master HQ" : (currentTenant?.name || "EventoraX Workspace")}
             </p>
           </div>
           <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${isMaster ? 'bg-blue-100 text-blue-700 font-extrabold' : 'bg-[#f5f3ff] text-[#7c3aed]'}`}>
-            {isMaster ? "Platform Master" : (currentTenant?.plan || "Starter")}
+            {isMaster ? "Platform SuperAdmin" : (currentTenant?.plan || "Starter")}
           </span>
         </div>
       </div>
@@ -101,9 +123,11 @@ export default function Sidebar() {
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
-          const isActive = item.end 
-            ? location.pathname === item.to
-            : location.pathname.startsWith(item.to);
+          const isActive = item.tab
+            ? location.pathname === '/superadmin' && location.search.includes(`tab=${item.tab}`)
+            : item.end 
+              ? (location.pathname === item.to && (!location.search || location.search === ''))
+              : location.pathname.startsWith(item.to);
           const Icon = item.icon;
           
           return (

@@ -183,6 +183,27 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+
+    // Subscriptions & Payment Approvals
+    getSubscriptions: () =>
+      request<{ success: boolean; subscriptions: any[] }>('/admin/subscriptions'),
+
+    approveSubscription: (id: number) =>
+      request<{ success: boolean; message: string; plan?: string }>(`/admin/subscriptions/${id}/approve`, {
+        method: 'POST',
+      }),
+
+    rejectSubscription: (id: number, reason?: string) =>
+      request<{ success: boolean; message: string }>(`/admin/subscriptions/${id}/reject`, {
+        method: 'POST',
+        body: JSON.stringify({ reason }),
+      }),
+
+    updateTenantPermissions: (id: number, permissions: { maxEvents?: number; maxAttendees?: number; whiteLabel?: boolean; customDomain?: boolean }) =>
+      request<{ success: boolean; message: string }>(`/admin/tenants/${id}/permissions`, {
+        method: 'PUT',
+        body: JSON.stringify(permissions),
+      }),
   },
 
   // Public CMS
@@ -299,6 +320,15 @@ export const api = {
         method: 'POST',
         body: JSON.stringify({ plan }),
       }),
+
+    purchase: (data: { plan: string; billingCycle?: string; paymentMethod: string; transactionRef?: string; amount?: number; currency?: string; notes?: string }) =>
+      request<{ success: boolean; message: string; plan: string; status: string; invoiceNumber: string; amount?: number; currency?: string }>('/billing/purchase', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    getTransactions: () =>
+      request<{ success: boolean; transactions: any[] }>('/billing/transactions'),
   },
 
   // Contact

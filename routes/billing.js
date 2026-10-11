@@ -110,13 +110,115 @@ router.post('/upgrade', verifyToken, resolveTenant, requireTenantRole(['owner', 
 
     return res.json({
       success: true,
-      message: `Organization subscription upgraded to ${plan}.`,
+      message: `Plan upgraded to ${plan}!`,
       plan,
+      price: newLimits.price,
       attendeesLimit: newLimits.attendees
     });
   } catch (error) {
     console.error('[Billing Upgrade Error]:', error);
     return res.status(500).json({ success: false, message: 'Failed to upgrade plan.' });
+  }
+});
+
+// POST /api/billing/purchase - Submit real plan purchase with secure payment details
+router.post('/purchase', verifyToken, resolveTenant, requireTenantRole(['owner', 'admin']), async (req, res) => {
+  try {
+    const { plan, billingCycle = 'monthly', paymentMethod = 'card', transactionRef, amount, currency = 'USD', notes } = req.body;
+    const tenant = req.tenant;
+
+    if (req.user?.role === 'admin' || tenant.id === 1 || tenant.slug === 'eventorax-hq') {
+      return res.status(400).json({
+        success: false,
+        message: 'SuperAdmin has unlimited platform authority and cannot purchase a paid client subscription.'
+      });
+    }
+
+    if (!PLAN_LIMITS[plan]) {
+      return res.status(400).json({
+        success: false,
+        message: `Invalid plan selected. Valid options are: ${Object.keys(PLAN_LIMITS).join(', ')}`
+      });
+    }
+
+    const planInfo = PLAN_LIMITS[plan];
+    const finalAmount = amount || (planInfo.price * (billingCycle === 'yearly' ? 10 : 1));
+    const finalRef = transactionRef || `TXN-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+    // Insert pending subscription record awaiting SuperAdmin verification
+    const [subResult] = await query(
+      'INSERT INTO `subscriptions` (`tenant_id`, `user_id`, `plan`, `price`, `billing_cycle`, `attendees_limit`, `status`) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [tenant.id, req.user.id, plan, finalAmount, billingCycle, planInfo.attendees, 'pending_approval']
+    );
+
+    // If Starter (free tier), auto-activate; paid tiers require SuperAdmin verification
+    if (plan === 'Starter' || finalAmount === 0) {
+      await query(
+        'UPDATE `tenants` SET `plan` = ?, `max_events` = ?, `max_attendees` = ?, `white_label_enabled` = ? WHERE `id` = ?',
+        [plan, planInfo.maxEvents, planInfo.attendees, 0, tenant.id]
+      );
+      return res.json({
+        success: true,
+        message: 'Starter tier activated successfully!',
+        plan,
+        status: 'active',
+        invoiceNumber: finalRef
+      });
+    }
+
+    // Trigger SuperAdmin Notification
+    try {
+      const { dispatchNotification } = await import('../services/notificationsService.js');
+      await dispatchNotification({
+        title: 'New Client Subscription Purchase Pending Approval',
+        message: `Organization "${tenant.name}" (${req.user.email}) submitted ${currency} ${finalAmount} for ${plan} (${billingCycle}) via ${paymentMethod.toUpperCase()} (Ref: ${finalRef}). Pending SuperAdmin approval.`,
+        category: 'billing',
+        severity: 'warning',
+        metadata: {
+          tenantId: tenant.id,
+          plan,
+          amount: finalAmount,
+          currency,
+          paymentMethod,
+          transactionRef: finalRef
+        }
+      });
+    } catch (notifErr) {
+      console.warn('Notification dispatch failed:', notifErr);
+    }
+
+    return res.json({
+      success: true,
+      message: 'Subscription payment details submitted successfully! Your account plan is in queue for SuperAdmin approval.',
+      plan,
+      status: 'pending_approval',
+      invoiceNumber: finalRef,
+      paymentMethod,
+      amount: finalAmount,
+      currency
+    });
+  } catch (error) {
+    console.error('[Billing Purchase Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to process subscription purchase.' });
+  }
+});
+
+// GET /api/billing/transactions - Get invoices & payment history for current tenant
+router.get('/transactions', verifyToken, resolveTenant, async (req, res) => {
+  try {
+    const tenant = req.tenant;
+    const [rows] = await query(
+      'SELECT * FROM `subscriptions` WHERE `tenant_id` = ? ORDER BY `created_at` DESC',
+      [tenant.id]
+    );
+
+    return res.json({
+      success: true,
+      transactions: rows || []
+    });
+  } catch (error) {
+    console.error('[Billing Transactions Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve transactions.' });
   }
 });
 

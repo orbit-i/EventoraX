@@ -381,17 +381,161 @@ router.delete('/notifications', verifyToken, requireSuperAdmin, (req, res) => {
   return res.json({ success: true, message: 'Notification stream cleared.' });
 });
 
-// POST /api/admin/notifications/test - Trigger a live test alert
-router.post('/notifications/test', verifyToken, requireSuperAdmin, async (req, res) => {
-  const { title, message, category, severity } = req.body;
-  const notif = await dispatchNotification({
-    title: title || 'Live System Test Alert',
-    message: message || 'Real-time multi-tenant event pipeline is fully operational.',
-    category: category || 'system',
-    severity: severity || 'info',
-    metadata: { triggeredBy: req.user.email, timestamp: new Date().toISOString() }
-  });
-  return res.json({ success: true, message: 'Test notification dispatched live!', notification: notif });
+// =========================================================================
+// SUPERADMIN SUBSCRIPTION & PAYMENT APPROVAL WORKFLOW
+// =========================================================================
+
+const SA_PLAN_LIMITS = {
+  Starter: { price: 0, attendees: 500, maxEvents: 5, whiteLabel: false },
+  Professional: { price: 99, attendees: 5000, maxEvents: 25, whiteLabel: true },
+  Enterprise: { price: 299, attendees: 50000, maxEvents: 500, whiteLabel: true }
+};
+
+// GET /api/admin/subscriptions - List all client subscription & payment requests
+router.get('/subscriptions', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const [subRows] = await query('SELECT * FROM `subscriptions` ORDER BY `created_at` DESC');
+    const [tenants] = await query('SELECT id, name, slug, plan, status FROM `tenants`');
+    const [users] = await query('SELECT id, full_name, email, phone FROM `users`');
+
+    const tenantMap = {};
+    tenants.forEach(t => { tenantMap[t.id] = t; });
+    const userMap = {};
+    users.forEach(u => { userMap[u.id] = u; });
+
+    const enriched = (subRows || []).map(s => {
+      const t = tenantMap[s.tenant_id] || {};
+      const u = userMap[s.user_id] || {};
+      return {
+        ...s,
+        tenantName: t.name || s.tenant_name || 'Organization',
+        tenantSlug: t.slug || '',
+        currentTenantPlan: t.plan || 'Starter',
+        ownerName: u.full_name || s.user_name || 'Client User',
+        ownerEmail: u.email || s.user_email || '',
+        ownerPhone: u.phone || '',
+        price: s.price || 0,
+        currency: s.currency || 'USD',
+        status: s.status || 'pending_approval'
+      };
+    });
+
+    return res.json({
+      success: true,
+      subscriptions: enriched
+    });
+  } catch (error) {
+    console.error('[Platform Admin Subscriptions Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve subscriptions.' });
+  }
+});
+
+// POST /api/admin/subscriptions/:id/approve - Approve client plan & grant full platform access
+router.post('/subscriptions/:id/approve', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const subId = parseInt(req.params.id, 10);
+    const [subRows] = await query('SELECT * FROM `subscriptions` WHERE `id` = ?', [subId]);
+    const subscription = subRows[0];
+
+    if (!subscription) {
+      return res.status(404).json({ success: false, message: 'Subscription request not found.' });
+    }
+
+    const plan = subscription.plan || 'Professional';
+    const planConfig = SA_PLAN_LIMITS[plan] || SA_PLAN_LIMITS.Professional;
+
+    // 1. Mark subscription as active & approved
+    await query(
+      'UPDATE `subscriptions` SET `status` = ?, `approved_by` = ? WHERE `id` = ?',
+      ['active', req.user.id, subId]
+    );
+
+    // 2. Activate tenant and set official plan limits
+    await query(
+      'UPDATE `tenants` SET `plan` = ?, `status` = ?, `max_events` = ?, `max_attendees` = ?, `white_label_enabled` = ? WHERE `id` = ?',
+      [plan, 'active', planConfig.maxEvents, planConfig.attendees, planConfig.whiteLabel ? 1 : 0, subscription.tenant_id]
+    );
+
+    // 3. Dispatch Live Alert to Platform SuperAdmin Notification Stream
+    await dispatchNotification({
+      title: 'Client Subscription Approved & Activated',
+      message: `Tenant #${subscription.tenant_id} has been activated on ${plan} tier by SuperAdmin.`,
+      category: 'billing',
+      severity: 'success',
+      metadata: { subscriptionId: subId, plan, approvedBy: req.user.email }
+    });
+
+    logSecurityEvent({
+      severity: 'INFO',
+      type: 'SUBSCRIPTION_APPROVED',
+      action: 'SuperAdmin Activated Client Subscription',
+      detail: `SuperAdmin ${req.user.email} approved ${plan} subscription #${subId} for tenant #${subscription.tenant_id}`,
+      userId: req.user.id,
+      tenantId: subscription.tenant_id
+    });
+
+    return res.json({
+      success: true,
+      message: `Subscription approved successfully! Client organization upgraded to ${plan} tier.`,
+      subscriptionId: subId,
+      plan
+    });
+  } catch (error) {
+    console.error('[Platform Admin Approve Subscription Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to approve subscription.' });
+  }
+});
+
+// POST /api/admin/subscriptions/:id/reject - Reject subscription request with reason
+router.post('/subscriptions/:id/reject', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const subId = parseInt(req.params.id, 10);
+    const { reason = 'Payment verification could not be completed.' } = req.body;
+
+    await query(
+      'UPDATE `subscriptions` SET `status` = ?, `notes` = ? WHERE `id` = ?',
+      ['rejected', reason, subId]
+    );
+
+    return res.json({
+      success: true,
+      message: 'Subscription request rejected.',
+      subscriptionId: subId
+    });
+  } catch (error) {
+    console.error('[Platform Admin Reject Subscription Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to reject subscription.' });
+  }
+});
+
+// PUT /api/admin/tenants/:id/permissions - Fine-tune specific client features & quotas
+router.put('/tenants/:id/permissions', verifyToken, requireSuperAdmin, async (req, res) => {
+  try {
+    const tenantId = parseInt(req.params.id, 10);
+    const { maxEvents, maxAttendees, whiteLabel, customDomain } = req.body;
+
+    if (tenantId === 1) {
+      return res.status(400).json({ success: false, message: 'SuperAdmin workspace has unconditional master authority.' });
+    }
+
+    await query(
+      'UPDATE `tenants` SET `max_events` = ?, `max_attendees` = ?, `white_label_enabled` = ? WHERE `id` = ?',
+      [
+        maxEvents !== undefined ? parseInt(maxEvents, 10) : 25,
+        maxAttendees !== undefined ? parseInt(maxAttendees, 10) : 5000,
+        whiteLabel ? 1 : 0,
+        tenantId
+      ]
+    );
+
+    return res.json({
+      success: true,
+      message: 'Tenant quota and permissions updated successfully.'
+    });
+  } catch (error) {
+    console.error('[Platform Admin Permissions Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to update tenant permissions.' });
+  }
 });
 
 export default router;

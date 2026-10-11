@@ -85,21 +85,32 @@ export default function SubscriptionCheckoutModal({
     setIsProcessing(true);
 
     try {
-      // Simulate real processing & call billing upgrade if logged in
+      let purchaseRes: any = null;
       try {
-        await api.billing.upgrade(selectedPlan.name);
+        purchaseRes = await api.billing.purchase({
+          plan: selectedPlan.name,
+          billingCycle: isAnnual ? 'yearly' : 'monthly',
+          paymentMethod,
+          transactionRef: trxId || (paymentMethod === 'card' ? `CARD-${Date.now().toString(36).toUpperCase()}` : undefined),
+          amount: isFree ? 0 : (isAnnual ? priceUsd * 12 : priceUsd),
+          currency,
+          notes: `Payment for ${selectedPlan.name} via ${paymentMethod.toUpperCase()}`
+        });
       } catch (err) {
-        // Fallback for guests or direct checkouts
+        // Fallback for direct or guest flow
       }
 
-      await new Promise(r => setTimeout(r, 1200));
+      await new Promise(r => setTimeout(r, 600));
 
-      const invoiceNumber = `EVX-INV-${Date.now().toString().slice(-6)}`;
+      const invoiceNumber = purchaseRes?.invoiceNumber || (trxId ? trxId : `EVX-INV-${Date.now().toString().slice(-6)}`);
+      const status = purchaseRes?.status || (isFree ? 'active' : 'pending_approval');
+
       setSuccessData({
         invoiceNumber,
         plan: selectedPlan.name,
         amount: totalDue,
         currency,
+        status,
         billingCycle: isAnnual ? 'Annual (20% Discount)' : 'Monthly',
         paymentMethod: isFree ? 'Free Community Tier' : paymentMethod.toUpperCase(),
         date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
@@ -517,14 +528,28 @@ export default function SubscriptionCheckoutModal({
         ) : (
           /* Success Screen & Printable Invoice */
           <div className="p-8 text-center space-y-6">
-            <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-3xl flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20 animate-in zoom-in-75">
-              <Check className="w-9 h-9 stroke-[3]" />
+            <div className={`w-16 h-16 rounded-3xl flex items-center justify-center mx-auto shadow-lg animate-in zoom-in-75 ${
+              successData.status === 'pending_approval'
+                ? 'bg-amber-100 text-amber-600 shadow-amber-500/20'
+                : 'bg-emerald-100 text-emerald-600 shadow-emerald-500/20'
+            }`}>
+              {successData.status === 'pending_approval' ? (
+                <ShieldCheck className="w-9 h-9 stroke-[2.5]" />
+              ) : (
+                <Check className="w-9 h-9 stroke-[3]" />
+              )}
             </div>
 
             <div>
-              <h3 className="text-2xl font-bold font-heading text-slate-900">Subscription Activated!</h3>
-              <p className="text-sm text-slate-600 mt-1">
-                Your organization <strong>{successData.orgName}</strong> is now on the <strong>{successData.plan}</strong> tier.
+              <h3 className="text-2xl font-bold font-heading text-slate-900">
+                {successData.status === 'pending_approval'
+                  ? 'Payment Submitted • Awaiting SuperAdmin Approval'
+                  : 'Subscription Activated!'}
+              </h3>
+              <p className="text-sm text-slate-600 mt-1 max-w-md mx-auto">
+                {successData.status === 'pending_approval'
+                  ? `Your payment reference has been submitted to EventoraX Platform SuperAdmin (HQ). SuperAdmin verifies payments to activate organization quotas and features.`
+                  : `Your organization ${successData.orgName} is now on the ${successData.plan} tier.`}
               </p>
             </div>
 
@@ -538,7 +563,13 @@ export default function SubscriptionCheckoutModal({
                   <Receipt className="w-4 h-4 text-[#1d4ed8]" />
                   EventoraX Official Receipt
                 </span>
-                <span className="text-[10px] px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold uppercase">PAID</span>
+                <span className={`text-[10px] px-2 py-0.5 rounded font-bold uppercase ${
+                  successData.status === 'pending_approval'
+                    ? 'bg-amber-100 text-amber-800 border border-amber-300'
+                    : 'bg-emerald-100 text-emerald-800'
+                }`}>
+                  {successData.status === 'pending_approval' ? 'PENDING APPROVAL' : 'PAID & ACTIVE'}
+                </span>
               </div>
               <div className="flex justify-between text-slate-600">
                 <span>Invoice ID:</span>

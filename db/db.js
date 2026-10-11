@@ -740,13 +740,34 @@ function handleMemoryQuery(sql, params = []) {
     return [{ insertId: newMsg.id }];
   }
 
-  // SUBSCRIPTIONS
+  // SUBSCRIPTIONS (Multi-Tenant Billing & SuperAdmin Approvals)
   if (s.includes('from `subscriptions`') || s.includes('from subscriptions')) {
+    if (s.includes('where `id` =') || s.includes('where id =')) {
+      const id = parseInt(params[0], 10);
+      const sub = memoryStore.subscriptions.find(x => x.id === id);
+      return [sub ? [sub] : []];
+    }
     if (s.includes('tenant_id = ?') || s.includes('`tenant_id` = ?')) {
       const tId = parseInt(params[0], 10);
       return [memoryStore.subscriptions.filter(s => s.tenant_id === tId)];
     }
     return [memoryStore.subscriptions];
+  }
+
+  if (s.includes('update `subscriptions`') || s.includes('update subscriptions')) {
+    const id = parseInt(params[params.length - 1], 10);
+    const sub = memoryStore.subscriptions.find(x => x.id === id);
+    if (sub) {
+      if (s.includes('`status` = ?') || s.includes('status = ?')) {
+        sub.status = params[0];
+        if (params[1]) sub.notes = params[1];
+        if (s.includes('approved_at')) {
+          sub.approved_at = new Date().toISOString();
+          sub.approved_by = params[1] || 1;
+        }
+      }
+    }
+    return [{ affectedRows: sub ? 1 : 0 }];
   }
 
   if (s.includes('insert into `subscriptions`') || s.includes('insert into subscriptions')) {
@@ -758,7 +779,11 @@ function handleMemoryQuery(sql, params = []) {
       price: params[3],
       billing_cycle: params[4] || 'monthly',
       attendees_limit: params[5],
-      status: 'active',
+      status: params[6] || 'pending_approval',
+      payment_method: params[7] || 'card',
+      transaction_ref: params[8] || `TX-${Date.now().toString(36).toUpperCase()}`,
+      currency: params[9] || 'USD',
+      notes: params[10] || '',
       created_at: new Date().toISOString()
     };
     memoryStore.subscriptions.unshift(newSub);

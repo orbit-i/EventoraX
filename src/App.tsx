@@ -86,7 +86,7 @@ function SuperAdminRoute({ children }: { children: React.ReactNode }) {
 function Layout({ children }: { children: React.ReactNode }) {
   const location = useLocation();
   const isAuthPage = location.pathname === '/login' || location.pathname === '/register';
-  const isDashboard = location.pathname.startsWith('/dashboard');
+  const isDashboard = location.pathname.startsWith('/dashboard') || location.pathname.startsWith('/superadmin');
   const isTenantPortal = location.pathname.startsWith('/t/') || location.pathname.startsWith('/c/');
   const isVerifyPage = location.pathname.startsWith('/verify');
   const isPublicEvent = location.pathname.startsWith('/e/') || location.pathname.startsWith('/events/');
@@ -200,6 +200,18 @@ function AppRoutes() {
                 </SuperAdminRoute>
               } 
             />
+          </Route>
+
+          {/* Dedicated SuperAdmin Platform Authority Console */}
+          <Route 
+            path="/superadmin" 
+            element={
+              <SuperAdminRoute>
+                <DashboardLayout />
+              </SuperAdminRoute>
+            }
+          >
+            <Route index element={<PlatformAdmin />} />
           </Route>
 
           {/* 404 */}

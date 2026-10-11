@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import Header from "@/components/ui/dashboard/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,14 +25,32 @@ import {
   Bell,
   Ticket,
   Sparkles,
-  Check
+  Check,
+  CreditCard,
+  Tag,
+  AlertCircle,
+  Copy,
+  Sliders,
+  ArrowRight,
+  Smartphone,
+  QrCode,
+  AlertTriangle,
+  Receipt
 } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 
+type AdminTab = 'overview' | 'tenants' | 'approvals' | 'billing' | 'pricing' | 'cms' | 'security' | 'notifications';
+
 export default function PlatformAdmin() {
   const { isSuperAdmin } = useAuth();
-  const [activeTab, setActiveTab] = useState<'tenants' | 'security' | 'cms' | 'notifications'>('tenants');
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  // Tab State synced with URL query param `?tab=...`
+  const urlTab = (searchParams.get('tab') as AdminTab) || 'overview';
+  const [activeTab, setActiveTab] = useState<AdminTab>(urlTab);
+
+  // Platform Metrics & Tenants
   const [metrics, setMetrics] = useState<any>(null);
   const [tenants, setTenants] = useState<any[]>([]);
   const [search, setSearch] = useState("");
@@ -39,8 +58,34 @@ export default function PlatformAdmin() {
   const [filterStatus, setFilterStatus] = useState("All");
   const [actionLoading, setActionLoading] = useState<number | null>(null);
 
-  // Tenant Inspector Modal State (Replaces unsafe switchTenant context switcher)
+  // Tenant Inspector Modal State
   const [inspectingTenant, setInspectingTenant] = useState<any | null>(null);
+
+  // Subscription Approvals Queue State
+  const [subscriptions, setSubscriptions] = useState<any[]>([]);
+  const [subsLoading, setSubsLoading] = useState(false);
+  const [subFilter, setSubFilter] = useState<'all' | 'pending' | 'active' | 'rejected'>('all');
+  const [subSearch, setSubSearch] = useState('');
+  const [approvingSubId, setApprovingSubId] = useState<number | null>(null);
+  const [rejectModal, setRejectModal] = useState<{ open: boolean; subId: number | null; reason: string }>({
+    open: false,
+    subId: null,
+    reason: ''
+  });
+  const [adjustModal, setAdjustModal] = useState<{
+    open: boolean;
+    tenant: any | null;
+    maxEvents: number;
+    maxAttendees: number;
+    whiteLabel: boolean;
+  }>({
+    open: false,
+    tenant: null,
+    maxEvents: 25,
+    maxAttendees: 5000,
+    whiteLabel: false
+  });
+  const [copiedTid, setCopiedTid] = useState<string | null>(null);
 
   // Security Monitoring State
   const [securityLogs, setSecurityLogs] = useState<any[]>([]);
@@ -61,6 +106,21 @@ export default function PlatformAdmin() {
   const [notifCategoryFilter, setNotifCategoryFilter] = useState("all");
   const [testNotifLoading, setTestNotifLoading] = useState(false);
 
+  // Sync tab with URL
+  useEffect(() => {
+    const currentTab = (searchParams.get('tab') as AdminTab) || 'overview';
+    setActiveTab(currentTab);
+  }, [searchParams]);
+
+  const switchTab = (newTab: AdminTab) => {
+    setActiveTab(newTab);
+    if (newTab === 'overview') {
+      setSearchParams({});
+    } else {
+      setSearchParams({ tab: newTab });
+    }
+  };
+
   const loadAdminNotifications = async () => {
     try {
       const res = await api.platformAdmin.getNotifications({ limit: 50 });
@@ -73,52 +133,17 @@ export default function PlatformAdmin() {
     }
   };
 
-  useEffect(() => {
-    loadAdminNotifications();
-    const interval = setInterval(loadAdminNotifications, 6000); // 6s real-time live polling
-    return () => clearInterval(interval);
-  }, []);
-
-  const handleMarkAllNotifsRead = async () => {
+  const loadSubscriptions = async () => {
+    setSubsLoading(true);
     try {
-      await api.platformAdmin.markAllNotificationsRead();
-      setAdminNotifs(prev => prev.map(n => ({ ...n, read: true })));
-      setUnreadAdminNotifCount(0);
-    } catch {}
-  };
-
-  const handleMarkSingleNotifRead = async (id: number) => {
-    try {
-      await api.platformAdmin.markNotificationRead(id);
-      setAdminNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
-      setUnreadAdminNotifCount(prev => Math.max(0, prev - 1));
-    } catch {}
-  };
-
-  const handleClearNotifs = async () => {
-    try {
-      await api.platformAdmin.clearNotifications();
-      setAdminNotifs([]);
-      setUnreadAdminNotifCount(0);
-    } catch {}
-  };
-
-  const handleTriggerTestAlert = async () => {
-    setTestNotifLoading(true);
-    try {
-      const res = await api.platformAdmin.sendTestNotification({
-        title: 'Superadmin Live Pipeline Verified',
-        message: 'Real-time multi-tenant notification stream is 100% active and firing live.',
-        category: 'system',
-        severity: 'success'
-      });
-      if (res.success) {
-        loadAdminNotifications();
+      const res = await api.platformAdmin.getSubscriptions();
+      if (res.success && res.subscriptions) {
+        setSubscriptions(res.subscriptions);
       }
-    } catch (err: any) {
-      alert(err.message || "Failed to trigger test notification.");
+    } catch (err) {
+      console.error("Failed to load subscriptions:", err);
     } finally {
-      setTestNotifLoading(false);
+      setSubsLoading(false);
     }
   };
 
@@ -166,12 +191,25 @@ export default function PlatformAdmin() {
   };
 
   useEffect(() => {
+    loadAdminNotifications();
+    loadSubscriptions();
+    const interval = setInterval(() => {
+      loadAdminNotifications();
+      loadSubscriptions();
+    }, 6000); // 6s real-time live polling
+    return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     loadData();
   }, [search, filterPlan, filterStatus]);
 
   useEffect(() => {
     if (activeTab === 'cms') {
       loadCmsData();
+    }
+    if (activeTab === 'approvals' || activeTab === 'billing') {
+      loadSubscriptions();
     }
   }, [activeTab]);
 
@@ -183,7 +221,7 @@ export default function PlatformAdmin() {
     }
   }, [selectedCmsPageKey]);
 
-  // Strict SuperAdmin Access Guard: Client organization accounts can NEVER access this panel
+  // Strict SuperAdmin Access Guard
   if (!isSuperAdmin) {
     return (
       <div className="p-8 max-w-2xl mx-auto my-12 text-center bg-white rounded-3xl border border-red-200 shadow-xl">
@@ -194,7 +232,7 @@ export default function PlatformAdmin() {
           Platform Superadmin Privileges Required
         </h2>
         <p className="text-sm text-[#64748b] leading-relaxed mb-6">
-          Access strictly denied. Client organization and organizer workspaces are cryptographically isolated from the root platform administration console.
+          Access strictly denied. Client organization workspaces are cryptographically isolated from the root platform administration console.
         </p>
         <Button 
           onClick={() => window.location.href = '/dashboard'}
@@ -205,6 +243,55 @@ export default function PlatformAdmin() {
       </div>
     );
   }
+
+  // Action handlers
+  const handleApproveSubscription = async (subId: number) => {
+    setApprovingSubId(subId);
+    try {
+      const res = await api.platformAdmin.approveSubscription(subId);
+      if (res.success) {
+        await loadSubscriptions();
+        await loadData();
+        loadAdminNotifications();
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to approve subscription.");
+    } finally {
+      setApprovingSubId(null);
+    }
+  };
+
+  const handleRejectSubscription = async () => {
+    if (!rejectModal.subId) return;
+    try {
+      const res = await api.platformAdmin.rejectSubscription(rejectModal.subId, rejectModal.reason);
+      if (res.success) {
+        setRejectModal({ open: false, subId: null, reason: '' });
+        await loadSubscriptions();
+        await loadData();
+        loadAdminNotifications();
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to reject subscription.");
+    }
+  };
+
+  const handleSavePermissions = async () => {
+    if (!adjustModal.tenant) return;
+    try {
+      const res = await api.platformAdmin.updateTenantPermissions(adjustModal.tenant.id, {
+        maxEvents: adjustModal.maxEvents,
+        maxAttendees: adjustModal.maxAttendees,
+        whiteLabel: adjustModal.whiteLabel
+      });
+      if (res.success) {
+        setAdjustModal({ open: false, tenant: null, maxEvents: 25, maxAttendees: 5000, whiteLabel: false });
+        loadData();
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to update tenant quotas.");
+    }
+  };
 
   const handleUpdatePlan = async (tenantId: number, newPlan: string) => {
     setActionLoading(tenantId);
@@ -274,11 +361,78 @@ export default function PlatformAdmin() {
     }
   };
 
+  const handleMarkAllNotifsRead = async () => {
+    try {
+      await api.platformAdmin.markAllNotificationsRead();
+      setAdminNotifs(prev => prev.map(n => ({ ...n, read: true })));
+      setUnreadAdminNotifCount(0);
+    } catch {}
+  };
+
+  const handleMarkSingleNotifRead = async (id: number) => {
+    try {
+      await api.platformAdmin.markNotificationRead(id);
+      setAdminNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+      setUnreadAdminNotifCount(prev => Math.max(0, prev - 1));
+    } catch {}
+  };
+
+  const handleClearNotifs = async () => {
+    try {
+      await api.platformAdmin.clearNotifications();
+      setAdminNotifs([]);
+      setUnreadAdminNotifCount(0);
+    } catch {}
+  };
+
+  const handleTriggerTestAlert = async () => {
+    setTestNotifLoading(true);
+    try {
+      const res = await api.platformAdmin.sendTestNotification({
+        title: 'Superadmin Live Pipeline Verified',
+        message: 'Real-time multi-tenant notification stream is 100% active and firing live.',
+        category: 'system',
+        severity: 'success'
+      });
+      if (res.success) {
+        loadAdminNotifications();
+      }
+    } catch (err: any) {
+      alert(err.message || "Failed to trigger test notification.");
+    } finally {
+      setTestNotifLoading(false);
+    }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setCopiedTid(text);
+    setTimeout(() => setCopiedTid(null), 2000);
+  };
+
+  // Metrics calculations
   const totalMRR = metrics?.totalMRR ?? 0;
   const totalARR = metrics?.annualRunRate ?? (totalMRR * 12);
   const totalTenants = metrics?.totalTenants ?? tenants.length;
-  const totalEvents = metrics?.totalEvents ?? 0;
-  const totalAttendees = metrics?.totalAttendees ?? 0;
+
+  const pendingSubs = subscriptions.filter(s => s.status === 'pending_approval');
+  const activeSubs = subscriptions.filter(s => s.status === 'active');
+  const rejectedSubs = subscriptions.filter(s => s.status === 'rejected');
+
+  const filteredSubscriptions = subscriptions.filter(s => {
+    if (subFilter === 'pending' && s.status !== 'pending_approval') return false;
+    if (subFilter === 'active' && s.status !== 'active') return false;
+    if (subFilter === 'rejected' && s.status !== 'rejected') return false;
+    if (subSearch) {
+      const q = subSearch.toLowerCase();
+      const matchName = (s.tenantName || '').toLowerCase().includes(q);
+      const matchEmail = (s.ownerEmail || '').toLowerCase().includes(q);
+      const matchPlan = (s.plan || '').toLowerCase().includes(q);
+      const matchRef = (s.transaction_ref || s.invoice_number || '').toLowerCase().includes(q);
+      return matchName || matchEmail || matchPlan || matchRef;
+    }
+    return true;
+  });
 
   return (
     <div className="pb-16 min-h-screen">
@@ -290,20 +444,23 @@ export default function PlatformAdmin() {
           <div className="relative z-10 max-w-3xl space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-emerald-300">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              EventoraX Master SuperAdmin • Verified by ORBIT-I Private Limited
+              EventoraX Master SuperAdmin • Platform Authority
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-heading">
-              EventoraX Global Governance &amp; Security Console
+              EventoraX Platform Governance &amp; Approvals HQ
             </h1>
             <p className="text-sm text-slate-300 leading-relaxed">
-              Platform administration, client workspace isolation enforcement, real-time threat neutralization, and official public website CMS management.
+              Master control center for client subscriptions, payment approvals, financial revenues, isolated tenant quotas, and security enforcement. SuperAdmin oversees the platform — client organizations manage their events.
             </p>
           </div>
         </div>
 
         {/* Global SaaS Metrics Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <Card className="border-[#e2e8f0] bg-white shadow-xs hover:shadow-md transition-shadow">
+          <Card 
+            onClick={() => switchTab('billing')}
+            className="border-[#e2e8f0] bg-white shadow-xs hover:shadow-md transition-all cursor-pointer"
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -320,14 +477,17 @@ export default function PlatformAdmin() {
             </CardContent>
           </Card>
 
-          <Card className="border-[#e2e8f0] bg-white shadow-xs hover:shadow-md transition-shadow">
+          <Card 
+            onClick={() => switchTab('tenants')}
+            className="border-[#e2e8f0] bg-white shadow-xs hover:shadow-md transition-all cursor-pointer"
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold text-[#64748b] uppercase tracking-wider">Active Organizations</p>
+                  <p className="text-xs font-bold text-[#64748b] uppercase tracking-wider">Client Organizations</p>
                   <p className="text-3xl font-black text-[#0f172a] mt-1">{totalTenants}</p>
                   <p className="text-xs text-[#1d4ed8] font-semibold mt-1">
-                    {metrics?.activeTenants || totalTenants} isolated client workspaces
+                    {metrics?.activeTenants || totalTenants} active client workspaces
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-2xl bg-blue-50 text-[#1d4ed8] flex items-center justify-center">
@@ -337,24 +497,36 @@ export default function PlatformAdmin() {
             </CardContent>
           </Card>
 
-          <Card className="border-[#e2e8f0] bg-white shadow-xs hover:shadow-md transition-shadow">
+          <Card 
+            onClick={() => switchTab('approvals')}
+            className={`border-[#e2e8f0] bg-white shadow-xs hover:shadow-md transition-all cursor-pointer ${
+              pendingSubs.length > 0 ? 'ring-2 ring-amber-400 bg-amber-50/20' : ''
+            }`}
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-xs font-bold text-[#64748b] uppercase tracking-wider">Platform Events</p>
-                  <p className="text-3xl font-black text-[#0f172a] mt-1">{totalEvents}</p>
-                  <p className="text-xs text-indigo-600 font-semibold mt-1">
-                    {totalAttendees.toLocaleString()} registered attendees
+                  <p className="text-xs font-bold text-[#64748b] uppercase tracking-wider">Pending Plan Approvals</p>
+                  <p className={`text-3xl font-black mt-1 ${pendingSubs.length > 0 ? 'text-amber-600' : 'text-[#0f172a]'}`}>
+                    {pendingSubs.length}
+                  </p>
+                  <p className="text-xs text-amber-600 font-semibold mt-1">
+                    {pendingSubs.length > 0 ? '⚠️ Verification required' : '✓ All caught up'}
                   </p>
                 </div>
-                <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
-                  <Calendar className="w-6 h-6" />
+                <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${
+                  pendingSubs.length > 0 ? 'bg-amber-100 text-amber-700 animate-pulse' : 'bg-slate-100 text-slate-600'
+                }`}>
+                  <CreditCard className="w-6 h-6" />
                 </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="border-[#e2e8f0] bg-white shadow-xs hover:shadow-md transition-shadow">
+          <Card 
+            onClick={() => switchTab('security')}
+            className="border-[#e2e8f0] bg-white shadow-xs hover:shadow-md transition-all cursor-pointer"
+          >
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div>
@@ -364,7 +536,7 @@ export default function PlatformAdmin() {
                     24/7 ACTIVE
                   </p>
                   <p className="text-xs text-slate-500 font-semibold mt-1">
-                    0 Threats • Zero Cross-Tenant Leaks
+                    0 Threats • Workspaces Isolated
                   </p>
                 </div>
                 <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
@@ -375,10 +547,65 @@ export default function PlatformAdmin() {
           </Card>
         </div>
 
-        {/* Tab Selector */}
-        <div className="flex flex-wrap items-center gap-3 border-b border-slate-200 pb-3">
+        {/* Pending Approvals High-Priority Banner (if any) */}
+        {pendingSubs.length > 0 && activeTab !== 'approvals' && (
+          <div className="p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-900 flex flex-wrap items-center justify-between gap-4 shadow-sm animate-in fade-in">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-200 text-amber-900 flex items-center justify-center shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="text-sm font-bold">
+                  {pendingSubs.length} Client Subscription Purchase{pendingSubs.length > 1 ? 's' : ''} Awaiting Approval
+                </h4>
+                <p className="text-xs text-amber-700 mt-0.5">
+                  Clients have submitted payment references. Please verify transactions to activate their accounts.
+                </p>
+              </div>
+            </div>
+            <Button
+              onClick={() => switchTab('approvals')}
+              className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold h-9 px-4 flex items-center gap-1.5"
+            >
+              Open Approvals Queue
+              <ArrowRight className="w-3.5 h-3.5" />
+            </Button>
+          </div>
+        )}
+
+        {/* Tab Selector (8 Governed Tabs) */}
+        <div className="flex flex-wrap items-center gap-2 border-b border-slate-200 pb-3">
           <button
-            onClick={() => setActiveTab('tenants')}
+            onClick={() => switchTab('overview')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'overview'
+                ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <ShieldCheck className="w-4 h-4" />
+            Platform Overview
+          </button>
+
+          <button
+            onClick={() => switchTab('approvals')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'approvals'
+                ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <CreditCard className="w-4 h-4 text-amber-500" />
+            Subscription Approvals
+            {pendingSubs.length > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-amber-500 text-white text-[10px] font-black animate-pulse">
+                {pendingSubs.length}
+              </span>
+            )}
+          </button>
+
+          <button
+            onClick={() => switchTab('tenants')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
               activeTab === 'tenants'
                 ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
@@ -386,10 +613,47 @@ export default function PlatformAdmin() {
             }`}
           >
             <Building2 className="w-4 h-4" />
-            Client Organizations Directory ({tenants.length})
+            Client Organizations ({tenants.length})
           </button>
+
           <button
-            onClick={() => setActiveTab('security')}
+            onClick={() => switchTab('billing')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'billing'
+                ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <DollarSign className="w-4 h-4 text-emerald-500" />
+            Revenue &amp; Financials
+          </button>
+
+          <button
+            onClick={() => switchTab('pricing')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'pricing'
+                ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <Tag className="w-4 h-4 text-indigo-500" />
+            Pricing &amp; Market Plans
+          </button>
+
+          <button
+            onClick={() => switchTab('cms')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'cms'
+                ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <Globe className="w-4 h-4 text-blue-500" />
+            Website &amp; Portal CMS
+          </button>
+
+          <button
+            onClick={() => switchTab('security')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
               activeTab === 'security'
                 ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
@@ -397,21 +661,11 @@ export default function PlatformAdmin() {
             }`}
           >
             <ShieldAlert className="w-4 h-4 text-emerald-500" />
-            24/7 Security &amp; Policy Monitoring (Live Sentinel)
+            Security &amp; Sentinel
           </button>
+
           <button
-            onClick={() => setActiveTab('cms')}
-            className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
-              activeTab === 'cms'
-                ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
-                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
-            }`}
-          >
-            <Globe className="w-4 h-4 text-amber-500" />
-            Official Website CMS &amp; Content Manager
-          </button>
-          <button
-            onClick={() => setActiveTab('notifications')}
+            onClick={() => switchTab('notifications')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
               activeTab === 'notifications'
                 ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
@@ -419,7 +673,7 @@ export default function PlatformAdmin() {
             }`}
           >
             <Bell className="w-4 h-4 text-rose-500" />
-            Live System Notifications &amp; Alerts
+            Live Alerts
             {unreadAdminNotifCount > 0 && (
               <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-black animate-pulse">
                 {unreadAdminNotifCount}
@@ -428,13 +682,341 @@ export default function PlatformAdmin() {
           </button>
         </div>
 
-        {/* TAB 1: Client Organizations Directory */}
+        {/* ============================================================== */}
+        {/* TAB 0: PLATFORM OVERVIEW */}
+        {/* ============================================================== */}
+        {activeTab === 'overview' && (
+          <div className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Quick Card 1: Subscription Approvals */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-col justify-between space-y-4">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="p-3 rounded-2xl bg-amber-50 text-amber-700">
+                      <CreditCard className="w-6 h-6" />
+                    </span>
+                    <Badge className="bg-amber-100 text-amber-800 text-[10px] font-bold">
+                      {pendingSubs.length} Pending
+                    </Badge>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 mt-4">Client Subscription Approvals</h3>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    Review incoming payment slips, card authorizations, and bank transfer receipts to unlock client accounts.
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => switchTab('approvals')}
+                  className="w-full bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold h-10"
+                >
+                  Manage Approvals Queue ({pendingSubs.length})
+                </Button>
+              </div>
+
+              {/* Quick Card 2: Client Workspaces */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-col justify-between space-y-4">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="p-3 rounded-2xl bg-blue-50 text-blue-700">
+                      <Building2 className="w-6 h-6" />
+                    </span>
+                    <Badge className="bg-blue-100 text-blue-800 text-[10px] font-bold">
+                      {tenants.length} Workspaces
+                    </Badge>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 mt-4">Client Organizations</h3>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    View active client organizations, adjust event &amp; attendee quotas, and enforce isolation policies.
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => switchTab('tenants')}
+                  className="w-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs font-bold h-10"
+                >
+                  Open Client Directory
+                </Button>
+              </div>
+
+              {/* Quick Card 3: Platform Financials */}
+              <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs flex flex-col justify-between space-y-4">
+                <div>
+                  <div className="flex items-center justify-between">
+                    <span className="p-3 rounded-2xl bg-emerald-50 text-emerald-700">
+                      <DollarSign className="w-6 h-6" />
+                    </span>
+                    <Badge className="bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                      ${totalMRR}/mo
+                    </Badge>
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900 mt-4">Revenue &amp; Invoices</h3>
+                  <p className="text-xs text-slate-500 mt-1 leading-relaxed">
+                    Inspect SaaS revenue metrics, annual run rates, recent transaction receipts, and customer billing cycles.
+                  </p>
+                </div>
+                <Button 
+                  onClick={() => switchTab('billing')}
+                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold h-10"
+                >
+                  View Revenue Ledger
+                </Button>
+              </div>
+            </div>
+
+            {/* Architecture Role Guidance Box */}
+            <div className="bg-gradient-to-r from-blue-50 via-indigo-50 to-purple-50 rounded-3xl border border-blue-200/80 p-6">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                  <ShieldCheck className="w-5 h-5" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-slate-900">
+                    Platform Security &amp; Role Separation Architecture
+                  </h4>
+                  <p className="text-xs text-slate-600 leading-relaxed">
+                    <strong>SuperAdmin (EventoraX HQ):</strong> Governs the SaaS platform, approves client plan payments, manages market pricing, monitors security &amp; 24/7 compliance, and configures the public website CMS. SuperAdmin does NOT create event badges or certificates for personal use.
+                  </p>
+                  <p className="text-xs text-slate-600 leading-relaxed pt-1">
+                    <strong>Client Organizations:</strong> Event managers, seminar hosts, universities, and companies pay subscription fees to host events, print ID cards, issue verifiable certificates, and use the Canva design studio within their isolated workspaces.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 1: SUBSCRIPTION APPROVALS QUEUE (SUPERADMIN APPROVAL) */}
+        {/* ============================================================== */}
+        {activeTab === 'approvals' && (
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#0f172a] flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-amber-500" />
+                  Subscription &amp; Client Plan Approvals Queue
+                </h2>
+                <p className="text-xs text-[#64748b]">
+                  When clients or visitors purchase Starter, Professional, or Enterprise plans, verify their transaction references here and grant platform access with one click.
+                </p>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={loadSubscriptions}
+                disabled={subsLoading}
+                className="rounded-xl border-[#e2e8f0] text-xs h-9"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${subsLoading ? 'animate-spin' : ''}`} />
+                Refresh Queue
+              </Button>
+            </div>
+
+            {/* Filter Pills & Search */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+              <div className="flex flex-wrap items-center gap-2">
+                {[
+                  { id: 'all', label: `All Requests (${subscriptions.length})` },
+                  { id: 'pending', label: `Pending Approval (${pendingSubs.length})`, highlight: pendingSubs.length > 0 },
+                  { id: 'active', label: `Approved & Active (${activeSubs.length})` },
+                  { id: 'rejected', label: `Rejected (${rejectedSubs.length})` },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    type="button"
+                    onClick={() => setSubFilter(f.id as any)}
+                    className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                      subFilter === f.id
+                        ? 'bg-[#1d4ed8] text-white shadow-xs'
+                        : f.highlight
+                          ? 'bg-amber-100 text-amber-900 border border-amber-300 font-extrabold'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="relative min-w-[220px]">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-[#94a3b8]" />
+                <Input
+                  placeholder="Search by org, email, plan, or TID..."
+                  value={subSearch}
+                  onChange={(e) => setSubSearch(e.target.value)}
+                  className="pl-9 rounded-xl border-[#e2e8f0] text-xs h-9 bg-slate-50"
+                />
+              </div>
+            </div>
+
+            {/* Subscriptions Table */}
+            <div className="overflow-x-auto rounded-2xl border border-slate-200">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                  <tr>
+                    <th className="p-3.5 pl-4">Client Organization</th>
+                    <th className="p-3.5">Owner Contact</th>
+                    <th className="p-3.5">Purchased Plan</th>
+                    <th className="p-3.5">Amount &amp; Gateway</th>
+                    <th className="p-3.5">Transaction Ref / TID</th>
+                    <th className="p-3.5">Status</th>
+                    <th className="p-3.5 text-right pr-4">Approval Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredSubscriptions.length === 0 ? (
+                    <tr>
+                      <td colSpan={7} className="p-12 text-center text-slate-400">
+                        <CheckCircle2 className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
+                        <p className="font-semibold text-slate-700">No subscription requests in this view.</p>
+                        <p className="text-[11px] text-slate-400 mt-0.5">When clients purchase plans, requests will populate here in real-time.</p>
+                      </td>
+                    </tr>
+                  ) : (
+                    filteredSubscriptions.map((s) => {
+                      const isPending = s.status === 'pending_approval';
+                      const isApproved = s.status === 'active';
+                      const refCode = s.transaction_ref || s.invoice_number || `TXN-${s.id}`;
+
+                      return (
+                        <tr key={s.id} className={`hover:bg-slate-50/80 transition-colors ${isPending ? 'bg-amber-50/20' : ''}`}>
+                          <td className="p-3.5 pl-4 font-bold text-slate-900">
+                            {s.tenantName || 'Client Organization'}
+                            <span className="block text-[10px] text-slate-400 font-mono">
+                              Tenant ID #{s.tenant_id}
+                            </span>
+                          </td>
+                          <td className="p-3.5 text-slate-600">
+                            {s.ownerName || 'Client Owner'}
+                            <span className="block text-[10px] text-slate-400">{s.ownerEmail || 'client@org.com'}</span>
+                            {s.ownerPhone && (
+                              <span className="block text-[10px] text-slate-400">{s.ownerPhone}</span>
+                            )}
+                          </td>
+                          <td className="p-3.5">
+                            <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-bold ${
+                              s.plan === 'Enterprise' ? 'bg-purple-100 text-purple-800' :
+                              s.plan === 'Professional' ? 'bg-blue-100 text-blue-800' :
+                              'bg-slate-100 text-slate-800'
+                            }`}>
+                              <Sparkles className="w-3 h-3" />
+                              {s.plan}
+                            </span>
+                            <span className="block text-[10px] text-slate-400 mt-0.5 capitalize">
+                              Cycle: {s.billing_cycle || 'monthly'}
+                            </span>
+                          </td>
+                          <td className="p-3.5 font-bold text-slate-900">
+                            <div>
+                              {s.price === 0 ? 'Free ($0)' : `${s.currency || 'USD'} ${s.price}`}
+                            </div>
+                            <span className="text-[10px] text-slate-500 font-normal uppercase flex items-center gap-1 mt-0.5">
+                              {s.payment_method?.toLowerCase().includes('card') ? <CreditCard className="w-3 h-3 text-blue-600" /> :
+                               s.payment_method?.toLowerCase().includes('bank') ? <Building2 className="w-3 h-3 text-slate-700" /> :
+                               s.payment_method?.toLowerCase().includes('jazz') ? <Smartphone className="w-3 h-3 text-red-600" /> :
+                               s.payment_method?.toLowerCase().includes('easy') ? <Smartphone className="w-3 h-3 text-emerald-600" /> :
+                               s.payment_method?.toLowerCase().includes('raast') ? <QrCode className="w-3 h-3 text-amber-600" /> :
+                               <Receipt className="w-3 h-3 text-slate-400" />}
+                              {s.payment_method || 'Online Card'}
+                            </span>
+                          </td>
+                          <td className="p-3.5">
+                            <div className="flex items-center gap-1.5 font-mono text-[11px] text-slate-800 bg-slate-100 px-2 py-1 rounded-md max-w-fit">
+                              <span>{refCode}</span>
+                              <button
+                                onClick={() => copyToClipboard(refCode)}
+                                title="Copy TID"
+                                className="text-slate-400 hover:text-slate-700"
+                              >
+                                {copiedTid === refCode ? (
+                                  <Check className="w-3 h-3 text-emerald-600" />
+                                ) : (
+                                  <Copy className="w-3 h-3" />
+                                )}
+                              </button>
+                            </div>
+                            <span className="block text-[10px] text-slate-400 mt-0.5">
+                              {new Date(s.created_at || Date.now()).toLocaleDateString()}
+                            </span>
+                          </td>
+                          <td className="p-3.5">
+                            <Badge className={`text-[10px] font-bold ${
+                              isPending ? 'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse' :
+                              isApproved ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' :
+                              'bg-rose-100 text-rose-800 border border-rose-300'
+                            }`}>
+                              {isPending ? '⚠️ Pending Approval' : isApproved ? '✓ Active & Verified' : '✕ Rejected'}
+                            </Badge>
+                          </td>
+                          <td className="p-3.5 text-right pr-4 space-x-1.5 whitespace-nowrap">
+                            {isPending ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  disabled={approvingSubId === s.id}
+                                  onClick={() => handleApproveSubscription(s.id)}
+                                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-bold h-8 px-3 shadow-xs"
+                                >
+                                  <Check className="w-3.5 h-3.5 mr-1" />
+                                  {approvingSubId === s.id ? 'Activating...' : 'Approve & Activate'}
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => setRejectModal({ open: true, subId: s.id, reason: '' })}
+                                  className="text-rose-600 hover:bg-rose-50 rounded-lg text-xs font-semibold h-8 px-2"
+                                >
+                                  Reject
+                                </Button>
+                              </>
+                            ) : (
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => {
+                                  const t = tenants.find(tenant => tenant.id === s.tenant_id);
+                                  if (t) {
+                                    setAdjustModal({
+                                      open: true,
+                                      tenant: t,
+                                      maxEvents: t.max_events || 25,
+                                      maxAttendees: t.max_attendees || 5000,
+                                      whiteLabel: !!t.white_label_enabled
+                                    });
+                                  } else {
+                                    alert("Tenant details not found.");
+                                  }
+                                }}
+                                className="text-xs h-8 px-2.5 rounded-lg border-slate-200"
+                              >
+                                <Sliders className="w-3.5 h-3.5 mr-1 text-slate-500" />
+                                Adjust Quotas
+                              </Button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 2: CLIENT ORGANIZATIONS DIRECTORY */}
+        {/* ============================================================== */}
         {activeTab === 'tenants' && (
           <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h2 className="text-lg font-bold text-[#0f172a]">Tenant Organizations &amp; Workspaces</h2>
-                <p className="text-xs text-[#64748b]">Client organizations are strictly segregated. Clients can never become superadmins.</p>
+                <h2 className="text-lg font-bold text-[#0f172a] flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-blue-600" />
+                  Client Organizations &amp; Workspaces
+                </h2>
+                <p className="text-xs text-[#64748b]">
+                  Client organizations are strictly segregated. Clients manage their own events and attendees. SuperAdmin governs quotas, statuses, and plans.
+                </p>
               </div>
 
               <Button
@@ -547,7 +1129,7 @@ export default function PlatformAdmin() {
                         <td className="p-3.5 font-bold text-slate-900">
                           {isMaster ? <span className="text-slate-400 text-[11px] font-normal">Platform Owner</span> : `$${t.mrr || 0}/mo`}
                         </td>
-                        <td className="p-3.5 text-right pr-4 space-x-2">
+                        <td className="p-3.5 text-right pr-4 space-x-1.5 whitespace-nowrap">
                           <Button
                             variant="ghost"
                             size="sm"
@@ -555,22 +1137,39 @@ export default function PlatformAdmin() {
                             className="text-[#1d4ed8] hover:bg-blue-50 text-xs h-8 px-2.5 rounded-lg font-bold"
                           >
                             <ArrowUpRight className="w-3.5 h-3.5 mr-1" />
-                            View Details
+                            Details
                           </Button>
                           {!isMaster && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              disabled={actionLoading === t.id}
-                              onClick={() => handleToggleStatus(t.id, t.status)}
-                              className={`text-xs h-8 px-2.5 rounded-lg ${
-                                t.status === 'active'
-                                  ? 'text-red-600 hover:bg-red-50'
-                                  : 'text-emerald-600 hover:bg-emerald-50'
-                              }`}
-                            >
-                              {t.status === 'active' ? 'Suspend' : 'Activate'}
-                            </Button>
+                            <>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setAdjustModal({
+                                  open: true,
+                                  tenant: t,
+                                  maxEvents: t.max_events || 25,
+                                  maxAttendees: t.max_attendees || 5000,
+                                  whiteLabel: !!t.white_label_enabled
+                                })}
+                                className="text-xs h-8 px-2 rounded-lg border-slate-200 text-slate-600"
+                              >
+                                <Sliders className="w-3.5 h-3.5 mr-1" />
+                                Quotas
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                disabled={actionLoading === t.id}
+                                onClick={() => handleToggleStatus(t.id, t.status)}
+                                className={`text-xs h-8 px-2.5 rounded-lg ${
+                                  t.status === 'active'
+                                    ? 'text-red-600 hover:bg-red-50'
+                                    : 'text-emerald-600 hover:bg-emerald-50'
+                                }`}
+                              >
+                                {t.status === 'active' ? 'Suspend' : 'Activate'}
+                              </Button>
+                            </>
                           )}
                         </td>
                       </tr>
@@ -582,10 +1181,232 @@ export default function PlatformAdmin() {
           </div>
         )}
 
-        {/* TAB 2: 24/7 Security & Policy Monitoring System */}
+        {/* ============================================================== */}
+        {/* TAB 3: REVENUE & FINANCIALS (SAAS BUDGET & TRANSACTIONS) */}
+        {/* ============================================================== */}
+        {activeTab === 'billing' && (
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#0f172a] flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-emerald-600" />
+                  Platform Revenue, Financial Ledger &amp; Budget
+                </h2>
+                <p className="text-xs text-[#64748b]">
+                  Real-time accounting of platform recurring revenue (MRR/ARR), approved subscription invoices, and transaction histories.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => switchTab('approvals')}
+                  className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold h-9"
+                >
+                  <CreditCard className="w-3.5 h-3.5 mr-1.5" />
+                  View Approvals Queue ({pendingSubs.length})
+                </Button>
+              </div>
+            </div>
+
+            {/* Financial Summary Cards */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-emerald-50 to-white border border-emerald-200">
+                <span className="text-xs font-bold text-emerald-800 uppercase tracking-wider block">Monthly Recurring (MRR)</span>
+                <span className="text-3xl font-black text-slate-900 mt-2 block">${totalMRR.toLocaleString()}</span>
+                <span className="text-xs text-emerald-600 font-semibold mt-1 block">From {metrics?.activeTenants || tenants.length} subscribed client orgs</span>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-blue-50 to-white border border-blue-200">
+                <span className="text-xs font-bold text-blue-800 uppercase tracking-wider block">Annual Run Rate (ARR)</span>
+                <span className="text-3xl font-black text-slate-900 mt-2 block">${totalARR.toLocaleString()}</span>
+                <span className="text-xs text-blue-600 font-semibold mt-1 block">Projected 12-month platform valuation</span>
+              </div>
+
+              <div className="p-5 rounded-2xl bg-gradient-to-br from-purple-50 to-white border border-purple-200">
+                <span className="text-xs font-bold text-purple-800 uppercase tracking-wider block">Total Invoices Logged</span>
+                <span className="text-3xl font-black text-slate-900 mt-2 block">{subscriptions.length}</span>
+                <span className="text-xs text-purple-600 font-semibold mt-1 block">{activeSubs.length} active · {pendingSubs.length} pending</span>
+              </div>
+            </div>
+
+            {/* Invoices Ledger Table */}
+            <div className="space-y-3 pt-2">
+              <h3 className="text-sm font-bold text-slate-900 flex items-center gap-2">
+                <Receipt className="w-4 h-4 text-slate-500" />
+                Subscription Invoices &amp; Transaction Ledger
+              </h3>
+
+              <div className="overflow-x-auto rounded-2xl border border-slate-200">
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 text-slate-500 font-bold uppercase tracking-wider border-b border-slate-200">
+                    <tr>
+                      <th className="p-3 pl-4">Invoice / TID</th>
+                      <th className="p-3">Client Organization</th>
+                      <th className="p-3">Plan</th>
+                      <th className="p-3">Amount</th>
+                      <th className="p-3">Method</th>
+                      <th className="p-3">Status</th>
+                      <th className="p-3 text-right pr-4">Date</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {subscriptions.map((s) => (
+                      <tr key={s.id} className="hover:bg-slate-50/80">
+                        <td className="p-3 pl-4 font-mono font-bold text-slate-800">
+                          {s.transaction_ref || s.invoice_number || `TXN-${s.id}`}
+                        </td>
+                        <td className="p-3 font-semibold text-slate-900">
+                          {s.tenantName || 'Client Org'}
+                        </td>
+                        <td className="p-3">
+                          <span className="font-bold text-slate-800">{s.plan}</span> ({s.billing_cycle || 'monthly'})
+                        </td>
+                        <td className="p-3 font-bold text-slate-900">
+                          {s.price === 0 ? 'Free ($0)' : `${s.currency || 'USD'} ${s.price}`}
+                        </td>
+                        <td className="p-3 text-slate-600 uppercase font-semibold">
+                          {s.payment_method || 'Card'}
+                        </td>
+                        <td className="p-3">
+                          <Badge className={`text-[10px] font-bold ${
+                            s.status === 'active' ? 'bg-emerald-100 text-emerald-800' :
+                            s.status === 'pending_approval' ? 'bg-amber-100 text-amber-800' :
+                            'bg-rose-100 text-rose-800'
+                          }`}>
+                            {s.status}
+                          </Badge>
+                        </td>
+                        <td className="p-3 text-right pr-4 text-slate-400">
+                          {new Date(s.created_at || Date.now()).toLocaleDateString()}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 4: PRICING & MARKET PLANS MANAGEMENT */}
+        {/* ============================================================== */}
+        {activeTab === 'pricing' && (
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#0f172a] flex items-center gap-2">
+                  <Tag className="w-5 h-5 text-indigo-600" />
+                  Platform Market Pricing &amp; Tier Quotas
+                </h2>
+                <p className="text-xs text-[#64748b]">
+                  These are the official subscription packages offered to client organizations. When clients pay, SuperAdmin reviews proof in the Approvals queue.
+                </p>
+              </div>
+
+              <a href="/pricing" target="_blank" rel="noreferrer">
+                <Button variant="outline" size="sm" className="rounded-xl text-xs h-9">
+                  <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
+                  View Public Pricing Page
+                </Button>
+              </a>
+            </div>
+
+            {/* Plans Comparison */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
+              {[
+                {
+                  name: "Starter",
+                  price: "$0",
+                  period: "/month",
+                  tag: "Free Community Tier",
+                  features: [
+                    "Up to 500 attendees",
+                    "Max 5 active events",
+                    "Standard digital ID tickets",
+                    "Event pass QR verification",
+                    "Standard event analytics"
+                  ]
+                },
+                {
+                  name: "Professional",
+                  price: "$99",
+                  period: "/month",
+                  tag: "Most Popular for Organizers",
+                  highlight: true,
+                  features: [
+                    "5,000 attendees capacity",
+                    "Up to 25 events",
+                    "ID Pass Generator & One-Click Print",
+                    "100+ Certificate templates & issuance",
+                    "Canva Design Studio integration",
+                    "5 team member seats",
+                    "Priority 24/7 support"
+                  ]
+                },
+                {
+                  name: "Enterprise",
+                  price: "$299",
+                  period: "/month",
+                  tag: "Large Summits & Universities",
+                  features: [
+                    "50,000+ attendees capacity",
+                    "Unlimited platform events",
+                    "Full White-label & custom CNAME domain",
+                    "Bulk CSV pass & certificate generation",
+                    "Dedicated account manager & SLA",
+                    "Single Sign-On (SSO) & 2FA enforcement"
+                  ]
+                }
+              ].map((p) => (
+                <div 
+                  key={p.name}
+                  className={`p-6 rounded-3xl border flex flex-col justify-between space-y-4 ${
+                    p.highlight ? 'border-blue-600 ring-2 ring-blue-500/20 bg-blue-50/20 shadow-md' : 'border-slate-200 bg-white'
+                  }`}
+                >
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{p.name}</span>
+                      <Badge className={p.highlight ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'}>
+                        {p.tag}
+                      </Badge>
+                    </div>
+                    <div className="flex items-baseline gap-1 my-2">
+                      <span className="text-3xl font-extrabold text-slate-900">{p.price}</span>
+                      <span className="text-xs text-slate-500">{p.period}</span>
+                    </div>
+
+                    <ul className="space-y-2 pt-3 border-t border-slate-100 text-xs text-slate-600">
+                      {p.features.map((f, i) => (
+                        <li key={i} className="flex items-start gap-2">
+                          <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                          <span>{f}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="pt-2">
+                    <Button
+                      onClick={() => switchTab('approvals')}
+                      variant="outline"
+                      className="w-full rounded-xl text-xs font-bold h-9 border-slate-200"
+                    >
+                      Review {p.name} Requests
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 5: 24/7 SECURITY & SENTINEL */}
+        {/* ============================================================== */}
         {activeTab === 'security' && (
           <div className="space-y-6">
-            {/* Live Security Shield Banner */}
             <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-6">
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div>
@@ -621,7 +1442,7 @@ export default function PlatformAdmin() {
             {/* Audit Logs */}
             <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
               <h3 className="text-sm font-bold text-slate-900">Security Audit Trail</h3>
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-slate-100 max-h-[480px] overflow-y-auto">
                 {securityLogs.length === 0 ? (
                   <p className="text-xs text-slate-400 py-6 text-center">No security incidents logged. All nodes operating normally.</p>
                 ) : (
@@ -654,7 +1475,9 @@ export default function PlatformAdmin() {
           </div>
         )}
 
-        {/* TAB 3: Official Website CMS & Content Manager */}
+        {/* ============================================================== */}
+        {/* TAB 6: WEBSITE & PORTAL CMS */}
+        {/* ============================================================== */}
         {activeTab === 'cms' && (
           <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -765,7 +1588,9 @@ export default function PlatformAdmin() {
           </div>
         )}
 
-        {/* TAB 4: Live System Notifications & Real-Time Alerts */}
+        {/* ============================================================== */}
+        {/* TAB 7: LIVE SYSTEM NOTIFICATIONS */}
+        {/* ============================================================== */}
         {activeTab === 'notifications' && (
           <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -775,7 +1600,7 @@ export default function PlatformAdmin() {
                   Live Platform Event &amp; Notification Sentinel
                 </h2>
                 <p className="text-xs text-[#64748b]">
-                  Real-time broadcast of all organization signups, attendee registrations, pass issuances, security blocks, and CMS mutations.
+                  Real-time broadcast of all organization signups, plan purchases, attendee registrations, pass issuances, and security events.
                 </p>
               </div>
 
@@ -818,12 +1643,12 @@ export default function PlatformAdmin() {
             <div className="flex flex-wrap gap-2 pt-1 border-b border-slate-100 pb-3">
               {[
                 { id: 'all', label: 'All Alerts' },
+                { id: 'billing', label: 'Billing & Approvals' },
                 { id: 'tenant', label: 'Organizations' },
                 { id: 'event', label: 'Events' },
                 { id: 'attendee', label: 'Attendees & Passes' },
                 { id: 'security', label: 'Security' },
-                { id: 'cms', label: 'CMS Updates' },
-                { id: 'system', label: 'System' }
+                { id: 'cms', label: 'CMS Updates' }
               ].map((cat) => (
                 <button
                   key={cat.id}
@@ -841,7 +1666,7 @@ export default function PlatformAdmin() {
             </div>
 
             {/* Notification Stream Cards */}
-            <div className="space-y-3">
+            <div className="space-y-3 max-h-[600px] overflow-y-auto">
               {adminNotifs
                 .filter(n => notifCategoryFilter === 'all' || n.category === notifCategoryFilter)
                 .length === 0 ? (
@@ -874,6 +1699,7 @@ export default function PlatformAdmin() {
                           {n.category === 'security' ? <ShieldAlert className="w-4 h-4" /> :
                            n.category === 'attendee' ? <Ticket className="w-4 h-4" /> :
                            n.category === 'event' ? <Calendar className="w-4 h-4" /> :
+                           n.category === 'billing' ? <CreditCard className="w-4 h-4" /> :
                            n.category === 'cms' ? <Globe className="w-4 h-4" /> :
                            n.category === 'tenant' ? <Building2 className="w-4 h-4" /> :
                            <Sparkles className="w-4 h-4" />}
@@ -922,7 +1748,7 @@ export default function PlatformAdmin() {
           </div>
         )}
 
-        {/* ================= TENANT INSPECTOR MODAL ================= */}
+        {/* ================= MODAL 1: TENANT INSPECTOR MODAL ================= */}
         {inspectingTenant && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
             <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95">
@@ -997,6 +1823,133 @@ export default function PlatformAdmin() {
             </div>
           </div>
         )}
+
+        {/* ================= MODAL 2: REJECT SUBSCRIPTION MODAL ================= */}
+        {rejectModal.open && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <AlertCircle className="w-5 h-5 text-rose-600" />
+                  Reject Subscription Request
+                </h3>
+                <button
+                  onClick={() => setRejectModal({ open: false, subId: null, reason: '' })}
+                  className="p-1 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-600">
+                Please provide the reason for rejecting this subscription payment reference. The client will be notified to correct payment details.
+              </p>
+
+              <div>
+                <label className="text-xs font-bold text-slate-700 block mb-1">Reason for Rejection *</label>
+                <textarea
+                  rows={3}
+                  value={rejectModal.reason}
+                  onChange={(e) => setRejectModal(prev => ({ ...prev, reason: e.target.value }))}
+                  placeholder="e.g. Transaction Reference could not be verified with bank / insufficient payment amount."
+                  className="w-full p-3 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-rose-500 focus:outline-none"
+                />
+              </div>
+
+              <div className="flex items-center gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setRejectModal({ open: false, subId: null, reason: '' })}
+                  className="flex-1 rounded-xl text-xs h-10 border-slate-200"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleRejectSubscription}
+                  className="flex-1 bg-rose-600 hover:bg-rose-700 text-white rounded-xl text-xs h-10 font-bold"
+                >
+                  Confirm Rejection
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ================= MODAL 3: ADJUST QUOTAS & PERMISSIONS MODAL ================= */}
+        {adjustModal.open && adjustModal.tenant && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 animate-in fade-in zoom-in-95">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+                  <Sliders className="w-5 h-5 text-blue-600" />
+                  Customize Client Quotas &amp; Access
+                </h3>
+                <button
+                  onClick={() => setAdjustModal({ open: false, tenant: null, maxEvents: 25, maxAttendees: 5000, whiteLabel: false })}
+                  className="p-1 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <p className="text-xs text-slate-600">
+                Fine-tune feature permissions and usage capacity specifically for <strong>{adjustModal.tenant.name}</strong>.
+              </p>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Max Events Allowed</label>
+                  <Input
+                    type="number"
+                    value={adjustModal.maxEvents}
+                    onChange={(e) => setAdjustModal(prev => ({ ...prev, maxEvents: parseInt(e.target.value, 10) || 1 }))}
+                    className="rounded-xl border-slate-300 text-xs h-10"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-bold text-slate-700 block mb-1">Max Attendees Quota</label>
+                  <Input
+                    type="number"
+                    value={adjustModal.maxAttendees}
+                    onChange={(e) => setAdjustModal(prev => ({ ...prev, maxAttendees: parseInt(e.target.value, 10) || 100 }))}
+                    className="rounded-xl border-slate-300 text-xs h-10"
+                  />
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="white-label-check"
+                    checked={adjustModal.whiteLabel}
+                    onChange={(e) => setAdjustModal(prev => ({ ...prev, whiteLabel: e.target.checked }))}
+                    className="w-4 h-4 rounded text-blue-600 border-slate-300 focus:ring-blue-500"
+                  />
+                  <label htmlFor="white-label-check" className="text-xs font-bold text-slate-700 cursor-pointer">
+                    Enable Full White-Label &amp; Custom CNAME Domain
+                  </label>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 pt-3">
+                <Button
+                  variant="outline"
+                  onClick={() => setAdjustModal({ open: false, tenant: null, maxEvents: 25, maxAttendees: 5000, whiteLabel: false })}
+                  className="flex-1 rounded-xl text-xs h-10 border-slate-200"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleSavePermissions}
+                  className="flex-1 bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs h-10 font-bold"
+                >
+                  Save Quotas
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+
       </div>
     </div>
   );
