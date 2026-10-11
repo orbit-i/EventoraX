@@ -33,6 +33,7 @@ import PlatformAnalyticsPage from './pages/superadmin/PlatformAnalyticsPage';
 import SystemSettingsPage from './pages/superadmin/SystemSettingsPage';
 import EmailTemplatesPage from './pages/superadmin/EmailTemplatesPage';
 import SecurityPage from './pages/superadmin/SecurityPage';
+import MaintenancePage from './pages/superadmin/MaintenancePage';
 
 // Dashboard imports
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -213,6 +214,7 @@ export default function App() {
             <Route path="settings" element={<SystemSettingsPage />} />
             <Route path="emails" element={<EmailTemplatesPage />} />
             <Route path="security" element={<SecurityPage />} />
+            <Route path="maintenance" element={<MaintenancePage />} />
           </Route>
 
           {/* Development only: preview of every shared component */}

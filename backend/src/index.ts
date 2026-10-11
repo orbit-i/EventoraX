@@ -18,6 +18,8 @@ import { superadminRouter } from "./routes/superadmin-routes";
 import { publicPlans } from "./controllers/superadmin/plans-controller";
 import { publicPlatform } from "./controllers/superadmin/settings-controller";
 import { maintenanceGate } from "./middleware/maintenance";
+import { recordError } from "./utils/errorLog";
+import { startScheduler } from "./jobs";
    import {
      dashboardRouter,
      analyticsRouter,
@@ -93,12 +95,15 @@ function statusOf(err: unknown): number {
 }
 
 // One place that turns any thrown error into a clean JSON response.
-app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
+app.use((err: unknown, req: Request, res: Response, _next: NextFunction) => {
   if (err instanceof MulterError) {
     return res.status(400).json({ error: err.message });
   }
   const status = statusOf(err);
-  if (status >= 500) console.error(err);
+  if (status >= 500) {
+    console.error(err);
+    void recordError(err, req, status); // shown on Superadmin → Maintenance
+  }
   res.status(status).json({
     error: status >= 500 ? "Something went wrong" : err instanceof Error ? err.message : "Bad request",
   });
@@ -107,5 +112,6 @@ app.use((err: unknown, _req: Request, res: Response, _next: NextFunction) => {
 const PORT = Number(process.env.PORT) || 5000;
 app.listen(PORT, () => {
   console.log(`API running on http://localhost:${PORT}`);
+  startScheduler();
 });
 

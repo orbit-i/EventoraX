@@ -189,6 +189,18 @@ export function describeActivity(item: ActivityItem): string {
       return "removed the saved SMTP server"
     case "security.export":
       return `exported ${n("count")} security log rows as CSV`
+    case "maintenance.job.run":
+      return `ran the "${s("job")}" job`
+    case "maintenance.cache.clear":
+      return "cleared the settings cache"
+    case "maintenance.errors.clear":
+      return `cleared ${n("count")} server errors`
+    case "maintenance.backup":
+      return `backed up the database (${s("file")})`
+    case "maintenance.backup.download":
+      return `downloaded the backup ${s("file")}`
+    case "billing.expiry.reminder":
+      return `was reminded that the plan ends on ${s("endsOn")}`
     case "upload.image":
       return "uploaded an image"
     default:

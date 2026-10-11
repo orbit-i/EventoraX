@@ -265,3 +265,36 @@ Nothing existing was changed or dropped.
 1. **Security & activity** → filter Action = "Tenants (superadmin)" → you see what you did tonight → **Export CSV**.
 2. In a private window try logging in with a wrong password 5 times → **Threats & sessions** shows the account as locked.
 3. **Login attempts** → click an IP address to see all its attempts.
+
+---
+
+## 10D (part 4) — Maintenance page, health, error logs, backups, scheduled jobs ✅
+
+**What was built** (`/superadmin/maintenance`)
+- **Version**: app version, git commit, Node.js version, uptime.
+- **Maintenance mode** switch (asks before turning on) + the message organizations see.
+- **Health checks**: database (with response time), storage (uploads folder writable, free disk space, size of uploads and
+  certificate PDFs), email (which SMTP server is used), background jobs.
+- **Scheduled jobs** (new `backend/src/jobs/`, a small in-process scheduler started with the server):
+  - *Expire finished plans* every 10 minutes (before, orgs only expired when someone opened the dashboard).
+  - *Plan-ending reminders* every 6 hours: emails an org's admins **3 days before** its trial/plan ends using the
+    "Plan expiring soon" template — only once per end date (recorded in the org's activity log).
+  - Each shows last run, result/failure and next run, with **Run now**.
+- **Error logs**: every 5xx error is now saved in the new `error_logs` table (message, method + path, user, stack).
+  Click one to expand the stack trace; **Clear log** (confirm). There is one "Night test error" in there from my testing —
+  clear it.
+- **Clear cache** (empties the settings cache), **Database backups**: **Back up now** runs `mysqldump` into the
+  git-ignored `backups/` folder (password passed via the environment, never on the command line), list + download.
+  Found mysqldump automatically at `C:\Program Files\MySQL\MySQL Server 8.0\bin`. On other servers set `MYSQLDUMP_PATH`.
+
+**Decisions made for you**
+- Jobs run inside the API process (fine for one server on Hostinger). If the app is ever scaled to several processes,
+  move them to a single worker.
+- I made one real backup while testing (`backups/eventorax-2026-10-11-024631.sql`, ~200 KB).
+
+**Test it**
+1. **Maintenance** → all four health cards say OK.
+2. **Run now** on both jobs → results update.
+3. **Back up now** → a new file appears → download it.
+4. Switch maintenance mode on (confirm) → open an org dashboard in another browser → maintenance screen → switch it off.
+5. Expand the test error → **Clear log**.

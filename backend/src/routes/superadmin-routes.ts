@@ -42,6 +42,16 @@ import { getPlatformAnalytics, platformAnalyticsReport, platformAnalyticsCsv } f
 
 import { getSettings, updateSettings, uploadPlatformImage } from "../controllers/superadmin/settings-controller";
 import { imageUpload } from "../utils/upload";
+import {
+  maintenanceOverview,
+  runJobNow,
+  clearCache,
+  listErrors,
+  clearErrors,
+  listBackups,
+  createBackup,
+  downloadBackup,
+} from "../controllers/superadmin/maintenance-controller";
 import { platformActivity, exportPlatformActivity, loginAttempts, securityOverview } from "../controllers/superadmin/security-controller";
 import {
   listTemplates,
@@ -137,3 +147,13 @@ superadminRouter.get("/security/overview", securityOverview);
 superadminRouter.get("/security/activity", platformActivity);
 superadminRouter.get("/security/activity/export", exportPlatformActivity);
 superadminRouter.get("/security/logins", loginAttempts);
+
+// Maintenance
+superadminRouter.get("/maintenance", maintenanceOverview);
+superadminRouter.post("/maintenance/jobs/:name/run", runJobNow);
+superadminRouter.post("/maintenance/cache/clear", clearCache);
+superadminRouter.get("/maintenance/errors", listErrors);
+superadminRouter.delete("/maintenance/errors", clearErrors);
+superadminRouter.get("/maintenance/backups", listBackups);
+superadminRouter.post("/maintenance/backups", createBackup);
+superadminRouter.get("/maintenance/backups/:file", downloadBackup);
