@@ -240,3 +240,20 @@ export interface PlatformAnalytics {
   topOrganizations: { id: string; name: string; status: OrgStatus; plan: string | null; registrations: number; events: number }[]
   topEvents: { id: string; title: string; startDateTime: string; status: string; organization: { id: string; name: string }; registrations: number }[]
 }
+
+export interface AnnouncementRow {
+  id: string
+  title: string
+  body: string
+  targetPlanId: string | null
+  targetPlan: { id: string; name: string } | null
+  sendEmail: boolean
+  sendInApp: boolean
+  status: "DRAFT" | "SCHEDULED" | "SENT"
+  scheduledAt: string | null
+  sentAt: string | null
+  orgCount: number
+  emailCount: number
+  createdBy: string | null
+  createdAt: string
+}

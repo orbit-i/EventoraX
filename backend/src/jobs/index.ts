@@ -3,6 +3,7 @@ import { registerJob, startScheduler } from "./scheduler";
 import { expireOverdueOrgs, DAY_MS } from "../utils/orgStatus";
 import { orgAdminEmails } from "../utils/orgContacts";
 import { sendExpiryWarningEmail } from "../utils/mail";
+import { sendDueAnnouncements } from "../services/announcements";
 
 const REMINDER_DAYS = 3;
 
@@ -43,6 +44,17 @@ registerJob({
       sent += 1;
     }
     return sent ? `Reminded ${sent} organization${sent === 1 ? "" : "s"}` : "No plans ending soon";
+  },
+});
+
+registerJob({
+  name: "announcements",
+  label: "Scheduled announcements",
+  description: "Sends announcements whose scheduled time has come.",
+  intervalMs: 60 * 1000,
+  run: async () => {
+    const n = await sendDueAnnouncements();
+    return n ? `Sent ${n} announcement${n === 1 ? "" : "s"}` : "Nothing due";
   },
 });
 

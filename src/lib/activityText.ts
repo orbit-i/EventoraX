@@ -201,6 +201,18 @@ export function describeActivity(item: ActivityItem): string {
       return `downloaded the backup ${s("file")}`
     case "billing.expiry.reminder":
       return `was reminded that the plan ends on ${s("endsOn")}`
+    case "announcement.send":
+      return `sent the announcement "${s("title")}"`
+    case "announcement.schedule":
+      return `scheduled the announcement "${s("title")}"`
+    case "announcement.draft":
+      return `saved the announcement draft "${s("title")}"`
+    case "announcement.update":
+      return `edited the announcement "${s("title")}"`
+    case "announcement.unschedule":
+      return `cancelled the schedule of "${s("title")}"`
+    case "announcement.delete":
+      return `deleted the announcement draft "${s("title")}"`
     case "upload.image":
       return "uploaded an image"
     default:

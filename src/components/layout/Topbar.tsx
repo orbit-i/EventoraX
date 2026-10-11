@@ -11,6 +11,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { Avatar } from "@/components/app/Avatar"
+import { NotificationBell } from "./NotificationBell"
 import { useConfirm } from "@/components/app/ConfirmDialog"
 import { useAuth } from "@/context/AuthContext"
 import { useCan } from "@/lib/permissions"
@@ -56,6 +57,7 @@ export function Topbar({ onOpenMenu, variant = "org" }: { onOpenMenu: () => void
       </p>
 
       <div className="ml-auto flex items-center gap-2">
+        {variant === "org" && <NotificationBell />}
         <DropdownMenu>
           <DropdownMenuTrigger className="flex items-center gap-2.5 rounded-xl px-2 py-1.5 outline-none transition-colors hover:bg-[#f5f3ff] focus-visible:ring-2 focus-visible:ring-[#7c3aed]/30">
             <Avatar name={user?.name ?? "?"} size="sm" />

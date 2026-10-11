@@ -34,6 +34,7 @@ import SystemSettingsPage from './pages/superadmin/SystemSettingsPage';
 import EmailTemplatesPage from './pages/superadmin/EmailTemplatesPage';
 import SecurityPage from './pages/superadmin/SecurityPage';
 import MaintenancePage from './pages/superadmin/MaintenancePage';
+import AnnouncementsPage from './pages/superadmin/AnnouncementsPage';
 
 // Dashboard imports
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -215,6 +216,7 @@ export default function App() {
             <Route path="emails" element={<EmailTemplatesPage />} />
             <Route path="security" element={<SecurityPage />} />
             <Route path="maintenance" element={<MaintenancePage />} />
+            <Route path="announcements" element={<AnnouncementsPage />} />
           </Route>
 
           {/* Development only: preview of every shared component */}

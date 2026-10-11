@@ -70,6 +70,12 @@ export const CERT_TYPE: Record<string, StatusMeta> = {
   ORGANIZER: { label: "Organizer", tone: "slate" },
 }
 
+export const ANNOUNCEMENT_STATUS: Record<string, StatusMeta> = {
+  DRAFT: { label: "Draft", tone: "slate" },
+  SCHEDULED: { label: "Scheduled", tone: "amber" },
+  SENT: { label: "Sent", tone: "green" },
+}
+
 export const VISIBILITY: Record<string, StatusMeta> = {
   true: { label: "Public", tone: "green" },
   false: { label: "Hidden", tone: "slate" },
@@ -86,6 +92,7 @@ export const STATUS_MAPS = {
   cert: CERT_STATUS,
   certType: CERT_TYPE,
   visibility: VISIBILITY,
+  announcement: ANNOUNCEMENT_STATUS,
 } as const
 
 export type StatusKind = keyof typeof STATUS_MAPS

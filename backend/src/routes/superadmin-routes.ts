@@ -43,6 +43,16 @@ import { getPlatformAnalytics, platformAnalyticsReport, platformAnalyticsCsv } f
 import { getSettings, updateSettings, uploadPlatformImage } from "../controllers/superadmin/settings-controller";
 import { imageUpload } from "../utils/upload";
 import {
+  listAnnouncements,
+  announcementStats,
+  audiencePreview,
+  createAnnouncement,
+  updateAnnouncement,
+  sendAnnouncementNow,
+  unscheduleAnnouncement,
+  deleteAnnouncement,
+} from "../controllers/superadmin/announcements-controller";
+import {
   maintenanceOverview,
   runJobNow,
   clearCache,
@@ -157,3 +167,13 @@ superadminRouter.delete("/maintenance/errors", clearErrors);
 superadminRouter.get("/maintenance/backups", listBackups);
 superadminRouter.post("/maintenance/backups", createBackup);
 superadminRouter.get("/maintenance/backups/:file", downloadBackup);
+
+// Announcements
+superadminRouter.get("/announcements", listAnnouncements);
+superadminRouter.get("/announcements/stats", announcementStats);
+superadminRouter.get("/announcements/audience", audiencePreview);
+superadminRouter.post("/announcements", createAnnouncement);
+superadminRouter.patch("/announcements/:id", updateAnnouncement);
+superadminRouter.post("/announcements/:id/send", sendAnnouncementNow);
+superadminRouter.post("/announcements/:id/unschedule", unscheduleAnnouncement);
+superadminRouter.delete("/announcements/:id", deleteAnnouncement);

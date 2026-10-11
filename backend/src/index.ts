@@ -15,6 +15,7 @@ import { certificatesRouter, verifyRouter } from "./routes/certificates-routes";
 import { ticketsRouter } from "./routes/tickets-routes";
 import { idCardsRouter } from "./routes/idcards-routes";
 import { superadminRouter } from "./routes/superadmin-routes";
+import { notificationsRouter } from "./routes/notifications-routes";
 import { publicPlans } from "./controllers/superadmin/plans-controller";
 import { publicPlatform } from "./controllers/superadmin/settings-controller";
 import { maintenanceGate } from "./middleware/maintenance";
@@ -73,6 +74,7 @@ app.use("/api/v1/verify", verifyRouter);
 app.use("/api/v1/tickets", ticketsRouter);
 app.use("/api/v1/idcards", idCardsRouter);
 app.use("/api/v1/superadmin", superadminRouter);
+app.use("/api/v1/notifications", notificationsRouter);
 app.get("/api/v1/plans", publicPlans); // public: pricing page
    app.use("/api/v1/dashboard", dashboardRouter);
    app.use("/api/v1/analytics", analyticsRouter);

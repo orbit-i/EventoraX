@@ -298,3 +298,31 @@ Nothing existing was changed or dropped.
 3. **Back up now** → a new file appears → download it.
 4. Switch maintenance mode on (confirm) → open an org dashboard in another browser → maintenance screen → switch it off.
 5. Expand the test error → **Clear log**.
+
+---
+
+## 10D (part 5) — Announcements & in-app notifications ✅ (Phase 10 complete)
+
+**What was built**
+- **Announcements** (`/superadmin/announcements`, tabs All / Sent / Scheduled / Drafts): **New announcement** opens an
+  editor with title, message (plain text), audience (all organizations or one plan — shows how many organizations,
+  people and admins it reaches; suspended orgs are skipped), delivery (**in the dashboard** and/or **by email** to each
+  org's admins via the Announcement email template), and **Send now** (asks first, with the exact reach) / **Schedule**
+  (date + time) / **Save as draft**. Live preview of how it looks in the bell.
+  Rows: View, Edit (drafts/scheduled), Send now, Cancel schedule, Delete draft. Sent ones show how many orgs/emails.
+- A new scheduled job **Scheduled announcements** (every minute) sends them on time; sending is "claimed" first so an
+  announcement can never go out twice.
+- **Notification bell** in every organization dashboard's top bar: unread count, list with the latest 15, click to read
+  (expands the full text), **Mark all as read**; refreshes every minute. Each person has their own read/unread state
+  (`notifications` rows per user). API: `GET /api/v1/notifications`, `POST /notifications/:id/read`, `/read-all`.
+- The dashboard's "Send announcement" quick action opens the editor directly.
+- `ui/popover` is now used (knip: only `ui/scroll-area` and `ui/separator` remain deliberately unused).
+
+**Test data I created**: one in-app announcement "Test announcement from the night build" (sent to the 2 orgs — Will Karim
+sees it under the bell) and "Scheduled test (Enterprise only)" (reached nobody). No emails were sent.
+
+**Test it**
+1. Superadmin → **Announcements** → **New announcement** → title + message → audience "Pro plan only" → only
+   **In the dashboard** → **Schedule** 2 minutes ahead → it appears under Scheduled → wait → it moves to Sent.
+2. Log in as `willkariim@gmail.com` → the bell shows the unread count → open it → click a notification → **Mark all as read**.
+3. Try a draft: Save as draft → Edit → Send now.
