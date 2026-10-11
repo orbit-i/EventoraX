@@ -92,6 +92,9 @@ In production the backend also serves the built website (`dist/`), so one Node p
 | [Requirements](docs/requirements.md) | The original project specification |
 | [CLAUDE.md](CLAUDE.md) | Conventions and agreed decisions (also read by Claude Code) |
 
+PDF copies of the product guide and the technical docs are in [docs/pdf/](docs/pdf/) (snapshots of 11 October 2026; the
+Markdown files are the source and are kept up to date).
+
 ## Team
 
 Built by Team Orbit. See the About page for the team.
