@@ -12,6 +12,8 @@ export interface Payment {
   referenceNo: string | null
   proofUrl: string | null
   notes: string | null
+  /** The EventoraX team's note, e.g. why a payment was rejected */
+  reviewNote?: string | null
   periodStart: string | null
   periodEnd: string | null
   confirmedAt: string | null

@@ -108,3 +108,34 @@ Nothing existing was changed or dropped.
 3. On the tenant page try **Extend** (+7 days), **Change plan**, **Suspend** (enter a reason) then **Reactivate**.
 4. **Log in as admin** → confirm → you see their dashboard with the dark banner → **Back to superadmin** returns to the tenant.
 5. Delete the test tenant from its **Danger zone** (type its name).
+
+---
+
+## 10B — Payment confirmation, revenue, plans CRUD ✅
+
+**What was built**
+- **Revenue & payments** (`/superadmin/revenue`): stats (waiting for you, confirmed total, rejected, outstanding), revenue by
+  month chart (12 months), revenue by plan (donut) and by method, a transactions table (search org / transaction ID,
+  status, method, plan, date range, CSV export — all in the URL; `?orgId=` from a tenant page), and an **Outstanding** tab
+  (expired or ending within 14 days with no payment submitted, with an Email button).
+- **Review dialog**: all payment details + the receipt image, then **Confirm payment** or **Reject…** (reason required).
+  A checkbox "Email the organization's admins" (on by default) sends a confirmation / rejection email.
+- **Confirming** (`POST /superadmin/payments/:id/confirm`): payment → CONFIRMED with reviewer + paid period; the org gets the
+  payment's plan, `status = active`, and `subscriptionEndsAt` **+1 year from its current end date if the plan is still running,
+  otherwise +1 year from today** (so renewing early never loses days). A suspended org stays suspended.
+- **Rejecting** stores the reason in `payments.reviewNote`; the org's Billing page now shows "Reason: …" under the status.
+- **Plans & pricing** (`/superadmin/plans`): plan cards (price, seat limits, how many tenants use it, public/hidden),
+  create/edit dialog (name, yearly price, max admins/managers — empty = unlimited, description, 11 feature toggles,
+  visible on pricing page, order), Hide/Show with **Undo** toast, Delete (only when no organization uses it), feature matrix.
+- New public endpoint `GET /api/v1/plans` (visible plans) — ready for the public pricing page fix in Phase 11.
+
+**Decisions made for you**
+- A plan used by organizations can't be deleted (hide it instead) — prevents tenants silently losing their plan.
+- Editing a plan's price affects future payments only; seat limits apply immediately to new invites.
+
+**Test it**
+1. Superadmin → **Revenue & payments**. (There is a test org "Night Pay Test" with one pending bank-transfer payment.)
+2. Click **Review** on it → read the details → **untick "Email the organization's admins"** (its admin email is a
+   `willkariim+paytest` address) → **Confirm payment** → the org is active for a year; the stats and chart update.
+3. Try **Reject…** on another pending payment (submit one from an org's Billing page) — the reason is required.
+4. **Plans & pricing** → **New plan** → create "Starter" (hidden) → Edit → Hide/Show (try Undo) → Delete it.

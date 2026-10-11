@@ -133,6 +133,22 @@ export function describeActivity(item: ActivityItem): string {
       return `deleted the organization "${s("name")}"`
     case "tenant.export":
       return `exported ${n("count")} organizations as CSV`
+    case "payment.confirm":
+      return `confirmed a PKR ${Number(s("amount")).toLocaleString()} payment from "${s("name")}"`
+    case "payment.reject":
+      return `rejected a payment from "${s("name")}"`
+    case "payment.export":
+      return `exported ${n("count")} transactions as CSV`
+    case "plan.create":
+      return `created the ${s("name")} plan`
+    case "plan.update":
+      return `edited the ${s("name")} plan`
+    case "plan.show":
+      return `showed the ${s("name")} plan on the pricing page`
+    case "plan.hide":
+      return `hid the ${s("name")} plan from the pricing page`
+    case "plan.delete":
+      return `deleted the ${s("name")} plan`
     case "upload.image":
       return "uploaded an image"
     default:

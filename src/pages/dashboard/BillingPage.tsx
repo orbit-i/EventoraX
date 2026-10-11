@@ -210,7 +210,16 @@ export default function BillingPage() {
       hideBelow: "lg",
       cell: (p) => (p.periodStart && p.periodEnd ? `${formatDate(p.periodStart)} – ${formatDate(p.periodEnd)}` : <span className="text-[#cbd5e1]">—</span>),
     },
-    { key: "status", header: "Status", cell: (p) => <StatusBadge kind="payment" value={p.status} /> },
+    {
+      key: "status",
+      header: "Status",
+      cell: (p) => (
+        <div>
+          <StatusBadge kind="payment" value={p.status} />
+          {p.reviewNote && <p className="mt-1 max-w-xs text-xs text-[#64748b]">{p.status === "REJECTED" ? "Reason: " : ""}{p.reviewNote}</p>}
+        </div>
+      ),
+    },
     {
       key: "receipt",
       header: <span className="sr-only">Receipt</span>,

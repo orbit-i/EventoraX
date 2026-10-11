@@ -122,3 +122,40 @@ export interface CreatedTenant {
   admin: { id: string; name: string; email: string }
   temporaryPassword: string
 }
+
+export interface PlatformPayment {
+  id: string
+  organizationId: string
+  planId: string | null
+  amount: string
+  currency: string
+  method: "JAZZCASH" | "EASYPAISA" | "BANK_TRANSFER" | "OTHER"
+  status: "PENDING" | "CONFIRMED" | "REJECTED"
+  referenceNo: string | null
+  proofUrl: string | null
+  notes: string | null
+  reviewNote: string | null
+  periodStart: string | null
+  periodEnd: string | null
+  confirmedAt: string | null
+  createdAt: string
+  reviewedBy: string | null
+  organization: { id: string; name: string; status: OrgStatus; subscriptionEndsAt: string }
+  plan: { id: string; name: string } | null
+}
+
+export type PaymentStats = Record<"PENDING" | "CONFIRMED" | "REJECTED", { count: number; amount: string }>
+
+export interface RevenueOverview {
+  monthly: { month: string; amount: number }[]
+  byPlan: { planId: string | null; plan: string; amount: number; count: number }[]
+  byMethod: { method: string; amount: number; count: number }[]
+  outstanding: {
+    id: string
+    name: string
+    email: string | null
+    status: OrgStatus
+    subscriptionEndsAt: string
+    plan: { id: string; name: string; price: string } | null
+  }[]
+}

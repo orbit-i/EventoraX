@@ -189,3 +189,9 @@ export function sendTicketEmail(to: string, name: string, orgName: string, event
     [pdf]
   );
 }
+
+/** A plain notice in the standard EventoraX layout (payments, announcements, account changes). */
+export function sendNotice(to: string, subject: string, title: string, bodyHtml: string, cta?: { path: string; label: string }) {
+  const link = cta ? `${frontendUrl()}${cta.path}` : undefined;
+  return sendMail(to, subject, layout(title, bodyHtml + (cta && link ? button(link, cta.label) : "")), link);
+}

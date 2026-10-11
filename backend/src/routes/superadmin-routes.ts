@@ -15,7 +15,15 @@ import {
   impersonateTenant,
   deleteTenant,
 } from "../controllers/superadmin/tenants-controller";
-import { listPlans } from "../controllers/superadmin/plans-controller";
+import { listPlans, createPlan, updatePlan, deletePlan } from "../controllers/superadmin/plans-controller";
+import {
+  listPayments,
+  paymentStats,
+  exportPayments,
+  confirmPayment,
+  rejectPayment,
+  revenueOverview,
+} from "../controllers/superadmin/payments-controller";
 
 // Everything here is for the platform owner only.
 export const superadminRouter = Router();
@@ -39,3 +47,14 @@ superadminRouter.delete("/tenants/:id", deleteTenant);
 
 // Plans
 superadminRouter.get("/plans", listPlans);
+superadminRouter.post("/plans", createPlan);
+superadminRouter.patch("/plans/:id", updatePlan);
+superadminRouter.delete("/plans/:id", deletePlan);
+
+// Payments & revenue
+superadminRouter.get("/revenue", revenueOverview);
+superadminRouter.get("/payments", listPayments);
+superadminRouter.get("/payments/stats", paymentStats);
+superadminRouter.get("/payments/export", exportPayments);
+superadminRouter.post("/payments/:id/confirm", confirmPayment);
+superadminRouter.post("/payments/:id/reject", rejectPayment);

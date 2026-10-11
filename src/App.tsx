@@ -24,6 +24,8 @@ import SuperadminLayout from './components/superadmin/SuperadminLayout';
 import SuperadminDashboardPage from './pages/superadmin/SuperadminDashboardPage';
 import TenantsPage from './pages/superadmin/TenantsPage';
 import TenantDetailPage from './pages/superadmin/TenantDetailPage';
+import RevenuePage from './pages/superadmin/RevenuePage';
+import PlansPage from './pages/superadmin/PlansPage';
 
 // Dashboard imports
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -193,6 +195,8 @@ export default function App() {
             <Route index element={<SuperadminDashboardPage />} />
             <Route path="tenants" element={<TenantsPage />} />
             <Route path="tenants/:id" element={<TenantDetailPage />} />
+            <Route path="revenue" element={<RevenuePage />} />
+            <Route path="plans" element={<PlansPage />} />
           </Route>
 
           {/* Development only: preview of every shared component */}
