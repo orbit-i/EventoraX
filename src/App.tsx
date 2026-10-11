@@ -1,79 +1,83 @@
 import { Routes, Route, useLocation } from 'react-router';
-import { useEffect } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
+import { PageLoader } from './components/app/PageLoader';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import { Toaster } from './components/ui/sonner';
 import { ProtectedRoute, GuestRoute } from './components/auth/RouteGuards';
-import Home from './pages/Home';
-import About from './pages/About';
-import Features from './pages/Features';
-import Pricing from './pages/Pricing';
-import Contact from './pages/Contact';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
-import VerifyEmail from './pages/VerifyEmail';
-import AcceptInvite from './pages/AcceptInvite';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import Verify from './pages/Verify';
-import NotFound from './pages/NotFound';
+const Home = lazy(() => import('./pages/Home'));
+const About = lazy(() => import('./pages/About'));
+const Features = lazy(() => import('./pages/Features'));
+const Pricing = lazy(() => import('./pages/Pricing'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
+const VerifyEmail = lazy(() => import('./pages/VerifyEmail'));
+const AcceptInvite = lazy(() => import('./pages/AcceptInvite'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Verify = lazy(() => import('./pages/Verify'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 import { SiteBanner } from './components/layout/SiteBanner';
-import EventPage from './pages/public/EventPage';
-import Developers from './pages/Developers';
-import ApiPage from './pages/dashboard/ApiPage';
-import OrgPage from './pages/public/OrgPage';
-import ComponentGallery from './pages/dev/ComponentGallery';
-import SuperadminLayout from './components/superadmin/SuperadminLayout';
-import SuperadminDashboardPage from './pages/superadmin/SuperadminDashboardPage';
-import TenantsPage from './pages/superadmin/TenantsPage';
-import TenantDetailPage from './pages/superadmin/TenantDetailPage';
-import RevenuePage from './pages/superadmin/RevenuePage';
-import PlansPage from './pages/superadmin/PlansPage';
-import UsersPage from './pages/superadmin/UsersPage';
-import PlatformCertificatesPage from './pages/superadmin/PlatformCertificatesPage';
-import PlatformAnalyticsPage from './pages/superadmin/PlatformAnalyticsPage';
-import SystemSettingsPage from './pages/superadmin/SystemSettingsPage';
-import EmailTemplatesPage from './pages/superadmin/EmailTemplatesPage';
-import SecurityPage from './pages/superadmin/SecurityPage';
-import MaintenancePage from './pages/superadmin/MaintenancePage';
-import AnnouncementsPage from './pages/superadmin/AnnouncementsPage';
+const EventPage = lazy(() => import('./pages/public/EventPage'));
+const Developers = lazy(() => import('./pages/Developers'));
+const ApiPage = lazy(() => import('./pages/dashboard/ApiPage'));
+const OrgPage = lazy(() => import('./pages/public/OrgPage'));
+const ComponentGallery = lazy(() => import('./pages/dev/ComponentGallery'));
+const SuperadminLayout = lazy(() => import('./components/superadmin/SuperadminLayout'));
+const SuperadminDashboardPage = lazy(() => import('./pages/superadmin/SuperadminDashboardPage'));
+const TenantsPage = lazy(() => import('./pages/superadmin/TenantsPage'));
+const TenantDetailPage = lazy(() => import('./pages/superadmin/TenantDetailPage'));
+const RevenuePage = lazy(() => import('./pages/superadmin/RevenuePage'));
+const PlansPage = lazy(() => import('./pages/superadmin/PlansPage'));
+const UsersPage = lazy(() => import('./pages/superadmin/UsersPage'));
+const PlatformCertificatesPage = lazy(() => import('./pages/superadmin/PlatformCertificatesPage'));
+const PlatformAnalyticsPage = lazy(() => import('./pages/superadmin/PlatformAnalyticsPage'));
+const SystemSettingsPage = lazy(() => import('./pages/superadmin/SystemSettingsPage'));
+const EmailTemplatesPage = lazy(() => import('./pages/superadmin/EmailTemplatesPage'));
+const SecurityPage = lazy(() => import('./pages/superadmin/SecurityPage'));
+const MaintenancePage = lazy(() => import('./pages/superadmin/MaintenancePage'));
+const AnnouncementsPage = lazy(() => import('./pages/superadmin/AnnouncementsPage'));
 
-// Dashboard imports
-import DashboardLayout from './components/layout/DashboardLayout';
-import OverviewPage from './pages/dashboard/OverviewPage';
-import TeamPage from './pages/dashboard/TeamPage';
-import BillingPage from './pages/dashboard/BillingPage';
-import SettingsPage from './pages/dashboard/SettingsPage';
-import AnalyticsPage from './pages/dashboard/AnalyticsPage';
-import ActivityPage from './pages/dashboard/ActivityPage';
-import ContactPage from './pages/dashboard/ContactPage';
+// Every page is loaded on demand (its own JS file), so a phone opening the home page
+// doesn't download the dashboards, charts and PDF tools too.
+
+// Dashboard
+const DashboardLayout = lazy(() => import('./components/layout/DashboardLayout'));
+const OverviewPage = lazy(() => import('./pages/dashboard/OverviewPage'));
+const TeamPage = lazy(() => import('./pages/dashboard/TeamPage'));
+const BillingPage = lazy(() => import('./pages/dashboard/BillingPage'));
+const SettingsPage = lazy(() => import('./pages/dashboard/SettingsPage'));
+const AnalyticsPage = lazy(() => import('./pages/dashboard/AnalyticsPage'));
+const ActivityPage = lazy(() => import('./pages/dashboard/ActivityPage'));
+const ContactPage = lazy(() => import('./pages/dashboard/ContactPage'));
 
 // Events module
-import EventsPage from './pages/dashboard/events/EventsPage';
-import NewEventPage from './pages/dashboard/events/NewEventPage';
-import EventDetailPage from './pages/dashboard/events/EventDetailPage';
-import EditEventPage from './pages/dashboard/events/EditEventPage';
-import RegistrationsPage from './pages/dashboard/registrations/RegistrationsPage';
-import NewRegistrationPage from './pages/dashboard/registrations/NewRegistrationPage';
-import ImportRegistrationsPage from './pages/dashboard/registrations/ImportRegistrationsPage';
-import EditRegistrationPage from './pages/dashboard/registrations/EditRegistrationPage';
-import SpeakersPage from './pages/dashboard/speakers/SpeakersPage';
-import NewSpeakerPage from './pages/dashboard/speakers/NewSpeakerPage';
-import EditSpeakerPage from './pages/dashboard/speakers/EditSpeakerPage';
-import ReorderSpeakersPage from './pages/dashboard/speakers/ReorderSpeakersPage';
-import SponsorsPage from './pages/dashboard/sponsors/SponsorsPage';
-import NewSponsorPage from './pages/dashboard/sponsors/NewSponsorPage';
-import EditSponsorPage from './pages/dashboard/sponsors/EditSponsorPage';
-import SchedulePage from './pages/dashboard/schedule/SchedulePage';
-import NewSessionPage from './pages/dashboard/schedule/NewSessionPage';
-import EditSessionPage from './pages/dashboard/schedule/EditSessionPage';
-import ReorderSessionsPage from './pages/dashboard/schedule/ReorderSessionsPage';
-import CertificatesPage from './pages/dashboard/certificates/CertificatesPage';
-import TicketsPage from './pages/dashboard/tickets/TicketsPage';
-import ScanPage from './pages/dashboard/tickets/ScanPage';
-import IdCardsPage from './pages/dashboard/idcards/IdCardsPage';
+const EventsPage = lazy(() => import('./pages/dashboard/events/EventsPage'));
+const NewEventPage = lazy(() => import('./pages/dashboard/events/NewEventPage'));
+const EventDetailPage = lazy(() => import('./pages/dashboard/events/EventDetailPage'));
+const EditEventPage = lazy(() => import('./pages/dashboard/events/EditEventPage'));
+const RegistrationsPage = lazy(() => import('./pages/dashboard/registrations/RegistrationsPage'));
+const NewRegistrationPage = lazy(() => import('./pages/dashboard/registrations/NewRegistrationPage'));
+const ImportRegistrationsPage = lazy(() => import('./pages/dashboard/registrations/ImportRegistrationsPage'));
+const EditRegistrationPage = lazy(() => import('./pages/dashboard/registrations/EditRegistrationPage'));
+const SpeakersPage = lazy(() => import('./pages/dashboard/speakers/SpeakersPage'));
+const NewSpeakerPage = lazy(() => import('./pages/dashboard/speakers/NewSpeakerPage'));
+const EditSpeakerPage = lazy(() => import('./pages/dashboard/speakers/EditSpeakerPage'));
+const ReorderSpeakersPage = lazy(() => import('./pages/dashboard/speakers/ReorderSpeakersPage'));
+const SponsorsPage = lazy(() => import('./pages/dashboard/sponsors/SponsorsPage'));
+const NewSponsorPage = lazy(() => import('./pages/dashboard/sponsors/NewSponsorPage'));
+const EditSponsorPage = lazy(() => import('./pages/dashboard/sponsors/EditSponsorPage'));
+const SchedulePage = lazy(() => import('./pages/dashboard/schedule/SchedulePage'));
+const NewSessionPage = lazy(() => import('./pages/dashboard/schedule/NewSessionPage'));
+const EditSessionPage = lazy(() => import('./pages/dashboard/schedule/EditSessionPage'));
+const ReorderSessionsPage = lazy(() => import('./pages/dashboard/schedule/ReorderSessionsPage'));
+const CertificatesPage = lazy(() => import('./pages/dashboard/certificates/CertificatesPage'));
+const TicketsPage = lazy(() => import('./pages/dashboard/tickets/TicketsPage'));
+const ScanPage = lazy(() => import('./pages/dashboard/tickets/ScanPage'));
+const IdCardsPage = lazy(() => import('./pages/dashboard/idcards/IdCardsPage'));
 
 /** Create/edit pages: viewers are read-only, so only admins and managers may open them. */
 function writer(page: React.ReactNode) {
@@ -126,6 +130,7 @@ export default function App() {
     <>
       <ScrollToTop />
       <Layout>
+        <Suspense fallback={<PageLoader fullScreen />}>
         <Routes>
           {/* Public website */}
           <Route path="/" element={<Home />} />
@@ -236,6 +241,7 @@ export default function App() {
 
           <Route path="*" element={<NotFound />} />
         </Routes>
+        </Suspense>
       </Layout>
       <Toaster position="top-right" richColors />
     </>

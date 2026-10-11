@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { Outlet, useLocation } from "react-router"
+import { PageLoader } from "@/components/app/PageLoader"
 import { cn } from "@/lib/utils"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { Sidebar } from "./Sidebar"
@@ -58,7 +59,7 @@ export default function DashboardLayout() {
         <ImpersonationBanner />
         <SiteBanner />
         <AccountBanners />
-        <main className="flex-1 p-4 sm:p-6">{down ? <MaintenanceScreen /> : <Outlet />}</main>
+        <main className="flex-1 p-4 sm:p-6">{down ? <MaintenanceScreen /> : <Suspense fallback={<PageLoader />}><Outlet /></Suspense>}</main>
       </div>
     </div>
   )

@@ -1,6 +1,9 @@
 import { Link } from 'react-router';
 import { ChevronDown } from 'lucide-react';
-import OceanCanvas from '../components/OceanCanvas';
+import { lazy, Suspense } from 'react';
+
+// The 3D waves use three.js (~450 kB): load them after the text so the page appears straight away.
+const OceanCanvas = lazy(() => import('../components/OceanCanvas'));
 import { Button } from "@/components/ui/button";
 
 export default function HeroSection() {
@@ -10,7 +13,9 @@ export default function HeroSection() {
       style={{ height: '100vh' }}
     >
       {/* Ocean Canvas Background */}
-      <OceanCanvas />
+      <Suspense fallback={null}>
+        <OceanCanvas />
+      </Suspense>
 
       {/* Gradient Overlay for text readability */}
       <div

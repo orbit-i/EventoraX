@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react"
+import { Suspense, useEffect, useState } from "react"
 import { Outlet, useLocation } from "react-router"
+import { PageLoader } from "@/components/app/PageLoader"
 import { cn } from "@/lib/utils"
 import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { Sidebar } from "@/components/layout/Sidebar"
@@ -57,7 +58,9 @@ export default function SuperadminLayout() {
           </div>
         )}
         <main className="flex-1 p-4 sm:p-6">
-          <Outlet />
+          <Suspense fallback={<PageLoader />}>
+            <Outlet />
+          </Suspense>
         </main>
       </div>
     </div>
