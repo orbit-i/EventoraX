@@ -34,7 +34,7 @@ code. The next session continues with the first unticked box.
 - [x] 6. Database
 - [x] 7. Frontend core
 - [x] 8. Frontend components
-- [ ] 9. Frontend pages
+- [x] 9. Frontend pages
 - [ ] 10. Operations
 
 **How to continue:** read the files of the next chapter's area (paths are listed in chapter 2), write the chapter in the
