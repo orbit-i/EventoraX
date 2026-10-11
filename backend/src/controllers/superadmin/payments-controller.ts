@@ -6,7 +6,7 @@ import { ok, fail, validationFail, pagination, q } from "../../utils/http";
 import { isOneOf, parseDate } from "../../utils/schemas";
 import { logActivity } from "../../utils/activity";
 import { toCsv } from "../../utils/csv";
-import { escapeHtml, sendNotice } from "../../utils/mail";
+import { escapeHtml, sendNotice, sendRenewalEmail } from "../../utils/mail";
 import { orgAdminEmails } from "../../utils/orgContacts";
 import { monthStart, fillMonths } from "../../utils/months";
 import { DAY_MS, expireOverdueOrgs } from "../../utils/orgStatus";
@@ -149,16 +149,16 @@ export async function confirmPayment(req: Request, res: Response) {
   });
   if (parsed.data.notify) {
     const until = periodEnd.toLocaleDateString("en-PK", { day: "numeric", month: "long", year: "numeric", timeZone: "Asia/Karachi" });
-    void notifyOrg(
-      org.id,
-      "Payment confirmed — EventoraX",
-      "Your payment is confirmed 🎉",
-      `<p>We received your payment of <strong>PKR ${escapeHtml(Number(payment.amount).toLocaleString("en-PK"))}</strong> for the <strong>${escapeHtml(
-        payment.plan?.name ?? "selected"
-      )}</strong> plan.</p><p>${escapeHtml(org.name)} is active until <strong>${escapeHtml(until)}</strong>.</p>${
-        parsed.data.note ? `<p>Note from our team: ${escapeHtml(parsed.data.note)}</p>` : ""
-      }`
-    );
+    const vars = {
+      orgName: org.name,
+      plan: payment.plan?.name ?? "selected",
+      amount: `PKR ${Number(payment.amount).toLocaleString("en-PK")}`,
+      until,
+      note: parsed.data.note ? `Note from our team: ${parsed.data.note}` : "",
+    };
+    void (async () => {
+      for (const email of await orgAdminEmails(org.id)) await sendRenewalEmail(email, vars).catch((err) => console.error("Payment email failed:", err));
+    })();
   }
   return ok(res, (await withReviewers([updated]))[0]);
 }

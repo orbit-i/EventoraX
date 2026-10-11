@@ -209,3 +209,35 @@ Nothing existing was changed or dropped.
 2. Platform tab → **Choose design** → pick a layout/colour → Use this design → Save.
 3. Change "Max image upload" to 1 MB → try uploading a 1.5 MB logo in an org's Settings → Branding → you get an error.
    Set it back to 5.
+
+---
+
+## 10D (part 2) — Email templates & SMTP ✅
+
+**What was built**
+- **Email templates** (`/superadmin/emails`): the 10 system emails (Welcome, Verify email, Password reset, Team invite,
+  Registration confirmation, Event ticket, Certificate, Payment confirmed / renewal, Plan expiring soon, Announcement).
+  Pick one on the left → edit the subject and the HTML body with a small toolbar (heading, paragraph, bold, italic, link),
+  **Insert value** (`{{name}}`, `{{eventTitle}}` …, each email lists its own values) and **Button**
+  (`{{button "Label" link}}` → the purple button). A **live preview** with sample values updates as you type.
+  **Save template**, **Reset to default** (confirm), **Send test to me** (confirm; sends to the logged-in superadmin's email).
+  Edited templates show "Edited" and who/when. Unsaved changes are guarded (switching template or leaving the page asks).
+- These templates are now **really used**: verification, password reset, team invites, welcome, certificates, tickets,
+  payment confirmation (Renewal) and announcements all go through `renderEmail()`. A missing DB row = the built-in default,
+  which is exactly the text the emails had before, so nothing changes until you edit something.
+- **SMTP server** tab: shows where emails go now (.env / saved server / terminal only), **Test connection** (logs in to the
+  server, sends nothing), save a server (host, port, user, password — never sent back to the browser, leave empty to keep),
+  or forget it to fall back to `backend/.env`.
+
+**Decisions made for you**
+- "Rich text editor": I used an HTML editor with a formatting toolbar + live preview instead of adding a heavy WYSIWYG
+  library — emails need exact HTML anyway, and the preview shows the result.
+- Registration confirmation and Plan expiring soon are editable now; registration confirmation is sent from Phase 11's
+  public registration, the expiry reminder from the scheduled jobs (10D part 4).
+- The SMTP password is stored in the database (system_settings) in plain text, like .env. Phase 12 hardening can encrypt it.
+
+**Test it**
+1. **Email templates** → Certificate → change a sentence → watch the preview → **Save template** → "Edited" badge appears.
+2. **Reset to default** → confirm → the original text is back.
+3. **SMTP server** → **Test connection** → "Connected to the SMTP server (.env)".
+4. (Optional, sends a real email) change your superadmin email to a real inbox first, then **Send test to me**.

@@ -42,6 +42,17 @@ import { getPlatformAnalytics, platformAnalyticsReport, platformAnalyticsCsv } f
 
 import { getSettings, updateSettings, uploadPlatformImage } from "../controllers/superadmin/settings-controller";
 import { imageUpload } from "../utils/upload";
+import {
+  listTemplates,
+  saveTemplate,
+  resetTemplate,
+  previewTemplate,
+  sendTestTemplate,
+  getSmtp,
+  saveSmtp,
+  clearSmtp,
+  verifySmtp,
+} from "../controllers/superadmin/emails-controller";
 
 // Everything here is for the platform owner only.
 export const superadminRouter = Router();
@@ -108,3 +119,14 @@ superadminRouter.get("/analytics/export", platformAnalyticsCsv);
 superadminRouter.get("/settings", getSettings);
 superadminRouter.patch("/settings", updateSettings);
 superadminRouter.post("/uploads", imageUpload.single("file"), uploadPlatformImage);
+
+// Email templates & SMTP
+superadminRouter.get("/emails", listTemplates);
+superadminRouter.put("/emails/:type", saveTemplate);
+superadminRouter.delete("/emails/:type", resetTemplate);
+superadminRouter.post("/emails/:type/preview", previewTemplate);
+superadminRouter.post("/emails/:type/test", sendTestTemplate);
+superadminRouter.get("/smtp", getSmtp);
+superadminRouter.put("/smtp", saveSmtp);
+superadminRouter.delete("/smtp", clearSmtp);
+superadminRouter.post("/smtp/verify", verifySmtp);

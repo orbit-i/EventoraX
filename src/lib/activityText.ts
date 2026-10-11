@@ -177,6 +177,16 @@ export function describeActivity(item: ActivityItem): string {
       return "turned maintenance mode on"
     case "maintenance.off":
       return "turned maintenance mode off"
+    case "email.template.update":
+      return `edited the "${s("name")}" email`
+    case "email.template.reset":
+      return `reset the "${s("name")}" email to the default`
+    case "email.template.test":
+      return `sent a test "${s("name")}" email`
+    case "email.smtp.update":
+      return `changed the SMTP server to ${s("host")}`
+    case "email.smtp.clear":
+      return "removed the saved SMTP server"
     case "upload.image":
       return "uploaded an image"
     default:
