@@ -16,6 +16,8 @@ import { ticketsRouter } from "./routes/tickets-routes";
 import { idCardsRouter } from "./routes/idcards-routes";
 import { superadminRouter } from "./routes/superadmin-routes";
 import { publicPlans } from "./controllers/superadmin/plans-controller";
+import { publicPlatform } from "./controllers/superadmin/settings-controller";
+import { maintenanceGate } from "./middleware/maintenance";
    import {
      dashboardRouter,
      analyticsRouter,
@@ -48,6 +50,10 @@ app.get("/api/v1/health", async (_req, res) => {
     res.status(503).json({ ok: false, db: "down" });
   }
 });
+
+// Maintenance mode: everything below answers 503 for non-superadmins (see the middleware for exceptions).
+app.use("/api/v1", maintenanceGate);
+app.get("/api/v1/platform", publicPlatform); // public: name, banner, maintenance, SEO
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/org", orgRoutes);

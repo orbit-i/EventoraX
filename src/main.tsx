@@ -3,6 +3,7 @@ import { createBrowserRouter, RouterProvider } from 'react-router'
 import './index.css'
 import App from './App.tsx'
 import { AuthProvider } from './context/AuthContext.tsx'
+import { PlatformProvider } from './context/PlatformContext.tsx'
 import { ConfirmProvider } from './components/app/ConfirmDialog.tsx'
 
 // A "data router" is needed for the unsaved-changes warning (useBlocker).
@@ -11,11 +12,13 @@ const router = createBrowserRouter([
   {
     path: '*',
     element: (
-      <AuthProvider>
-        <ConfirmProvider>
-          <App />
-        </ConfirmProvider>
-      </AuthProvider>
+      <PlatformProvider>
+        <AuthProvider>
+          <ConfirmProvider>
+            <App />
+          </ConfirmProvider>
+        </AuthProvider>
+      </PlatformProvider>
     ),
   },
 ])

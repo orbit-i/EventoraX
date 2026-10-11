@@ -171,6 +171,12 @@ export function describeActivity(item: ActivityItem): string {
       return "downloaded the platform PDF report"
     case "platform.analytics.csv":
       return `exported platform ${s("dataset")} data as CSV`
+    case "settings.update":
+      return "changed the system settings"
+    case "maintenance.on":
+      return "turned maintenance mode on"
+    case "maintenance.off":
+      return "turned maintenance mode off"
     case "upload.image":
       return "uploaded an image"
     default:

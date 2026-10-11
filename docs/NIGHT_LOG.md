@@ -174,3 +174,38 @@ Nothing existing was changed or dropped.
    **Restore**.
 3. **Certificates → Bulk revoke…** → pick an event → enter a reason → "Check how many" → (Cancel, or confirm and restore later).
 4. **Analytics** → **PDF report** and each **CSV** option.
+
+---
+
+## 10D (part 1) — System settings, maintenance mode, sitewide banner ✅
+
+**What was built**
+- **System settings** (`/superadmin/settings`, tabs in the URL): **Platform** (name, logo, favicon, free-trial days,
+  max image upload size, default certificate design via the design picker), **Contact & payments** (contact email,
+  WhatsApp, hours, JazzCash / Easypaisa / bank IBAN shown on the Billing page), **Banner & SEO** (sitewide banner on/off,
+  message, style, optional link, live preview; meta title/description with character counters), **My account**
+  (the superadmin's own profile, password and sessions — reuses the org Settings "My account" tab).
+  One unsaved-changes guard for the whole page; tabs with unsaved edits get a dot.
+- `PATCH /superadmin/settings` validates every key (unknown keys rejected; nested errors like `banner.link` show under the
+  right field). Settings are cached for 30 s in memory and the cache is cleared on save.
+- **Maintenance mode** (`maintenance.enabled` + message): every API call answers `503 MAINTENANCE` except login, the
+  superadmin panel, public verify, contact form, plans and platform info. Organization dashboards then show a
+  "We'll be right back" screen (with your message); superadmins (also while "logged in as") keep working and see an amber
+  strip "Maintenance mode is on". The on/off switch itself is on the Maintenance page (10D part 4).
+- **Sitewide banner** on the public website and every dashboard; people can dismiss it (it comes back if you change the text).
+- `GET /api/v1/platform` (public): name, logo, favicon, banner, maintenance, SEO, trial days, upload limit. The browser tab
+  title, meta description and favicon follow these settings. A default purple "E" favicon was added (fixes the old 404).
+- **Upload limit** is now a real setting: every image upload (logos, photos, receipts…) is checked against it and the
+  upload fields show "up to N MB" with the current value.
+
+**Decisions made for you**
+- SEO title/description are applied in the browser (this is a single-page app); real server-side SEO comes with the
+  deployment work in Phase 12.
+- Found your saved default certificate design was an old key (`classic-01`); the page shows `classic-royal` until you save.
+
+**Test it**
+1. Superadmin → **System settings** → Banner & SEO → turn the banner on, type a message, Save → open the public site and an
+   org dashboard in another browser: the banner shows; dismiss it with ×.
+2. Platform tab → **Choose design** → pick a layout/colour → Use this design → Save.
+3. Change "Max image upload" to 1 MB → try uploading a 1.5 MB logo in an org's Settings → Branding → you get an error.
+   Set it back to 5.

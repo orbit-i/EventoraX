@@ -124,7 +124,7 @@ export function PayDialog({
                 kind="payment"
                 value={field.value}
                 onChange={field.onChange}
-                helper="Helps us confirm faster · PNG, JPG or WEBP · up to 2 MB"
+                helper="Helps us confirm faster · PNG, JPG or WEBP"
                 error={errors.proofUrl?.message}
               />
             )}

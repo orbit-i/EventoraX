@@ -91,7 +91,7 @@ export function SponsorForm({ eventId, sponsor }: { eventId: string; sponsor?: S
                 kind="sponsor"
                 value={field.value}
                 onChange={field.onChange}
-                helper="A transparent PNG looks best · up to 2 MB"
+                helper="A transparent PNG looks best"
               />
             )}
           />

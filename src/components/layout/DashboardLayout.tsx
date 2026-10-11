@@ -6,6 +6,10 @@ import { Sidebar } from "./Sidebar"
 import { Topbar } from "./Topbar"
 import { AccountBanners } from "./AccountBanners"
 import { ImpersonationBanner } from "./ImpersonationBanner"
+import { SiteBanner } from "./SiteBanner"
+import { MaintenanceScreen } from "./MaintenanceScreen"
+import { usePlatform } from "@/context/PlatformContext"
+import { useAuth } from "@/context/AuthContext"
 
 const COLLAPSED_KEY = "evx_sidebar_collapsed"
 
@@ -14,6 +18,10 @@ export default function DashboardLayout() {
   const { pathname } = useLocation()
   const [collapsed, setCollapsed] = useState(() => localStorage.getItem(COLLAPSED_KEY) === "1")
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const { platform } = usePlatform()
+  const { impersonator } = useAuth()
+  // During maintenance only superadmins get through (a superadmin "logged in as" an org included).
+  const down = platform?.maintenance.enabled === true && !impersonator
 
   // Close the phone menu when the page changes.
   useEffect(() => setDrawerOpen(false), [pathname])
@@ -48,10 +56,9 @@ export default function DashboardLayout() {
       <div className={cn("flex min-h-screen flex-col transition-[padding] duration-200", collapsed ? "md:pl-20" : "md:pl-64")}>
         <Topbar onOpenMenu={() => setDrawerOpen(true)} />
         <ImpersonationBanner />
+        <SiteBanner />
         <AccountBanners />
-        <main className="flex-1 p-4 sm:p-6">
-          <Outlet />
-        </main>
+        <main className="flex-1 p-4 sm:p-6">{down ? <MaintenanceScreen /> : <Outlet />}</main>
       </div>
     </div>
   )

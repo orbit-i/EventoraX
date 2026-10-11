@@ -4,14 +4,16 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { api, errorMessage } from "@/lib/api"
+import { usePlatform } from "@/context/PlatformContext"
 
 const ACCEPTED = ["image/png", "image/jpeg", "image/webp"]
-const MAX_BYTES = 2 * 1024 * 1024
+// The real limit is set by the superadmin (System settings → File uploads); the server checks it.
+const MAX_BYTES = 20 * 1024 * 1024
 
 export type UploadKind = "speaker" | "sponsor" | "logo" | "signature" | "payment"
 
 /**
- * Image field: drag & drop or click to upload (PNG/JPG/WEBP, max 2 MB), with preview,
+ * Image field: drag & drop or click to upload (PNG/JPG/WEBP, size limit from System settings), with preview,
  * replace and remove. "Use a link instead" accepts an https:// image URL.
  * The value is the image URL (an uploaded file becomes /uploads/...).
  */
@@ -23,6 +25,7 @@ export function ImageUploadField({
   helper,
   error,
   shape = "square",
+  uploadUrl,
 }: {
   label: string
   value: string | null
@@ -31,8 +34,11 @@ export function ImageUploadField({
   helper?: string
   error?: string
   shape?: "square" | "circle"
+  /** Upload somewhere else than the organization uploads (e.g. the superadmin's platform images) */
+  uploadUrl?: string
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const maxMb = usePlatform().platform?.maxUploadMb ?? 2
   const [uploading, setUploading] = useState(false)
   const [dragging, setDragging] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
@@ -42,11 +48,11 @@ export function ImageUploadField({
   async function handleFile(file: File) {
     setLocalError(null)
     if (!ACCEPTED.includes(file.type)) return setLocalError("Please choose a PNG, JPG or WEBP image.")
-    if (file.size > MAX_BYTES) return setLocalError("The image must be 2 MB or smaller.")
+    if (file.size > Math.min(MAX_BYTES, maxMb * 1024 * 1024)) return setLocalError(`The image must be ${maxMb} MB or smaller.`)
 
     setUploading(true)
     try {
-      const res = await api.upload<{ url: string }>(`/uploads/image?kind=${kind}`, file)
+      const res = await api.upload<{ url: string }>(uploadUrl ?? `/uploads/image?kind=${kind}`, file)
       onChange(res.url)
     } catch (err) {
       setLocalError(errorMessage(err, "Upload failed. Please try again."))
@@ -142,7 +148,7 @@ export function ImageUploadField({
           )}
 
           <p className={cn("text-xs", shownError ? "font-medium text-rose-500" : "text-[#94a3b8]")}>
-            {shownError ?? helper ?? "PNG, JPG or WEBP · up to 2 MB · drag & drop works too"}
+            {shownError ?? (helper ? `${helper} · up to ${maxMb} MB` : `PNG, JPG or WEBP · up to ${maxMb} MB · drag & drop works too`)}
           </p>
         </div>
       </div>

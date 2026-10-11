@@ -19,6 +19,7 @@ import Terms from './pages/Terms';
 import Privacy from './pages/Privacy';
 import Verify from './pages/Verify';
 import NotFound from './pages/NotFound';
+import { SiteBanner } from './components/layout/SiteBanner';
 import ComponentGallery from './pages/dev/ComponentGallery';
 import SuperadminLayout from './components/superadmin/SuperadminLayout';
 import SuperadminDashboardPage from './pages/superadmin/SuperadminDashboardPage';
@@ -29,6 +30,7 @@ import PlansPage from './pages/superadmin/PlansPage';
 import UsersPage from './pages/superadmin/UsersPage';
 import PlatformCertificatesPage from './pages/superadmin/PlatformCertificatesPage';
 import PlatformAnalyticsPage from './pages/superadmin/PlatformAnalyticsPage';
+import SystemSettingsPage from './pages/superadmin/SystemSettingsPage';
 
 // Dashboard imports
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -100,7 +102,10 @@ function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="min-h-screen antialiased bg-[#f3f0ff]">
       <Navbar />
-      <main className="pt-16">{children}</main>
+      <main className="pt-16">
+        <SiteBanner />
+        {children}
+      </main>
       <Footer />
     </div>
   );
@@ -203,6 +208,7 @@ export default function App() {
             <Route path="users" element={<UsersPage />} />
             <Route path="certificates" element={<PlatformCertificatesPage />} />
             <Route path="analytics" element={<PlatformAnalyticsPage />} />
+            <Route path="settings" element={<SystemSettingsPage />} />
           </Route>
 
           {/* Development only: preview of every shared component */}

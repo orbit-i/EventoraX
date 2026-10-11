@@ -87,15 +87,18 @@ export function TemplatePickerDialog({
   eventId,
   value,
   onSave,
+  apiBase = "/certificates",
 }: {
   open: boolean
   onOpenChange: (open: boolean) => void
   eventId: string
   value: string | null
   onSave: (templateKey: string) => Promise<void>
+  /** Where the catalogue and preview come from ("/superadmin/certificates" for the platform default) */
+  apiBase?: string
 }) {
   const { organization } = useAuth()
-  const catalogue = useApi<TemplatesResponse>(open ? "/certificates/templates" : null)
+  const catalogue = useApi<TemplatesResponse>(open ? `${apiBase}/templates` : null)
   const [layout, setLayout] = useState("classic")
   const [variant, setVariant] = useState("royal")
   const [saving, setSaving] = useState(false)
@@ -108,7 +111,7 @@ export function TemplatePickerDialog({
   }, [open, value])
 
   const key = `${layout}-${variant}`
-  const preview = usePdfUrl(open ? `/certificates/preview${buildQuery({ eventId, templateKey: key })}` : null)
+  const preview = usePdfUrl(open ? `${apiBase}/preview${buildQuery({ eventId, templateKey: key })}` : null)
   const brand = { primary: organization?.primaryColor || "#5b21b6", accent: organization?.accentColor || "#c9a227" }
   const variants = [...(catalogue.data?.variants ?? []), { key: "brand", name: "Your brand", ...brand }]
   const colours = variants.find((v) => v.key === variant) ?? brand

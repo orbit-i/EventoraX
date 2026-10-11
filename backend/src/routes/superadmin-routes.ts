@@ -35,8 +35,13 @@ import {
   revokeAnyCertificate,
   restoreAnyCertificate,
   bulkRevoke,
+  platformTemplates,
+  platformTemplatePreview,
 } from "../controllers/superadmin/certificates-controller";
 import { getPlatformAnalytics, platformAnalyticsReport, platformAnalyticsCsv } from "../controllers/superadmin/analytics-controller";
+
+import { getSettings, updateSettings, uploadPlatformImage } from "../controllers/superadmin/settings-controller";
+import { imageUpload } from "../utils/upload";
 
 // Everything here is for the platform owner only.
 export const superadminRouter = Router();
@@ -86,6 +91,8 @@ superadminRouter.post("/users/:id/reset-password", resetUserPassword);
 superadminRouter.get("/certificates", listAllCertificates);
 superadminRouter.get("/certificates/stats", allCertificateStats);
 superadminRouter.get("/certificates/events", certificateEvents);
+superadminRouter.get("/certificates/templates", platformTemplates);
+superadminRouter.get("/certificates/preview", platformTemplatePreview);
 superadminRouter.post("/certificates/bulk-revoke", bulkRevoke);
 superadminRouter.get("/certificates/:id", getCertificate);
 superadminRouter.get("/certificates/:id/pdf", certificatePdfForAdmin);
@@ -96,3 +103,8 @@ superadminRouter.post("/certificates/:id/restore", restoreAnyCertificate);
 superadminRouter.get("/analytics", getPlatformAnalytics);
 superadminRouter.get("/analytics/report", platformAnalyticsReport);
 superadminRouter.get("/analytics/export", platformAnalyticsCsv);
+
+// System settings
+superadminRouter.get("/settings", getSettings);
+superadminRouter.patch("/settings", updateSettings);
+superadminRouter.post("/uploads", imageUpload.single("file"), uploadPlatformImage);

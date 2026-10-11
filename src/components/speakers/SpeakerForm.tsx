@@ -99,7 +99,7 @@ export function SpeakerForm({ eventId, speaker }: { eventId: string; speaker?: S
             control={control}
             name="photo"
             render={({ field }) => (
-              <ImageUploadField label="Photo" kind="speaker" shape="circle" value={field.value} onChange={field.onChange} helper="A square headshot works best · PNG, JPG or WEBP · up to 2 MB" />
+              <ImageUploadField label="Photo" kind="speaker" shape="circle" value={field.value} onChange={field.onChange} helper="A square headshot works best · PNG, JPG or WEBP" />
             )}
           />
         </FullWidth>

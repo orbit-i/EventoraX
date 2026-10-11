@@ -5,7 +5,8 @@ import prisma from "../../prisma/client";
 import { ok, fail, validationFail, pagination, q } from "../../utils/http";
 import { isOneOf } from "../../utils/schemas";
 import { logActivity } from "../../utils/activity";
-import { certificateFileName, certificateHash, certificatePdf, normaliseVerifyCode, verifyUrl } from "../../services/certificates";
+import { certificateData, certificateFileName, certificateHash, certificatePdf, normaliseVerifyCode, verifyUrl } from "../../services/certificates";
+import { LAYOUTS, VARIANTS, listTemplates, renderCertificate, isTemplateKey, DEFAULT_TEMPLATE } from "../../pdf/certificate";
 
 const STATUSES = ["ISSUED", "REVOKED"] as const;
 const TYPES = ["PARTICIPATION", "ACHIEVEMENT", "APPRECIATION", "SPEAKER", "ORGANIZER"] as const;
@@ -163,4 +164,32 @@ export async function bulkRevoke(req: Request, res: Response) {
     metadata: { count: result.count, scope: eventId ? "event" : "organization", label: label ?? "", reason },
   });
   return ok(res, { dryRun: false, count: result.count });
+}
+
+// GET /api/v1/superadmin/certificates/templates   (catalogue for the platform default design picker)
+export function platformTemplates(_req: Request, res: Response) {
+  return ok(res, { layouts: LAYOUTS, variants: VARIANTS, templates: listTemplates() });
+}
+
+// GET /api/v1/superadmin/certificates/preview?templateKey=   (sample PDF with sample branding)
+export async function platformTemplatePreview(req: Request, res: Response) {
+  const key = q(req.query.templateKey);
+  const templateKey = isTemplateKey(key) ? key : DEFAULT_TEMPLATE;
+  const sampleOrg = {
+    id: "sample",
+    name: "Your Organization",
+    whiteLabelName: null,
+    logoUrl: null,
+    primaryColor: "#5b21b6",
+    accentColor: "#c9a227",
+    signatoryName: "Dr. Sana Malik",
+    signatoryTitle: "Director",
+    signatureUrl: null,
+  };
+  const sampleEvent = { id: "sample", title: "Your Event Title", startDateTime: new Date(), location: "Your venue", mode: "OFFLINE" as const };
+  const sample = { type: "PARTICIPATION" as const, recipientName: "Ayesha Khan", category: null, verifyCode: "EVX-SAMP-LE00", sha256Hash: "0".repeat(64), issuedAt: new Date() };
+  const pdf = await renderCertificate(templateKey, { ...certificateData(sampleOrg, sampleEvent, sample), sample: true });
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `inline; filename="preview-${templateKey}.pdf"`);
+  return res.send(pdf);
 }

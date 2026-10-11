@@ -69,7 +69,7 @@ export function CertificatesTab({ onDirtyChange }: TabProps) {
                 kind="signature"
                 value={field.value}
                 onChange={field.onChange}
-                helper="Sign on white paper, take a clear photo, or use a transparent PNG · up to 2 MB"
+                helper="Sign on white paper, take a clear photo, or use a transparent PNG"
               />
             )}
           />

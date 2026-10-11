@@ -93,6 +93,16 @@ export function onUnauthorized(listener: () => void): () => void {
   }
 }
 
+// ── "Down for maintenance" notifications (PlatformContext listens and shows the maintenance screen) ──
+const maintenanceListeners = new Set<() => void>()
+
+export function onMaintenance(listener: () => void): () => void {
+  maintenanceListeners.add(listener)
+  return () => {
+    maintenanceListeners.delete(listener)
+  }
+}
+
 interface ErrorBody {
   error?: string | { code?: string; message?: string; fieldErrors?: Record<string, string> } | null
   code?: string
@@ -141,6 +151,8 @@ async function toApiError(res: Response, sentToken: boolean): Promise<ApiError> 
     nested?.message ?? (typeof body.error === "string" ? body.error : undefined) ?? `Request failed (${res.status})`
   const code = nested?.code ?? body.code ?? "UNKNOWN_ERROR"
   const fieldErrors = nested?.fieldErrors ?? body.fieldErrors
+
+  if (res.status === 503 && code === "MAINTENANCE") maintenanceListeners.forEach((listener) => listener())
 
   // A logged-in request was rejected → the session is over everywhere in the app.
   if (res.status === 401 && sentToken) {

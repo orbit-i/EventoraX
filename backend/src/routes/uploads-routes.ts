@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { orgScopedAllowExpired, canWrite } from "../middleware/orgChain";
-import { imageUpload } from "../utils/upload";
+import { imageUpload, checkImageSize } from "../utils/upload";
 import { saveUpload } from "../utils/storage";
 import { ok, fail } from "../utils/http";
 import { logActivity } from "../utils/activity";
@@ -36,6 +36,8 @@ uploadsRouter.post("/image", canWrite, imageUpload.single("file"), async (req, r
   if (!req.file) {
     return fail(res, 400, "NO_FILE", "No file uploaded (form field name must be: file)");
   }
+  const tooBig = await checkImageSize(req.file);
+  if (tooBig) return fail(res, 400, "FILE_TOO_LARGE", tooBig);
   // Logos and signatures are printed on PDFs, which can only embed PNG or JPEG.
   if ((kind === "logo" || kind === "signature") && req.file.mimetype === "image/webp") {
     return fail(res, 400, "UNSUPPORTED_IMAGE", "Please use a PNG or JPG for logos and signatures (they're printed on certificates)");
