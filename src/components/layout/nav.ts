@@ -1,6 +1,15 @@
 import type { LucideIcon } from "lucide-react"
 import {
   Activity,
+  Building2,
+  FileText,
+  Gauge,
+  Megaphone,
+  ShieldCheck,
+  Wallet,
+  Wrench,
+  Layers,
+  UserCog,
   Award,
   BarChart3,
   CalendarDays,
@@ -70,6 +79,41 @@ export const NAV: NavGroup[] = [
       { to: "/dashboard/billing", label: "Billing", icon: CreditCard, need: "manage" },
       { to: "/dashboard/settings", label: "Settings", icon: Settings },
       { to: "/dashboard/contact", label: "Help & support", icon: LifeBuoy },
+    ],
+  },
+]
+/** The superadmin (platform owner) menu. */
+export const SUPERADMIN_NAV: NavGroup[] = [
+  { items: [{ to: "/superadmin", label: "Dashboard", icon: Gauge, end: true }] },
+  {
+    title: "Customers",
+    items: [
+      { to: "/superadmin/tenants", label: "Tenants", icon: Building2 },
+      { to: "/superadmin/users", label: "Users", icon: UserCog },
+      { to: "/superadmin/certificates", label: "Certificates", icon: Award },
+    ],
+  },
+  {
+    title: "Money",
+    items: [
+      { to: "/superadmin/revenue", label: "Revenue & payments", icon: Wallet },
+      { to: "/superadmin/plans", label: "Plans & pricing", icon: Layers },
+    ],
+  },
+  {
+    title: "Insights",
+    items: [
+      { to: "/superadmin/analytics", label: "Analytics", icon: BarChart3 },
+      { to: "/superadmin/security", label: "Security & activity", icon: ShieldCheck },
+    ],
+  },
+  {
+    title: "Platform",
+    items: [
+      { to: "/superadmin/announcements", label: "Announcements", icon: Megaphone },
+      { to: "/superadmin/emails", label: "Email templates", icon: FileText },
+      { to: "/superadmin/settings", label: "System settings", icon: Settings },
+      { to: "/superadmin/maintenance", label: "Maintenance", icon: Wrench },
     ],
   },
 ]

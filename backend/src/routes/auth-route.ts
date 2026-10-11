@@ -343,7 +343,11 @@ router.get("/me", requireAuth, async (req, res) => {
   if (!user) {
     return res.status(404).json({ error: "User not found" });
   }
-  return res.json({ user: publicUser(user), organization: user.organization });
+  const impersonatorId = req.user!.impersonatorId;
+  const impersonator = impersonatorId
+    ? await prisma.user.findUnique({ where: { id: impersonatorId }, select: { id: true, name: true, email: true } })
+    : null;
+  return res.json({ user: publicUser(user), organization: user.organization, impersonator });
 });
 // PATCH /api/v1/auth/me  { name?, phone? }   (edit your own profile)
 router.patch("/me", requireAuth, async (req, res) => {
@@ -371,6 +375,9 @@ router.patch("/me", requireAuth, async (req, res) => {
 });
 // POST /api/v1/auth/change-password  { currentPassword, newPassword }
 router.post("/change-password", requireAuth, async (req, res) => {
+  if (req.user!.impersonatorId) {
+    return res.status(403).json({ error: "You can't change this person's password while logged in as them.", code: "IMPERSONATING" });
+  }
   const b = bodyOf(req);
   const currentPassword = b.currentPassword;
   const newPassword = b.newPassword;

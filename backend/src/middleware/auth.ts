@@ -9,6 +9,8 @@ export interface AuthUser {
   name: string;
   role: Role;
   organizationId: string | null; // null only for superAdmin
+  /** The superadmin's id when this session is an impersonation ("log in as"). */
+  impersonatorId?: string;
 }
 
 declare global {
@@ -45,12 +47,21 @@ export async function requireAuth(req: Request, res: Response, next: NextFunctio
     return res.status(401).json({ error: "Your session is no longer valid. Please log in again.", code: "BAD_TOKEN" });
   }
 
+  // Impersonation only works while the superadmin who started it is still an active superadmin.
+  if (payload.imp) {
+    const admin = await prisma.user.findUnique({ where: { id: payload.imp }, select: { role: true, isActive: true } });
+    if (!admin || admin.role !== "superAdmin" || !admin.isActive) {
+      return res.status(401).json({ error: "This 'log in as' session has ended.", code: "BAD_TOKEN" });
+    }
+  }
+
   req.user = {
     userId: user.id,
     email: user.email,
     name: user.name,
     role: user.role,
     organizationId: user.organizationId,
+    ...(payload.imp ? { impersonatorId: payload.imp } : {}),
   };
   next();
 }

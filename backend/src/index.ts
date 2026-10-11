@@ -14,6 +14,7 @@ import { uploadsRouter } from "./routes/uploads-routes";
 import { certificatesRouter, verifyRouter } from "./routes/certificates-routes";
 import { ticketsRouter } from "./routes/tickets-routes";
 import { idCardsRouter } from "./routes/idcards-routes";
+import { superadminRouter } from "./routes/superadmin-routes";
    import {
      dashboardRouter,
      analyticsRouter,
@@ -62,6 +63,7 @@ app.use("/api/v1/certificates", certificatesRouter);
 app.use("/api/v1/verify", verifyRouter);
 app.use("/api/v1/tickets", ticketsRouter);
 app.use("/api/v1/idcards", idCardsRouter);
+app.use("/api/v1/superadmin", superadminRouter);
    app.use("/api/v1/dashboard", dashboardRouter);
    app.use("/api/v1/analytics", analyticsRouter);
    app.use("/api/v1/activity", activityRouter);

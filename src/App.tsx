@@ -20,7 +20,10 @@ import Privacy from './pages/Privacy';
 import Verify from './pages/Verify';
 import NotFound from './pages/NotFound';
 import ComponentGallery from './pages/dev/ComponentGallery';
-import SuperadminHome from './pages/superadmin/SuperadminHome';
+import SuperadminLayout from './components/superadmin/SuperadminLayout';
+import SuperadminDashboardPage from './pages/superadmin/SuperadminDashboardPage';
+import TenantsPage from './pages/superadmin/TenantsPage';
+import TenantDetailPage from './pages/superadmin/TenantDetailPage';
 
 // Dashboard imports
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -178,15 +181,19 @@ export default function App() {
             <Route path="idcards" element={<IdCardsPage />} />
           </Route>
 
-          {/* Superadmin (built in Phase 10) */}
+          {/* Superadmin (platform owner) */}
           <Route
             path="/superadmin"
             element={
               <ProtectedRoute roles={['superAdmin']}>
-                <SuperadminHome />
+                <SuperadminLayout />
               </ProtectedRoute>
             }
-          />
+          >
+            <Route index element={<SuperadminDashboardPage />} />
+            <Route path="tenants" element={<TenantsPage />} />
+            <Route path="tenants/:id" element={<TenantDetailPage />} />
+          </Route>
 
           {/* Development only: preview of every shared component */}
           {import.meta.env.DEV && <Route path="/dev/components" element={<ComponentGallery />} />}

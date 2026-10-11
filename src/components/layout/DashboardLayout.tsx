@@ -5,6 +5,7 @@ import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet"
 import { Sidebar } from "./Sidebar"
 import { Topbar } from "./Topbar"
 import { AccountBanners } from "./AccountBanners"
+import { ImpersonationBanner } from "./ImpersonationBanner"
 
 const COLLAPSED_KEY = "evx_sidebar_collapsed"
 
@@ -46,6 +47,7 @@ export default function DashboardLayout() {
 
       <div className={cn("flex min-h-screen flex-col transition-[padding] duration-200", collapsed ? "md:pl-20" : "md:pl-64")}>
         <Topbar onOpenMenu={() => setDrawerOpen(true)} />
+        <ImpersonationBanner />
         <AccountBanners />
         <main className="flex-1 p-4 sm:p-6">
           <Outlet />

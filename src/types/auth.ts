@@ -37,6 +37,7 @@ export interface Organization {
   signatoryTitle: string | null
   notificationPrefs: Record<string, boolean> | null
   status: OrgStatus
+  suspendedReason?: string | null
   subscriptionEndsAt: string
   plan: Plan | null
 }
@@ -44,6 +45,8 @@ export interface Organization {
 export interface MeResponse {
   user: AuthUser
   organization: Organization | null
+  /** Set when a superadmin is "logged in as" this user */
+  impersonator?: { id: string; name: string; email: string } | null
 }
 
 export interface AuthResponse {

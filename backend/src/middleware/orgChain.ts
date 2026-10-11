@@ -14,3 +14,6 @@ export const orgScopedAllowExpired = [requireAuth, checkOrgStatus({ allowExpired
 
 /** Organization admins only. */
 export const adminOnly = requireRole(["admin"]);
+
+/** The platform owner (superadmin) only. */
+export const superAdminOnly = [requireAuth, requireRole(["superAdmin"])];

@@ -5,7 +5,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { useAuth } from "@/context/AuthContext"
 import { useCan } from "@/lib/permissions"
 import { formatDate, formatTimeLeft } from "@/lib/format"
-import { NAV, type NavItem } from "./nav"
+import { NAV, SUPERADMIN_NAV, type NavItem } from "./nav"
 
 function OrgMark({ name, logoUrl, size = "md" }: { name: string; logoUrl: string | null; size?: "md" | "sm" }) {
   const box = size === "md" ? "h-9 w-9" : "h-8 w-8"
@@ -95,35 +95,46 @@ export function Sidebar({
   onToggleCollapsed,
   onNavigate,
   className,
+  variant = "org",
 }: {
   collapsed?: boolean
   onToggleCollapsed?: () => void
   /** Called after a link is clicked (closes the mobile drawer) */
   onNavigate?: () => void
   className?: string
+  /** "platform" = the superadmin panel */
+  variant?: "org" | "platform"
 }) {
   const { organization } = useAuth()
   const can = useCan()
-  const orgName = organization?.whiteLabelName || organization?.name || "EventoraX"
+  const platform = variant === "platform"
+  const orgName = platform ? "EventoraX" : organization?.whiteLabelName || organization?.name || "EventoraX"
+  const nav = platform ? SUPERADMIN_NAV : NAV
 
   return (
     <aside className={cn("flex h-full flex-col bg-[#faf8ff]", className)}>
       {/* Organization */}
       <div className={cn("flex items-center gap-3 border-b border-[#e9e4ff] px-4 py-4", collapsed && "justify-center px-2")}>
-        <OrgMark name={orgName} logoUrl={organization?.logoUrl ?? null} />
+        <OrgMark name={orgName} logoUrl={platform ? null : organization?.logoUrl ?? null} />
         {!collapsed && (
           <div className="min-w-0">
             <p className="truncate text-sm font-bold text-[#0f172a]">{orgName}</p>
             <p className="truncate text-xs text-[#94a3b8]">
-              Eventora<span className="text-[#7c3aed]">X</span> dashboard
+              {platform ? (
+                "Platform admin"
+              ) : (
+                <>
+                  Eventora<span className="text-[#7c3aed]">X</span> dashboard
+                </>
+              )}
             </p>
           </div>
         )}
       </div>
 
       {/* Menu */}
-      <nav aria-label="Dashboard" className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
-        {NAV.map((group, i) => {
+      <nav aria-label={platform ? "Superadmin" : "Dashboard"} className="flex-1 space-y-5 overflow-y-auto px-3 py-4">
+        {nav.map((group, i) => {
           const items = group.items.filter((item) => !item.need || can(item.need))
           if (items.length === 0) return null
           return (
@@ -143,7 +154,7 @@ export function Sidebar({
       </nav>
 
       <div className="space-y-2 border-t border-[#e9e4ff] p-3">
-        <PlanCard collapsed={collapsed} onNavigate={onNavigate} />
+        {!platform && <PlanCard collapsed={collapsed} onNavigate={onNavigate} />}
         {onToggleCollapsed && (
           <button
             type="button"

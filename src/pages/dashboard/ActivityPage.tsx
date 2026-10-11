@@ -3,8 +3,8 @@ import { Link } from "react-router"
 import { toast } from "sonner"
 import { Activity, Download, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { PageHeader } from "@/components/app/PageHeader"
+import { DateRangeFilter, dayEnd, dayStart } from "@/components/app/DateRangeFilter"
 import { Toolbar, FilterSelect, FilterChips, type ActiveFilter } from "@/components/app/Toolbar"
 import { ServerTable, type Column } from "@/components/app/ServerTable"
 import { PaginationBar } from "@/components/app/PaginationBar"
@@ -51,14 +51,6 @@ function entityLink(item: ActivityItem): string | null {
     default:
       return null
   }
-}
-
-/** A picked calendar day → the exact start / end of that day in the viewer's time zone. */
-function dayStart(day: string) {
-  return day ? new Date(`${day}T00:00:00`).toISOString() : ""
-}
-function dayEnd(day: string) {
-  return day ? new Date(`${day}T23:59:59.999`).toISOString() : ""
 }
 
 export default function ActivityPage() {
@@ -197,33 +189,7 @@ export default function ActivityPage() {
           options={ACTION_OPTIONS}
           className="sm:w-52"
         />
-        <div className="flex items-center gap-2">
-          <label className="sr-only" htmlFor="activity-from">
-            From date
-          </label>
-          <Input
-            id="activity-from"
-            type="date"
-            value={values.from}
-            max={values.to || undefined}
-            onChange={(e) => set({ from: e.target.value })}
-            className="h-10 w-40 bg-white"
-            aria-invalid={badRange}
-          />
-          <span className="text-sm text-[#94a3b8]">to</span>
-          <label className="sr-only" htmlFor="activity-to">
-            To date
-          </label>
-          <Input
-            id="activity-to"
-            type="date"
-            value={values.to}
-            min={values.from || undefined}
-            onChange={(e) => set({ to: e.target.value })}
-            className="h-10 w-40 bg-white"
-            aria-invalid={badRange}
-          />
-        </div>
+        <DateRangeFilter id="activity" from={values.from} to={values.to} onChange={set} />
       </Toolbar>
       {badRange && <p className="-mt-2 mb-4 text-sm font-medium text-rose-600">The start date must be on or before the end date.</p>}
 

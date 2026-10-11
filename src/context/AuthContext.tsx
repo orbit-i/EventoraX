@@ -15,6 +15,8 @@ interface AuthState {
   status: AuthStatus
   user: AuthUser | null
   organization: Organization | null
+  /** The superadmin behind a "log in as" session */
+  impersonator: { id: string; name: string; email: string } | null
 }
 
 interface AuthContextValue extends AuthState {
@@ -24,22 +26,29 @@ interface AuthContextValue extends AuthState {
   logout: () => void
   /** Re-fetch the current user + organization (e.g. after editing settings). */
   refresh: () => Promise<void>
+  /** Superadmin: switch this tab to an organization admin's session. */
+  impersonate: (token: string) => Promise<void>
+  /** Back to the superadmin's own session. */
+  stopImpersonating: () => Promise<void>
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
 
-const GUEST: AuthState = { status: "guest", user: null, organization: null }
+const GUEST: AuthState = { status: "guest", user: null, organization: null, impersonator: null }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>(() =>
-    tokenStore.get() ? { status: "loading", user: null, organization: null } : GUEST
+    tokenStore.get() ? { status: "loading", user: null, organization: null, impersonator: null } : GUEST
   )
 
   const loadMe = useCallback(async () => {
+    const token = tokenStore.get()
     try {
       const me = await api.get<MeResponse>("/auth/me")
-      setState({ status: "authenticated", user: me.user, organization: me.organization })
+      setState({ status: "authenticated", user: me.user, organization: me.organization, impersonator: me.impersonator ?? null })
     } catch (err) {
+      // The session changed meanwhile (e.g. an ended "log in as" went back to the superadmin) → leave it alone.
+      if (tokenStore.get() !== token) return
       // Only throw the token away if the server rejected it (not if the server is just down).
       if (err instanceof ApiError && (err.status === 401 || err.status === 404)) tokenStore.clear()
       setState(GUEST)
@@ -51,14 +60,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (tokenStore.get()) void loadMe()
   }, [loadMe])
 
-  // Any request rejected with 401 logs the user out everywhere.
+  // Any request rejected with 401 logs the user out everywhere —
+  // except an ended "log in as" session, which goes back to the superadmin.
   useEffect(
     () =>
       onUnauthorized(() => {
+        if (tokenStore.isImpersonating() && tokenStore.stopImpersonation()) {
+          void loadMe()
+          return
+        }
         tokenStore.clear()
         setState(GUEST)
       }),
-    []
+    [loadMe]
   )
 
   const startSession = useCallback(
@@ -101,9 +115,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setState(GUEST)
   }, [])
 
+  const impersonate = useCallback(
+    async (token: string) => {
+      tokenStore.startImpersonation(token)
+      await loadMe()
+    },
+    [loadMe]
+  )
+
+  const stopImpersonating = useCallback(async () => {
+    if (tokenStore.stopImpersonation()) await loadMe()
+    else logout()
+  }, [loadMe, logout])
+
   const value = useMemo<AuthContextValue>(
-    () => ({ ...state, login, register, acceptInvite, logout, refresh: loadMe }),
-    [state, login, register, acceptInvite, logout, loadMe]
+    () => ({ ...state, login, register, acceptInvite, logout, refresh: loadMe, impersonate, stopImpersonating }),
+    [state, login, register, acceptInvite, logout, loadMe, impersonate, stopImpersonating]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

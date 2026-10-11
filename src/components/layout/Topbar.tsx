@@ -1,5 +1,5 @@
 import { Link, useNavigate } from "react-router"
-import { CreditCard, ExternalLink, LogOut, Menu, MonitorSmartphone, Settings, UserRound } from "lucide-react"
+import { CreditCard, ExternalLink, LogOut, Menu, MonitorSmartphone, Settings, ShieldCheck, UserRound } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import {
@@ -19,7 +19,7 @@ import { api, errorMessage } from "@/lib/api"
 const ROLE_LABEL = { superAdmin: "Super admin", admin: "Admin", manager: "Manager", viewer: "Viewer" } as const
 
 /** Top bar: menu button on phones, and the account menu. */
-export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
+export function Topbar({ onOpenMenu, variant = "org" }: { onOpenMenu: () => void; variant?: "org" | "platform" }) {
   const { user, organization, logout } = useAuth()
   const can = useCan()
   const confirm = useConfirm()
@@ -51,7 +51,9 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
       <Button variant="ghost" size="icon-sm" className="md:hidden" onClick={onOpenMenu} aria-label="Open menu">
         <Menu />
       </Button>
-      <p className="truncate text-sm font-semibold text-[#0f172a] md:hidden">{organization?.whiteLabelName || organization?.name}</p>
+      <p className="truncate text-sm font-semibold text-[#0f172a] md:hidden">
+        {variant === "platform" ? "EventoraX admin" : organization?.whiteLabelName || organization?.name}
+      </p>
 
       <div className="ml-auto flex items-center gap-2">
         <DropdownMenu>
@@ -68,12 +70,27 @@ export function Topbar({ onOpenMenu }: { onOpenMenu: () => void }) {
               <p className="truncate text-xs text-[#64748b]">{user?.email}</p>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem asChild>
-              <Link to="/dashboard/settings?tab=account">
-                <UserRound className="h-4 w-4" /> My account
-              </Link>
-            </DropdownMenuItem>
-            {can("manage") && (
+            {variant === "platform" ? (
+              <>
+                <DropdownMenuItem asChild>
+                  <Link to="/superadmin/settings">
+                    <Settings className="h-4 w-4" /> System settings
+                  </Link>
+                </DropdownMenuItem>
+                <DropdownMenuItem asChild>
+                  <Link to="/superadmin/security">
+                    <ShieldCheck className="h-4 w-4" /> Security log
+                  </Link>
+                </DropdownMenuItem>
+              </>
+            ) : (
+              <DropdownMenuItem asChild>
+                <Link to="/dashboard/settings?tab=account">
+                  <UserRound className="h-4 w-4" /> My account
+                </Link>
+              </DropdownMenuItem>
+            )}
+            {variant === "org" && can("manage") && (
               <>
                 <DropdownMenuItem asChild>
                   <Link to="/dashboard/settings?tab=organization">

@@ -10,6 +10,8 @@
 
 const API_BASE: string = import.meta.env.VITE_API_URL ?? "/api/v1"
 const TOKEN_KEY = "evx_token"
+/** While a superadmin is "logged in as" an organization, their own session waits here (this tab only). */
+const RETURN_KEY = "evx_return_session"
 
 export interface ListMeta {
   total: number
@@ -31,10 +33,13 @@ export class ApiError extends Error {
   }
 }
 
-/** "Remember me" → localStorage (survives closing the browser); otherwise sessionStorage. */
+/**
+ * "Remember me" → localStorage (survives closing the browser); otherwise sessionStorage.
+ * sessionStorage wins when both exist, so a "log in as" session stays in its own tab.
+ */
 export const tokenStore = {
   get(): string | null {
-    return localStorage.getItem(TOKEN_KEY) ?? sessionStorage.getItem(TOKEN_KEY)
+    return sessionStorage.getItem(TOKEN_KEY) ?? localStorage.getItem(TOKEN_KEY)
   },
   set(token: string, remember: boolean) {
     tokenStore.clear()
@@ -42,12 +47,39 @@ export const tokenStore = {
   },
   /** Swap in a new token, keeping the same storage (used after changing password). */
   replace(token: string) {
-    if (localStorage.getItem(TOKEN_KEY)) localStorage.setItem(TOKEN_KEY, token)
-    else sessionStorage.setItem(TOKEN_KEY, token)
+    if (sessionStorage.getItem(TOKEN_KEY) || !localStorage.getItem(TOKEN_KEY)) sessionStorage.setItem(TOKEN_KEY, token)
+    else localStorage.setItem(TOKEN_KEY, token)
   },
   clear() {
     localStorage.removeItem(TOKEN_KEY)
     sessionStorage.removeItem(TOKEN_KEY)
+    sessionStorage.removeItem(RETURN_KEY)
+  },
+
+  /** Superadmin → organization: park the current session and use the impersonation token in this tab. */
+  startImpersonation(token: string) {
+    const current = tokenStore.get()
+    if (!current) return
+    const remembered = !sessionStorage.getItem(TOKEN_KEY) && localStorage.getItem(TOKEN_KEY) === current
+    sessionStorage.setItem(RETURN_KEY, JSON.stringify({ token: current, remembered }))
+    sessionStorage.setItem(TOKEN_KEY, token)
+  },
+  /** Back to the superadmin's own session. Returns false if there was nothing to go back to. */
+  stopImpersonation(): boolean {
+    const raw = sessionStorage.getItem(RETURN_KEY)
+    if (!raw) return false
+    sessionStorage.removeItem(RETURN_KEY)
+    sessionStorage.removeItem(TOKEN_KEY)
+    try {
+      const saved = JSON.parse(raw) as { token: string; remembered: boolean }
+      if (!saved.remembered) sessionStorage.setItem(TOKEN_KEY, saved.token)
+      return true
+    } catch {
+      return false
+    }
+  },
+  isImpersonating(): boolean {
+    return sessionStorage.getItem(RETURN_KEY) !== null
   },
 }
 

@@ -62,3 +62,49 @@ and quick API calls against the running backend before committing. No real email
 1. Sidebar → **Analytics** → click **PDF report** → `analytics-report-YYYY-MM-DD.pdf` downloads.
 2. Open it: page 1 has the KPIs and charts, page 2 the certificate trend and top events.
 3. Sidebar → **Activity log** shows "downloaded the analytics PDF report".
+
+---
+
+## 10A — Superadmin layout, dashboard, tenants (+ impersonation) ✅
+
+**Database (additive migration `superadmin_panel`)** — new nullable/default columns only: `organizations.suspendedAt/suspendedReason`,
+`payments.reviewNote`, `plans.description`, `announcements.orgCount/emailCount`, and a new `error_logs` table (used in 10D).
+Nothing existing was changed or dropped.
+
+**What was built**
+- Superadmin panel at `/superadmin` with its own sidebar (Customers · Money · Insights · Platform) — the org Sidebar/Topbar
+  now take a `variant="platform"` prop instead of being copied.
+- **Dashboard** (`GET /superadmin/dashboard`): tenants by status (+ new this month), revenue this month / this year / all time
+  (confirmed payments only), platform totals, sign-ups per month chart, "Needs attention" (pending payments, server errors,
+  many failed logins, plans ending this week, recently expired), recent platform activity, quick actions
+  (Add tenant, View logs, Send announcement).
+- **Tenants** (`/superadmin/tenants`): status tabs with counts, search (name, slug or any member's email), plan filter,
+  created-date range, sort, CSV export, pagination — all in the URL. Row menu: view, log in as admin, change plan,
+  extend trial/plan, suspend (reason required) / reactivate, delete (must type the exact name).
+- **Tenant detail** (`/superadmin/tenants/:id`): usage stats, subscription facts (seats used vs plan limits, time left),
+  contact & branding, recent activity, team, payments, events, danger zone.
+- **Add tenant** by hand: creates the org + first admin with a **temporary password shown once** (copy button). No email is sent.
+- **Log in as admin (impersonation)**: a 1-hour token for the org's first admin, marked with the superadmin's id.
+  A dark banner across the org dashboard says who you are viewing as, with **Back to superadmin**. The impersonation lives
+  only in that browser tab; other tabs stay logged in as superadmin. Every action taken is logged with `impersonatedBy`
+  (the activity feed shows "(via log in as)"). Password changes are blocked while impersonating. If the 1-hour token
+  expires you are taken back to your superadmin session automatically.
+- Shared helpers: `utils/orgStatus.ts` (`expireOverdueOrgs`, `naturalStatus`), `utils/months.ts`, `DateRangeFilter` component
+  (Activity page now uses it too), `formatMoney` (always "PKR 0", never "Free").
+
+**Decisions made for you**
+- Extending adds days to the **later of today and the current end date** (so extending early never loses days). An expired
+  org that gets extended becomes `active` if it has ever paid, otherwise `trial`.
+- Reactivating a suspended org gives it the same "natural" status (expired / active / trial).
+- Changing plan never removes people; it only changes limits for new invites.
+- Deleting a tenant really deletes it (with its files) — the spec asks for Delete — but it needs the exact name typed,
+  and the UI recommends suspending instead. The deletion is logged at platform level.
+- Superadmin login (from `backend/.env`): `SEED_SUPERADMIN_EMAIL` / `SEED_SUPERADMIN_PASSWORD` (currently `you@example.com`).
+
+**Test it**
+1. Log in with the superadmin account → you land on **Platform overview**.
+2. **Add tenant** → submit empty to see field errors → fill it in (use a `willkariim+something@gmail.com` admin email) →
+   copy the temporary password → **Open organization**.
+3. On the tenant page try **Extend** (+7 days), **Change plan**, **Suspend** (enter a reason) then **Reactivate**.
+4. **Log in as admin** → confirm → you see their dashboard with the dark banner → **Back to superadmin** returns to the tenant.
+5. Delete the test tenant from its **Danger zone** (type its name).

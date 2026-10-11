@@ -114,6 +114,25 @@ export function describeActivity(item: ActivityItem): string {
       return n("count") === 1 ? `printed ${s("name")}'s ID card` : `printed ${n("count")} ID cards for "${s("event")}"`
     case "analytics.report":
       return "downloaded the analytics PDF report"
+    // Superadmin (platform) actions
+    case "tenant.create":
+      return `added the organization "${s("name")}"`
+    case "tenant.update":
+      return `edited "${s("name")}"`
+    case "tenant.plan":
+      return `moved "${s("name")}" to the ${s("to")} plan`
+    case "tenant.extend":
+      return `extended "${s("name")}" until ${s("to").slice(0, 10)}`
+    case "tenant.suspend":
+      return `suspended "${s("name")}"`
+    case "tenant.unsuspend":
+      return `reactivated "${s("name")}"`
+    case "tenant.impersonate":
+      return `logged in as ${s("as")} at "${s("name")}"`
+    case "tenant.delete":
+      return `deleted the organization "${s("name")}"`
+    case "tenant.export":
+      return `exported ${n("count")} organizations as CSV`
     case "upload.image":
       return "uploaded an image"
     default:

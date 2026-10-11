@@ -74,3 +74,8 @@ export function formatMonth(key: string, withYear = false): string {
     timeZone: "UTC",
   })
 }
+/** Money that is always shown as an amount, even 0 ("PKR 0") — for revenue and totals. */
+export function formatMoney(amount: number | string | null | undefined): string {
+  const n = Number(amount ?? 0)
+  return `PKR ${(Number.isFinite(n) ? n : 0).toLocaleString(LOCALE)}`
+}

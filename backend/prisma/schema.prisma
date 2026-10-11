@@ -123,6 +123,7 @@ model Plan {
   currency      String         @default("PKR")
   maxAdmins     Int? // null = unlimited
   maxManagers   Int? // null = unlimited
+  description   String?        @db.Text // one line shown on the pricing page
   features      Json?
   isVisible     Boolean        @default(true) // shown on the public pricing page
   sortOrder     Int            @default(0)
@@ -150,6 +151,8 @@ model Organization {
   signatoryTitle     String?
   notificationPrefs  Json?
   status             OrgStatus @default(trial)
+  suspendedAt        DateTime? // set by the superadmin
+  suspendedReason    String?   @db.Text
   subscriptionEndsAt DateTime
   planId             String?
   plan               Plan?     @relation(fields: [planId], references: [id], onDelete: SetNull)
@@ -472,8 +475,9 @@ model Payment {
   periodStart    DateTime?
   periodEnd      DateTime?
   notes          String?       @db.Text
-  confirmedById  String?
+  confirmedById  String? // superadmin who confirmed or rejected it
   confirmedAt    DateTime?
+  reviewNote     String?       @db.Text // superadmin's note, e.g. why it was rejected
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -551,6 +555,8 @@ model Announcement {
   status        AnnouncementStatus @default(DRAFT)
   scheduledAt   DateTime?
   sentAt        DateTime?
+  orgCount      Int                @default(0) // organizations it reached
+  emailCount    Int                @default(0) // emails sent
   createdById   String?
   createdAt     DateTime           @default(now())
   notifications Notification[]
@@ -609,4 +615,19 @@ model ContactMessage {
 
   @@index([status])
   @@map("contact_messages")
+}
+
+// Server errors (5xx), kept so the superadmin can see them on the Maintenance page.
+model ErrorLog {
+  id        String   @id @default(cuid())
+  message   String   @db.Text
+  stack     String?  @db.Text
+  method    String?
+  path      String?  @db.VarChar(500)
+  status    Int      @default(500)
+  userId    String?
+  createdAt DateTime @default(now())
+
+  @@index([createdAt])
+  @@map("error_logs")
 }
