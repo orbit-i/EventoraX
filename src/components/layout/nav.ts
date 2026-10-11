@@ -7,6 +7,7 @@ import {
   ClipboardList,
   CreditCard,
   Handshake,
+  IdCard,
   LayoutDashboard,
   LifeBuoy,
   ListOrdered,
@@ -52,6 +53,7 @@ export const NAV: NavGroup[] = [
       { to: "/dashboard/certificates", label: "Certificates", icon: Award },
       { to: "/dashboard/tickets", label: "Tickets", icon: Ticket, end: true },
       { to: "/dashboard/tickets/scan", label: "Check-in scanner", icon: ScanLine, need: "write" },
+      { to: "/dashboard/idcards", label: "ID cards", icon: IdCard },
     ],
   },
   {
