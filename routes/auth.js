@@ -168,7 +168,7 @@ router.post('/login', async (req, res) => {
          GROUP BY t.id`,
         [userRow.id, userRow.id]
       );
-      userTenants = myTenants;
+      userTenants = (myTenants || []).filter(t => t.id !== 1 && t.slug !== 'eventorax-hq');
     }
 
     let activeTenant = userTenants[0];
@@ -265,15 +265,31 @@ router.get('/me', verifyToken, async (req, res) => {
          GROUP BY t.id`,
         [userRow.id, userRow.id]
       );
-      userTenants = myTenants;
+      // Strict isolation: Client organizations can NEVER hold tenant #1 (EventoraX HQ)
+      userTenants = (myTenants || []).filter(t => t.id !== 1 && t.slug !== 'eventorax-hq');
     }
 
-    const activeTenant = userTenants[0] || {
-      id: 1,
-      name: userRow.org_name || 'EventoraX Workspace',
-      slug: 'default',
-      plan: userRow.plan || 'Starter'
-    };
+    let activeTenant = userTenants[0];
+    if (!activeTenant) {
+      if (userRow.role === 'admin') {
+        const [hq] = await query('SELECT * FROM `tenants` WHERE `id` = 1');
+        activeTenant = hq[0] || { id: 1, name: 'EventoraX HQ', slug: 'eventorax-hq', plan: 'Platform Authority' };
+        userTenants = [activeTenant];
+      } else {
+        const workspaceName = userRow.org_name || `${userRow.full_name}'s Workspace`;
+        let tenantSlug = slugify(workspaceName) || `client-${userRow.id}`;
+        tenantSlug = `${tenantSlug}-${Math.floor(100 + Math.random() * 900)}`;
+
+        const [tResult] = await query(
+          'INSERT INTO `tenants` (`name`, `slug`, `owner_id`, `plan`, `status`, `primary_color`, `secondary_color`) VALUES (?, ?, ?, "Starter", "active", "#7c3aed", "#6d28d9")',
+          [workspaceName, tenantSlug, userRow.id]
+        );
+        const newId = tResult.insertId;
+        const [newT] = await query('SELECT * FROM `tenants` WHERE `id` = ?', [newId]);
+        activeTenant = newT[0];
+        userTenants = [activeTenant];
+      }
+    }
 
     const user = {
       id: userRow.id,

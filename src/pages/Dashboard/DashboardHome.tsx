@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import Header from '@/components/ui/dashboard/header';
 import StatCard from '@/components/ui/dashboard/StatCard';
 import { Button } from '@/components/ui/button';
@@ -17,13 +17,20 @@ import {
   CheckCircle2, 
   Sparkles,
   Ticket,
-  BarChart3
+  BarChart3,
+  Clock
 } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
 
 export default function DashboardHome() {
-  const { user } = useAuth();
+  const { user, currentTenant } = useAuth();
+
+  // Strict role isolation: Superadmin authority belongs in /superadmin
+  if (user?.role === 'admin') {
+    return <Navigate to="/superadmin" replace />;
+  }
+
   const [stats, setStats] = useState<any>(null);
   const [recentEvents, setRecentEvents] = useState<any[]>([]);
   const [activities, setActivities] = useState<any[]>([]);
@@ -73,7 +80,30 @@ export default function DashboardHome() {
     <div className="pb-12">
       <Header title="Dashboard Overview" />
 
-      <div className="p-6 space-y-8">
+      <div className="p-6 space-y-6">
+        {/* Pending Plan Approval Alert (Shown when client has submitted a paid plan upgrade) */}
+        {currentTenant?.status === 'pending_approval' && (
+          <div className="bg-amber-50 border border-amber-300 rounded-2xl p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-xs animate-in fade-in">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center font-bold shrink-0">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <h4 className="font-bold text-amber-950 text-sm">
+                  {currentTenant.plan || 'Subscription'} Upgrade Pending SuperAdmin Approval
+                </h4>
+                <p className="text-xs text-amber-800">
+                  Your plan payment has been submitted to EventoraX HQ. Free Starter limits remain active until the master authority confirms your access.
+                </p>
+              </div>
+            </div>
+            <Link to="/dashboard/billing">
+              <Button size="sm" variant="outline" className="border-amber-400 text-amber-900 hover:bg-amber-100 text-xs font-bold rounded-xl shrink-0">
+                View Invoice Status
+              </Button>
+            </Link>
+          </div>
+        )}
         {/* Welcome Banner */}
         <div className="relative overflow-hidden rounded-3xl bg-gradient-to-r from-[#7c3aed] via-[#6d28d9] to-[#4c1d95] p-8 text-white shadow-xl shadow-[#7c3aed]/15">
           <div className="relative z-10 max-w-2xl space-y-3">

@@ -125,7 +125,16 @@ router.post('/upgrade', verifyToken, resolveTenant, requireTenantRole(['owner', 
 router.post('/purchase', verifyToken, resolveTenant, requireTenantRole(['owner', 'admin']), async (req, res) => {
   try {
     const { plan, billingCycle = 'monthly', paymentMethod = 'card', transactionRef, amount, currency = 'USD', notes } = req.body;
-    const tenant = req.tenant;
+    let tenant = req.tenant;
+
+    // If caller is an organizer but tenant resolved to default platform tenant #1, look up client's actual tenant
+    if (tenant.id === 1 && req.user?.role !== 'admin') {
+      const [userTenants] = await query('SELECT * FROM `tenants` WHERE `owner_id` = ? LIMIT 1', [req.user.id]);
+      if (userTenants && userTenants.length > 0) {
+        tenant = userTenants[0];
+        req.tenant = tenant;
+      }
+    }
 
     if (req.user?.role === 'admin' || tenant.id === 1 || tenant.slug === 'eventorax-hq') {
       return res.status(400).json({
@@ -145,16 +154,19 @@ router.post('/purchase', verifyToken, resolveTenant, requireTenantRole(['owner',
     const finalAmount = amount || (planInfo.price * (billingCycle === 'yearly' ? 10 : 1));
     const finalRef = transactionRef || `TXN-${Date.now().toString(36).toUpperCase()}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    // Insert pending subscription record awaiting SuperAdmin verification
-    const [subResult] = await query(
-      'INSERT INTO `subscriptions` (`tenant_id`, `user_id`, `plan`, `price`, `billing_cycle`, `attendees_limit`, `status`) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [tenant.id, req.user.id, plan, finalAmount, billingCycle, planInfo.attendees, 'pending_approval']
+    const isFreeTier = plan === 'Starter' || finalAmount === 0;
+    const initialStatus = isFreeTier ? 'active' : 'pending_approval';
+
+    // Insert subscription record (awaiting SuperAdmin verification if paid)
+    await query(
+      'INSERT INTO `subscriptions` (`tenant_id`, `user_id`, `plan`, `price`, `billing_cycle`, `attendees_limit`, `status`, `payment_method`, `transaction_ref`, `currency`, `notes`) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+      [tenant.id, req.user.id, plan, finalAmount, billingCycle, planInfo.attendees, initialStatus, paymentMethod, finalRef, currency, notes || '']
     );
 
     // If Starter (free tier), auto-activate; paid tiers require SuperAdmin verification
-    if (plan === 'Starter' || finalAmount === 0) {
+    if (isFreeTier) {
       await query(
-        'UPDATE `tenants` SET `plan` = ?, `max_events` = ?, `max_attendees` = ?, `white_label_enabled` = ? WHERE `id` = ?',
+        'UPDATE `tenants` SET `plan` = ?, `status` = "active", `max_events` = ?, `max_attendees` = ?, `white_label_enabled` = ? WHERE `id` = ?',
         [plan, planInfo.maxEvents, planInfo.attendees, 0, tenant.id]
       );
       return res.json({
@@ -165,6 +177,12 @@ router.post('/purchase', verifyToken, resolveTenant, requireTenantRole(['owner',
         invoiceNumber: finalRef
       });
     }
+
+    // For paid tier, update tenant plan and set status to pending_approval
+    await query(
+      'UPDATE `tenants` SET `plan` = ?, `status` = "pending_approval" WHERE `id` = ?',
+      [plan, tenant.id]
+    );
 
     // Trigger SuperAdmin Notification
     try {

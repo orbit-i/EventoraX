@@ -31,7 +31,7 @@ export default function Sidebar() {
   const { user, currentTenant, logout } = useAuth();
   const { isOpen, closeSidebar } = useSidebar();
 
-  const isMaster = user?.role === 'admin' || currentTenant?.id === 1 || currentTenant?.slug === 'eventorax-hq';
+  const isMaster = user?.role === 'admin';
 
   const userInitials = user?.fullName
     ? user.fullName

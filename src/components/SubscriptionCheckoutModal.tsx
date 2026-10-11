@@ -91,8 +91,9 @@ export default function SubscriptionCheckoutModal({
     setIsProcessing(true);
 
     try {
-      // 1. If not logged in, register account first so client has login credentials & tenant workspace
-      if (!user) {
+      // 1. If not logged in, or logged in as SuperAdmin (HQ), register a dedicated client organization account
+      const isNewClient = !user || user.role === 'admin';
+      if (isNewClient) {
         if (!adminEmail || !password || password.length < 8) {
           alert('Please enter a secure password with at least 8 characters to protect your account.');
           setIsProcessing(false);
@@ -243,7 +244,7 @@ export default function SubscriptionCheckoutModal({
             </div>
 
             {/* Organization Info */}
-            {user ? (
+            {user && user.role !== 'admin' ? (
               <div className="bg-[#f0f9ff] border border-blue-200 rounded-2xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#1d4ed8] text-white flex items-center justify-center font-bold text-sm">
@@ -255,16 +256,23 @@ export default function SubscriptionCheckoutModal({
                   </div>
                 </div>
                 <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
-                  Verified Workspace
+                  Verified Client Workspace
                 </span>
               </div>
             ) : (
               <div className="space-y-3">
+                {user?.role === 'admin' && (
+                  <div className="p-3 bg-amber-50 border border-amber-300 rounded-xl text-xs text-amber-900 mb-1">
+                    <strong>SuperAdmin Notice:</strong> You are currently logged in as Platform Authority (HQ). Enter new client organization credentials below to register and test a client workspace subscription.
+                  </div>
+                )}
                 <div className="flex items-center justify-between">
                   <label className="text-xs font-bold text-slate-800">Create Client Organization Account</label>
-                  <a href="/login" className="text-xs font-semibold text-blue-600 hover:underline">
-                    Already registered? Log in &rarr;
-                  </a>
+                  {!user && (
+                    <a href="/login" className="text-xs font-semibold text-blue-600 hover:underline">
+                      Already registered? Log in &rarr;
+                    </a>
+                  )}
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <div>

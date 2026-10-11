@@ -244,9 +244,13 @@ function handleMemoryQuery(sql, params = []) {
       const t = memoryStore.tenants.find(x => x.custom_domain && x.custom_domain.toLowerCase() === domain);
       return [t ? [t] : []];
     }
-    if (s.includes('where `owner_id` =')) {
-      const ownerId = parseInt(params[0], 10);
-      const res = memoryStore.tenants.filter(x => x.owner_id === ownerId);
+    // Match queries filtering by owner_id or tenant membership user_id
+    if (s.includes('owner_id') || s.includes('tm.user_id') || s.includes('`user_id`')) {
+      const userId = parseInt(params[0], 10);
+      const memberTenantIds = new Set(
+        memoryStore.tenant_members.filter(m => m.user_id === userId).map(m => m.tenant_id)
+      );
+      const res = memoryStore.tenants.filter(x => x.owner_id === userId || memberTenantIds.has(x.id));
       return [res];
     }
     if (s.includes('count(*)')) {
@@ -256,16 +260,26 @@ function handleMemoryQuery(sql, params = []) {
   }
 
   if (s.includes('insert into `tenants`') || s.includes('insert into tenants')) {
+    // Correctly resolve owner_id regardless of which column variant was inserted
+    const ownerId = (params[2] !== undefined && !isNaN(Number(params[2])))
+      ? Number(params[2])
+      : (params[6] !== undefined && !isNaN(Number(params[6])))
+        ? Number(params[6])
+        : 1;
+
+    const rawPlan = params[7] || params[3] || 'Starter';
+    const planName = typeof rawPlan === 'string' && rawPlan !== 'active' ? rawPlan : 'Starter';
+
     const newTenant = {
       id: memoryStore.tenants.length + 1,
-      name: params[0],
-      slug: params[1],
-      custom_domain: params[2] || '',
-      logo_url: params[3] || '',
-      primary_color: params[4] || '#7c3aed',
-      secondary_color: params[5] || '#6d28d9',
-      owner_id: params[6],
-      plan: params[7] || 'Starter',
+      name: params[0] || 'My Organization',
+      slug: params[1] || `tenant-${Date.now()}`,
+      custom_domain: '',
+      logo_url: '',
+      primary_color: '#7c3aed',
+      secondary_color: '#6d28d9',
+      owner_id: ownerId,
+      plan: planName,
       status: 'active',
       max_events: 10,
       max_attendees: 1000,
@@ -274,7 +288,7 @@ function handleMemoryQuery(sql, params = []) {
       created_at: new Date().toISOString()
     };
     memoryStore.tenants.push(newTenant);
-    // Add default membership
+    // Add default membership for owner
     memoryStore.tenant_members.push({
       id: memoryStore.tenant_members.length + 1,
       tenant_id: newTenant.id,
@@ -290,9 +304,22 @@ function handleMemoryQuery(sql, params = []) {
     const id = parseInt(params[params.length - 1], 10);
     const tenant = memoryStore.tenants.find(t => t.id === id);
     if (tenant) {
-      if (s.includes('status = ?')) tenant.status = params[0];
-      if (s.includes('plan = ?')) tenant.plan = params[0];
-      if (s.includes('name = ?')) {
+      if (s.includes('set `plan` = ?, `status` = ?')) {
+        tenant.plan = params[0];
+        tenant.status = params[1];
+        if (params[2]) tenant.max_events = params[2];
+        if (params[3]) tenant.max_attendees = params[3];
+        if (params[4] !== undefined) tenant.white_label_enabled = params[4];
+      } else if (s.includes('set `plan` = ?, `max_events` = ?')) {
+        tenant.plan = params[0];
+        tenant.max_events = params[1];
+        tenant.max_attendees = params[2];
+        if (params[3] !== undefined) tenant.white_label_enabled = params[3];
+      } else if (s.includes('status = ?') || s.includes('`status` = ?')) {
+        tenant.status = params[0];
+      } else if (s.includes('plan = ?') || s.includes('`plan` = ?')) {
+        tenant.plan = params[0];
+      } else if (s.includes('name = ?')) {
         tenant.name = params[0] || tenant.name;
         tenant.slug = params[1] || tenant.slug;
         tenant.logo_url = params[2] ?? tenant.logo_url;
@@ -301,7 +328,7 @@ function handleMemoryQuery(sql, params = []) {
         tenant.custom_domain = params[5] ?? tenant.custom_domain;
       }
     }
-    return [{ affectedRows: 1 }];
+    return [{ affectedRows: tenant ? 1 : 0 }];
   }
 
   // TENANT MEMBERS
@@ -760,10 +787,12 @@ function handleMemoryQuery(sql, params = []) {
     if (sub) {
       if (s.includes('`status` = ?') || s.includes('status = ?')) {
         sub.status = params[0];
-        if (params[1]) sub.notes = params[1];
-        if (s.includes('approved_at')) {
-          sub.approved_at = new Date().toISOString();
+        if (s.includes('approved_by') || s.includes('approved_at')) {
           sub.approved_by = params[1] || 1;
+          sub.approved_at = new Date().toISOString();
+        }
+        if (s.includes('notes = ?') || s.includes('`notes` = ?')) {
+          sub.notes = params[1] || '';
         }
       }
     }

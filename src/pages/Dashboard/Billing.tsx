@@ -74,7 +74,7 @@ const clientPlans: PlanData[] = [
 ];
 
 export default function Billing() {
-  const { user, currentTenant, isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const [currentPlan, setCurrentPlan] = useState("Starter");
   const [attendeesUsed, setAttendeesUsed] = useState(0);
   const [attendeesLimit, setAttendeesLimit] = useState(500);
@@ -85,7 +85,7 @@ export default function Billing() {
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<PlanData>(clientPlans[1]);
 
-  const isPlatformAuthority = isSuperAdmin || user?.role === 'admin' || currentTenant?.id === 1 || currentTenant?.slug === 'eventorax-hq';
+  const isPlatformAuthority = isSuperAdmin || user?.role === 'admin';
 
   const fetchBillingData = async () => {
     try {
