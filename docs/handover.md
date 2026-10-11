@@ -195,6 +195,10 @@ Superadmin → **System settings** → tab **Contact & payments**.
 Replace the WhatsApp number with the real one (format `+92 3XX XXXXXXX`) or clear the field to hide it everywhere.
 Click **Save**.
 
+> **Set a contact email you actually read.** Messages from the website contact form and from organizations' Help & support
+> page are emailed to it, and so are notices about new payments to confirm. The messages are also stored in the
+> database table `contact_messages`, but there is no page that lists them yet (open them with `npx prisma studio`).
+
 ## 8. Payment account details
 
 Superadmin → **System settings** → tab **Contact & payments** → **JazzCash number**, **Easypaisa number**, **Bank IBAN**.
