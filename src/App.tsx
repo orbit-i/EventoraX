@@ -26,6 +26,9 @@ import TenantsPage from './pages/superadmin/TenantsPage';
 import TenantDetailPage from './pages/superadmin/TenantDetailPage';
 import RevenuePage from './pages/superadmin/RevenuePage';
 import PlansPage from './pages/superadmin/PlansPage';
+import UsersPage from './pages/superadmin/UsersPage';
+import PlatformCertificatesPage from './pages/superadmin/PlatformCertificatesPage';
+import PlatformAnalyticsPage from './pages/superadmin/PlatformAnalyticsPage';
 
 // Dashboard imports
 import DashboardLayout from './components/layout/DashboardLayout';
@@ -197,6 +200,9 @@ export default function App() {
             <Route path="tenants/:id" element={<TenantDetailPage />} />
             <Route path="revenue" element={<RevenuePage />} />
             <Route path="plans" element={<PlansPage />} />
+            <Route path="users" element={<UsersPage />} />
+            <Route path="certificates" element={<PlatformCertificatesPage />} />
+            <Route path="analytics" element={<PlatformAnalyticsPage />} />
           </Route>
 
           {/* Development only: preview of every shared component */}

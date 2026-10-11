@@ -25,6 +25,19 @@ import {
   revenueOverview,
 } from "../controllers/superadmin/payments-controller";
 
+import { listUsers, userStats, exportUsers, getUser, disableUser, enableUser, forceLogout, resetUserPassword } from "../controllers/superadmin/users-controller";
+import {
+  listAllCertificates,
+  allCertificateStats,
+  certificateEvents,
+  getCertificate,
+  certificatePdfForAdmin,
+  revokeAnyCertificate,
+  restoreAnyCertificate,
+  bulkRevoke,
+} from "../controllers/superadmin/certificates-controller";
+import { getPlatformAnalytics, platformAnalyticsReport, platformAnalyticsCsv } from "../controllers/superadmin/analytics-controller";
+
 // Everything here is for the platform owner only.
 export const superadminRouter = Router();
 superadminRouter.use(...superAdminOnly);
@@ -58,3 +71,28 @@ superadminRouter.get("/payments/stats", paymentStats);
 superadminRouter.get("/payments/export", exportPayments);
 superadminRouter.post("/payments/:id/confirm", confirmPayment);
 superadminRouter.post("/payments/:id/reject", rejectPayment);
+
+// Users (every account on the platform)
+superadminRouter.get("/users", listUsers);
+superadminRouter.get("/users/stats", userStats);
+superadminRouter.get("/users/export", exportUsers);
+superadminRouter.get("/users/:id", getUser);
+superadminRouter.post("/users/:id/disable", disableUser);
+superadminRouter.post("/users/:id/enable", enableUser);
+superadminRouter.post("/users/:id/logout", forceLogout);
+superadminRouter.post("/users/:id/reset-password", resetUserPassword);
+
+// Certificates across all tenants
+superadminRouter.get("/certificates", listAllCertificates);
+superadminRouter.get("/certificates/stats", allCertificateStats);
+superadminRouter.get("/certificates/events", certificateEvents);
+superadminRouter.post("/certificates/bulk-revoke", bulkRevoke);
+superadminRouter.get("/certificates/:id", getCertificate);
+superadminRouter.get("/certificates/:id/pdf", certificatePdfForAdmin);
+superadminRouter.post("/certificates/:id/revoke", revokeAnyCertificate);
+superadminRouter.post("/certificates/:id/restore", restoreAnyCertificate);
+
+// Platform analytics
+superadminRouter.get("/analytics", getPlatformAnalytics);
+superadminRouter.get("/analytics/report", platformAnalyticsReport);
+superadminRouter.get("/analytics/export", platformAnalyticsCsv);

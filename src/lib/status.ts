@@ -45,6 +45,7 @@ export const ORG_STATUS: Record<string, StatusMeta> = {
 }
 
 export const TEAM_ROLE: Record<string, StatusMeta> = {
+  superAdmin: { label: "Super admin", tone: "teal" },
   admin: { label: "Admin", tone: "purple" },
   manager: { label: "Manager", tone: "blue" },
   viewer: { label: "Viewer", tone: "slate" },

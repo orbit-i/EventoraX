@@ -159,3 +159,84 @@ export interface RevenueOverview {
     plan: { id: string; name: string; price: string } | null
   }[]
 }
+
+export interface PlatformUser {
+  id: string
+  name: string
+  email: string
+  phone: string | null
+  role: Role
+  isActive: boolean
+  emailVerified: boolean
+  lastLoginAt: string | null
+  createdAt: string
+  organization: { id: string; name: string; status: OrgStatus } | null
+}
+
+export interface UserStats {
+  total: number
+  disabled: number
+  unverified: number
+  activeWeek: number
+  byRole: Partial<Record<Role, number>>
+}
+
+export interface LoginRecord {
+  id: string
+  success: boolean
+  ipAddress: string | null
+  userAgent: string | null
+  createdAt: string
+}
+
+export interface UserDetail {
+  user: PlatformUser
+  activity: PlatformActivity[]
+  logins: LoginRecord[]
+}
+
+export interface PlatformCertificate {
+  id: string
+  organizationId: string
+  eventId: string
+  type: string
+  recipientName: string
+  recipientEmail: string
+  category: string | null
+  templateKey: string
+  verifyCode: string
+  sha256Hash: string
+  status: "ISSUED" | "REVOKED"
+  revokedAt: string | null
+  revokeReason: string | null
+  downloadCount: number
+  emailedAt: string | null
+  issuedAt: string
+  event: { id: string; title: string; startDateTime: string }
+  organization: { id: string; name: string } | null
+  hashMatches?: boolean
+  verifyUrl?: string
+}
+
+export interface CertificateStatsAll {
+  issued: number
+  revoked: number
+  downloads: number
+  organizations: number
+}
+
+export interface CertificateEventOption {
+  id: string
+  title: string
+  startDateTime: string
+  organization: { id: string; name: string }
+  certificates: number
+}
+
+export interface PlatformAnalytics {
+  totals: { organizations: number; events: number; registrations: number; certificates: number }
+  monthly: { month: string; organizations: number; events: number; registrations: number; certificates: number }[]
+  planDistribution: { plan: string; total: number; active: number; trial: number; expired: number; suspended: number }[]
+  topOrganizations: { id: string; name: string; status: OrgStatus; plan: string | null; registrations: number; events: number }[]
+  topEvents: { id: string; title: string; startDateTime: string; status: string; organization: { id: string; name: string }; registrations: number }[]
+}

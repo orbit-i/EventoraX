@@ -139,3 +139,38 @@ Nothing existing was changed or dropped.
    `willkariim+paytest` address) → **Confirm payment** → the org is active for a year; the stats and chart update.
 3. Try **Reject…** on another pending payment (submit one from an org's Billing page) — the reason is required.
 4. **Plans & pricing** → **New plan** → create "Starter" (hidden) → Edit → Hide/Show (try Undo) → Delete it.
+
+---
+
+## 10C — Users, global certificates, platform analytics ✅
+
+**What was built**
+- **Users** (`/superadmin/users`): every account on the platform with stats (accounts, active this week, unverified,
+  disabled), status tabs, search (name / email / organization), role filter, `?orgId=` filter (the tenant page's "Manage"
+  link), CSV export. Row menu and a side panel (`?user=<id>`, shows role, organization, recent logins with device + IP,
+  recent activity) with: **Disable / Enable** (disabling also logs them out everywhere; toast has Undo),
+  **Log out everywhere**, **Email reset link** (15-minute link) and **Set temporary password** (shown once, copy button).
+  You can't do these to your own account or another superadmin.
+- **Certificates** (`/superadmin/certificates`): all certificates of all tenants — search by verify code (`EVX-…`), name or
+  email; filter by status, organization, type. Details dialog with the real PDF, an integrity check (SHA-256 still matches?),
+  download count, link to the public verify page, **Revoke** (reason required, Undo toast) / **Restore**.
+  **Bulk revoke…**: one event or one organization + reason → it first shows how many valid certificates will be revoked,
+  then a second click revokes them.
+- **Platform analytics** (`/superadmin/analytics`): totals, new organizations per month, plan distribution donut,
+  events & registrations per month, certificates per month, top 10 organizations, top 10 events.
+  Exports: **PDF report** (2 pages, made with the ReportKit from 9E) and **CSV** (monthly numbers, plan distribution,
+  top organizations, top events).
+- Superadmin downloads of a certificate don't count as "downloads" (only recipients' downloads do).
+
+**Decisions made for you**
+- "Reset password" offers both options from the spec's wording: an emailed link (safe default) or a temporary password
+  you share yourself (useful when their email doesn't work).
+- Bulk revoke is limited to one event or one organization at a time, with a count check, to avoid accidents.
+
+**Test it**
+1. **Users** → click "Pay Tester" → try **Disable** (then **Undo**), **Set temporary password** (copy it, log in with it in a
+   private window). Don't use "Email reset link" on the demo people unless you want a real email.
+2. **Certificates** → search `EVX-` → open one → **Revoke…** with a reason → open the public verify page: it says REVOKED →
+   **Restore**.
+3. **Certificates → Bulk revoke…** → pick an event → enter a reason → "Check how many" → (Cancel, or confirm and restore later).
+4. **Analytics** → **PDF report** and each **CSV** option.

@@ -149,6 +149,28 @@ export function describeActivity(item: ActivityItem): string {
       return `hid the ${s("name")} plan from the pricing page`
     case "plan.delete":
       return `deleted the ${s("name")} plan`
+    case "user.disable":
+      return `disabled ${s("name")}'s account`
+    case "user.enable":
+      return `re-enabled ${s("name")}'s account`
+    case "user.logout":
+      return `logged ${s("name")} out of all devices`
+    case "user.password.link":
+      return `sent ${s("name")} a password reset link`
+    case "user.password.temporary":
+      return `set a temporary password for ${s("name")}`
+    case "user.export":
+      return `exported ${n("count")} users as CSV`
+    case "platform.certificate.revoke":
+      return `revoked ${s("name")}'s certificate (${s("code")})`
+    case "platform.certificate.restore":
+      return `restored ${s("name")}'s certificate (${s("code")})`
+    case "platform.certificate.bulkRevoke":
+      return `revoked ${n("count")} certificates of ${s("scope") === "event" ? "the event" : "the organization"} "${s("label")}"`
+    case "platform.analytics.report":
+      return "downloaded the platform PDF report"
+    case "platform.analytics.csv":
+      return `exported platform ${s("dataset")} data as CSV`
     case "upload.image":
       return "uploaded an image"
     default:
