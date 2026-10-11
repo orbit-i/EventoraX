@@ -66,8 +66,12 @@ Then, on the server, inside `backend/`:
 
 ```bash
 npx prisma migrate deploy   # creates or updates all tables
-npx prisma db seed          # plans, default settings and the superadmin (safe to run again)
+npx prisma db seed          # plans, default settings and the superadmin
 ```
+
+> ⚠️ Run `db seed` once when the database is new. Running it again keeps settings and the superadmin, but **resets the
+> Pro and Enterprise plans** (price, seat limits, features) to the values in `backend/src/prisma/seed.ts`. If you changed
+> prices in the app, change them in that file too, or don't re-run the seed.
 
 ## 3. `JWT_SECRET` and `ENCRYPTION_KEY`
 
@@ -204,7 +208,8 @@ superadmin confirms it in **Revenue & payments** → **Review** → **Confirm pa
 
 - **Plans & prices:** Superadmin → **Plans & pricing**. The seeded plans are Pro (PKR 20,000/year) and Enterprise
   (PKR 25,000/year). Edit a plan to change its price, seat limits, features or description. The public Pricing page
-  updates immediately. Price changes apply to future payments only.
+  updates immediately. Price changes apply to future payments only. Also update the prices in
+  `backend/src/prisma/seed.ts`, because re-running the seed resets the two seeded plans (see step 2).
 - **Free trial length:** Superadmin → **System settings** → **Platform** → "Free trial (days)". It is **1 day** now,
   which is very short for a real launch; 7 or 14 days is common.
 
