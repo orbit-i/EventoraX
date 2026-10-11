@@ -33,6 +33,7 @@ import {
   Link,
   Unlink
 } from 'lucide-react';
+import { printElement } from '@/lib/printUtils';
 
 export type DesignDocType = 'certificate' | 'id_badge';
 
@@ -895,7 +896,13 @@ export default function DesignStudio() {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => window.print()}
+            onClick={() => {
+              if (canvasRef.current) {
+                printElement(canvasRef.current, `${docTitle} - Layout Print`);
+              } else {
+                window.print();
+              }
+            }}
             className="text-xs font-bold rounded-xl flex items-center gap-1.5"
           >
             <Printer className="w-3.5 h-3.5" />

@@ -188,3 +188,72 @@
     animation: none !important;
   }
 }
+
+/* ==========================================================================
+   Precision Print Isolation: ID Cards, Badges & Certificates ONLY
+   Eliminates all web UI chrome, headers, footers, modals, and sidebars
+   ========================================================================== */
+@media print {
+  @page {
+    margin: 8mm;
+    size: auto;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    background-color: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Hide entire page chrome by default when printing */
+  nav,
+  aside,
+  header,
+  footer,
+  button,
+  .no-print,
+  [data-no-print="true"] {
+    display: none !important;
+  }
+
+  /* When printing an isolated target */
+  body:has(.printable-isolated-target) * {
+    visibility: hidden !important;
+  }
+
+  body:has(.printable-isolated-target) .printable-isolated-target,
+  body:has(.printable-isolated-target) .printable-isolated-target * {
+    visibility: visible !important;
+  }
+
+  .printable-isolated-target {
+    position: absolute !important;
+    left: 50% !important;
+    top: 20px !important;
+    transform: translateX(-50%) !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    page-break-inside: avoid !important;
+    break-inside: avoid !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    max-width: 100% !important;
+  }
+
+  /* Remove modal backdrop and scroll restrictions */
+  .fixed,
+  .overflow-hidden,
+  .overflow-y-auto {
+    position: static !important;
+    overflow: visible !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
+  }
+}

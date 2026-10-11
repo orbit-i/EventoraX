@@ -16,6 +16,7 @@ import {
   Sparkles
 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
+import { printElement } from '@/lib/printUtils';
 
 interface CertificateData {
   certificateNumber: string;
@@ -86,7 +87,8 @@ export default function PublicVerifyPage() {
   };
 
   const downloadPrintable = () => {
-    window.print();
+    if (!certificate) return;
+    printElement('official-certificate-diploma', `${certificate.recipientName} - Certificate of Excellence`);
   };
 
   return (
@@ -338,7 +340,10 @@ export default function PublicVerifyPage() {
 
             {/* Certificate Visual Rendering Box */}
             <div className="p-6 sm:p-10 border-t border-[#e2e8f0] bg-white">
-              <div className="max-w-2xl mx-auto rounded-2xl border-4 border-[#1d4ed8]/30 p-8 sm:p-12 relative bg-gradient-to-br from-white via-[#f8fafc] to-[#eff6ff] shadow-lg text-center overflow-hidden">
+              <div 
+                id="official-certificate-diploma"
+                className="max-w-2xl mx-auto rounded-2xl border-4 border-[#1d4ed8]/30 p-8 sm:p-12 relative bg-gradient-to-br from-white via-[#f8fafc] to-[#eff6ff] shadow-lg text-center overflow-hidden"
+              >
                 {/* Decorative border corners */}
                 <div className="absolute top-2 left-2 w-8 h-8 border-t-2 border-l-2 border-[#1d4ed8]" />
                 <div className="absolute top-2 right-2 w-8 h-8 border-t-2 border-r-2 border-[#1d4ed8]" />

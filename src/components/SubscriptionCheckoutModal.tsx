@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { api } from '@/services/api';
+import { printElement } from '@/lib/printUtils';
 
 export interface PlanData {
   name: string;
@@ -528,7 +529,10 @@ export default function SubscriptionCheckoutModal({
             </div>
 
             {/* Printable Receipt Card */}
-            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-200 text-left space-y-3 font-mono text-xs max-w-md mx-auto">
+            <div 
+              id="subscription-receipt-card"
+              className="bg-slate-50 p-6 rounded-2xl border border-slate-200 text-left space-y-3 font-mono text-xs max-w-md mx-auto"
+            >
               <div className="flex justify-between items-center pb-2 border-b border-slate-200 font-sans">
                 <span className="font-bold text-slate-800 flex items-center gap-1.5">
                   <Receipt className="w-4 h-4 text-[#1d4ed8]" />
@@ -564,7 +568,7 @@ export default function SubscriptionCheckoutModal({
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <Button
-                onClick={() => window.print()}
+                onClick={() => printElement('subscription-receipt-card', `EventoraX Invoice - ${successData.invoiceNumber}`)}
                 variant="outline"
                 className="rounded-xl flex items-center gap-2 w-full sm:w-auto"
               >

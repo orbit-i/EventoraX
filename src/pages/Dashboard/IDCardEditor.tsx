@@ -22,6 +22,7 @@ import {
   Type,
   Image as ImageIcon
 } from 'lucide-react';
+import { printElement } from '@/lib/printUtils';
 
 export interface IDCanvasElement {
   id: string;
@@ -491,7 +492,13 @@ export default function IDCardEditor() {
           <Button
             size="sm"
             variant="outline"
-            onClick={() => window.print()}
+            onClick={() => {
+              if (canvasRef.current) {
+                printElement(canvasRef.current, `${badgeTitle} - Badge Print`);
+              } else {
+                window.print();
+              }
+            }}
             className="text-xs font-bold rounded-xl hidden sm:flex items-center gap-1.5"
             title="Print Badge"
           >

@@ -18,6 +18,7 @@ import {
   CreditCard
 } from 'lucide-react';
 import { api } from '@/services/api';
+import { printElement } from '@/lib/printUtils';
 
 interface Attendee {
   id: number;
@@ -170,7 +171,11 @@ export default function IDCardGenerator() {
     : attendees.filter(a => a.id === selectedAttendeeId);
 
   const handlePrint = () => {
-    window.print();
+    if (printAreaRef.current) {
+      printElement(printAreaRef.current, `${activeEvent?.title || 'Event'} Official Badges`);
+    } else {
+      window.print();
+    }
   };
 
   return (
@@ -493,17 +498,17 @@ export default function IDCardGenerator() {
                       {/* ================= FRONT SIDE CARD ================= */}
                       {(cardSideView === 'dual' || cardSideView === 'front') && (
                         <div
-                          className={`rounded-3xl p-6 shadow-xl transition-all relative overflow-hidden text-center print:shadow-none print:border ${
+                          className={`rounded-3xl p-6 shadow-xl transition-all relative overflow-hidden text-center min-h-[580px] h-[580px] flex flex-col justify-between print:shadow-none print:border ${
                             selectedTemplate.id === 'corporate'
                               ? 'bg-gradient-to-br from-white via-slate-50 to-blue-50/40 text-slate-900 border-2 border-slate-300'
                               : `bg-gradient-to-b ${selectedTemplate.bg} ${selectedTemplate.textColor} border-2 ${selectedTemplate.border}`
                           }`}
                         >
                           {/* Lanyard punch hole indicator */}
-                          <div className="w-12 h-3 bg-slate-950/80 rounded-full mx-auto mb-4 border border-slate-600/50 print:border-black" />
+                          <div className="w-12 h-3 bg-slate-950/80 rounded-full mx-auto mb-3 border border-slate-600/50 print:border-black shrink-0" />
 
                           {/* Top Tag */}
-                          <div className="flex items-center justify-between mb-3 px-2">
+                          <div className="flex items-center justify-between mb-2 px-2 shrink-0">
                             {includeOrgLogo ? (
                               <div className="flex items-center gap-1.5">
                                 <img src="/favicon.png" alt="Logo" className="w-5 h-5 rounded-md object-contain" />
@@ -520,78 +525,82 @@ export default function IDCardGenerator() {
                           </div>
 
                           {/* Event Title */}
-                          <div className="text-[12px] font-extrabold tracking-wide uppercase text-blue-400 truncate mb-1">
-                            {activeEvent?.title || 'Global Executive Summit'}
-                          </div>
-                          <div className={`text-[9px] ${selectedTemplate.id === 'corporate' ? 'text-slate-500' : 'text-slate-300'} mb-3 flex items-center justify-center gap-1.5`}>
-                            <MapPin className="w-2.5 h-2.5" />
-                            <span>{activeEvent?.city || 'Convention Center'} • {activeEvent?.start_date || '2026'}</span>
+                          <div className="shrink-0">
+                            <div className="text-[12px] font-extrabold tracking-wide uppercase text-blue-400 truncate mb-0.5">
+                              {activeEvent?.title || 'Global Executive Summit'}
+                            </div>
+                            <div className={`text-[9px] ${selectedTemplate.id === 'corporate' ? 'text-slate-500' : 'text-slate-300'} flex items-center justify-center gap-1.5`}>
+                              <MapPin className="w-2.5 h-2.5" />
+                              <span>{activeEvent?.city || 'Convention Center'} • {activeEvent?.start_date || '2026'}</span>
+                            </div>
                           </div>
 
                           {/* Attendee Avatar Photo */}
-                          <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-purple-600 p-1 mx-auto mb-3 shadow-lg">
-                            <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center font-bold text-xl text-white">
-                              {att.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
-                            </div>
-                          </div>
-
-                          {/* Attendee Name & Designation */}
-                          <h4 className={`font-heading font-extrabold text-lg truncate ${selectedTemplate.id === 'corporate' ? 'text-slate-900' : 'text-white'}`}>
-                            {att.name}
-                          </h4>
-                          <p className={`text-xs truncate font-semibold mt-0.5 ${selectedTemplate.id === 'corporate' ? 'text-blue-700' : 'text-blue-300'}`}>
-                            {att.designation || 'Accredited Delegate'}
-                          </p>
-                          <p className={`text-[10px] truncate ${selectedTemplate.id === 'corporate' ? 'text-slate-500' : 'text-slate-400'}`}>
-                            {att.organization || 'Corporate Member'}
-                          </p>
-
-                          {/* Seating Allocation Badge */}
-                          <div className="my-2.5 px-3 py-1.5 rounded-xl bg-white/10 border border-white/15 inline-flex items-center gap-1.5 text-[11px] font-bold">
-                            <Armchair className="w-3.5 h-3.5 text-amber-400" />
-                            <span>{currentSeat.seat}</span>
-                          </div>
-
-                          {/* Role / Access Tier Pill & Payment Badge */}
-                          <div className="flex items-center justify-center gap-2 my-2">
-                            <span
-                              className="inline-block px-3.5 py-1 rounded-full text-[10px] font-extrabold tracking-wider uppercase text-white shadow-sm"
-                              style={{ backgroundColor: selectedTemplate.accent }}
-                            >
-                              {customRoleText || currentSeat.badge || att.ticket_type}
-                            </span>
-                            <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                              {paymentStatus === 'paid' ? `PAID $${paymentAmount}` : paymentStatus === 'complimentary' ? 'VIP GUEST' : 'FREE RSVP'}
-                            </span>
-                          </div>
-
-                          {/* QR Code Container */}
-                          {showQrCode && (
-                            <div className="bg-white p-3 rounded-2xl inline-block shadow-inner my-2">
-                              <QrCode className="w-18 h-18 text-slate-900 mx-auto" />
-                            </div>
-                          )}
-
-                          {/* Barcode representation */}
-                          {showBarcode && (
-                            <div className="mt-2 font-mono text-[9px]">
-                              <div className="h-5 flex items-center justify-center gap-0.5 max-w-[170px] mx-auto opacity-75">
-                                {[2, 1, 3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 2, 1, 3].map((w, i) => (
-                                  <span
-                                    key={i}
-                                    className={`h-full ${selectedTemplate.id === 'corporate' ? 'bg-slate-900' : 'bg-white'}`}
-                                    style={{ width: `${w * 1.5}px` }}
-                                  />
-                                ))}
+                          <div className="my-auto py-1">
+                            <div className="w-18 h-18 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-purple-600 p-1 mx-auto mb-2 shadow-lg">
+                              <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center font-bold text-xl text-white">
+                                {att.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
                               </div>
-                              <span className="block mt-1 font-bold tracking-widest text-[10px] text-blue-300">
-                                {att.ticket_code}
+                            </div>
+
+                            {/* Attendee Name & Designation */}
+                            <h4 className={`font-heading font-extrabold text-lg truncate ${selectedTemplate.id === 'corporate' ? 'text-slate-900' : 'text-white'}`}>
+                              {att.name}
+                            </h4>
+                            <p className={`text-xs truncate font-semibold mt-0.5 ${selectedTemplate.id === 'corporate' ? 'text-blue-700' : 'text-blue-300'}`}>
+                              {att.designation || 'Accredited Delegate'}
+                            </p>
+                            <p className={`text-[10px] truncate ${selectedTemplate.id === 'corporate' ? 'text-slate-500' : 'text-slate-400'}`}>
+                              {att.organization || 'Corporate Member'}
+                            </p>
+
+                            {/* Seating Allocation Badge */}
+                            <div className="my-2 px-3 py-1 rounded-xl bg-white/10 border border-white/15 inline-flex items-center gap-1.5 text-[11px] font-bold">
+                              <Armchair className="w-3.5 h-3.5 text-amber-400" />
+                              <span>{currentSeat.seat}</span>
+                            </div>
+
+                            {/* Role / Access Tier Pill & Payment Badge */}
+                            <div className="flex items-center justify-center gap-2 my-1">
+                              <span
+                                className="inline-block px-3.5 py-1 rounded-full text-[10px] font-extrabold tracking-wider uppercase text-white shadow-sm"
+                                style={{ backgroundColor: selectedTemplate.accent }}
+                              >
+                                {customRoleText || currentSeat.badge || att.ticket_type}
+                              </span>
+                              <span className="inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                                {paymentStatus === 'paid' ? `PAID $${paymentAmount}` : paymentStatus === 'complimentary' ? 'VIP GUEST' : 'FREE RSVP'}
                               </span>
                             </div>
-                          )}
+
+                            {/* QR Code Container */}
+                            {showQrCode && (
+                              <div className="bg-white p-2 rounded-2xl inline-block shadow-inner my-1">
+                                <QrCode className="w-16 h-16 text-slate-900 mx-auto" />
+                              </div>
+                            )}
+
+                            {/* Barcode representation */}
+                            {showBarcode && (
+                              <div className="mt-1 font-mono text-[9px]">
+                                <div className="h-4 flex items-center justify-center gap-0.5 max-w-[170px] mx-auto opacity-75">
+                                  {[2, 1, 3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 2, 1, 3].map((w, i) => (
+                                    <span
+                                      key={i}
+                                      className={`h-full ${selectedTemplate.id === 'corporate' ? 'bg-slate-900' : 'bg-white'}`}
+                                      style={{ width: `${w * 1.5}px` }}
+                                    />
+                                  ))}
+                                </div>
+                                <span className="block mt-0.5 font-bold tracking-widest text-[10px] text-blue-300">
+                                  {att.ticket_code}
+                                </span>
+                              </div>
+                            )}
+                          </div>
 
                           {/* Card Front Footer Endorsement */}
-                          <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-[8px] opacity-75">
+                          <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[8px] opacity-75 shrink-0">
                             <span>PASS ID #{att.id}</span>
                             <span className="font-semibold">
                               Powered by EventoraX • Verified by ORBIT-I Private Limited
@@ -603,18 +612,18 @@ export default function IDCardGenerator() {
                       {/* ================= BACK SIDE CARD ================= */}
                       {(cardSideView === 'dual' || cardSideView === 'back') && (
                         <div
-                          className={`rounded-3xl p-6 shadow-xl transition-all relative overflow-hidden flex flex-col justify-between print:shadow-none print:border ${
+                          className={`rounded-3xl p-6 shadow-xl transition-all relative overflow-hidden min-h-[580px] h-[580px] flex flex-col justify-between print:shadow-none print:border ${
                             selectedTemplate.id === 'corporate'
                               ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900 border-2 border-slate-300'
                               : `bg-gradient-to-b ${selectedTemplate.bg} ${selectedTemplate.textColor} border-2 ${selectedTemplate.border}`
                           }`}
                         >
                           {/* Lanyard punch hole indicator */}
-                          <div className="w-12 h-3 bg-slate-950/80 rounded-full mx-auto mb-4 border border-slate-600/50 print:border-black" />
+                          <div className="w-12 h-3 bg-slate-950/80 rounded-full mx-auto mb-3 border border-slate-600/50 print:border-black shrink-0" />
 
-                          <div>
+                          <div className="my-auto space-y-3">
                             {/* Top Badge */}
-                            <div className="flex items-center justify-between mb-3 px-1">
+                            <div className="flex items-center justify-between px-1">
                               <span className="text-[9px] font-extrabold uppercase tracking-widest text-blue-400">
                                 Security &amp; Accreditation Notice
                               </span>
@@ -624,7 +633,7 @@ export default function IDCardGenerator() {
                             </div>
 
                             {/* Respectful VIP Dispatch Notice */}
-                            <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15 text-left mb-3">
+                            <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15 text-left">
                               <div className="flex items-center gap-2 mb-1.5">
                                 <Sparkles className="w-3.5 h-3.5 text-amber-300" />
                                 <span className="text-[10px] font-extrabold text-amber-300 uppercase tracking-wider">
@@ -632,7 +641,7 @@ export default function IDCardGenerator() {
                                 </span>
                               </div>
                               <p className="text-[10px] leading-relaxed text-slate-200">
-                                <strong>Mohtaram Delegate / Participant:</strong> Aapka official live pass confirm kar diya gaya hai. Aapki complete physical badge kit aur digital gate entry pass aapke registered email (<strong>{att.email}</strong>) aur WhatsApp number par dispatch kar di gayi hai.
+                                <strong>Mohtaram Delegate / Participant:</strong> Aapka official live pass confirm kar diya gaya hai. Aapka official digital ID pass badge aur entry gate QR code aapke registered email (<strong>{att.email}</strong>) aur WhatsApp number par dispatch kar diya gaya hai.
                               </p>
                             </div>
 

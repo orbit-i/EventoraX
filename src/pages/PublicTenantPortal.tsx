@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { api } from "@/services/api";
+import { printElement } from "@/lib/printUtils";
 
 const PASS_TIERS = [
   { id: 'vip', name: 'VIP Pass (Front Row)', seat: 'Row A • Stagefront VIP', extraPrice: 50 },
@@ -413,14 +414,14 @@ export default function PublicTenantPortal() {
                   </p>
                 </div>
 
-                {/* Respectful VIP Dispatch Notice */}
+                {/* Respectful WhatsApp & Email Dispatch Notice */}
                 <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-left space-y-1">
                   <div className="flex items-center gap-1.5 text-amber-900 text-xs font-bold">
                     <Sparkles className="w-4 h-4 text-amber-600" />
-                    VIP Pass Delivery Confirmation
+                    Live Pass Delivery Confirmation
                   </div>
                   <p className="text-[11px] text-amber-800 leading-relaxed">
-                    <strong>Mohtaram {registrationSuccess.name}:</strong> Aapka official ID Card pass generate ho chuka hai. Aapko full pass details aur access instructions aapke email (<strong>{attendeeEmail}</strong>) {attendeePhone && `aur WhatsApp (${attendeePhone})`} par provide kar di jayengi.
+                    <strong>Mohtaram {registrationSuccess.name}:</strong> Aapka official digital ID pass generate ho chuka hai. Aapko live pass QR code, entry access token aur full guidelines aapke WhatsApp (<strong>{attendeePhone || "registered contact"}</strong>) aur Email (<strong>{attendeeEmail}</strong>) par dispatch kar di gayi hain.
                   </p>
                 </div>
 
@@ -429,17 +430,19 @@ export default function PublicTenantPortal() {
                   <span className="text-xs font-bold text-slate-700">Live Card View:</span>
                   <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl">
                     <button
+                      type="button"
                       onClick={() => setIdCardFace('front')}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                        idCardFace === 'front' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600'
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        idCardFace === 'front' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
                       Front Side
                     </button>
                     <button
+                      type="button"
                       onClick={() => setIdCardFace('back')}
-                      className={`px-3 py-1 rounded-lg text-xs font-bold transition-all ${
-                        idCardFace === 'back' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600'
+                      className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                        idCardFace === 'back' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
                       }`}
                     >
                       Back Side (VIP Rules)
@@ -447,94 +450,166 @@ export default function PublicTenantPortal() {
                   </div>
                 </div>
 
-                {/* ================= INTERACTIVE DUAL-SIDED ID PASS PREVIEW ================= */}
-                {idCardFace === 'front' ? (
-                  /* FRONT FACE */
-                  <div className="rounded-3xl p-6 bg-gradient-to-b from-slate-900 via-blue-950 to-slate-950 text-white text-center border-2 border-blue-500/40 shadow-xl relative overflow-hidden">
-                    <div className="w-12 h-2.5 bg-black/60 rounded-full mx-auto mb-3 border border-white/20" />
-                    
-                    <div className="flex items-center justify-between text-[9px] font-extrabold uppercase tracking-wider mb-2 px-1">
-                      <span className="text-blue-300">{tenant.name}</span>
-                      <span className="px-2 py-0.5 rounded bg-white/10">FRONT PASS</span>
-                    </div>
+                {/* ================= INTERACTIVE DUAL-SIDED ID PASS PREVIEW (EXACT MATCHING DIMENSIONS) ================= */}
+                <div className="w-full flex justify-center">
+                  {idCardFace === 'front' ? (
+                    /* FRONT FACE */
+                    <div 
+                      id="live-id-pass-card"
+                      className="w-full max-w-[420px] min-h-[520px] h-[520px] rounded-3xl p-6 bg-gradient-to-b from-slate-900 via-blue-950 to-slate-950 text-white text-center border-2 border-blue-500/40 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none"
+                    >
+                      {/* Top slot & Brand */}
+                      <div>
+                        <div className="w-14 h-2.5 bg-black/70 rounded-full mx-auto mb-2.5 border border-white/20" />
+                        
+                        <div className="flex items-center justify-between text-[9px] font-extrabold uppercase tracking-wider px-1">
+                          <span className="text-blue-300 font-bold truncate max-w-[200px] text-left">{tenant.name}</span>
+                          <span className="px-2 py-0.5 rounded bg-white/10 text-white border border-white/10 shrink-0">FRONT PASS</span>
+                        </div>
 
-                    <div className="text-xs font-black uppercase text-blue-400 mb-1 truncate">
-                      {selectedEvent.title}
-                    </div>
+                        <div className="text-sm font-black uppercase text-blue-400 mt-2 truncate tracking-wide">
+                          {selectedEvent.title}
+                        </div>
+                        <div className="text-[10px] text-slate-300 mt-0.5 flex items-center justify-center gap-1.5 truncate">
+                          <MapPin className="w-2.5 h-2.5 text-blue-400 shrink-0" />
+                          <span>{selectedEvent.venue_name || selectedEvent.city || "Official Venue"} • {new Date(selectedEvent.start_date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                        </div>
+                      </div>
 
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-500 to-indigo-600 p-1 mx-auto my-2 shadow-md">
-                      <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center font-bold text-lg text-white">
-                        {registrationSuccess.name.slice(0, 2).toUpperCase()}
+                      {/* Attendee Avatar & Title */}
+                      <div className="my-auto py-1">
+                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-500 via-indigo-500 to-purple-600 p-1 mx-auto mb-2 shadow-lg">
+                          <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center font-bold text-xl text-white">
+                            {registrationSuccess.name.slice(0, 2).toUpperCase()}
+                          </div>
+                        </div>
+
+                        <h4 className="text-lg font-extrabold text-white truncate px-2">{registrationSuccess.name}</h4>
+                        
+                        {/* Seating & Tier */}
+                        <div className="mt-1.5 flex items-center justify-center gap-1.5 flex-wrap">
+                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-600 text-white shadow-xs">
+                            {registrationSuccess.tier}
+                          </span>
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[10px] font-bold text-amber-300 border border-white/15">
+                            <Armchair className="w-3 h-3 text-amber-400" />
+                            <span>{registrationSuccess.seat}</span>
+                          </span>
+                        </div>
+
+                        {/* Scannable Real QR Code */}
+                        <div className="mt-3 flex items-center justify-center">
+                          <div className="bg-white p-2 rounded-2xl shadow-md inline-block">
+                            <img
+                              src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`${window.location.origin}/verify?code=${registrationSuccess.ticketCode}`)}`}
+                              alt="Live Pass QR Code"
+                              className="w-16 h-16 object-contain rounded-md"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="white"/><rect x="6" y="6" width="20" height="20" fill="black"/><rect x="10" y="10" width="12" height="12" fill="white"/><rect x="14" y="14" width="4" height="4" fill="black"/><rect x="38" y="6" width="20" height="20" fill="black"/><rect x="42" y="10" width="12" height="12" fill="white"/><rect x="46" y="14" width="4" height="4" fill="black"/><rect x="6" y="38" width="20" height="20" fill="black"/><rect x="10" y="42" width="12" height="12" fill="white"/><rect x="14" y="46" width="4" height="4" fill="black"/><rect x="30" y="6" width="4" height="12" fill="black"/><rect x="30" y="30" width="4" height="4" fill="black"/><rect x="38" y="38" width="8" height="8" fill="black"/><rect x="50" y="38" width="8" height="20" fill="black"/><rect x="38" y="50" width="8" height="8" fill="black"/></svg>`;
+                              }}
+                            />
+                          </div>
+                        </div>
+
+                        {/* Barcode Graphic */}
+                        <div className="mt-2 flex flex-col items-center">
+                          <div className="h-4 flex items-center justify-center gap-0.5 max-w-[190px] mx-auto opacity-80">
+                            {[2, 1, 3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 2, 1, 3, 2, 1, 2, 4, 1].map((w, i) => (
+                              <span
+                                key={i}
+                                className="h-full bg-white rounded-xs"
+                                style={{ width: `${w * 1.4}px` }}
+                              />
+                            ))}
+                          </div>
+                          <div className="font-mono text-[9px] text-blue-300 font-bold tracking-widest mt-1">
+                            CODE: {registrationSuccess.ticketCode}
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Front Bottom Security Line */}
+                      <div className="pt-2.5 border-t border-white/10 text-[8px] text-slate-400 flex items-center justify-between">
+                        <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                          <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                          AUTHENTIC PASS
+                        </span>
+                        <span className="font-semibold text-slate-300 truncate max-w-[240px]">
+                          Issued by {tenant.name} • Verified by ORBIT-I
+                        </span>
                       </div>
                     </div>
+                  ) : (
+                    /* BACK FACE */
+                    <div 
+                      id="live-id-pass-card"
+                      className="w-full max-w-[420px] min-h-[520px] h-[520px] rounded-3xl p-6 bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white text-left border-2 border-indigo-500/40 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none"
+                    >
+                      {/* Top slot & Brand */}
+                      <div>
+                        <div className="w-14 h-2.5 bg-black/70 rounded-full mx-auto mb-2.5 border border-white/20" />
 
-                    <h4 className="text-base font-extrabold text-white truncate">{registrationSuccess.name}</h4>
-                    <p className="text-xs text-blue-300 font-semibold">{registrationSuccess.tier}</p>
+                        <div className="flex items-center justify-between text-[9px] font-extrabold uppercase tracking-wider px-1">
+                          <span className="text-indigo-300 truncate max-w-[200px]">{tenant.name} Accreditation</span>
+                          <span className="px-2 py-0.5 rounded bg-white/10 text-white border border-white/10 shrink-0">BACK PASS</span>
+                        </div>
 
-                    <div className="my-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-xl bg-white/10 text-[10px] font-bold text-amber-300 border border-white/15">
-                      <Armchair className="w-3 h-3 text-amber-400" />
-                      <span>{registrationSuccess.seat}</span>
-                    </div>
+                        <div className="text-sm font-black uppercase text-indigo-300 mt-2 truncate tracking-wide text-center">
+                          {selectedEvent.title}
+                        </div>
+                      </div>
 
-                    <div className="bg-white p-2.5 rounded-2xl inline-block my-2">
-                      <div className="w-16 h-16 flex items-center justify-center text-slate-900 font-mono text-xs font-bold border border-slate-200 rounded-lg">
-                        [QR-PASS]
+                      {/* Center Rules & Dispatch Notice */}
+                      <div className="my-auto space-y-3 py-1">
+                        <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15 text-[10px] text-slate-200 space-y-1">
+                          <div className="font-bold text-amber-300 uppercase tracking-wide flex items-center gap-1.5">
+                            <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+                            VIP Dispatch &amp; Entry Notice:
+                          </div>
+                          <p className="leading-relaxed">
+                            Aapka official digital ID pass aur live entry QR code accreditation aapke registered WhatsApp (<strong>{attendeePhone || "registered contact"}</strong>) aur Email (<strong>{attendeeEmail}</strong>) par deliver kar diya gaya hai.
+                          </p>
+                        </div>
+
+                        <div className="text-[9px] text-slate-300 space-y-1.5 px-1">
+                          <div className="font-bold text-white uppercase tracking-wider">Venue Entry Rules:</div>
+                          <ul className="list-disc pl-3.5 space-y-1 text-slate-300">
+                            <li>Present this official digital QR pass or e-credential on your mobile screen at security check.</li>
+                            <li>Allocated Seating: <strong className="text-amber-300">{registrationSuccess.seat}</strong> ({registrationSuccess.tier}).</li>
+                            <li>Non-transferable official verified pass; ID matching may be requested.</li>
+                            <li>Follow organizer protocols and venue security guidelines.</li>
+                          </ul>
+                        </div>
+
+                        <div className="p-2 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between text-[8px]">
+                          <div className="flex items-center gap-1.5">
+                            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                            <span className="font-mono text-emerald-300 font-bold">SEC-TOKEN: {registrationSuccess.ticketCode.slice(0, 14)}</span>
+                          </div>
+                          <span className="text-[8px] font-extrabold uppercase text-amber-400">
+                            VERIFIED AUTHENTIC
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Back Bottom Security Line */}
+                      <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[8px] text-slate-400">
+                        <span className="text-emerald-400 font-bold">EVENTORAX SECURE</span>
+                        <span>Issued under Authority of ORBIT-I Private Limited</span>
                       </div>
                     </div>
-
-                    <div className="text-center font-mono text-[9px] text-blue-300 font-bold tracking-widest">
-                      CODE: {registrationSuccess.ticketCode}
-                    </div>
-
-                    <div className="mt-3 pt-2.5 border-t border-white/10 text-[8px] text-slate-400 flex items-center justify-between">
-                      <span>SECURE CREDENTIAL</span>
-                      <span className="font-semibold text-slate-300">
-                        Powered by EventoraX • Verified by ORBIT-I Private Limited
-                      </span>
-                    </div>
-                  </div>
-                ) : (
-                  /* BACK FACE */
-                  <div className="rounded-3xl p-6 bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white text-left border-2 border-indigo-500/40 shadow-xl space-y-3">
-                    <div className="w-12 h-2.5 bg-black/60 rounded-full mx-auto mb-2 border border-white/20" />
-
-                    <div className="flex items-center justify-between text-[9px] font-extrabold uppercase tracking-wider">
-                      <span className="text-indigo-300">Accreditation Back Face</span>
-                      <span className="px-2 py-0.5 rounded bg-white/10">BACK PASS</span>
-                    </div>
-
-                    <div className="p-3 rounded-2xl bg-white/10 border border-white/15 text-[10px] text-slate-200 space-y-1">
-                      <div className="font-bold text-amber-300 uppercase">VIP Dispatch &amp; Entry Notice:</div>
-                      <p>
-                        Aapka physical pass badge aur digital QR gate accreditation aapke registered contact details par provide kar diya gaya hai.
-                      </p>
-                    </div>
-
-                    <div className="text-[9px] text-slate-300 space-y-1">
-                      <div className="font-bold text-white uppercase">Venue Entry Rules:</div>
-                      <ul className="list-disc pl-3.5 space-y-0.5">
-                        <li>Show this QR pass or physical lanyard badge at the security gate.</li>
-                        <li>Seating: <strong>{registrationSuccess.seat}</strong>.</li>
-                        <li>Non-transferable official pass.</li>
-                      </ul>
-                    </div>
-
-                    <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[8px] text-slate-400">
-                      <span className="text-emerald-400 font-bold">VERIFIED AUTHENTIC</span>
-                      <span>Issued by EventoraX &amp; ORBIT-I Private Limited</span>
-                    </div>
-                  </div>
-                )}
+                  )}
+                </div>
 
                 {/* Actions */}
                 <div className="flex items-center gap-3 pt-2">
                   <Button
                     type="button"
                     variant="outline"
-                    onClick={() => window.print()}
-                    className="flex-1 rounded-xl text-xs h-11 border-slate-300 flex items-center justify-center gap-1.5"
+                    onClick={() => printElement('live-id-pass-card', `${registrationSuccess.name} - ${selectedEvent.title} Official Pass`)}
+                    className="flex-1 rounded-xl text-xs h-11 border-slate-300 flex items-center justify-center gap-1.5 font-bold hover:bg-slate-50"
                   >
-                    <Printer className="w-4 h-4" />
+                    <Printer className="w-4 h-4 text-blue-600" />
                     Print / Download ID Pass
                   </Button>
                   <Button

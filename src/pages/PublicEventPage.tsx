@@ -8,7 +8,6 @@ import {
   Share2, 
   CheckCircle2, 
   ShieldCheck, 
-  QrCode, 
   ArrowRight, 
   Download, 
   Copy, 
@@ -23,6 +22,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import BrandLogo from '@/components/BrandLogo';
 import { api } from '@/services/api';
+import { printElement } from '@/lib/printUtils';
 
 export default function PublicEventPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -765,57 +765,89 @@ export default function PublicEventPage() {
                 </div>
 
                 {/* Printable ID Card Badge Component */}
-                <div className="max-w-xs mx-auto bg-gradient-to-b from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 border-2 border-blue-400 shadow-2xl relative overflow-hidden text-center">
+                <div 
+                  id="public-event-pass-card"
+                  className="max-w-xs mx-auto bg-gradient-to-b from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 border-2 border-blue-400 shadow-2xl relative overflow-hidden text-center min-h-[500px] flex flex-col justify-between"
+                >
                   {/* Lanyard punch hole indicator */}
-                  <div className="w-8 h-2.5 bg-slate-950 rounded-full mx-auto mb-4 border border-slate-700" />
+                  <div className="w-10 h-2.5 bg-slate-950 rounded-full mx-auto mb-3 border border-slate-700 shrink-0" />
 
                   {/* Event Title */}
-                  <div className="text-[10px] font-bold tracking-widest text-blue-300 uppercase truncate mb-1">
-                    {event.title}
-                  </div>
-                  <div className="text-[9px] text-slate-400">
-                    {event.venue_name || 'EventoraX Venue'} • {new Date(event.start_date).getFullYear()}
-                  </div>
-
-                  {/* Avatar / Photo placeholder */}
-                  <div className="w-20 h-20 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 p-1 mx-auto my-4 shadow-lg">
-                    <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center font-bold text-xl text-white">
-                      {registeredAttendee.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'AT'}
+                  <div className="shrink-0">
+                    <div className="text-[10px] font-bold tracking-widest text-blue-300 uppercase truncate mb-0.5">
+                      {event.title}
+                    </div>
+                    <div className="text-[9px] text-slate-400">
+                      {event.venue_name || 'EventoraX Venue'} • {new Date(event.start_date).toLocaleDateString()}
                     </div>
                   </div>
 
-                  {/* Attendee Name & Designation */}
-                  <h5 className="font-heading font-extrabold text-base text-white truncate">
-                    {registeredAttendee.name}
-                  </h5>
-                  <p className="text-[11px] text-blue-200 truncate mt-0.5">
-                    {registeredAttendee.designation || 'Participant'}
-                  </p>
-                  <p className="text-[10px] text-slate-400 truncate">
-                    {registeredAttendee.organization || 'Attendee'}
-                  </p>
+                  {/* Avatar / Photo placeholder */}
+                  <div className="my-auto py-1">
+                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 p-1 mx-auto mb-2 shadow-lg">
+                      <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center font-bold text-xl text-white">
+                        {registeredAttendee.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'AT'}
+                      </div>
+                    </div>
 
-                  {/* Tier Badge */}
-                  <div className="my-3">
-                    <span className="inline-block px-3 py-1 rounded-full text-[10px] font-extrabold tracking-wider uppercase bg-blue-500 text-white shadow-sm">
-                      {registeredAttendee.ticketType || 'GENERAL ACCESS'}
-                    </span>
+                    {/* Attendee Name & Designation */}
+                    <h5 className="font-heading font-extrabold text-base text-white truncate px-1">
+                      {registeredAttendee.name}
+                    </h5>
+                    <p className="text-[11px] text-blue-200 truncate mt-0.5">
+                      {registeredAttendee.designation || 'Participant'}
+                    </p>
+                    <p className="text-[10px] text-slate-400 truncate">
+                      {registeredAttendee.organization || 'Attendee'}
+                    </p>
+
+                    {/* Tier Badge */}
+                    <div className="my-2">
+                      <span className="inline-block px-3 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider uppercase bg-blue-500 text-white shadow-sm">
+                        {registeredAttendee.ticketType || 'GENERAL ACCESS'}
+                      </span>
+                    </div>
+
+                    {/* Real Scannable QR Code */}
+                    <div className="bg-white p-2 rounded-2xl inline-block shadow-md my-1">
+                      <img
+                        src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`${window.location.origin}/verify?code=${registeredAttendee.ticketCode}`)}`}
+                        alt="Event Pass QR"
+                        className="w-16 h-16 object-contain rounded-md"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="white"/><rect x="6" y="6" width="20" height="20" fill="black"/><rect x="10" y="10" width="12" height="12" fill="white"/><rect x="14" y="14" width="4" height="4" fill="black"/><rect x="38" y="6" width="20" height="20" fill="black"/><rect x="42" y="10" width="12" height="12" fill="white"/><rect x="46" y="14" width="4" height="4" fill="black"/><rect x="6" y="38" width="20" height="20" fill="black"/><rect x="10" y="42" width="12" height="12" fill="white"/><rect x="14" y="46" width="4" height="4" fill="black"/></svg>`;
+                        }}
+                      />
+                    </div>
+
+                    {/* Barcode lines */}
+                    <div className="mt-1 flex flex-col items-center">
+                      <div className="h-3.5 flex items-center justify-center gap-0.5 max-w-[160px] mx-auto opacity-75">
+                        {[2, 1, 3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 2, 1].map((w, i) => (
+                          <span
+                            key={i}
+                            className="h-full bg-white rounded-xs"
+                            style={{ width: `${w * 1.4}px` }}
+                          />
+                        ))}
+                      </div>
+                      <div className="text-[10px] font-mono text-blue-200 mt-1 font-bold tracking-wider">
+                        {registeredAttendee.ticketCode}
+                      </div>
+                    </div>
                   </div>
 
-                  {/* QR Code Container */}
-                  <div className="bg-white p-3 rounded-2xl inline-block shadow-inner">
-                    <QrCode className="w-24 h-24 text-slate-900 mx-auto" />
-                  </div>
-
-                  <div className="text-[10px] font-mono text-blue-200 mt-2 font-bold tracking-wider">
-                    {registeredAttendee.ticketCode}
+                  {/* Pass Footer */}
+                  <div className="pt-2 border-t border-white/10 text-[8px] text-slate-400 flex items-center justify-between shrink-0">
+                    <span className="text-emerald-400 font-bold">VERIFIED PASS</span>
+                    <span>EventoraX Platform</span>
                   </div>
                 </div>
 
                 {/* Badge Actions */}
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
                   <Button
-                    onClick={() => window.print()}
+                    onClick={() => printElement('public-event-pass-card', `${registeredAttendee.name} - ${event.title} Pass`)}
                     variant="outline"
                     className="rounded-xl text-xs font-bold w-full sm:w-auto flex items-center gap-2"
                   >
