@@ -292,17 +292,17 @@ export default function Settings() {
                     Custom Domain (CNAME White-Label)
                   </Label>
                   <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-                    currentTenant?.plan === 'Enterprise' || currentTenant?.plan === 'PaaS Developer'
+                    currentTenant?.plan === 'Enterprise' || user?.role === 'admin' || currentTenant?.id === 1
                       ? 'bg-emerald-100 text-emerald-800'
                       : 'bg-amber-100 text-amber-800'
                   }`}>
-                    {currentTenant?.plan === 'Enterprise' || currentTenant?.plan === 'PaaS Developer'
+                    {currentTenant?.plan === 'Enterprise' || user?.role === 'admin' || currentTenant?.id === 1
                       ? 'Included in Plan'
                       : 'Requires Enterprise Plan'}
                   </span>
                 </div>
 
-                {currentTenant?.plan === 'Enterprise' || currentTenant?.plan === 'PaaS Developer' ? (
+                {currentTenant?.plan === 'Enterprise' || user?.role === 'admin' || currentTenant?.id === 1 ? (
                   <div className="space-y-2 mt-1">
                     <div className="flex gap-2">
                       <Input
@@ -331,7 +331,7 @@ export default function Settings() {
                 ) : (
                   <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
                     <p className="text-xs text-slate-600">
-                      Connect your own branded domain (e.g., <code className="text-blue-700 bg-blue-50 px-1 py-0.5 rounded">events.yourdomain.com</code>) with automatic SSL. This feature is unlocked on the <strong>Enterprise ($199/mo)</strong> and <strong>PaaS Developer</strong> plans.
+                      Connect your own branded domain (e.g., <code className="text-blue-700 bg-blue-50 px-1 py-0.5 rounded">events.yourdomain.com</code>) with automatic SSL. This feature is unlocked on the <strong>Enterprise ($299/mo)</strong> plan.
                     </p>
                     <a
                       href="/pricing"

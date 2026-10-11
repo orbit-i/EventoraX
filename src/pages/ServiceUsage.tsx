@@ -72,13 +72,6 @@ export default function ServiceUsage() {
                       <td className="p-3">1,200 req/min</td>
                       <td className="p-3 text-emerald-600 font-semibold">Full White-label &amp; Domain</td>
                     </tr>
-                    <tr>
-                      <td className="p-3 font-bold text-blue-700">PaaS Developer</td>
-                      <td className="p-3">Dedicated Cluster</td>
-                      <td className="p-3">Millions Concurrency</td>
-                      <td className="p-3">Custom Quota</td>
-                      <td className="p-3 text-emerald-600 font-semibold">Headless API &amp; SDK</td>
-                    </tr>
                   </tbody>
                 </table>
               </div>
@@ -125,7 +118,7 @@ export default function ServiceUsage() {
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-[#0f172a]">5. Service Level Agreement (SLA)</h2>
               <p className="text-sm text-[#475569] leading-relaxed">
-                For paid Enterprise and PaaS tiers, EventoraX commits to a 99.9% monthly uptime guarantee. Scheduled maintenance windows are announced at least 48 hours in advance and executed during off-peak hours.
+                For paid Enterprise tier, EventoraX commits to a 99.9% monthly uptime guarantee. Scheduled maintenance windows are announced at least 48 hours in advance and executed during off-peak hours.
               </p>
             </section>
 

@@ -35,7 +35,6 @@ import Billing from './pages/Dashboard/Billing';
 import Settings from './pages/Dashboard/Settings';
 import Activity from './pages/Dashboard/activity';
 import PlatformAdmin from './pages/Dashboard/PlatformAdmin';
-import DeveloperPaaS from './pages/Dashboard/DeveloperPaaS';
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SidebarProvider } from './context/SidebarContext';
@@ -193,7 +192,6 @@ function AppRoutes() {
             <Route path="billing" element={<Billing />} />
             <Route path="settings" element={<Settings />} />
             <Route path="activity" element={<Activity />} />
-            <Route path="developer" element={<DeveloperPaaS />} />
             <Route 
               path="platform" 
               element={

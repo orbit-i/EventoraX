@@ -191,42 +191,6 @@ export const api = {
       request<{ success: boolean; page: any }>(`/public/cms/${pageKey}`),
   },
 
-  // PaaS Developer Tools & Keys
-  developer: {
-    getKeys: () =>
-      request<{ success: boolean; keys: any[] }>('/developer/keys'),
-
-    createKey: (data: { name: string; permissions?: string }) =>
-      request<{ success: boolean; message: string; key: any }>('/developer/keys', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }),
-
-    deleteKey: (id: number) =>
-      request<{ success: boolean; message: string }>(`/developer/keys/${id}`, {
-        method: 'DELETE',
-      }),
-
-    getWebhooks: () =>
-      request<{ success: boolean; webhooks: any[] }>('/developer/webhooks'),
-
-    createWebhook: (data: { url: string; events?: string }) =>
-      request<{ success: boolean; message: string; webhook: any }>('/developer/webhooks', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }),
-
-    deleteWebhook: (id: number) =>
-      request<{ success: boolean; message: string }>(`/developer/webhooks/${id}`, {
-        method: 'DELETE',
-      }),
-
-    testWebhook: (id: number) =>
-      request<{ success: boolean; message: string; payload: any }>(`/developer/webhooks/${id}/test`, {
-        method: 'POST',
-      }),
-  },
-
   // Events endpoints (Scoped by Tenant)
   events: {
     list: (params: { search?: string; category?: string; status?: string; limit?: number; tenantOnly?: boolean } = {}) => {

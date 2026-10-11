@@ -41,8 +41,8 @@ const plansData: PlanData[] = [
   },
   {
     name: 'Enterprise',
-    priceUsdMonthly: 199,
-    pricePkrMonthly: 55000,
+    priceUsdMonthly: 299,
+    pricePkrMonthly: 83000,
     description: 'For universities, government, agencies & global conferences',
     badge: 'Enterprise White-Label',
     features: [
@@ -52,23 +52,7 @@ const plansData: PlanData[] = [
       'Multi-Tenant Workspaces & Role Isolation',
       'Tamper-Proof Public Verification Portal',
       'Dedicated Account SLA & Priority Support',
-      'PaaS REST API (10k req/mo)',
-    ],
-  },
-  {
-    name: 'PaaS Developer',
-    priceUsdMonthly: 299,
-    pricePkrMonthly: 83000,
-    description: 'For SaaS founders & developers building credential systems',
-    badge: 'API & Platform',
-    features: [
-      'Full RESTful PaaS v1 API',
-      'Certificate & ID Engine API (Issue, Revoke, Verify)',
-      'Real-time Webhook Callbacks',
-      'Embeddable Ticket & Credential Widget SDK',
-      'Unlimited Multi-Tenant Sub-Accounts',
-      '100,000 API calls/month included',
-      'Stripe & Regional Payment Gateways',
+      '24/7 Priority Phone & Email Assistance',
     ],
   },
 ];
@@ -107,13 +91,13 @@ export default function PricingSection() {
       <div className="max-w-7xl mx-auto text-center">
         <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white border border-blue-200 text-xs font-bold text-[#1d4ed8] mb-4 shadow-xs">
           <Sparkles className="w-3.5 h-3.5" />
-          SaaS & PaaS Monetization
+          Transparent &amp; Simple Pricing
         </div>
         <h2 className="font-heading text-3xl md:text-5xl font-extrabold text-[#0f172a] mb-4 tracking-[-0.02em]">
           Simple pricing, limitless scale
         </h2>
         <p className="font-body text-base md:text-lg mb-8 text-[#64748b] max-w-2xl mx-auto">
-          Start free with community events. Upgrade as an organizer or integrate as a developer via our PaaS engine.
+          Start free with community events. Upgrade as an organizer for custom branding, badge printing, and unlimited scale.
         </p>
 
         {/* Currency & Billing Toggle */}

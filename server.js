@@ -14,8 +14,6 @@ import contactRoutes from './routes/contact.js';
 import billingRoutes from './routes/billing.js';
 import tenantsRoutes from './routes/tenants.js';
 import platformAdminRoutes from './routes/platformAdmin.js';
-import developerRoutes from './routes/developer.js';
-import paasApiRoutes from './routes/paasApi.js';
 import certificatesRoutes from './routes/certificates.js';
 
 dotenv.config();
@@ -126,11 +124,9 @@ app.use('/api/activity', activityRoutes);
 app.use('/api/contact', contactRoutes);
 app.use('/api/billing', billingRoutes);
 
-// Multi-Tenant SaaS & PaaS APIs (PRD Section 4 & 7)
+// Multi-Tenant SaaS Platform APIs
 app.use('/api/tenants', tenantsRoutes);
 app.use('/api/admin', platformAdminRoutes);
-app.use('/api/developer', developerRoutes);
-app.use('/api/v1', paasApiRoutes);
 // Public CMS endpoint for official website content (Fast, free, cached)
 app.get('/api/public/cms/:pageKey', async (req, res) => {
   try {
@@ -224,9 +220,8 @@ app.use((err, req, res, next) => {
 // Start Server
 app.listen(PORT, async () => {
   console.log(`=======================================================`);
-  console.log(`🚀 EventoraX Multi-Tenant SaaS & PaaS Server on port ${PORT}`);
+  console.log(`🚀 EventoraX Multi-Tenant SaaS Platform on port ${PORT}`);
   console.log(`🌐 Platform URL: http://localhost:${PORT}`);
-  console.log(`🔌 PaaS v1 API Endpoint: http://localhost:${PORT}/api/v1`);
   console.log(`📁 Static Frontend Directory: ${distPath}`);
   console.log(`=======================================================`);
 

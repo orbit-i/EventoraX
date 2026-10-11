@@ -9,7 +9,6 @@ import {
   CreditCard, 
   Settings, 
   Activity,
-  Code2,
   LogOut,
   ChevronRight,
   Palette,
@@ -57,16 +56,7 @@ export default function Sidebar() {
     { to: "/dashboard/activity", label: "Activity Logs", icon: Activity },
   ];
 
-  // ONLY show PaaS Developer if the organization is on the PaaS Developer plan OR has developer permissions
-  if (currentTenant?.plan === "PaaS Developer") {
-    navItems.splice(9, 0, {
-      to: "/dashboard/developer",
-      label: "PaaS Developer",
-      icon: Code2,
-      badge: "API",
-      end: false
-    });
-  }
+  const isMaster = user?.role === 'admin' || currentTenant?.id === 1 || currentTenant?.slug === 'eventorax-hq';
 
   return (
     <aside 
@@ -99,11 +89,11 @@ export default function Sidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[11px] font-bold text-[#0f172a] truncate">
-              {currentTenant?.name || "EventoraX HQ"}
+              {currentTenant?.name || "EventoraX Workspace"}
             </p>
           </div>
-          <span className="px-1.5 py-0.5 rounded text-[9px] font-bold bg-[#f5f3ff] text-[#7c3aed]">
-            {currentTenant?.plan || "Starter"}
+          <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${isMaster ? 'bg-blue-100 text-blue-700 font-extrabold' : 'bg-[#f5f3ff] text-[#7c3aed]'}`}>
+            {isMaster ? "Platform Master" : (currentTenant?.plan || "Starter")}
           </span>
         </div>
       </div>

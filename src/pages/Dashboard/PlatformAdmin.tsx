@@ -467,9 +467,8 @@ export default function PlatformAdmin() {
               >
                 <option value="All">All Plans</option>
                 <option value="Starter">Starter ($0)</option>
-                <option value="Professional">Professional ($49)</option>
-                <option value="Enterprise">Enterprise ($199)</option>
-                <option value="PaaS Developer">PaaS Developer ($299)</option>
+                <option value="Professional">Professional ($99)</option>
+                <option value="Enterprise">Enterprise ($299)</option>
               </select>
 
               <select
@@ -498,70 +497,85 @@ export default function PlatformAdmin() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
-                  {tenants.map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
-                      <td className="p-3.5 pl-4 font-bold text-slate-900">
-                        {t.name}
-                        <span className="block text-[10px] text-slate-400 font-mono">slug: {t.slug}</span>
-                      </td>
-                      <td className="p-3.5 text-slate-600">
-                        {t.owner?.full_name || 'Organization Owner'}
-                        <span className="block text-[10px] text-slate-400">{t.owner?.email || 'N/A'}</span>
-                      </td>
-                      <td className="p-3.5">
-                        <select
-                          value={t.plan}
-                          disabled={actionLoading === t.id}
-                          onChange={(e) => handleUpdatePlan(t.id, e.target.value)}
-                          className="px-2 py-1 rounded-lg border border-slate-300 text-xs font-semibold bg-white"
-                        >
-                          <option value="Starter">Starter ($0)</option>
-                          <option value="Professional">Professional ($49)</option>
-                          <option value="Enterprise">Enterprise ($199)</option>
-                          <option value="PaaS Developer">PaaS Developer ($299)</option>
-                        </select>
-                      </td>
-                      <td className="p-3.5">
-                        <Badge className={`text-[10px] font-bold ${
-                          t.status === 'active' 
-                            ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
-                            : 'bg-red-50 text-red-700 border border-red-200'
-                        }`}>
-                          {t.status === 'active' ? 'Active' : 'Suspended'}
-                        </Badge>
-                      </td>
-                      <td className="p-3.5 text-slate-600">
-                        <span className="font-bold text-slate-900">{t.eventCount}</span> events · <span className="font-bold text-slate-900">{t.attendeeCount}</span> attendees
-                      </td>
-                      <td className="p-3.5 font-bold text-slate-900">
-                        ${t.mrr || 0}/mo
-                      </td>
-                      <td className="p-3.5 text-right pr-4 space-x-2">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setInspectingTenant(t)}
-                          className="text-[#1d4ed8] hover:bg-blue-50 text-xs h-8 px-2.5 rounded-lg font-bold"
-                        >
-                          <ArrowUpRight className="w-3.5 h-3.5 mr-1" />
-                          View Details
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          disabled={actionLoading === t.id}
-                          onClick={() => handleToggleStatus(t.id, t.status)}
-                          className={`text-xs h-8 px-2.5 rounded-lg ${
-                            t.status === 'active'
-                              ? 'text-red-600 hover:bg-red-50'
-                              : 'text-emerald-600 hover:bg-emerald-50'
-                          }`}
-                        >
-                          {t.status === 'active' ? 'Suspend' : 'Activate'}
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
+                  {tenants.map((t) => {
+                    const isMaster = t.id === 1 || t.slug === 'eventorax-hq';
+
+                    return (
+                      <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
+                        <td className="p-3.5 pl-4 font-bold text-slate-900">
+                          {t.name}
+                          <span className="block text-[10px] text-slate-400 font-mono">slug: {t.slug}</span>
+                        </td>
+                        <td className="p-3.5 text-slate-600">
+                          {t.owner?.full_name || 'Organization Owner'}
+                          <span className="block text-[10px] text-slate-400">{t.owner?.email || 'N/A'}</span>
+                        </td>
+                        <td className="p-3.5">
+                          {isMaster ? (
+                            <Badge className="bg-blue-600 text-white font-bold text-[10px] px-2 py-0.5">
+                              Platform Master
+                            </Badge>
+                          ) : (
+                            <select
+                              value={t.plan}
+                              disabled={actionLoading === t.id}
+                              onChange={(e) => handleUpdatePlan(t.id, e.target.value)}
+                              className="px-2 py-1 rounded-lg border border-slate-300 text-xs font-semibold bg-white"
+                            >
+                              <option value="Starter">Starter ($0)</option>
+                              <option value="Professional">Professional ($99)</option>
+                              <option value="Enterprise">Enterprise ($299)</option>
+                            </select>
+                          )}
+                        </td>
+                        <td className="p-3.5">
+                          <Badge className={`text-[10px] font-bold ${
+                            t.status === 'active' 
+                              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' 
+                              : 'bg-red-50 text-red-700 border border-red-200'
+                          }`}>
+                            {t.status === 'active' ? (isMaster ? 'Master Node' : 'Active') : 'Suspended'}
+                          </Badge>
+                        </td>
+                        <td className="p-3.5 text-slate-600">
+                          {isMaster ? (
+                            <span className="font-bold text-emerald-600">∞ Unlimited Master</span>
+                          ) : (
+                            <span><strong className="text-slate-900">{t.eventCount}</strong> events · <strong className="text-slate-900">{t.attendeeCount}</strong> attendees</span>
+                          )}
+                        </td>
+                        <td className="p-3.5 font-bold text-slate-900">
+                          {isMaster ? <span className="text-slate-400 text-[11px] font-normal">Platform Owner</span> : `$${t.mrr || 0}/mo`}
+                        </td>
+                        <td className="p-3.5 text-right pr-4 space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setInspectingTenant(t)}
+                            className="text-[#1d4ed8] hover:bg-blue-50 text-xs h-8 px-2.5 rounded-lg font-bold"
+                          >
+                            <ArrowUpRight className="w-3.5 h-3.5 mr-1" />
+                            View Details
+                          </Button>
+                          {!isMaster && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              disabled={actionLoading === t.id}
+                              onClick={() => handleToggleStatus(t.id, t.status)}
+                              className={`text-xs h-8 px-2.5 rounded-lg ${
+                                t.status === 'active'
+                                  ? 'text-red-600 hover:bg-red-50'
+                                  : 'text-emerald-600 hover:bg-emerald-50'
+                              }`}
+                            >
+                              {t.status === 'active' ? 'Suspend' : 'Activate'}
+                            </Button>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

@@ -143,7 +143,8 @@ export default function Header({ title }: HeaderProps) {
   };
 
   const activeTenantName = currentTenant?.name || "EventoraX Workspace";
-  const activePlan = currentTenant?.plan || "Professional";
+  const isMaster = isSuperAdmin || currentTenant?.id === 1 || currentTenant?.slug === 'eventorax-hq';
+  const displayPlan = isMaster ? "Platform Master" : (currentTenant?.plan || "Starter");
 
   return (
     <>
@@ -186,8 +187,8 @@ export default function Header({ title }: HeaderProps) {
                     <span className="text-xs font-bold text-[#0f172a] max-w-[130px] sm:max-w-[180px] truncate">
                       {activeTenantName}
                     </span>
-                    <Badge className="bg-[#7c3aed]/10 text-[#7c3aed] hover:bg-[#7c3aed]/15 text-[10px] px-1.5 py-0 font-semibold border-none">
-                      {activePlan}
+                    <Badge className={`${isMaster ? 'bg-blue-600 text-white' : 'bg-[#7c3aed]/10 text-[#7c3aed]'} hover:opacity-90 text-[10px] px-1.5 py-0 font-semibold border-none`}>
+                      {displayPlan}
                     </Badge>
                   </div>
                   <span className="text-[10px] text-[#64748b]">
@@ -450,9 +451,8 @@ export default function Header({ title }: HeaderProps) {
                   className="w-full h-11 px-3 rounded-xl border border-[#e9e4ff] bg-white text-sm text-[#0f172a] focus:ring-2 focus:ring-[#7c3aed]"
                 >
                   <option value="Starter">Starter (Free, up to 500 attendees)</option>
-                  <option value="Professional">Professional ($49/mo, 5,000 attendees)</option>
-                  <option value="Enterprise">Enterprise ($199/mo, 50,000 attendees, White-label)</option>
-                  <option value="PaaS Developer">PaaS Developer ($299/mo, Full API & Webhooks)</option>
+                  <option value="Professional">Professional ($99/mo, 5,000 attendees)</option>
+                  <option value="Enterprise">Enterprise ($299/mo, 50,000+ attendees, White-label)</option>
                 </select>
               </div>
 
@@ -462,7 +462,7 @@ export default function Header({ title }: HeaderProps) {
                   Instant Isolation
                 </div>
                 <p>
-                  This will generate a dedicated workspace with partitioned events, independent ticketing, team permissions, and API keys.
+                  This will generate a dedicated client workspace with partitioned events, independent ticketing, team permissions, and custom branding.
                 </p>
               </div>
 

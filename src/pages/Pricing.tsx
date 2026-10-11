@@ -41,8 +41,8 @@ const plansData: PlanData[] = [
   },
   {
     name: 'Enterprise',
-    priceUsdMonthly: 199,
-    pricePkrMonthly: 55000,
+    priceUsdMonthly: 299,
+    pricePkrMonthly: 83000,
     description: 'For universities, government, agencies & global conferences',
     badge: 'Enterprise White-Label',
     features: [
@@ -52,35 +52,15 @@ const plansData: PlanData[] = [
       'Custom Domain (events.yourdomain.com)',
       'Multi-Tenant Workspaces Isolation',
       'Tamper-Proof Public Verification Portal',
-      'Dedicated Account Manager & SLA',
-      'PaaS REST API (10k req/mo)',
-      'Webhooks & Embed Widgets',
-    ],
-  },
-  {
-    name: 'PaaS Developer',
-    priceUsdMonthly: 299,
-    pricePkrMonthly: 83000,
-    description: 'For SaaS founders & developers building credential systems',
-    badge: 'API & Platform',
-    features: [
-      'Full RESTful PaaS v1 API',
-      'Certificate & ID Engine API (Issue, Revoke, Verify)',
-      'Real-time Webhook Callbacks',
-      'Embeddable Ticket & Credential Widget SDK',
-      'Unlimited Multi-Tenant Sub-Accounts',
-      '100,000 API calls/month included',
-      'Custom Barcode & Scanner Integration',
-      'Stripe & Regional Payment Gateways',
-      'Priority Developer Support',
+      'Dedicated Account Manager & 99.9% SLA',
+      'Priority 24/7 Phone & Email Support',
     ],
   },
 ];
 
 const faqs = [
-  { q: 'How does Multi-Tenancy work in EventoraX?', a: 'Every organizer gets an isolated workspace with partitioned events, attendees, team permissions, branding, and API keys. You can also manage multiple client workspaces from a single login.' },
-  { q: 'Can I sell EventoraX to my clients under my own brand (White-Label)?', a: 'Yes! On Enterprise and PaaS Developer plans, you can attach custom domains, upload your own logo, set custom theme colors, and remove all EventoraX branding.' },
-  { q: 'What is included in the PaaS Developer plan?', a: 'You get full programmatic access to our /api/v1 REST endpoints (create events, register attendees, scan tickets, check stats), webhooks, and embeddable iframe widgets to integrate ticketing directly into your mobile app or website.' },
+  { q: 'How does Multi-Tenancy work in EventoraX?', a: 'Every organizer gets an isolated workspace with partitioned events, attendees, team permissions, custom branding, and settings. You can also manage multiple client workspaces from a single login.' },
+  { q: 'Can I sell EventoraX to my clients under my own brand (White-Label)?', a: 'Yes! On the Enterprise plan, you can attach custom domains, upload your own logo, set custom theme colors, and remove all EventoraX branding.' },
   { q: 'Which payment methods are supported for Pakistani and international organizations?', a: 'We natively support Pakistani local gateways including JazzCash, Easypaisa, Raast Instant Pay, and Direct Bank Transfer (Meezan, HBL, Alfalah), as well as international Credit/Debit cards via Stripe.' },
   { q: 'Is there a free trial?', a: 'Yes! Every tier includes a 14-day free trial. You can start right away without committing.' },
 ];
@@ -111,13 +91,13 @@ export default function Pricing() {
         <div className="max-w-4xl mx-auto">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-blue-200 text-xs font-bold text-[#1d4ed8] mb-5 shadow-xs">
             <Sparkles className="w-4 h-4 text-[#2563eb]" />
-            SaaS & PaaS Flexible Monetization
+            Transparent &amp; Predictable Pricing
           </div>
           <h1 className="font-heading text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-6">
-            Predictable pricing for organizers & developers
+            Simple pricing for organizers &amp; communities
           </h1>
           <p className="text-base md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed mb-8">
-            Host standalone events, generate instant attendee ID cards, run QR check-in, or integrate our ticketing API into your custom portal.
+            Host standalone events, generate instant attendee ID cards, run QR check-in, and issue tamper-evident certificates with ease.
           </p>
 
           {/* Currency & Annual Switcher Bar */}
@@ -225,10 +205,6 @@ export default function Pricing() {
                           <X className="w-4 h-4 text-slate-300 shrink-0" />
                           <span>Custom Domain (CNAME)</span>
                         </li>
-                        <li className="flex items-center gap-2.5 text-xs text-slate-400">
-                          <X className="w-4 h-4 text-slate-300 shrink-0" />
-                          <span>PaaS API & Webhooks</span>
-                        </li>
                       </>
                     )}
                     {plan.name === 'Professional' && (
@@ -236,10 +212,6 @@ export default function Pricing() {
                         <li className="flex items-center gap-2.5 text-xs text-slate-400">
                           <X className="w-4 h-4 text-slate-300 shrink-0" />
                           <span>Custom Domain (CNAME)</span>
-                        </li>
-                        <li className="flex items-center gap-2.5 text-xs text-slate-400">
-                          <X className="w-4 h-4 text-slate-300 shrink-0" />
-                          <span>Full PaaS API Access</span>
                         </li>
                       </>
                     )}
@@ -254,7 +226,7 @@ export default function Pricing() {
                       : 'bg-slate-100 text-[#1d4ed8] hover:bg-blue-50 border border-slate-200'
                   }`}
                 >
-                  {isFree ? 'Get Started Free' : isPopular ? 'Start Pro Trial' : plan.name === 'Enterprise' ? 'Purchase Enterprise' : 'Get API Access'}
+                  {isFree ? 'Get Started Free' : isPopular ? 'Start Pro Trial' : 'Upgrade to Enterprise'}
                 </button>
               </div>
             );
@@ -301,7 +273,7 @@ export default function Pricing() {
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-extrabold text-slate-900 font-heading">Frequently Asked Questions</h2>
-            <p className="text-sm text-slate-600 mt-2">Everything you need to know about EventoraX SaaS & PaaS</p>
+            <p className="text-sm text-slate-600 mt-2">Everything you need to know about EventoraX Event Platform</p>
           </div>
 
           <div className="space-y-4">

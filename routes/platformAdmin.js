@@ -37,9 +37,8 @@ function requireSuperAdmin(req, res, next) {
 
 const PLAN_MRR = {
   Starter: 0,
-  Professional: 49,
-  Enterprise: 199,
-  'PaaS Developer': 299
+  Professional: 99,
+  Enterprise: 299
 };
 
 // GET /api/admin/overview - Global SaaS Platform Metrics
@@ -48,22 +47,21 @@ router.get('/overview', verifyToken, requireSuperAdmin, async (req, res) => {
     const [tenants] = await query('SELECT * FROM `tenants`');
     const [users] = await query('SELECT COUNT(*) as total_users FROM `users`');
     const [events] = await query('SELECT COUNT(*) as total_events, COALESCE(SUM(registered_count), 0) as total_attendees FROM `events`');
-    const [keys] = await query('SELECT COUNT(*) as total_keys FROM `tenant_api_keys` WHERE `is_active` = 1');
 
-    const totalTenants = tenants.length;
-    const activeTenants = tenants.filter(t => t.status === 'active').length;
-    const suspendedTenants = tenants.filter(t => t.status === 'suspended').length;
+    const clientTenants = tenants.filter(t => t.id !== 1 && t.slug !== 'eventorax-hq');
+    const totalTenants = clientTenants.length;
+    const activeTenants = clientTenants.filter(t => t.status === 'active').length;
+    const suspendedTenants = clientTenants.filter(t => t.status === 'suspended').length;
 
-    // Calculate MRR (Monthly Recurring Revenue)
+    // Calculate MRR (Monthly Recurring Revenue from client organizations)
     let totalMRR = 0;
     const planBreakdown = {
       Starter: 0,
       Professional: 0,
-      Enterprise: 0,
-      'PaaS Developer': 0
+      Enterprise: 0
     };
 
-    tenants.forEach(t => {
+    clientTenants.forEach(t => {
       const p = t.plan || 'Starter';
       if (planBreakdown[p] !== undefined) planBreakdown[p]++;
       if (t.status === 'active') {
@@ -80,7 +78,6 @@ router.get('/overview', verifyToken, requireSuperAdmin, async (req, res) => {
         totalUsers: users[0]?.total_users || 0,
         totalEvents: events[0]?.total_events || 0,
         totalAttendees: events[0]?.total_attendees || 0,
-        totalApiKeys: keys[0]?.total_keys || 0,
         totalMRR,
         annualRunRate: totalMRR * 12,
         planBreakdown
@@ -107,13 +104,18 @@ router.get('/tenants', verifyToken, requireSuperAdmin, async (req, res) => {
     const eventMap = {};
     eventCounts.forEach(e => { eventMap[e.tenant_id] = e; });
 
-    let result = tenants.map(t => ({
-      ...t,
-      owner: userMap[t.owner_id] || { full_name: 'Unknown', email: 'unknown@eventorax.com' },
-      eventCount: eventMap[t.id]?.event_count || 0,
-      attendeeCount: eventMap[t.id]?.attendees_count || 0,
-      mrr: PLAN_MRR[t.plan] || 0
-    }));
+    let result = tenants.map(t => {
+      const isMaster = t.id === 1 || t.slug === 'eventorax-hq';
+      return {
+        ...t,
+        isSuperAdmin: isMaster,
+        plan: isMaster ? 'Platform Authority' : (t.plan || 'Starter'),
+        owner: userMap[t.owner_id] || { full_name: isMaster ? 'Platform SuperAdmin' : 'Organization Owner', email: isMaster ? 'admin@eventorax.com' : 'client@eventorax.com' },
+        eventCount: eventMap[t.id]?.event_count || 0,
+        attendeeCount: eventMap[t.id]?.attendees_count || 0,
+        mrr: isMaster ? 0 : (PLAN_MRR[t.plan] || 0)
+      };
+    });
 
     if (search) {
       const s = search.toLowerCase();
@@ -142,8 +144,12 @@ router.put('/tenants/:id/plan', verifyToken, requireSuperAdmin, async (req, res)
     const tenantId = parseInt(req.params.id, 10);
     const { plan } = req.body;
 
+    if (tenantId === 1) {
+      return res.status(400).json({ success: false, message: 'Cannot modify plan of the Platform SuperAdmin workspace.' });
+    }
+
     if (!PLAN_MRR.hasOwnProperty(plan)) {
-      return res.status(400).json({ success: false, message: 'Invalid plan specified.' });
+      return res.status(400).json({ success: false, message: 'Invalid plan specified. Available plans: Starter, Professional, Enterprise.' });
     }
 
     await query('UPDATE `tenants` SET `plan` = ? WHERE `id` = ?', [plan, tenantId]);

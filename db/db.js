@@ -41,7 +41,7 @@ export const memoryStore = {
       notifications_enabled: 1,
       marketing_emails_enabled: 0,
       two_factor_enabled: 0,
-      plan: 'Enterprise',
+      plan: 'Platform Authority',
       created_at: new Date().toISOString()
     }
   ],
@@ -55,11 +55,11 @@ export const memoryStore = {
       primary_color: '#1d4ed8',
       secondary_color: '#1e40af',
       owner_id: 1,
-      plan: 'Enterprise',
+      plan: 'Platform Authority',
       status: 'active',
-      max_events: 1000,
-      max_attendees: 500000,
-      api_access_enabled: 1,
+      max_events: 999999999,
+      max_attendees: 999999999,
+      api_access_enabled: 0,
       white_label_enabled: 1,
       trial_ends_at: null,
       created_at: new Date().toISOString()
@@ -68,29 +68,8 @@ export const memoryStore = {
   tenant_members: [
     { id: 1, tenant_id: 1, user_id: 1, role: 'owner', status: 'active', created_at: new Date().toISOString() }
   ],
-  tenant_api_keys: [
-    {
-      id: 1,
-      tenant_id: 1,
-      name: 'EventoraX Master Key',
-      api_key: 'evx_live_99d8b746a5124e93bc48102a9b31',
-      permissions: 'admin_full',
-      is_active: 1,
-      last_used_at: new Date().toISOString(),
-      created_at: new Date().toISOString()
-    }
-  ],
-  tenant_webhooks: [
-    {
-      id: 1,
-      tenant_id: 1,
-      url: 'https://api.eventorax.com/webhooks/incoming',
-      events: 'attendee.registered,attendee.checked_in',
-      secret: 'whsec_9873429849283749283',
-      is_active: 1,
-      created_at: new Date().toISOString()
-    }
-  ],
+  tenant_api_keys: [],
+  tenant_webhooks: [],
   events: [],
   event_attendees: [],
   team_members: [],
@@ -107,19 +86,7 @@ export const memoryStore = {
     }
   ],
   contact_messages: [],
-  subscriptions: [
-    {
-      id: 1,
-      tenant_id: 1,
-      user_id: 1,
-      plan: 'Enterprise',
-      price: 199.00,
-      billing_cycle: 'monthly',
-      attendees_limit: 500000,
-      status: 'active',
-      created_at: new Date().toISOString()
-    }
-  ],
+  subscriptions: [],
   website_cms: [
     {
       id: 1,

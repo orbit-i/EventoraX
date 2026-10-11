@@ -40,7 +40,7 @@ export default function Maintenance() {
             </div>
           </div>
           <div className="bg-white p-3.5 rounded-2xl border border-slate-200 shadow-xs">
-            <span className="text-[11px] font-bold text-slate-500 block mb-1">PaaS &amp; APIs</span>
+            <span className="text-[11px] font-bold text-slate-500 block mb-1">Digital ID Badges</span>
             <div className="flex items-center gap-1.5 text-xs font-bold text-emerald-600">
               <CheckCircle className="w-3.5 h-3.5" />
               High Availability
