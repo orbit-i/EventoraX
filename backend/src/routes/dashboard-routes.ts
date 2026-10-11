@@ -2,7 +2,7 @@ import { Router } from "express";
 import rateLimit from "express-rate-limit";
 import { orgScoped, orgScopedAllowExpired, adminOnly } from "../middleware/orgChain";
 import { fail } from "../utils/http";
-import { getOverview, getAnalytics } from "../controllers/dashboard-controller";
+import { getOverview, getAnalytics, downloadAnalyticsReport } from "../controllers/dashboard-controller";
 import { listActivity, exportActivity } from "../controllers/activity-controller";
 import { getBilling, listPayments, submitPayment, cancelPayment } from "../controllers/billing-controller";
 import { publicContact, dashboardSupport, contactInfo } from "../controllers/support-controller";
@@ -13,6 +13,7 @@ dashboardRouter.get("/overview", ...orgScopedAllowExpired, getOverview);
 
 export const analyticsRouter = Router();
 analyticsRouter.get("/", ...orgScoped, getAnalytics);
+analyticsRouter.get("/report", ...orgScoped, downloadAnalyticsReport);
 
 export const activityRouter = Router();
 activityRouter.use(...orgScoped, adminOnly);

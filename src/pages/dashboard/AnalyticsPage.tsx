@@ -1,7 +1,8 @@
 import { useState, type ReactNode } from "react"
 import { Link, useNavigate } from "react-router"
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, Cell, Pie, PieChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts"
-import { Award, BarChart3, CalendarDays, CheckCircle2, Plus, RotateCw, Table2, Users } from "lucide-react"
+import { Award, BarChart3, CalendarDays, CheckCircle2, FileDown, Loader2, Plus, RotateCw, Table2, Users } from "lucide-react"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
@@ -11,6 +12,7 @@ import { Panel } from "@/components/app/Panel"
 import { EmptyState, ErrorState } from "@/components/app/States"
 import { RoleGate } from "@/components/app/RoleGate"
 import { useApi } from "@/hooks/useApi"
+import { api, errorMessage } from "@/lib/api"
 import { formatDate, formatMonth } from "@/lib/format"
 import { statusLabel } from "@/lib/status"
 import type { Analytics } from "@/types/dashboard"
@@ -135,6 +137,20 @@ function LoadingGrid() {
 export default function AnalyticsPage() {
   const navigate = useNavigate()
   const { data, error, initialLoading, loading, reload } = useApi<Analytics>("/analytics")
+  const [exporting, setExporting] = useState(false)
+
+  async function downloadReport() {
+    setExporting(true)
+    const toastId = toast.loading("Preparing your PDF report…")
+    try {
+      await api.download("/analytics/report", "analytics-report.pdf")
+      toast.success("Report downloaded", { id: toastId })
+    } catch (err) {
+      toast.error(errorMessage(err, "Couldn't create the report."), { id: toastId })
+    } finally {
+      setExporting(false)
+    }
+  }
 
   const header = (
     <PageHeader
@@ -142,9 +158,14 @@ export default function AnalyticsPage() {
       description="How your events are performing across the whole organization."
       breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Analytics" }]}
       actions={
-        <Button variant="outline" onClick={reload} disabled={loading}>
-          <RotateCw className={cn(loading && "animate-spin")} /> Refresh
-        </Button>
+        <>
+          <Button variant="outline" onClick={reload} disabled={loading}>
+            <RotateCw className={cn(loading && "animate-spin")} /> Refresh
+          </Button>
+          <Button onClick={() => void downloadReport()} disabled={exporting || !data}>
+            {exporting ? <Loader2 className="animate-spin" /> : <FileDown />} PDF report
+          </Button>
+        </>
       }
     />
   )

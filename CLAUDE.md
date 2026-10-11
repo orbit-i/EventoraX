@@ -87,7 +87,8 @@ npm run dev
 ```
 index.ts            app setup, route mounting, /uploads static, JSON 404, error handler
 pdf/                assets (fonts from @fontsource WOFF, loadImage PNG/JPEG only, toBuffer), certificate (60 templates,
-                    renderCertificate), ticket (A6 ticket, TICKET_QR_PREFIX)
+                    renderCertificate), ticket (A6 ticket, TICKET_QR_PREFIX), idcard (4 CR80 templates, sheet/single),
+                    report (ReportKit: header/kpis/barChart/hBars/table/columns/footer + renderAnalyticsReport)
 services/           certificates (verify code, SHA-256 over frozen facts, issue/email/autoIssueForAttended, private PDF
                     storage), tickets (ticket PDF/email, parseScanned)
 prisma/seed.ts      plans, settings, superadmin    prisma/seed-demo.ts  demo organization (see above)
@@ -133,6 +134,7 @@ categories, speakers, sponsors, sessions, reorder, registrations (+ /:id/status,
 activity (+ /export), billing (+ /payments), support, contact (public, rate-limited 5/h) + GET contact/info (public),
 team (+ /invite, /invites/:id/resend, /invites/:id), PATCH org/me (incl. logoUrl/signatureUrl from the generic upload),
 org/me/delete-data, org/me/close (name + password confirmation), PATCH auth/me,
+idcards (+ /options, /stats, /preview, /pdf), analytics/report (PDF),
 certificates (+ /templates, /preview, /stats, /candidates, /bulk, /email, /:id/pdf, /:id/email, /:id/revoke, /:id/restore),
 verify/:code and verify/:code/pdf (public, 30/min), tickets (+ /stats, /zip, /email, /check-in, /:id/pdf, /:id/email,
 /:id/undo-check-in).
@@ -197,9 +199,11 @@ module API; shared components; real auth pages; the whole **events module UI reb
 reorder); **Phase 8 complete**: dashboard layout + Overview (8B), Analytics, Activity log, Help & support, public
 contact form (8C), Team, Settings (6 tabs), Billing with manual payments (8D); old mock pages and unused UI files
 removed; knip clean (only deliberately kept: `ui/popover`, `ui/scroll-area`, `ui/separator`).
-**Phase 9 (in progress):** ✅ 9A certificate engine, ✅ 9B Certificates page + design picker + public `/verify`,
-✅ 9C QR tickets + Tickets page + camera check-in scanner (`/dashboard/tickets/scan`, qr-scanner; needs https or
-localhost for the camera). Event form has the certificate design picker. Demo seed added.
+**Phase 9 complete:** 9A certificate engine, 9B Certificates page + design picker + public `/verify`,
+9C QR tickets + Tickets page + camera check-in scanner (`/dashboard/tickets/scan`, qr-scanner; needs https or
+localhost for the camera), 9D ID cards (`/dashboard/idcards`: 4 templates, field choice, logo, 9-per-A4 sheet or one per page,
+print tracking in `IdCard`), 9E Analytics PDF report (`GET /analytics/report`, `pdf/report.ts` ReportKit — reuse it for
+other PDF reports). Event form has the certificate design picker. Demo seed added.
 
 Notes for later phases:
 - Notification preferences (`notificationPrefs`) are saved but nothing sends those emails yet (Phase 11).
@@ -208,10 +212,6 @@ Notes for later phases:
 - Gmail SMTP allows ~500 emails/day; use a transactional email service in production (Phase 12).
 
 ## Remaining work
-
-**9D** — ID cards (`/dashboard/idcards`): 4 templates, choose fields (name, category, department, roll no),
-org logo, preview, PDF for one / selected / whole event (several cards per A4 page). `IdCard` table exists.
-**9E** — Analytics PDF report export (button on the Analytics page). Then mark Phase 9 done here.
 
 **10** — Superadmin panel (`/superadmin`, role superAdmin): dashboard, tenants (suspend, extend trial, change plan,
 impersonate), plans CRUD, revenue + **payment confirmation** (sets plan, `status = active`, `subscriptionEndsAt` +1 year),

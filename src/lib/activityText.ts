@@ -112,6 +112,8 @@ export function describeActivity(item: ActivityItem): string {
       return `downloaded ${n("count")} ticket${n("count") === 1 ? "" : "s"} as a ZIP`
     case "idcard.generate":
       return n("count") === 1 ? `printed ${s("name")}'s ID card` : `printed ${n("count")} ID cards for "${s("event")}"`
+    case "analytics.report":
+      return "downloaded the analytics PDF report"
     case "upload.image":
       return "uploaded an image"
     default:

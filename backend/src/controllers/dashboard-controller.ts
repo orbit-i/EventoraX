@@ -1,6 +1,9 @@
 import { Request, Response } from "express";
 import prisma from "../prisma/client";
 import { ok } from "../utils/http";
+import { logActivity } from "../utils/activity";
+import type { ScopedPrisma } from "../prisma/scopedClient";
+import { renderAnalyticsReport } from "../pdf/report";
 
 const EVENT_SUMMARY = {
   id: true,
@@ -116,10 +119,8 @@ export async function getOverview(req: Request, res: Response) {
   });
 }
 
-// GET /api/v1/analytics
-export async function getAnalytics(req: Request, res: Response) {
-  const db = req.db!;
-  const orgId = req.org!.id;
+/** Everything the Analytics page (and its PDF report) shows, for one organization. */
+async function analyticsData(db: ScopedPrisma, orgId: string) {
 
   const [eventsByStatus, regsByStatus, viaGroups, categoryGroups, certificatesIssued, regsMonthly, certsMonthly, recentRunEvents, topEvents] =
     await Promise.all([
@@ -184,7 +185,7 @@ export async function getAnalytics(req: Request, res: Response) {
     .map(([label, count]) => ({ label, count }))
     .sort((a, b) => b.count - a.count);
 
-  return ok(res, {
+  return {
     totals: {
       events: eventsByStatus.reduce((sum, g) => sum + (g.status === "ARCHIVED" ? 0 : g._count._all), 0),
       registrations: activeRegs,
@@ -206,5 +207,28 @@ export async function getAnalytics(req: Request, res: Response) {
       maxAttendees: e.maxAttendees,
       registrations: e._count.registrations,
     })),
+  };
+}
+
+// GET /api/v1/analytics
+export async function getAnalytics(req: Request, res: Response) {
+  return ok(res, await analyticsData(req.db!, req.org!.id));
+}
+
+// GET /api/v1/analytics/report   → the same numbers as a printable A4 PDF report
+export async function downloadAnalyticsReport(req: Request, res: Response) {
+  const org = req.org!;
+  const data = await analyticsData(req.db!, org.id);
+  const pdf = await renderAnalyticsReport(data, {
+    orgName: org.whiteLabelName || org.name,
+    logoUrl: org.logoUrl,
+    primaryColor: org.primaryColor,
+    generatedBy: req.user!.name,
   });
+  await logActivity(req, { action: "analytics.report" });
+  const day = new Date().toISOString().slice(0, 10);
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader("Content-Disposition", `attachment; filename="analytics-report-${day}.pdf"`);
+  res.setHeader("Cache-Control", "private, no-store");
+  return res.send(pdf);
 }

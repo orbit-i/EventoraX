@@ -43,3 +43,22 @@ and quick API calls against the running backend before committing. No real email
 6. Filter "Not printed yet", tick two rows → **Download selected cards**.
 7. Row menu (⋯) → **View card** opens one card in a new tab (does not count as printed).
 8. Print a sheet, scan a badge's QR with the Check-in scanner — it checks the attendee in.
+
+---
+
+## 9E — Analytics PDF report ✅ (Phase 9 is now complete)
+
+**What was built**
+- `backend/src/pdf/report.ts` — a small **ReportKit** for A4 PDF reports (header with logo, KPI tiles, monthly bar charts,
+  horizontal bars, tables that continue on the next page with the header repeated, two-column blocks, "Page X of Y" footer).
+  It's reused later for the superadmin reports.
+- `GET /api/v1/analytics/report` → the same numbers as the Analytics page as a 2-page PDF: KPIs, registrations per month
+  (12 months), events by status, registrations by status, attendance rate per event, category breakdown, how people
+  registered, certificates per month, top events table. Uses the org's logo and brand colour. Logged as `analytics.report`.
+- The analytics numbers were moved into one function (`analyticsData`) so the page and the PDF can never disagree.
+- Analytics page: new **PDF report** button (top right) with a loading toast.
+
+**Test it**
+1. Sidebar → **Analytics** → click **PDF report** → `analytics-report-YYYY-MM-DD.pdf` downloads.
+2. Open it: page 1 has the KPIs and charts, page 2 the certificate trend and top events.
+3. Sidebar → **Activity log** shows "downloaded the analytics PDF report".
