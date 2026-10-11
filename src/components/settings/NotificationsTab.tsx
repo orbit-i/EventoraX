@@ -8,9 +8,9 @@ import { saveOrg } from "./shared"
 type PrefKey = "newRegistration" | "attendance" | "certificate"
 
 const PREFS: { key: PrefKey; label: string; description: string }[] = [
-  { key: "newRegistration", label: "New registrations", description: "Email the admins when someone registers for an event." },
-  { key: "attendance", label: "Attendance updates", description: "A short summary after check-ins are marked for an event." },
-  { key: "certificate", label: "Certificates issued", description: "Email the admins when a batch of certificates has been sent." },
+  { key: "newRegistration", label: "New registrations", description: "When someone registers themselves on your public event page." },
+  { key: "attendance", label: "Attendance summaries", description: "After each event ends: how many attended, were absent or are not marked yet." },
+  { key: "certificate", label: "Certificates sent", description: "When a batch of certificate emails has finished sending (and if any failed)." },
 ]
 
 /** Switches save straight away (no Save button), with Undo. */
@@ -43,7 +43,7 @@ export function NotificationsTab() {
   }
 
   return (
-    <FormSection title="Email notifications" description="Choose what the organization's admins are emailed about. Changes save automatically.">
+    <FormSection title="Email notifications" description="Choose what the organization's admins are emailed about (they also appear under the bell). Changes save automatically.">
       {PREFS.map((p) => (
         <FullWidth key={p.key}>
           <SwitchField label={p.label} description={p.description} checked={prefs[p.key]} onCheckedChange={(v) => void toggle(p.key, v)} disabled={savingKey === p.key} />

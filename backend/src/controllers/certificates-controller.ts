@@ -3,6 +3,7 @@ import { z } from "zod";
 import { Prisma } from "@prisma/client";
 import prisma from "../prisma/client";
 import { ok, fail, validationFail, pagination, q } from "../utils/http";
+import { notifyCertificatesSent } from "../services/orgNotifications";
 import { isOneOf, isUniqueViolation } from "../utils/schemas";
 import { logActivity } from "../utils/activity";
 import { listTemplates, renderCertificate, LAYOUTS, VARIANTS, type CertType } from "../pdf/certificate";
@@ -233,9 +234,13 @@ export async function issueBulk(req: Request, res: Response) {
   // Emails go out in the background so a big event doesn't keep the browser waiting.
   if (sendEmail && created.length > 0) {
     void (async () => {
+      let sent = 0;
       for (const cert of created) {
-        await emailCertificate(db, org, event, cert).catch((err) => console.error(`Emailing certificate ${cert.id} failed:`, err));
+        await emailCertificate(db, org, event, cert)
+          .then(() => sent++)
+          .catch((err) => console.error(`Emailing certificate ${cert.id} failed:`, err));
       }
+      await notifyCertificatesSent(org.id, { sent, failed: created.length - sent, eventTitle: event.title, eventId }).catch((err) => console.error("Certificate alert failed:", err));
     })();
   }
 
@@ -280,9 +285,19 @@ export async function emailMany(req: Request, res: Response) {
     include: { event: { select: EVENT_FOR_CERT } },
   });
   void (async () => {
+    let sent = 0;
     for (const cert of certs) {
-      await emailCertificate(db, org, cert.event, cert).catch((err) => console.error(`Emailing certificate ${cert.id} failed:`, err));
+      await emailCertificate(db, org, cert.event, cert)
+        .then(() => sent++)
+        .catch((err) => console.error(`Emailing certificate ${cert.id} failed:`, err));
     }
+    const events = [...new Set(certs.map((c) => c.event.id))];
+    await notifyCertificatesSent(org.id, {
+      sent,
+      failed: certs.length - sent,
+      eventTitle: events.length === 1 ? certs[0]!.event.title : "several events",
+      eventId: events.length === 1 ? events[0]! : null,
+    }).catch((err) => console.error("Certificate alert failed:", err));
   })();
   await logActivity(req, { action: "certificate.email.bulk", metadata: { count: certs.length } });
   return ok(res, { sending: certs.length, skipped: parsed.data.ids.length - certs.length });

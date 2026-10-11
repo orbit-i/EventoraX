@@ -40,3 +40,47 @@ export async function notifyNewRegistration(orgId: string, r: { name: string; em
     ).catch((err) => console.error("New-registration email failed:", err));
   }
 }
+
+/** A batch of certificate emails has finished sending. */
+export async function notifyCertificatesSent(orgId: string, r: { sent: number; failed: number; eventTitle: string; eventId: string | null }) {
+  if (r.sent + r.failed === 0 || !(await wants(orgId, "certificate"))) return;
+  const people = await admins(orgId);
+  const link = r.eventId ? `/dashboard/certificates?eventId=${r.eventId}` : "/dashboard/certificates";
+  const failedText = r.failed ? ` ${r.failed} could not be sent — open Certificates to retry.` : "";
+  await bell(orgId, people.map((p) => p.id), `${r.sent} certificate${r.sent === 1 ? "" : "s"} emailed`, `Certificates for ${r.eventTitle} were emailed to ${r.sent} ${r.sent === 1 ? "person" : "people"}.${failedText}`, link);
+  for (const p of people) {
+    await sendNotice(
+      p.email,
+      `Certificates sent — ${r.eventTitle}`,
+      "Certificates sent",
+      `<p>Certificates for <strong>${escapeHtml(r.eventTitle)}</strong> were emailed to <strong>${r.sent}</strong> ${r.sent === 1 ? "person" : "people"}.${escapeHtml(failedText)}</p><p style="color:#64748b;font-size:13px">You can turn these emails off in Settings → Notifications.</p>`,
+      { path: link, label: "Open certificates" }
+    ).catch((err) => console.error("Certificate alert email failed:", err));
+  }
+}
+
+/** Summary of an event that has just ended (sent once per event by the attendance-summaries job). */
+export async function notifyAttendanceSummary(
+  orgId: string,
+  e: { eventId: string; title: string; registered: number; attended: number; absent: number; notMarked: number }
+) {
+  if (!(await wants(orgId, "attendance"))) return false;
+  const people = await admins(orgId);
+  const rate = e.registered ? Math.round((e.attended / e.registered) * 100) : 0;
+  const link = `/dashboard/events/${e.eventId}`;
+  const body = `${e.attended} of ${e.registered} attended (${rate}%). ${e.absent} absent, ${e.notMarked} not marked yet.`;
+  await bell(orgId, people.map((p) => p.id), `Attendance: ${e.title}`, body, link);
+  const row = (label: string, value: string | number) => `<tr><td style="padding:6px 12px;color:#64748b">${label}</td><td style="padding:6px 12px;font-weight:bold">${value}</td></tr>`;
+  for (const p of people) {
+    await sendNotice(
+      p.email,
+      `Attendance summary — ${e.title}`,
+      `${escapeHtml(e.title)} has ended`,
+      `<p>Here's how attendance went:</p><table style="border-collapse:collapse;background:#ffffff;border:1px solid #e9e4ff;border-radius:8px">${row("Registered", e.registered)}${row("Attended", `${e.attended} (${rate}%)`)}${row("Absent", e.absent)}${row("Not marked yet", e.notMarked)}</table>${
+        e.notMarked ? "<p>Mark the remaining people as attended or absent so your analytics and certificates are complete.</p>" : ""
+      }<p style="color:#64748b;font-size:13px">You can turn these emails off in Settings → Notifications.</p>`,
+      { path: link, label: "Open the event" }
+    ).catch((err) => console.error("Attendance summary email failed:", err));
+  }
+  return true;
+}

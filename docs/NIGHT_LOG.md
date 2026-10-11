@@ -436,3 +436,26 @@ sees it under the bell) and "Scheduled test (Enterprise only)" (reached nobody).
 4. Dashboard → Registrations for that event → the new person, source "Public page". The bell shows "New registration".
 5. Open `/o/margalla-cs` → the organization's event list.
 6. In the event's settings switch "Registration open" off → the public form becomes "Registration is closed".
+
+---
+
+## 11C — Organization notification emails ✅
+
+The three switches in **Settings → Notifications** now really send (to every active admin, by email **and** in the bell;
+all on by default, each can be switched off):
+- **New registrations** — when someone registers on the public event page (built in 11B).
+- **Attendance summaries** — new scheduled job "Attendance summaries" (every 30 min): after an event ends, one summary
+  per event: registered, attended (%), absent, not marked yet, with a link to the event. Sent once per event; events
+  that end while the switch is off are skipped for good (no flood when you switch it on later).
+- **Certificates sent** — when a batch of certificate emails (bulk issue with email, or "Email selected") has finished:
+  how many were sent, and how many failed.
+The bell entries link straight to the right page.
+
+**Note:** right after this was switched on, the job sent a real summary for "AI & Machine Learning Bootcamp" (ended today)
+to the demo org's admins (`willkariim@gmail.com`, `willkariim+hira@gmail.com`).
+
+**Test it**
+1. Settings → Notifications: read the three switches.
+2. Certificates → issue certificates for an event with "email them" ticked → when the emails are done, the admins get
+   "Certificates sent" (email + bell).
+3. Superadmin → Maintenance → "Attendance summaries" → **Run now** after an event has ended.

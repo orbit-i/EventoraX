@@ -4,6 +4,7 @@ import { expireOverdueOrgs, DAY_MS } from "../utils/orgStatus";
 import { orgAdminEmails } from "../utils/orgContacts";
 import { sendExpiryWarningEmail } from "../utils/mail";
 import { sendDueAnnouncements } from "../services/announcements";
+import { notifyAttendanceSummary } from "../services/orgNotifications";
 
 const REMINDER_DAYS = 3;
 
@@ -55,6 +56,43 @@ registerJob({
   run: async () => {
     const n = await sendDueAnnouncements();
     return n ? `Sent ${n} announcement${n === 1 ? "" : "s"}` : "Nothing due";
+  },
+});
+
+registerJob({
+  name: "attendance-summaries",
+  label: "Attendance summaries",
+  description: "After an event ends, emails its organization's admins how attendance went (once per event).",
+  intervalMs: 30 * 60 * 1000,
+  run: async () => {
+    const now = new Date();
+    // Events that ended in the last 2 days (older ones were before this feature, or already handled).
+    const events = await prisma.event.findMany({
+      where: { status: { in: ["PUBLISHED", "ONGOING", "COMPLETED"] }, endDateTime: { lte: now, gte: new Date(now.getTime() - 2 * DAY_MS) } },
+      select: { id: true, title: true, organizationId: true },
+    });
+    let sent = 0;
+    for (const e of events) {
+      const done = await prisma.activityLog.findFirst({ where: { organizationId: e.organizationId, action: "event.attendance.summary", entityId: e.id } });
+      if (done) continue;
+      const groups = await prisma.registration.groupBy({ by: ["status"], where: { eventId: e.id, status: { not: "CANCELLED" } }, _count: { _all: true } });
+      const count = (s: string) => groups.find((g) => g.status === s)?._count._all ?? 0;
+      const registered = count("REGISTERED") + count("ATTENDED") + count("ABSENT");
+      if (registered > 0) {
+        const emailed = await notifyAttendanceSummary(e.organizationId, {
+          eventId: e.id,
+          title: e.title,
+          registered,
+          attended: count("ATTENDED"),
+          absent: count("ABSENT"),
+          notMarked: count("REGISTERED"),
+        });
+        if (emailed) sent += 1;
+      }
+      // Mark it handled either way, so switching the setting on later doesn't flood old events.
+      await prisma.activityLog.create({ data: { organizationId: e.organizationId, action: "event.attendance.summary", entityType: "Event", entityId: e.id, metadata: { title: e.title, registered } } });
+    }
+    return sent ? `Sent ${sent} summar${sent === 1 ? "y" : "ies"}` : "No events just ended";
   },
 });
 
