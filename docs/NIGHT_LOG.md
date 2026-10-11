@@ -417,7 +417,7 @@ sees it under the bell) and "Scheduled test (Enterprise only)" (reached nobody).
   organization is suspended/expired. Same email twice → "already registered".
 - **Organization page** `/o/<slug>`: upcoming events (with Register) and past events.
 - Only **Upcoming / Active / Completed** events are public; drafts and archived events return "not found".
-- Protection: max 10 registrations per hour per IP, 120 page views per minute, and a hidden "honeypot" field that bots fill in
+- Protection: max 60 registrations per hour per IP (raised from 10 because a campus Wi-Fi shares one IP), 120 page views per minute, and a hidden "honeypot" field that bots fill in
   (those are silently ignored). Seat limits and categories use the same rules as the dashboard.
 - **Dashboard → event page**: new "Public page" card with the link, **Copy link**, **QR for posters** (PNG download) and
   Open. Drafts show how to get a public page (set the status to Upcoming).

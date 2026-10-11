@@ -1,6 +1,8 @@
 import "dotenv/config";
 import express, { Request, Response, NextFunction } from "express";
 import cors from "cors";
+import helmet from "helmet";
+import { apiLimiter } from "./utils/rateLimits";
 import { MulterError } from "multer";
 import prisma from "./prisma/client";
 import { UPLOAD_ROOT } from "./utils/storage";
@@ -36,6 +38,31 @@ const app = express();
 // Correct client IPs when running behind a proxy (Hostinger, Nginx, Docker).
 app.set("trust proxy", 1);
 
+// Security headers. The content policy matters once this server also serves the built website (Phase 12):
+// images may come from https links (org logos), PDFs are previewed from blob: URLs, fonts from Google.
+const production = process.env.NODE_ENV === "production";
+app.use(
+  helmet({
+    crossOriginResourcePolicy: { policy: "cross-origin" },
+    // Only force https in production (on http://localhost it would lock the browser out of the dev server).
+    hsts: production ? { maxAge: 31536000, includeSubDomains: true } : false,
+    contentSecurityPolicy: {
+      directives: {
+        upgradeInsecureRequests: production ? [] : null,
+        defaultSrc: ["'self'"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        frameSrc: ["'self'", "blob:"],
+        objectSrc: ["'none'"],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"],
+        connectSrc: ["'self'"],
+        workerSrc: ["'self'", "blob:"],
+        mediaSrc: ["'self'", "blob:"],
+      },
+    },
+  })
+);
+
 app.use(
   cors({
     origin: process.env.FRONTEND_URL || "http://localhost:5173",
@@ -43,6 +70,7 @@ app.use(
   })
 );
 app.use(express.json({ limit: "5mb" }));
+app.use("/api", apiLimiter); // 600 requests per minute per IP, a safety net for the whole API
 
 // Uploaded files (logos, signatures, later certificates)
 app.use("/uploads", express.static(UPLOAD_ROOT));

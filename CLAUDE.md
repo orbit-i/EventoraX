@@ -159,7 +159,7 @@ certificates (+ /templates, /preview, /stats, /candidates, /bulk, /email, /:id/p
 verify/:code and verify/:code/pdf (public, 30/min), tickets (+ /stats, /zip, /email, /check-in, /:id/pdf, /:id/email,
 /:id/undo-check-in), notifications (+ /:id/read, /read-all), public GET platform (name, banner, maintenance, SEO, upload
 limit, social) + GET platform/website (stats/testimonials/logos) and GET plans (visible plans),
-public/orgs/:slug, public/events/:id, POST public/events/:id/register (10/h per IP, honeypot `website`),
+public/orgs/:slug, public/events/:id, POST public/events/:id/register (60/h per IP, honeypot `website`),
 api-tokens (GET/POST, /:id/revoke — admin + Enterprise).
 **REST API (`/api/v1/ext`, API token, 120/min per token, documented at `/developers` — keep shapes backwards compatible)**:
 GET events, events/:id, events/:id/registrations, events/:id/certificates, registrations/:id, certificates/:code;

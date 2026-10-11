@@ -1,7 +1,8 @@
 import nodemailer from "nodemailer";
 import type { Transporter } from "nodemailer";
 import { EmailTemplateType } from "@prisma/client";
-import { getSetting } from "./settings";
+import { getSetting, setSetting } from "./settings";
+import { decryptSecret, encryptSecret, isEncrypted } from "./secrets";
 import { escapeHtml, fill, loadTemplate } from "./emailTemplates";
 
 export { escapeHtml };
@@ -23,7 +24,16 @@ let cached: { key: string; transporter: Transporter } | null = null;
 async function smtpConfig(): Promise<(SmtpSettings & { source: "settings" | "env" }) | null> {
   const s = await getSetting<Partial<SmtpSettings> | null>("smtp", null);
   if (s?.host && s.user && s.pass) {
-    return { host: s.host, port: Number(s.port) || 587, user: s.user, pass: s.pass, from: s.from || `"EventoraX" <${s.user}>`, source: "settings" };
+    // A password saved before encryption existed is encrypted the first time it's read.
+    if (!isEncrypted(s.pass)) await setSetting("smtp", { ...s, pass: encryptSecret(s.pass) } as never);
+    let pass: string;
+    try {
+      pass = decryptSecret(s.pass);
+    } catch {
+      console.error("The saved SMTP password can't be decrypted (was ENCRYPTION_KEY / JWT_SECRET changed?). Enter it again in Superadmin → Email templates → SMTP server.");
+      pass = "";
+    }
+    if (pass) return { host: s.host, port: Number(s.port) || 587, user: s.user, pass, from: s.from || `"EventoraX" <${s.user}>`, source: "settings" };
   }
   const user = process.env.EMAIL_USER;
   const pass = process.env.EMAIL_PASS;

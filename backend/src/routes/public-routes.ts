@@ -13,10 +13,11 @@ const readLimiter = rateLimit({
   },
 });
 
-// Registering is limited per IP, so nobody can flood an event with fake sign-ups.
+// Registering is limited per IP, so nobody can flood an event with fake sign-ups. Many students at one event
+// can share a campus Wi-Fi IP, so the limit is generous; the hidden honeypot field catches bots.
 const registerLimiter = rateLimit({
   windowMs: 60 * 60 * 1000,
-  limit: 10,
+  limit: 60,
   standardHeaders: "draft-7",
   legacyHeaders: false,
   handler: (_req, res) => {

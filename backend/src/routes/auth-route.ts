@@ -4,6 +4,7 @@ import { isValidPhoneNumber } from "libphonenumber-js";
 import { User } from "@prisma/client";
 import prisma from "../prisma/client";
 import { requireAuth } from "../middleware/auth";
+import { loginLimiter, registerLimiter, passwordLimiter, emailLinkLimiter, inviteLimiter } from "../utils/rateLimits";
 import { signAuthToken } from "../utils/jwt";
 import { randomToken, hashToken } from "../utils/tokens";
 import { isStrongPassword, PASSWORD_RULE_MESSAGE, EMAIL_REGEX } from "../utils/password";
@@ -59,7 +60,7 @@ function safeSend(promise: Promise<void>): Promise<void> {
 
 // ───────────────────────── REGISTER ─────────────────────────
 // POST /api/v1/auth/register  { fullName, organizationName, email, phone, password }
-router.post("/register", async (req, res) => {
+router.post("/register", registerLimiter, async (req, res) => {
   const b = bodyOf(req);
   const fullName = str(b.fullName);
   const organizationName = str(b.organizationName);
@@ -140,7 +141,7 @@ router.post("/register", async (req, res) => {
 
 // ───────────────────────── EMAIL VERIFICATION ─────────────────────────
 // GET /api/v1/auth/verify-email?token=...
-router.get("/verify-email", async (req, res) => {
+router.get("/verify-email", emailLinkLimiter, async (req, res) => {
   const token = str(req.query.token);
   if (!token) {
     return res.status(400).json({ error: "Verification token is missing" });
@@ -168,7 +169,7 @@ router.get("/verify-email", async (req, res) => {
 });
 
 // POST /api/v1/auth/resend-verification   (logged in)
-router.post("/resend-verification", requireAuth, async (req, res) => {
+router.post("/resend-verification", emailLinkLimiter, requireAuth, async (req, res) => {
   const user = await prisma.user.findUnique({ where: { id: req.user!.userId } });
   if (!user) {
     return res.status(404).json({ error: "User not found" });
@@ -191,7 +192,7 @@ router.post("/resend-verification", requireAuth, async (req, res) => {
 
 // ───────────────────────── LOGIN ─────────────────────────
 // POST /api/v1/auth/login  { email, password, remember? }
-router.post("/login", async (req, res) => {
+router.post("/login", loginLimiter, async (req, res) => {
   const b = bodyOf(req);
   const email = str(b.email).toLowerCase();
   const password = b.password;
@@ -265,7 +266,7 @@ router.post("/login", async (req, res) => {
 
 // ───────────────────────── PASSWORD RESET ─────────────────────────
 // POST /api/v1/auth/forgot-password  { email }
-router.post("/forgot-password", async (req, res) => {
+router.post("/forgot-password", passwordLimiter, async (req, res) => {
   const email = str(bodyOf(req).email).toLowerCase();
   const genericReply = { message: "If that email is registered, a reset link has been sent" };
 
@@ -294,7 +295,7 @@ router.post("/forgot-password", async (req, res) => {
 });
 
 // POST /api/v1/auth/reset-password  { token, newPassword }
-router.post("/reset-password", async (req, res) => {
+router.post("/reset-password", passwordLimiter, async (req, res) => {
   const b = bodyOf(req);
   const token = str(b.token);
   const newPassword = b.newPassword;
@@ -375,7 +376,7 @@ router.patch("/me", requireAuth, async (req, res) => {
   return res.json({ user: publicUser(user) });
 });
 // POST /api/v1/auth/change-password  { currentPassword, newPassword }
-router.post("/change-password", requireAuth, async (req, res) => {
+router.post("/change-password", passwordLimiter, requireAuth, async (req, res) => {
   if (req.user!.impersonatorId) {
     return res.status(403).json({ error: "You can't change this person's password while logged in as them.", code: "IMPERSONATING" });
   }
@@ -424,7 +425,7 @@ router.post("/logout-all", requireAuth, async (req, res) => {
 
 // ───────────────────────── TEAM INVITES ─────────────────────────
 // GET /api/v1/auth/invite/:token   (public — shows who invited you)
-router.get("/invite/:token", async (req, res) => {
+router.get("/invite/:token", inviteLimiter, async (req, res) => {
   const invite = await prisma.invitation.findUnique({
     where: { token: hashToken(String(req.params.token)) },
     include: { organization: { select: { name: true, logoUrl: true } } },
@@ -441,7 +442,7 @@ router.get("/invite/:token", async (req, res) => {
 });
 
 // POST /api/v1/auth/accept-invite  { token, name, password, phone? }
-router.post("/accept-invite", async (req, res) => {
+router.post("/accept-invite", inviteLimiter, async (req, res) => {
   const b = bodyOf(req);
   const token = str(b.token);
   const name = str(b.name);

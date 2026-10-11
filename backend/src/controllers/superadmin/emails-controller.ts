@@ -8,6 +8,7 @@ import { logActivity } from "../../utils/activity";
 import { getSetting, setSetting } from "../../utils/settings";
 import { TEMPLATE_DEFINITIONS, TEMPLATE_TYPES, definitionOf, sampleVars } from "../../utils/emailTemplates";
 import { mailStatus, renderEmail, sendMail, verifyMailTransport, type SmtpSettings } from "../../utils/mail";
+import { encryptSecret } from "../../utils/secrets";
 
 function typeParam(req: Request): EmailTemplateType | null {
   const t = String(req.params.type ?? "").toUpperCase();
@@ -124,7 +125,8 @@ export async function saveSmtp(req: Request, res: Response) {
   const parsed = smtpSchema.safeParse(req.body ?? {});
   if (!parsed.success) return validationFail(res, parsed.error);
   const current = await getSetting<Partial<SmtpSettings> | null>("smtp", null);
-  const pass = parsed.data.pass || current?.pass || "";
+  // A new password is encrypted before saving; an empty field keeps the one already saved (already encrypted).
+  const pass = parsed.data.pass ? encryptSecret(parsed.data.pass) : current?.pass || "";
   if (!pass) return fail(res, 400, "VALIDATION_ERROR", "Enter the password", { fieldErrors: { pass: "Enter the password (an app password for Gmail)" } });
   await setSetting("smtp", { host: parsed.data.host, port: parsed.data.port, user: parsed.data.user, pass, from: parsed.data.from ?? "" });
   await logActivity(req, { action: "email.smtp.update", metadata: { host: parsed.data.host, user: parsed.data.user } });
