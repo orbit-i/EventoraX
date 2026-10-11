@@ -330,4 +330,4 @@ Home page sections moved from `src/sections/` to `src/components/home/`. Spec re
 Hostinger deployment (the backend already serves the built site, see `web/spa.ts`; set
 `NODE_ENV=production`, `FRONTEND_URL`, optionally `ENCRYPTION_KEY`), https, transactional email service, scheduled backups,
 final knip, then move the repo to its own GitHub repository. Placeholders to swap before launch: `docs/handover.md`.
-**Docs:** finish `docs/technical/` (progress checklist in `docs/technical/README.md`).
+**Docs** are complete (product guide, handover, technical, manual tests): keep them in step with code changes.

@@ -23,8 +23,8 @@ Conventions that every change must follow (envelope, validation, logging, page t
 
 ## Progress checklist
 
-This documentation is written over several sessions. Tick a box when the chapter is complete and checked against the
-code. The next session continues with the first unticked box.
+All chapters were written on 2026-10-11 and checked against the code at commit time. If you add a chapter later, add a
+box here, and tick it only once every name in it has been verified against the code.
 
 - [x] 1. Architecture
 - [x] 2. Repository layout
@@ -35,7 +35,7 @@ code. The next session continues with the first unticked box.
 - [x] 7. Frontend core
 - [x] 8. Frontend components
 - [x] 9. Frontend pages
-- [ ] 10. Operations
+- [x] 10. Operations
 
 **How to continue:** read the files of the next chapter's area (paths are listed in chapter 2), write the chapter in the
 same style (tables of files with their exports and purpose, then the flows that connect them), verify every name
