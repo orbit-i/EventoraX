@@ -30,7 +30,7 @@ code. The next session continues with the first unticked box.
 - [x] 2. Repository layout
 - [x] 3. Backend foundation
 - [x] 4. Backend API
-- [ ] 5. Services, PDFs and jobs
+- [x] 5. Services, PDFs and jobs
 - [ ] 6. Database
 - [ ] 7. Frontend core
 - [ ] 8. Frontend components

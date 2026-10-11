@@ -144,7 +144,7 @@ with a nested ticket (`ticketFor()`: ticket number, QR code, type = category lab
 ## Certificates and verification (`routes/certificates-routes.ts`, `controllers/certificates-controller.ts`)
 
 Types `PARTICIPATION | ACHIEVEMENT | APPRECIATION | SPEAKER | ORGANIZER`. Participation and Achievement need ATTENDED.
-Unique `(registrationId, type)` → 409 `ALREADY_ISSUED`. Template = request → event's `certificateTemplateKey` → platform
+Unique `(registrationId, type)` → 409 `ALREADY_ISSUED`. Template = request → the event's `certTemplateId` → platform
 default (`certificates.defaultTemplate`).
 
 | Endpoint | Who | What |
