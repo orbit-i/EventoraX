@@ -111,7 +111,7 @@ export function WebsiteContentPanel({ onDirtyChange }: { onDirtyChange: (dirty: 
     <form onSubmit={handleSubmit(onSubmit)} noValidate className="space-y-6">
       {formError && <FormError message={formError} />}
 
-      <FormSection title="Live numbers" description="The home page can show how many events, certificates and organizations EventoraX has — real numbers from the database.">
+      <FormSection title="Live numbers" description="The home page can show how many events, certificates and organizations EventoraX has, using real numbers.">
         <FullWidth>
           <Controller
             control={control}
@@ -184,7 +184,7 @@ export function WebsiteContentPanel({ onDirtyChange }: { onDirtyChange: (dirty: 
                       control={control}
                       name={`logos.${i}.logoUrl`}
                       render={({ field }) => (
-                        <ImageUploadField label="Logo (optional — the name is shown without one)" kind="logo" uploadUrl="/superadmin/uploads?kind=logo" value={field.value || null} onChange={(u) => field.onChange(u ?? "")} helper="A transparent PNG works best" />
+                        <ImageUploadField label="Logo (optional, the name is shown without one)" kind="logo" uploadUrl="/superadmin/uploads?kind=logo" value={field.value || null} onChange={(u) => field.onChange(u ?? "")} helper="A transparent PNG works best" />
                       )}
                     />
                   </div>

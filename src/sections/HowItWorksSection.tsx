@@ -14,7 +14,7 @@ const steps = [
   {
     icon: Users,
     title: '2. Manage',
-    desc: 'Track registrations, send reminders, and manage attendance — all in one place.',
+    desc: 'Track registrations, send tickets and manage attendance in one place.',
   },
   {
     icon: Award,

@@ -60,7 +60,7 @@ export async function mailStatus(): Promise<{ mode: "settings" | "env" | "consol
 /** Logs in to the SMTP server without sending anything. */
 export async function verifyMailTransport(): Promise<{ ok: boolean; message: string }> {
   const t = await getTransporter();
-  if (!t) return { ok: false, message: "No SMTP server configured — emails are printed to the backend terminal." };
+  if (!t) return { ok: false, message: "No SMTP server configured. Emails are printed to the backend terminal." };
   try {
     await t.transporter.verify();
     return { ok: true, message: `Connected to the SMTP server (${t.source === "settings" ? "System settings" : ".env"}).` };
@@ -150,7 +150,7 @@ export async function sendAttendeeMessage(to: string, name: string, orgName: str
   return sendMail(
     to,
     subject,
-    await layout(`<h2 style="margin-top:0">${escapeHtml(subject)}</h2><p>Hi ${escapeHtml(name)},</p><p>${body}</p><p style="color:#64748b">— ${escapeHtml(orgName)}</p>`)
+    await layout(`<h2 style="margin-top:0">${escapeHtml(subject)}</h2><p>Hi ${escapeHtml(name)},</p><p>${body}</p><p style="color:#64748b">${escapeHtml(orgName)}</p>`)
   );
 }
 

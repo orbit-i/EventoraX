@@ -30,7 +30,7 @@ const milestones = [
   { year: 'Idea', event: 'ORBIT-I sees societies and universities juggling Google Forms, Excel and hand-made certificates' },
   { year: 'Plan', event: 'EventoraX is designed as one platform: events, QR tickets, certificates, ID cards and analytics' },
   { year: 'Build', event: 'A team of seven builds the public website, organization dashboard and superadmin panel' },
-  { year: 'Launch', event: 'EventoraX opens for Pakistani universities, companies and NGOs — with PKR pricing' },
+  { year: 'Launch', event: 'EventoraX opens for Pakistani universities, companies and NGOs, with PKR pricing' },
 ];
 
 export default function About() {
@@ -73,7 +73,7 @@ export default function About() {
               </div>
               <h3 className="font-heading text-2xl md:text-3xl font-bold mb-4 text-[#0f172a]">Our Mission</h3>
               <p className="font-body text-base leading-relaxed text-[#475569]">
-                To empower every event organizer — from universities to NGOs to corporations — with tools that make event management simple, professional, and delightful. We believe technology should work for people, not the other way around.
+                To give every event organizer, from universities to NGOs to companies, tools that make event management simple, professional, and delightful. We believe technology should work for people, not the other way around.
               </p>
             </div>
             <div className="scroll-reveal">
@@ -82,7 +82,7 @@ export default function About() {
               </div>
               <h3 className="font-heading text-2xl md:text-3xl font-bold mb-4 text-[#0f172a]">Our Vision</h3>
               <p className="font-body text-base leading-relaxed text-[#475569]">
-                To become the world&apos;s most trusted event management platform — where every moment becomes a memory, and every organizer feels empowered to create extraordinary experiences.
+                To become the world&apos;s most trusted event management platform, where every moment becomes a memory, and every organizer feels empowered to create extraordinary experiences.
               </p>
             </div>
           </div>
@@ -144,7 +144,7 @@ export default function About() {
             Meet the Team
           </h2>
           <p className="font-body text-base text-center mb-12 text-[#475569]">
-            Passionate builders creating impact — one event at a time.
+            The people building EventoraX.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6">
             {[

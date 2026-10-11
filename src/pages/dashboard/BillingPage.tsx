@@ -49,7 +49,7 @@ function CurrentPlan({ billing }: { billing: BillingOverview }) {
           {expired
             ? `Expired on ${formatDate(subscriptionEndsAt)}. Renew to unlock events, registrations and everything else.`
             : status === "trial"
-              ? `Free trial — ends ${formatDate(subscriptionEndsAt)} (${formatTimeLeft(msLeft)} left)`
+              ? `Free trial ends ${formatDate(subscriptionEndsAt)} (${formatTimeLeft(msLeft)} left)`
               : `Paid until ${formatDate(subscriptionEndsAt)} (${formatTimeLeft(msLeft)} left)`}
         </p>
       </div>
@@ -72,7 +72,7 @@ function PendingPayment({ payment, onCancelled }: { payment: Payment; onCancelle
   async function cancel() {
     const ok = await confirm({
       title: "Cancel this payment?",
-      description: "Use this if you entered the wrong details. You can submit the payment again straight away. Any money you sent is not affected — contact support if you need a refund.",
+      description: "Use this if you entered the wrong details. You can submit the payment again straight away. Any money you sent is not affected. Contact support if you need a refund.",
       confirmLabel: "Cancel payment",
       cancelLabel: "Keep it",
       tone: "danger",
@@ -237,7 +237,7 @@ export default function BillingPage() {
     <>
       <PageHeader
         title="Billing & plan"
-        description="Your subscription, how to pay, and your payment history. All prices are in PKR per year."
+        description="Your plan, payment history and renewal."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Billing" }]}
       />
 

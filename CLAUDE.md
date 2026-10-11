@@ -225,6 +225,14 @@ types/              API shapes (auth, event, registration, speaker, sponsor, ses
 - **Form page:** RHF + zodResolver; fields from `ui/form-fields`; `FormSection`s; `applyServerErrors(err, setError)`;
   `useUnsavedChanges(isDirty && goTo === null)`; after saving, `setGoTo(url)` and navigate in a `useEffect`
   (so the unsaved guard doesn't fire); a toast on success. `FormFooter` sits at the end of the form (not sticky).
+- **Page descriptions** (the line under the PageHeader title): list and overview pages only, never on form pages
+  (New / Edit, the title says it). Exactly one plain sentence, about 60 characters max, starting with a verb or "Your…",
+  saying what you do on the page, e.g. "Issue, email and revoke certificates for an event." No dashes, no parentheses,
+  no lists of more than three things, no filler ("everything", "at a glance", "here to help"). Detail pages show facts instead
+  (date, slug).
+- **Copy style everywhere** (toasts, dialogs, empty states, emails, API errors): short plain sentences. Don't use the long
+  dash "—" to join clauses: use a period, a comma or a colon; "·" separates items in labels, "|" in browser-tab titles.
+  The lone "—" is fine only as the placeholder for an empty value in tables; "–" is correct in ranges ("6:00 pm – 9:30 pm").
 - **Destructive actions:** `await confirm({ title, description, confirmLabel, tone: "danger" })`.
 - Viewers never see write actions. Archived events are read-only.
 - **Tabbed settings-style pages:** keep every tab mounted (hidden), each tab reports `onDirtyChange`, the page owns ONE

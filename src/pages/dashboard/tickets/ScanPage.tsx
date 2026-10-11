@@ -96,7 +96,7 @@ function ResultPanel({ outcome }: { outcome: Outcome | null }) {
           <p className="truncate text-2xl font-bold">{outcome.data.name}</p>
           <p className="text-sm opacity-90">
             at {formatTime(outcome.data.usedAt)}
-            {outcome.data.usedBy ? ` by ${outcome.data.usedBy}` : ""} — don't let the same ticket in twice
+            {outcome.data.usedBy ? ` by ${outcome.data.usedBy}` : ""}. Don't let the same ticket in twice.
           </p>
         </div>
       </div>
@@ -242,7 +242,7 @@ export default function ScanPage() {
     <>
       <PageHeader
         title="Check-in scanner"
-        description="Scan tickets at the entrance. Works on phones and laptops with a camera."
+        description="Scan tickets at the entrance to check people in."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Tickets", to: `/dashboard/tickets${eventId ? `?eventId=${eventId}` : ""}` }, { label: "Scanner" }]}
       />
       <EventPicker value={eventId} onChange={setEventId} className="mb-6" />

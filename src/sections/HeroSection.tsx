@@ -56,7 +56,7 @@ export default function HeroSection() {
         <p
           className="font-body font-normal mt-6 max-w-[480px] mx-auto text-[#475569] text-xl leading-relaxed"
         >
-          An event management platform for modern organizers. Built by ORBIT-I — turning ideas into impact.
+          An event management platform for modern organizers. Built by ORBIT-I.
         </p>
 
               {/* CTA */}

@@ -127,7 +127,7 @@ export default function CertificatesPage() {
     try {
       const res = await api.post<{ sending: number; skipped: number }>("/certificates/email", { ids: [...selected] })
       toast.success(`Emailing ${plural(res.sending, "certificate")}`, {
-        description: res.skipped ? `${res.skipped} revoked skipped` : "They go out in the background — refresh in a moment to see them marked as sent.",
+        description: res.skipped ? `${res.skipped} revoked skipped` : "They go out in the background. Refresh in a moment to see them marked as sent.",
       })
       setSelected(new Set())
       setTimeout(refresh, 3000)
@@ -150,7 +150,7 @@ export default function CertificatesPage() {
     const url = `${window.location.origin}/verify/${c.verifyCode}`
     navigator.clipboard.writeText(url).then(
       () => toast.success("Verify link copied"),
-      () => toast.error("Couldn't copy — the link is " + url)
+      () => toast.error("Couldn't copy. The link is " + url)
     )
   }
 
@@ -222,7 +222,7 @@ export default function CertificatesPage() {
     <>
       <PageHeader
         title="Certificates"
-        description="Issue, email and verify certificates. Each one has a unique code and QR anyone can check."
+        description="Issue, email and revoke certificates for an event."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Certificates" }]}
         actions={
           eventId &&

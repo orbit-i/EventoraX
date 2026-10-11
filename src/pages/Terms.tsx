@@ -41,7 +41,7 @@ const sections: LegalSection[] = [
     body: (
       <>
         <p>
-          Everything your organization puts into EventoraX — events, attendee details, logos, signatures — stays yours. You give us permission to store and process it only to
+          Everything your organization puts into EventoraX (events, attendee details, logos, signatures) stays yours. You give us permission to store and process it only to
           run the service for you (for example to create tickets, certificates and ID cards and to send emails you trigger).
         </p>
         <p>
@@ -87,7 +87,7 @@ const sections: LegalSection[] = [
     title: 'Availability',
     body: (
       <p>
-        We work hard to keep EventoraX running, but we cannot promise it will never be interrupted — for example during announced maintenance. We are not responsible for losses
+        We work hard to keep EventoraX running, but we cannot promise it will never be interrupted, for example during announced maintenance. We are not responsible for losses
         caused by internet, payment-provider or email-provider problems outside our control.
       </p>
     ),

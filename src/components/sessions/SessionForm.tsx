@@ -147,7 +147,7 @@ export function SessionForm({ eventId, session }: { eventId: string; session?: S
             label="Speaker"
             options={speakerOptions}
             disabled={speakersQ.initialLoading}
-            helper={(speakersQ.data ?? []).length === 0 ? "This event has no speakers yet — add them on the Speakers page." : undefined}
+            helper={(speakersQ.data ?? []).length === 0 ? "This event has no speakers yet. Add them on the Speakers page." : undefined}
             {...register("speakerId")}
           />
         </FullWidth>

@@ -117,7 +117,7 @@ function DetailsDialog({
                 ["Issued", formatDateTime(c.issuedAt)],
                 ["Downloads", c.downloadCount.toLocaleString()],
                 ["Emailed", c.emailedAt ? formatDateTime(c.emailedAt) : "Not yet"],
-                ...(c.status === "REVOKED" ? [["Revoked", `${formatDateTime(c.revokedAt)} — ${c.revokeReason ?? ""}`]] : []),
+                ...(c.status === "REVOKED" ? [["Revoked", `${formatDateTime(c.revokedAt)}: ${c.revokeReason ?? ""}`]] : []),
               ].map(([k, v]) => (
                 <div key={String(k)} className="flex items-start justify-between gap-4 border-b border-[#f1f5f9] pb-2">
                   <dt className="text-[#64748b]">{k}</dt>
@@ -204,7 +204,7 @@ function BulkRevokeDialog({ open, onOpenChange, tenants, onDone }: { open: boole
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>Bulk revoke</DialogTitle>
-          <DialogDescription>Revoke every valid certificate of one event or one organization — e.g. after fraud. Each can still be restored one by one.</DialogDescription>
+          <DialogDescription>Revoke every valid certificate of one event or one organization, for example after fraud. Each can still be restored one by one.</DialogDescription>
         </DialogHeader>
         {error && <FormError message={error} />}
         <div className="flex gap-1 rounded-lg bg-[#f5f3ff] p-1" role="tablist">
@@ -225,7 +225,7 @@ function BulkRevokeDialog({ open, onOpenChange, tenants, onDone }: { open: boole
             placeholder={eventsQ.initialLoading ? "Loading…" : "Choose an event"}
             value={eventId}
             onChange={(e) => setEventId(e.target.value)}
-            options={(eventsQ.data ?? []).map((e) => ({ value: e.id, label: `${e.title} — ${e.organization.name} (${e.certificates})` }))}
+            options={(eventsQ.data ?? []).map((e) => ({ value: e.id, label: `${e.title} · ${e.organization.name} (${e.certificates})` }))}
           />
         ) : (
           <SelectField label="Organization" placeholder="Choose an organization" value={orgId} onChange={(e) => setOrgId(e.target.value)} options={tenants.map((t) => ({ value: t.id, label: t.name }))} />
@@ -342,7 +342,7 @@ export default function PlatformCertificatesPage() {
     <>
       <PageHeader
         title="Certificates"
-        description="Every certificate issued on EventoraX. Look one up by verify code, name or email."
+        description="Find, inspect and revoke any certificate."
         breadcrumbs={[{ label: "Superadmin", to: "/superadmin" }, { label: "Certificates" }]}
         actions={
           <Button variant="outline" onClick={() => setBulkOpen(true)}>

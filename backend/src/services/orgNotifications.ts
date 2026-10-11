@@ -33,7 +33,7 @@ export async function notifyNewRegistration(orgId: string, r: { name: string; em
   for (const p of people) {
     await sendNotice(
       p.email,
-      `New registration — ${r.eventTitle}`,
+      `New registration for ${r.eventTitle}`,
       "Someone just registered",
       `<p><strong>${escapeHtml(r.name)}</strong> (${escapeHtml(r.email)}) registered for <strong>${escapeHtml(r.eventTitle)}</strong> on your public event page. Their QR ticket was emailed to them.</p><p style="color:#64748b;font-size:13px">You can turn these emails off in Settings → Notifications.</p>`,
       { path: link, label: "See registrations" }
@@ -46,12 +46,12 @@ export async function notifyCertificatesSent(orgId: string, r: { sent: number; f
   if (r.sent + r.failed === 0 || !(await wants(orgId, "certificate"))) return;
   const people = await admins(orgId);
   const link = r.eventId ? `/dashboard/certificates?eventId=${r.eventId}` : "/dashboard/certificates";
-  const failedText = r.failed ? ` ${r.failed} could not be sent — open Certificates to retry.` : "";
+  const failedText = r.failed ? ` ${r.failed} could not be sent. Open Certificates to retry.` : "";
   await bell(orgId, people.map((p) => p.id), `${r.sent} certificate${r.sent === 1 ? "" : "s"} emailed`, `Certificates for ${r.eventTitle} were emailed to ${r.sent} ${r.sent === 1 ? "person" : "people"}.${failedText}`, link);
   for (const p of people) {
     await sendNotice(
       p.email,
-      `Certificates sent — ${r.eventTitle}`,
+      `Certificates sent for ${r.eventTitle}`,
       "Certificates sent",
       `<p>Certificates for <strong>${escapeHtml(r.eventTitle)}</strong> were emailed to <strong>${r.sent}</strong> ${r.sent === 1 ? "person" : "people"}.${escapeHtml(failedText)}</p><p style="color:#64748b;font-size:13px">You can turn these emails off in Settings → Notifications.</p>`,
       { path: link, label: "Open certificates" }
@@ -74,7 +74,7 @@ export async function notifyAttendanceSummary(
   for (const p of people) {
     await sendNotice(
       p.email,
-      `Attendance summary — ${e.title}`,
+      `Attendance summary for ${e.title}`,
       `${escapeHtml(e.title)} has ended`,
       `<p>Here's how attendance went:</p><table style="border-collapse:collapse;background:#ffffff;border:1px solid #e9e4ff;border-radius:8px">${row("Registered", e.registered)}${row("Attended", `${e.attended} (${rate}%)`)}${row("Absent", e.absent)}${row("Not marked yet", e.notMarked)}</table>${
         e.notMarked ? "<p>Mark the remaining people as attended or absent so your analytics and certificates are complete.</p>" : ""

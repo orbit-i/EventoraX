@@ -22,7 +22,7 @@ export const IDCARD_FIELDS = [
   { key: "department", name: "Department" },
   { key: "rollNo", name: "Roll no." },
   { key: "email", name: "Email" },
-  { key: "qr", name: "QR code", description: "The ticket QR — scan it at the entrance to check in" },
+  { key: "qr", name: "QR code", description: "The ticket QR, scanned at the entrance to check in" },
 ] as const;
 export type IdCardField = (typeof IDCARD_FIELDS)[number]["key"];
 export const DEFAULT_IDCARD_FIELDS: IdCardField[] = ["category", "department", "rollNo", "qr"];
@@ -310,7 +310,7 @@ export async function renderIdCards(people: IdCardPerson[], event: IdCardEvent, 
     size: single ? [CARD_W, CARD_H] : "A4",
     margin: 0,
     autoFirstPage: false,
-    info: { Title: `ID cards — ${event.eventTitle}`, Author: event.orgName },
+    info: { Title: `ID cards: ${event.eventTitle}`, Author: event.orgName },
   });
   registerFonts(doc);
   const logo = options.showLogo ? await loadImage(event.logoUrl) : null;
@@ -328,7 +328,7 @@ export async function renderIdCards(people: IdCardPerson[], event: IdCardEvent, 
       if (i % perPage === 0) {
         doc.addPage();
         if (extra.sample) {
-          doc.font(FONTS.sans).fontSize(8).fillColor("#94a3b8").text("Preview — 9 cards fit on one A4 page. Cut along the marks.", 0, 16, { width: doc.page.width, align: "center" });
+          doc.font(FONTS.sans).fontSize(8).fillColor("#94a3b8").text("Preview: 9 cards fit on one A4 page. Cut along the marks.", 0, 16, { width: doc.page.width, align: "center" });
         }
       }
       const slot = i % perPage;

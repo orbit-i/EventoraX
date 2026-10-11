@@ -12,7 +12,6 @@ export default function NewRegistrationPage() {
     <div className="mx-auto max-w-4xl">
       <PageHeader
         title="Add attendee"
-        description="Organizers can add attendees even when public registration is closed."
         breadcrumbs={[
           { label: "Dashboard", to: "/dashboard" },
           { label: "Registrations", to: `/dashboard/registrations${eventId ? `?eventId=${eventId}` : ""}` },

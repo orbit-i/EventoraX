@@ -150,7 +150,7 @@ export function DesignPanel({
           <div className="grid gap-3 sm:grid-cols-2">
             <SwitchField
               label="Organization logo"
-              description={organization?.logoUrl ? "Printed at the top of the card." : "No logo yet — add one in Settings → Branding."}
+              description={organization?.logoUrl ? "Printed at the top of the card." : "No logo yet. Add one in Settings → Branding."}
               checked={design.logo}
               onCheckedChange={(logo) => onChange({ ...design, logo })}
             />
@@ -179,7 +179,7 @@ export function DesignPanel({
                 ))}
               </div>
               <span className="mt-1.5 block text-xs text-[#64748b]">
-                {design.layout === "sheet" ? "Normal printer — cut along the crop marks." : "For ID card printers (54 × 86 mm)."}
+                {design.layout === "sheet" ? "Normal printer. Cut along the crop marks." : "For ID card printers (54 × 86 mm)."}
               </span>
             </div>
           </div>

@@ -12,7 +12,7 @@ export default function Pricing() {
   const faqs = [
     {
       q: 'How does the free trial work?',
-      a: `Sign up and you get the full Pro plan free for ${trial}. No payment details are needed. When it ends, your data stays safe — you just can't create new things until you pay.`,
+      a: `Sign up and you get the full Pro plan free for ${trial}. No payment details are needed. When it ends, your data stays safe. You just can't create new things until you pay.`,
     },
     {
       q: 'How do I pay?',
@@ -20,7 +20,7 @@ export default function Pricing() {
     },
     {
       q: 'Is it monthly or yearly?',
-      a: 'Yearly. One payment covers 12 months. If you renew before your plan ends, the new year is added on top — you never lose days.',
+      a: 'Yearly. One payment covers 12 months. If you renew before your plan ends, the new year is added on top, so you never lose days.',
     },
     {
       q: 'Can I switch from Pro to Enterprise?',
@@ -32,7 +32,7 @@ export default function Pricing() {
     },
     {
       q: 'Can I cancel?',
-      a: 'There is nothing to cancel — plans don’t renew automatically. If you no longer need EventoraX, simply don’t pay for the next year. You can also delete your organization from Settings.',
+      a: 'There is nothing to cancel: plans don’t renew automatically. If you no longer need EventoraX, simply don’t pay for the next year. You can also delete your organization from Settings.',
     },
   ];
 

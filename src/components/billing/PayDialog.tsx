@@ -95,7 +95,7 @@ export function PayDialog({
             <SelectField
               label="Plan"
               required
-              options={billing.plans.map((p) => ({ value: p.id, label: `${p.name} — ${formatPKR(p.price)}/year` }))}
+              options={billing.plans.map((p) => ({ value: p.id, label: `${p.name} · ${formatPKR(p.price)}/year` }))}
               error={errors.planId?.message}
               {...register("planId")}
             />

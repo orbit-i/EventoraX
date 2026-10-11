@@ -129,7 +129,7 @@ export function ReorderList<T extends { id: string }>({
       </DndContext>
 
       <div className="sticky bottom-0 z-10 -mx-6 mt-6 flex items-center justify-between gap-3 border-t border-[#e9e4ff] bg-white/90 px-6 py-4 backdrop-blur">
-        <p className="text-xs text-[#94a3b8]">{dirty ? "Order changed — not saved yet" : "Drag items, or use the arrows, to change the order"}</p>
+        <p className="text-xs text-[#94a3b8]">{dirty ? "Order changed, not saved yet" : "Drag items, or use the arrows, to change the order"}</p>
         <div className="flex gap-2">
           <Button variant="outline" disabled={!dirty || saving} onClick={() => setOrder(baseline)}>
             <RotateCcw /> Reset

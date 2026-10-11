@@ -101,7 +101,7 @@ export function AccountBanners() {
               setTrialDismissed(true)
             }}
           >
-            You're on a <strong>free trial</strong> — <strong>{formatTimeLeft(msLeft)}</strong> left. Choose a plan to keep everything running.
+            You're on a <strong>free trial</strong> with <strong>{formatTimeLeft(msLeft)}</strong> left. Choose a plan to keep everything running.
           </Banner>
         )
       ) : (
@@ -123,7 +123,7 @@ export function AccountBanners() {
             </Button>
           }
         >
-          Please verify your email address (<strong>{user.email}</strong>) — check your inbox for the link.
+          Please verify your email address (<strong>{user.email}</strong>). Check your inbox for the link.
         </Banner>
       )}
     </>

@@ -97,7 +97,7 @@ export async function submitPayment(req: Request, res: Response) {
   if (notifyTo) {
     await sendMail(
       notifyTo,
-      `New payment to confirm — ${org.name}`,
+      `New payment to confirm from ${org.name}`,
       `<p><strong>${escapeHtml(org.name)}</strong> submitted a ${escapeHtml(payment.method)} payment of ${escapeHtml(
         `${plan.currency} ${String(plan.price)}`
       )} for the ${escapeHtml(plan.name)} plan.</p><p>Reference: ${escapeHtml(payment.referenceNo ?? "")}</p>`
@@ -113,7 +113,7 @@ export async function cancelPayment(req: Request, res: Response) {
   const id = String(req.params.id);
   const result = await db.payment.deleteMany({ where: { id, status: "PENDING" } });
   if (result.count === 0) {
-    return fail(res, 404, "NOT_FOUND", "No pending payment found — it may already have been confirmed");
+    return fail(res, 404, "NOT_FOUND", "No pending payment found. It may already have been confirmed.");
   }
   await logActivity(req, { action: "billing.payment.cancel", entityType: "Payment", entityId: id });
   return ok(res, { id, cancelled: true });

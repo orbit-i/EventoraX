@@ -94,8 +94,8 @@ export async function maintenanceOverview(_req: Request, res: Response) {
     health: {
       database: db,
       storage,
-      email: { ok: mail.mode !== "console", mode: mail.mode, host: mail.host, message: mail.mode === "console" ? "No SMTP server — emails are printed in the terminal" : `Sending through ${mail.host}` },
-      jobs: { ok: jobs.every((j) => !j.lastError), message: jobs.some((j) => j.lastError) ? "A background job failed — see below" : "All background jobs healthy" },
+      email: { ok: mail.mode !== "console", mode: mail.mode, host: mail.host, message: mail.mode === "console" ? "No SMTP server, emails are printed in the terminal" : `Sending through ${mail.host}` },
+      jobs: { ok: jobs.every((j) => !j.lastError), message: jobs.some((j) => j.lastError) ? "A background job failed, see below" : "All background jobs healthy" },
     },
     jobs,
     errors: { last24h: errors24h, total: errorsTotal },

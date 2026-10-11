@@ -389,7 +389,7 @@ export default function AnnouncementsPage() {
     <>
       <PageHeader
         title="Announcements"
-        description="Message every organization (or one plan) in their dashboard bell and by email — now or at a set time."
+        description="Send news to organizations by email or in the app."
         breadcrumbs={[{ label: "Superadmin", to: "/superadmin" }, { label: "Announcements" }]}
         actions={
           <Button onClick={() => (setEditing(null), setDialogOpen(true))}>

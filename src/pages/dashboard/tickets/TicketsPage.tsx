@@ -98,7 +98,7 @@ export default function TicketsPage() {
     try {
       const res = await api.post<{ sending: number }>("/tickets/email", body)
       toast.success(res.sending ? `Sending ${plural(res.sending, "ticket")}` : "Nothing to send", {
-        description: res.sending ? "Emails go out in the background — refresh in a moment to see them marked as sent." : undefined,
+        description: res.sending ? "Emails go out in the background. Refresh in a moment to see them marked as sent." : undefined,
       })
       setSelected(new Set())
       if (res.sending) setTimeout(refresh, 3000)
@@ -191,7 +191,7 @@ export default function TicketsPage() {
     <>
       <PageHeader
         title="Tickets & check-in"
-        description="Every registration gets a QR ticket. Scan it at the entrance to check people in."
+        description="QR tickets for every attendee and their check-ins."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Tickets" }]}
         actions={
           eventId && (

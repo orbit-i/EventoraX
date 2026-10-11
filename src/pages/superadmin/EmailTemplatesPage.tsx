@@ -385,7 +385,7 @@ function SmtpPanel({ onDirtyChange }: { onDirtyChange: (d: boolean) => void }) {
         <PasswordField
           label="Password"
           autoComplete="new-password"
-          placeholder={data.hasPassword ? "•••••••• (saved — leave empty to keep)" : ""}
+          placeholder={data.hasPassword ? "•••••••• (saved, leave empty to keep)" : ""}
           error={errors.pass?.message}
           {...register("pass")}
         />
@@ -432,7 +432,7 @@ export default function EmailTemplatesPage() {
     <>
       <PageHeader
         title="Email templates"
-        description="Edit the emails EventoraX sends, preview them and send yourself a test. Set the SMTP server they go through."
+        description="Edit system emails and the server that sends them."
         breadcrumbs={[{ label: "Superadmin", to: "/superadmin" }, { label: "Email templates" }]}
       />
       <SegmentedTabs

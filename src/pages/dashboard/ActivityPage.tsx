@@ -164,7 +164,7 @@ export default function ActivityPage() {
     <>
       <PageHeader
         title="Activity log"
-        description="Everything that happens in your workspace, newest first."
+        description="Who changed what in your organization, newest first."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Activity log" }]}
         actions={
           <Button variant="outline" onClick={exportCsv} disabled={exporting || badRange || (meta?.total ?? 0) === 0}>

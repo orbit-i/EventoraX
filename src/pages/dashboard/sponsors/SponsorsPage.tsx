@@ -99,7 +99,7 @@ export default function SponsorsPage() {
     <>
       <PageHeader
         title="Sponsors"
-        description="Organizations supporting your event, grouped by tier."
+        description="Sponsors of the selected event, grouped by tier."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Sponsors" }]}
         actions={
           eventId &&

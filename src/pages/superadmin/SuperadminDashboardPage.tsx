@@ -50,7 +50,7 @@ export default function SuperadminDashboardPage() {
   const header = (
     <PageHeader
       title="Platform overview"
-      description="Every organization on EventoraX at a glance."
+      description="Platform health, revenue and recent activity."
       actions={
         <>
           <Button variant="outline" onClick={reload} disabled={loading}>
@@ -153,7 +153,7 @@ export default function SuperadminDashboardPage() {
               )}
               {a!.expiringSoon.map((o) => (
                 <AlertRow key={o.id} tone="amber" icon={Clock} to={`/superadmin/tenants/${o.id}`}>
-                  <strong>{o.name}</strong> — {o.status === "trial" ? "trial" : "plan"} ends {formatDate(o.subscriptionEndsAt)}
+                  <strong>{o.name}</strong>: {o.status === "trial" ? "trial" : "plan"} ends {formatDate(o.subscriptionEndsAt)}
                 </AlertRow>
               ))}
               {a!.recentlyExpired.map((o) => (

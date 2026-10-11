@@ -60,7 +60,7 @@ function downloadIcs(e: PublicEvent) {
 async function share(e: PublicEvent) {
   const url = window.location.href
   try {
-    if (navigator.share) await navigator.share({ title: e.title, text: `${e.title} — ${e.organization.name}`, url })
+    if (navigator.share) await navigator.share({ title: e.title, text: `${e.title} by ${e.organization.name}`, url })
     else {
       await navigator.clipboard.writeText(url)
       toast.success("Link copied")
@@ -86,7 +86,7 @@ type Values = z.infer<typeof schema>
 const CLOSED_TEXT = {
   FULL: { title: "This event is full", text: "All seats have been taken. Contact the organizer if you'd like to join a waiting list." },
   CLOSED: { title: "Registration is closed", text: "The organizer isn't accepting new registrations right now." },
-  ENDED: { title: "This event has ended", text: "Thanks for your interest — follow the organizer for their next events." },
+  ENDED: { title: "This event has ended", text: "Thanks for your interest. Follow the organizer for their next events." },
   UNAVAILABLE: { title: "Registration paused", text: "Registration is temporarily unavailable. Please contact the organizer." },
 }
 
@@ -209,7 +209,7 @@ export default function EventPage() {
       .get<PublicEvent>(`/public/events/${id}`, { auth: false, signal: controller.signal })
       .then((e) => {
         setEvent(e)
-        document.title = `${e.title} — ${e.organization.name}`
+        document.title = `${e.title} | ${e.organization.name}`
       })
       .catch((err) => {
         if (controller.signal.aborted) return
@@ -264,7 +264,7 @@ export default function EventPage() {
             </span>
             <span className="inline-flex items-center gap-2">
               {event.mode === "ONLINE" ? <Monitor className="h-4 w-4" /> : <MapPin className="h-4 w-4" />}
-              {event.mode === "ONLINE" ? "Online — the link is on your ticket" : `${MODE_LABEL[event.mode]}${event.location ? ` · ${event.location}` : ""}`}
+              {event.mode === "ONLINE" ? "Online, the link is on your ticket" : `${MODE_LABEL[event.mode]}${event.location ? ` · ${event.location}` : ""}`}
             </span>
             {event.registration.seatsLeft !== null && event.registration.open && (
               <span className="inline-flex items-center gap-2">

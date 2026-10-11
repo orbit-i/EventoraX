@@ -117,7 +117,7 @@ export default function SpeakersPage() {
     <>
       <PageHeader
         title="Speakers"
-        description="The people speaking at your event. Public speakers appear on the event page."
+        description="People speaking at the selected event."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Speakers" }]}
         actions={
           eventId &&

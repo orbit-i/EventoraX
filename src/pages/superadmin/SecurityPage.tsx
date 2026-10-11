@@ -367,7 +367,7 @@ export default function SecurityPage() {
     <>
       <PageHeader
         title="Security & activity"
-        description="Everything that happens on EventoraX: who did what, from which IP, failed logins and suspicious activity."
+        description="Activity, login attempts and suspicious access."
         breadcrumbs={[{ label: "Superadmin", to: "/superadmin" }, { label: "Security & activity" }]}
       />
       <StatsRow

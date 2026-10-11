@@ -134,14 +134,14 @@ const ENDPOINTS: Endpoint[] = [
 ];
 
 const ERRORS: [string, string, string][] = [
-  ['400', 'VALIDATION_ERROR', 'A field is missing or wrong — see error.fieldErrors'],
+  ['400', 'VALIDATION_ERROR', 'A field is missing or wrong, see error.fieldErrors'],
   ['401', 'NO_TOKEN / BAD_TOKEN / TOKEN_EXPIRED', 'Missing, wrong, revoked or expired token'],
   ['402', 'ORG_EXPIRED', "The organization's plan has expired"],
   ['403', 'PLAN_REQUIRED / ORG_SUSPENDED', 'The plan has no API access, or the organization is suspended'],
   ['404', 'NOT_FOUND', "It doesn't exist (or belongs to another organization)"],
   ['409', 'DUPLICATE / EVENT_FULL / EVENT_ARCHIVED / WRONG_EVENT', 'The request conflicts with the current state'],
   ['429', 'RATE_LIMITED', 'More than 120 requests in a minute'],
-  ['503', 'MAINTENANCE', 'EventoraX is down for maintenance — try again later'],
+  ['503', 'MAINTENANCE', 'EventoraX is down for maintenance, try again later'],
 ];
 
 const METHOD_COLOR = { GET: 'bg-emerald-100 text-emerald-800', POST: 'bg-blue-100 text-blue-800', PATCH: 'bg-amber-100 text-amber-800' };
@@ -244,7 +244,7 @@ curl ${BASE}/events \\
                     <ul className="mt-3 space-y-1 font-body text-sm">
                       {e.params.map(([k, v]) => (
                         <li key={k}>
-                          <code className="text-[#7c3aed]">{k}</code> <span className="text-[#64748b]">— {v}</span>
+                          <code className="text-[#7c3aed]">{k}</code><span className="text-[#64748b]">: {v}</span>
                         </li>
                       ))}
                     </ul>

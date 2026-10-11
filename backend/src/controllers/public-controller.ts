@@ -196,7 +196,7 @@ export async function publicRegister(req: Request, res: Response) {
     });
   } catch (err) {
     if (isUniqueViolation(err)) {
-      return fail(res, 409, "ALREADY_REGISTERED", "This email is already registered for this event — check your inbox for your ticket.", {
+      return fail(res, 409, "ALREADY_REGISTERED", "This email is already registered for this event. Check your inbox for your ticket.", {
         fieldErrors: { email: "Already registered for this event" },
       });
     }

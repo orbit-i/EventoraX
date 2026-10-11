@@ -101,7 +101,7 @@ export async function inviteMember(req: Request, res: Response) {
   });
   if (pending && !pending.acceptedAt && pending.expiresAt > new Date()) {
     return fail(res, 409, "INVITE_PENDING", "An invite is already pending for this email", {
-      fieldErrors: { email: "An invite is already pending for this email — resend it from the list instead" },
+      fieldErrors: { email: "An invite is already pending for this email. Resend it from the list instead." },
     });
   }
 

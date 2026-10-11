@@ -66,7 +66,7 @@ async function seedSuperAdmin() {
   const password = process.env.SEED_SUPERADMIN_PASSWORD;
 
   if (!email || !password) {
-    console.warn("⚠ SEED_SUPERADMIN_EMAIL / SEED_SUPERADMIN_PASSWORD not set — skipping superadmin");
+    console.warn("⚠ SEED_SUPERADMIN_EMAIL / SEED_SUPERADMIN_PASSWORD not set, skipping superadmin");
     return;
   }
 

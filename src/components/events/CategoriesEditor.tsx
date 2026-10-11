@@ -109,7 +109,7 @@ export function CategoriesEditor(
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
         {labels.length === 0 && (
-          <p className="text-sm text-[#94a3b8]">No categories yet — everyone will be "General".</p>
+          <p className="text-sm text-[#94a3b8]">No categories yet. Everyone will be "General".</p>
         )}
         {(props.mode === "live" ? props.categories : props.value.map((label) => ({ id: label, label, eventId: "" } as EventCategory))).map(
           (c) =>

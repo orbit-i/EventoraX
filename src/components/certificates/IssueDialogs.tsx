@@ -208,7 +208,7 @@ export function BulkIssueDialog({
       if (res.issued === 0) toast.info(res.message ?? "No new certificates were needed.")
       else
         toast.success(`${plural(res.issued, "certificate")} issued`, {
-          description: [res.failed ? `${res.failed} failed — try again` : null, res.emailing ? `Emailing ${plural(res.emailing, "attendee")} in the background` : null]
+          description: [res.failed ? `${res.failed} failed, try again` : null, res.emailing ? `Emailing ${plural(res.emailing, "attendee")} in the background` : null]
             .filter(Boolean)
             .join(" · "),
         })

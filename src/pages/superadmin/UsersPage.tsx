@@ -297,7 +297,7 @@ export default function UsersPage() {
     <>
       <PageHeader
         title="Users"
-        description="Every account on EventoraX. Disable people, reset passwords or end their sessions."
+        description="All accounts on the platform and their access."
         breadcrumbs={[{ label: "Superadmin", to: "/superadmin" }, { label: "Users" }]}
         actions={
           <Button variant="outline" onClick={() => void exportCsv()} disabled={exporting}>

@@ -44,7 +44,7 @@ export function EventPicker({
       <CalendarDays className="h-5 w-5 shrink-0 text-[#7c3aed]" />
       <Select value={value || undefined} onValueChange={onChange}>
         <SelectTrigger className="h-11 w-full max-w-md bg-white">
-          <SelectValue placeholder={events.length ? "Choose an event…" : "No events yet — create one first"} />
+          <SelectValue placeholder={events.length ? "Choose an event…" : "No events yet. Create one first."} />
         </SelectTrigger>
         <SelectContent>
           {events.map((event) => (

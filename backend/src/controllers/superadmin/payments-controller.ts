@@ -185,7 +185,7 @@ export async function rejectPayment(req: Request, res: Response) {
   if (parsed.data.notify) {
     void notifyOrg(
       payment.organizationId,
-      "Payment could not be confirmed — EventoraX",
+      "Your EventoraX payment could not be confirmed",
       "We couldn't confirm your payment",
       `<p>Your ${escapeHtml(METHOD_LABEL[payment.method] ?? payment.method)} payment (reference <strong>${escapeHtml(payment.referenceNo ?? "—")}</strong>) could not be confirmed.</p><p>Reason: ${escapeHtml(
         parsed.data.note

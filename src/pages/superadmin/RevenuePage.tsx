@@ -121,7 +121,7 @@ function Outstanding({ data, loading }: { data: RevenueOverview | null; loading:
     return <EmptyState icon={CheckCircle2} title="Nothing outstanding" description="No organization has run out or will run out in the next 14 days without a payment on the way." />
   }
   return (
-    <Panel title="Outstanding" description="Expired, or ending within 14 days — and no payment submitted yet. Reach out before they lose access.">
+    <Panel title="Outstanding" description="Expired or ending within 14 days, with no payment submitted. Reach out before they lose access.">
       <ul className="divide-y divide-[#f1f5f9]">
         {rows.map((o) => {
           const ended = new Date(o.subscriptionEndsAt).getTime() < Date.now()
@@ -240,7 +240,7 @@ export default function RevenuePage() {
     <>
       <PageHeader
         title="Revenue & payments"
-        description="Confirm JazzCash, Easypaisa and bank transfers, and see what the platform earns."
+        description="Confirm payments and track platform revenue."
         breadcrumbs={[{ label: "Superadmin", to: "/superadmin" }, { label: "Revenue & payments" }]}
         actions={
           <Button variant="outline" onClick={() => void exportCsv()} disabled={exporting}>

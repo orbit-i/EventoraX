@@ -63,7 +63,7 @@ export function PaymentReviewDialog({
     setError(null)
     try {
       await api.post(`/superadmin/payments/${payment.id}/${action}`, { note: note.trim() || undefined, notify })
-      toast.success(action === "confirm" ? `Payment confirmed — ${org.name} is active until ${formatDate(newEnd)}` : "Payment rejected", {
+      toast.success(action === "confirm" ? `Payment confirmed. ${org.name} is active until ${formatDate(newEnd)}.` : "Payment rejected", {
         description: notify ? "The organization's admins were emailed." : undefined,
       })
       onOpenChange(false)

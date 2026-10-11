@@ -41,7 +41,7 @@ export default function ReorderSpeakersPage() {
     <div className="mx-auto max-w-3xl">
       <PageHeader
         title="Reorder speakers"
-        description="This is the order speakers appear on the public event page."
+        description="Set the order speakers appear on the event page."
         breadcrumbs={[
           { label: "Dashboard", to: "/dashboard" },
           { label: "Speakers", to: backTo },

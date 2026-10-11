@@ -77,7 +77,7 @@ function CreateTokenDialog({ open, onOpenChange, onCreated }: { open: boolean; o
         <DialogHeader>
           <DialogTitle>{token ? "Copy your token now" : "Create an API token"}</DialogTitle>
           <DialogDescription>
-            {token ? "For your security it is shown only once. Store it like a password — anyone with it can use your organization's API." : "Use one token per system, so you can revoke one without breaking the others."}
+            {token ? "For your security it is shown only once. Store it like a password: anyone with it can use your organization's API." : "Use one token per system, so you can revoke one without breaking the others."}
           </DialogDescription>
         </DialogHeader>
         {token ? (
@@ -139,7 +139,7 @@ export default function ApiPage() {
   async function revoke(t: ApiTokenRow) {
     const ok = await confirm({
       title: `Revoke “${t.name}”?`,
-      description: "Any system using this token stops working immediately. This can't be undone — you'd create a new token instead.",
+      description: "Any system using this token stops working immediately. This can't be undone. Create a new token instead.",
       confirmLabel: "Revoke token",
       tone: "danger",
     })
@@ -156,7 +156,7 @@ export default function ApiPage() {
   const header = (
     <PageHeader
       title="API"
-      description="Connect your own systems (university portal, website, apps) to EventoraX with API tokens."
+      description="Connect your own systems with API tokens."
       breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "API" }]}
       actions={
         <>

@@ -115,7 +115,7 @@ async function main() {
   }
 
   const pro = await prisma.plan.findUnique({ where: { name: "Pro" } });
-  if (!pro) throw new Error('Plan "Pro" not found — run "npx prisma db seed" first.');
+  if (!pro) throw new Error('Plan "Pro" not found. Run "npx prisma db seed" first.');
 
   await wipe();
   const passwordHash = await bcrypt.hash(DEMO_PASSWORD, 10);
@@ -274,7 +274,7 @@ async function main() {
       title: "Data Science Workshop: Python for Analytics",
       organizer: "Data Science Club",
       topic: "pandas, visualisation and a first ML model",
-      description: "A full-day, hands-on workshop. Laptops required — we'll share the setup guide a week before.",
+      description: "A full-day, hands-on workshop. Laptops required. We'll share the setup guide a week before.",
       mode: "OFFLINE",
       status: "COMPLETED",
       start: pkt(-74, 10),
@@ -401,7 +401,7 @@ async function main() {
       title: "Winter Hackathon 2026",
       organizer: "Computer Society",
       topic: "36 hours, teams of 3–4, real problems from local NGOs",
-      description: "Draft — dates and prizes to be confirmed with sponsors.",
+      description: "Draft. Dates and prizes to be confirmed with sponsors.",
       mode: "OFFLINE",
       status: "DRAFT",
       start: pkt(60, 9),

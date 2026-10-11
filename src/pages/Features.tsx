@@ -14,7 +14,7 @@ const featureGroups = [
   {
     title: 'Event Management',
     icon: Calendar,
-    desc: 'Plan and run events of any size — online, in person or hybrid.',
+    desc: 'Plan and run events of any size, online, in person or hybrid.',
     features: [
       'Unlimited events with dates, venue or meeting link',
       'Capacity limits and registration open / closed',
@@ -27,7 +27,7 @@ const featureGroups = [
   {
     title: 'Attendee Registration',
     icon: ClipboardList,
-    desc: 'Every attendee in one list — added by you or imported.',
+    desc: 'Every attendee in one list, added by you or imported.',
     features: [
       'Add attendees one by one',
       'CSV import with preview, duplicate checks and dry run',
@@ -58,7 +58,7 @@ const featureGroups = [
       'Ticket created automatically for every attendee',
       'Printable PDF tickets, emailed with one click',
       'Camera scanner on any phone or laptop',
-      'First scan wins — no double entry',
+      'First scan wins, so no double entry',
       'Check-in marks the attendee as attended',
       'Download all tickets as a ZIP',
     ],
@@ -105,7 +105,7 @@ const featureGroups = [
   {
     title: 'Teams & Multi-Tenancy',
     icon: Layers,
-    desc: 'One platform, many organizations — each fully separate.',
+    desc: 'One platform, many organizations, each fully separate.',
     features: [
       'Each organization sees only its own data',
       'Admin, Manager and read-only Viewer roles',
@@ -155,7 +155,7 @@ export default function Features() {
             Everything you need
           </h1>
           <p className="font-body text-lg md:text-xl max-w-2xl mx-auto text-[#64748b] leading-relaxed">
-            A complete toolkit for modern event organizers — from planning to post-event follow-up.
+            A complete toolkit for event organizers, from planning to certificates.
           </p>
         </div>
       </section>

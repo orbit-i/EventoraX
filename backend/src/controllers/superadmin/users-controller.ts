@@ -112,7 +112,7 @@ export async function getUser(req: Request, res: Response) {
 
 /** Superadmins can't lock themselves (or another superadmin) out from here. */
 function guard(req: Request, res: Response, user: { id: string; role: string }) {
-  if (user.id === req.user!.userId) return fail(res, 400, "SELF", "You can't do this to your own account here — use your account settings.");
+  if (user.id === req.user!.userId) return fail(res, 400, "SELF", "You can't do this to your own account here. Use your account settings.");
   if (user.role === "superAdmin") return fail(res, 403, "PROTECTED", "Other superadmin accounts can't be changed from this page.");
   return null;
 }

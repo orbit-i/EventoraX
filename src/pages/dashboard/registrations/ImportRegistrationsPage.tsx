@@ -301,7 +301,7 @@ export default function ImportRegistrationsPage() {
     <div className="mx-auto max-w-5xl">
       <PageHeader
         title="Import attendees"
-        description="Upload a CSV file, match its columns, review, then import. Every attendee gets a ticket automatically."
+        description="Upload a CSV file, check it, then import."
         breadcrumbs={[
           { label: "Dashboard", to: "/dashboard" },
           { label: "Registrations", to: `/dashboard/registrations${eventQuery}` },
@@ -550,7 +550,7 @@ export default function ImportRegistrationsPage() {
                   {report.nameWarnings.length > 0 && (
                     <Panel title="Possible duplicate people (imported, just flagged)" icon={Info} tone="info">
                       <p className="mb-3 text-sm text-[#64748b]">
-                        These names appear with different emails. Two different people can share a name, so they'll be imported — check them afterwards.
+                        These names appear with different emails. Two different people can share a name, so they'll be imported. Check them afterwards.
                       </p>
                       <ul className="max-h-48 space-y-1 overflow-auto text-sm">
                         {report.nameWarnings.slice(0, PREVIEW_LIMIT).map((w) => (

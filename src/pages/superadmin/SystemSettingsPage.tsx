@@ -195,7 +195,7 @@ export default function SystemSettingsPage() {
   const header = (
     <PageHeader
       title="System settings"
-      description="Platform-wide settings: branding, contact details, payments, the sitewide banner, SEO and the public website."
+      description="Branding, contact details, payments and website content."
       breadcrumbs={[{ label: "Superadmin", to: "/superadmin" }, { label: "System settings" }]}
     />
   )

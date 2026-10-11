@@ -192,7 +192,7 @@ export default function PlansPage() {
     <>
       <PageHeader
         title="Plans & pricing"
-        description="What each plan costs and includes. Visible plans appear on the public pricing page and the Billing page."
+        description="Prices, limits and features of each plan."
         breadcrumbs={[{ label: "Superadmin", to: "/superadmin" }, { label: "Plans & pricing" }]}
         actions={
           <Button onClick={() => openEditor(null)}>

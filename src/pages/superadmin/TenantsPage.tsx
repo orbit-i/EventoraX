@@ -164,7 +164,7 @@ export default function TenantsPage() {
     <>
       <PageHeader
         title="Tenants"
-        description="Every organization using EventoraX — plans, trials, suspensions and drill-down."
+        description="Organizations on EventoraX, their plans and status."
         breadcrumbs={[{ label: "Superadmin", to: "/superadmin" }, { label: "Tenants" }]}
         actions={
           <>
@@ -244,7 +244,7 @@ export default function TenantsPage() {
       {stats && stats.expired + stats.suspended > 0 && !values.status && (
         <p className="mt-4 flex items-center gap-1.5 text-xs text-[#94a3b8]">
           <AlertTriangle className="h-3.5 w-3.5" />
-          Expired organizations keep all their data — they can still log in to renew.
+          Expired organizations keep all their data and can still log in to renew.
         </p>
       )}
 

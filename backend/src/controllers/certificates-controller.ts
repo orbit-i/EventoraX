@@ -160,7 +160,7 @@ export async function issueOne(req: Request, res: Response) {
   if (!reg) return fail(res, 404, "NOT_FOUND", "Attendee not found");
   if (reg.status === "CANCELLED") return fail(res, 400, "REGISTRATION_CANCELLED", "This registration is cancelled, so it can't get a certificate");
   if (NEEDS_ATTENDANCE.includes(type) && reg.status !== "ATTENDED") {
-    return fail(res, 400, "NOT_ATTENDED", `Mark ${reg.name} as attended first — ${type.toLowerCase()} certificates are only for people who attended`);
+    return fail(res, 400, "NOT_ATTENDED", `Mark ${reg.name} as attended first: ${type.toLowerCase()} certificates are only for people who attended`);
   }
 
   const templateKey = await chooseTemplate(parsed.data.templateKey, reg.event);

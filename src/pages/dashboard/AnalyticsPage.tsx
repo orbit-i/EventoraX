@@ -155,7 +155,7 @@ export default function AnalyticsPage() {
   const header = (
     <PageHeader
       title="Analytics"
-      description="How your events are performing across the whole organization."
+      description="How your events are performing."
       breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Analytics" }]}
       actions={
         <>
@@ -237,7 +237,7 @@ export default function AnalyticsPage() {
           <div className="grid gap-6 lg:grid-cols-3">
             {/* Monthly registrations */}
             <ChartPanel
-              title="Registrations — last 12 months"
+              title="Registrations in the last 12 months"
               description={`${regTotal.toLocaleString()} in total, excluding cancelled`}
               className="lg:col-span-2"
               table={{ headers: ["Month", "Registrations"], rows: regMonths.map((m) => [m.full, m.count]) }}
@@ -368,7 +368,7 @@ export default function AnalyticsPage() {
 
             {/* Certificate timeline */}
             <ChartPanel
-              title="Certificates issued — last 12 months"
+              title="Certificates issued in the last 12 months"
               description={`${certTotal.toLocaleString()} in total`}
               className="lg:col-span-2"
               table={{ headers: ["Month", "Certificates"], rows: certMonths.map((m) => [m.full, m.count]) }}

@@ -305,7 +305,7 @@ export default function EventDetailPage() {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-[#94a3b8]">No categories — everyone is "General".</p>
+                <p className="text-sm text-[#94a3b8]">No categories. Everyone is "General".</p>
               )}
             </Card>
           </div>

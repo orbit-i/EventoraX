@@ -32,7 +32,7 @@ export function PublicLinkCard({ event }: { event: { id: string; title: string; 
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      toast.error("Couldn't copy — select the link and copy it yourself.")
+      toast.error("Couldn't copy. Select the link and copy it yourself.")
     }
   }
 

@@ -138,7 +138,7 @@ export default function OverviewPage() {
     <>
       <PageHeader
         title={`${greeting()}, ${firstName}`}
-        description="Here's what's happening across your events."
+        description="Your events, registrations and recent activity."
         actions={
           <RoleGate need="write">
             <Button onClick={() => navigate("/dashboard/events/new")}>
@@ -162,7 +162,7 @@ export default function OverviewPage() {
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Registration trend */}
-        <Panel title="Registrations — last 6 months" className="lg:col-span-2" action={<span className="text-sm text-[#64748b]">{trendTotal.toLocaleString()} total</span>}>
+        <Panel title="Registrations in the last 6 months" className="lg:col-span-2" action={<span className="text-sm text-[#64748b]">{trendTotal.toLocaleString()} total</span>}>
           {initialLoading ? (
             <Skeleton className="h-56 w-full rounded-xl" />
           ) : trendTotal === 0 ? (

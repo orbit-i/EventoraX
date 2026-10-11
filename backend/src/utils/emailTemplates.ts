@@ -45,7 +45,7 @@ export const TEMPLATE_DEFINITIONS: TemplateDefinition[] = [
     description: "Asks a new user to confirm their email address.",
     usedFor: "Sign-up, resend verification",
     variables: [v("link", "Verification link (valid 24 hours)", "https://eventorax.com/verify-email?token=…")],
-    subject: "Verify your email — EventoraX",
+    subject: "Verify your EventoraX email",
     bodyHtml: `<h2 style="margin-top:0">Verify your email</h2>
 <p>Thanks for signing up! Please confirm your email address.</p>
 {{button "Verify email" link}}
@@ -57,7 +57,7 @@ export const TEMPLATE_DEFINITIONS: TemplateDefinition[] = [
     description: "Link to choose a new password.",
     usedFor: "Forgot password, superadmin “Email reset link”",
     variables: [v("link", "Reset link (valid 15 minutes)", "https://eventorax.com/reset-password?token=…")],
-    subject: "Reset your password — EventoraX",
+    subject: "Reset your EventoraX password",
     bodyHtml: `<h2 style="margin-top:0">Reset your password</h2>
 <p>We received a request to reset your password.</p>
 {{button "Choose a new password" link}}
@@ -81,13 +81,13 @@ export const TEMPLATE_DEFINITIONS: TemplateDefinition[] = [
     description: "Confirms an attendee's registration for an event.",
     usedFor: "Public event page → Register (QR ticket PDF attached)",
     variables: [v("name", "Attendee", "Bilal Ahmed"), v("eventTitle", "Event", "Tech Summit 2026"), v("when", "Date and time", "19 Sept 2026, 10:00 am"), v("orgName", "Organizer", "FAST Computing Society"), v("refNo", "Registration number", "REG-7F3K2A"), v("link", "Public event page", "https://eventorax.com/e/abc123")],
-    subject: "You're registered — {{eventTitle}}",
+    subject: "You're registered for {{eventTitle}}",
     bodyHtml: `<h2 style="margin-top:0">You're registered!</h2>
 <p>Hi {{name}},</p>
 <p>Your place at <strong>{{eventTitle}}</strong> ({{when}}) is confirmed. Your registration number is <strong>{{refNo}}</strong>.</p>
-<p>Your QR ticket is attached as a PDF — show it at the entrance, on your phone or printed.</p>
+<p>Your QR ticket is attached as a PDF. Show it at the entrance, on your phone or printed.</p>
 {{button "View event page" link}}
-<p style="color:#64748b">— {{orgName}}</p>`,
+<p style="color:#64748b">{{orgName}}</p>`,
   },
   {
     type: "TICKET",
@@ -95,11 +95,11 @@ export const TEMPLATE_DEFINITIONS: TemplateDefinition[] = [
     description: "Sends an attendee their QR ticket (PDF attached).",
     usedFor: "Tickets → Email",
     variables: [v("name", "Attendee", "Bilal Ahmed"), v("eventTitle", "Event", "Tech Summit 2026"), v("when", "Date and time", "19 Sept 2026, 10:00 am"), v("orgName", "Organizer", "FAST Computing Society")],
-    subject: "Your ticket — {{eventTitle}}",
+    subject: "Your ticket for {{eventTitle}}",
     bodyHtml: `<h2 style="margin-top:0">Your ticket</h2>
 <p>Hi {{name}},</p>
 <p>Here's your ticket for <strong>{{eventTitle}}</strong> ({{when}}), from {{orgName}}.</p>
-<p>Show the QR code on the attached PDF at the entrance — on your phone or printed.</p>`,
+<p>Show the QR code on the attached PDF at the entrance, on your phone or printed.</p>`,
   },
   {
     type: "CERTIFICATE",
@@ -107,7 +107,7 @@ export const TEMPLATE_DEFINITIONS: TemplateDefinition[] = [
     description: "Sends a certificate (PDF attached) with its verify link.",
     usedFor: "Certificates → Email, auto-issue",
     variables: [v("name", "Recipient", "Hira Siddiqui"), v("eventTitle", "Event", "Tech Summit 2026"), v("orgName", "Organizer", "FAST Computing Society"), v("verifyLink", "Public verify link", "https://eventorax.com/verify/EVX-AB12-CD34")],
-    subject: "Your certificate — {{eventTitle}}",
+    subject: "Your certificate for {{eventTitle}}",
     bodyHtml: `<h2 style="margin-top:0">Your certificate is ready</h2>
 <p>Hi {{name}},</p>
 <p>Thank you for being part of <strong>{{eventTitle}}</strong>. Your certificate from {{orgName}} is attached as a PDF.</p>
@@ -120,7 +120,7 @@ export const TEMPLATE_DEFINITIONS: TemplateDefinition[] = [
     description: "Tells an organization its payment was confirmed and until when it's active.",
     usedFor: "Revenue → Confirm payment",
     variables: [v("orgName", "Organization", "FAST Computing Society"), v("plan", "Plan", "Pro"), v("amount", "Amount paid", "PKR 20,000"), v("until", "Active until", "11 October 2027"), v("note", "Your note (may be empty)", ""), v("link", "Billing page", "https://eventorax.com/dashboard/billing")],
-    subject: "Payment confirmed — EventoraX",
+    subject: "Your EventoraX payment is confirmed",
     bodyHtml: `<h2 style="margin-top:0">Your payment is confirmed 🎉</h2>
 <p>We received your payment of <strong>{{amount}}</strong> for the <strong>{{plan}}</strong> plan.</p>
 <p>{{orgName}} is active until <strong>{{until}}</strong>.</p>
@@ -135,7 +135,7 @@ export const TEMPLATE_DEFINITIONS: TemplateDefinition[] = [
     variables: [v("orgName", "Organization", "FAST Computing Society"), v("endsOn", "End date", "14 October 2026"), v("kind", "“trial” or “plan”", "trial"), v("link", "Billing page", "https://eventorax.com/dashboard/billing")],
     subject: "Your EventoraX {{kind}} ends on {{endsOn}}",
     bodyHtml: `<h2 style="margin-top:0">Your {{kind}} ends soon</h2>
-<p>{{orgName}}'s {{kind}} ends on <strong>{{endsOn}}</strong>. Renew now to keep creating events and issuing certificates — your data stays safe either way.</p>
+<p>{{orgName}}'s {{kind}} ends on <strong>{{endsOn}}</strong>. Renew now to keep creating events and issuing certificates. Your data stays safe either way.</p>
 {{button "Renew now" link}}
 <p style="color:#64748b">Pay by JazzCash, Easypaisa or bank transfer from your Billing page.</p>`,
   },

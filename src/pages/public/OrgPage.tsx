@@ -49,7 +49,7 @@ export default function OrgPage() {
       .get<PublicOrgPage>(`/public/orgs/${slug}`, { auth: false, signal: controller.signal })
       .then((d) => {
         setData(d)
-        document.title = `${d.organization.name} — events`
+        document.title = `${d.organization.name} | Events`
       })
       .catch((err) => {
         if (!controller.signal.aborted) setError(err instanceof ApiError ? { status: err.status, message: err.message } : { status: 0, message: "Couldn't load this page." })
@@ -105,7 +105,7 @@ export default function OrgPage() {
               <Skeleton className="h-24 rounded-2xl" />
             </div>
           ) : data.upcoming.length === 0 ? (
-            <p className="rounded-2xl border border-dashed border-[#e9e4ff] bg-white p-8 text-center text-[#64748b]">No upcoming events right now — check back soon.</p>
+            <p className="rounded-2xl border border-dashed border-[#e9e4ff] bg-white p-8 text-center text-[#64748b]">No upcoming events right now. Check back soon.</p>
           ) : (
             <div className="space-y-3">
               {data.upcoming.map((e) => (

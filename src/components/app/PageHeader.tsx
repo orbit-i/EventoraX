@@ -45,7 +45,8 @@ export function PageHeader({
             <h1 className="text-2xl font-bold tracking-tight text-[#0f172a]">{title}</h1>
             {badge}
           </div>
-          {description && <p className="text-sm text-[#64748b]">{description}</p>}
+          {/* One short sentence (see CLAUDE.md → Page descriptions). Form pages don't have one. */}
+          {description && <p className="max-w-2xl text-sm leading-relaxed text-[#64748b]">{description}</p>}
         </div>
         {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
       </div>

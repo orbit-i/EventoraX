@@ -50,7 +50,7 @@ export default function PlatformAnalyticsPage() {
   const header = (
     <PageHeader
       title="Platform analytics"
-      description="Growth and usage across every organization."
+      description="Growth and usage across all organizations."
       breadcrumbs={[{ label: "Superadmin", to: "/superadmin" }, { label: "Analytics" }]}
       actions={
         <>

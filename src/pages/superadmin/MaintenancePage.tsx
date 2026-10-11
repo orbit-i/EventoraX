@@ -120,7 +120,7 @@ function MaintenanceSwitch({ current, onSaved }: { current: Overview["maintenanc
     setSaving(true)
     try {
       await api.patch("/superadmin/settings", { "maintenance.enabled": enabled, "maintenance.message": message.trim() })
-      toast.success(enabled ? (current?.enabled ? "Message updated" : "Maintenance mode is on") : "Maintenance mode is off — everyone can use EventoraX again")
+      toast.success(enabled ? (current?.enabled ? "Message updated" : "Maintenance mode is on") : "Maintenance mode is off. Everyone can use EventoraX again.")
       refresh()
       onSaved()
     } catch (err) {
@@ -147,7 +147,7 @@ function MaintenanceSwitch({ current, onSaved }: { current: Overview["maintenanc
         maxLength={300}
       />
       <div className="mt-3 flex items-center justify-between gap-2">
-        <span className={cn("text-sm font-medium", on ? "text-amber-700" : "text-[#64748b]")}>{on ? "On — organizations are locked out" : "Off"}</span>
+        <span className={cn("text-sm font-medium", on ? "text-amber-700" : "text-[#64748b]")}>{on ? "On: organizations are locked out" : "Off"}</span>
         <Button size="sm" variant="outline" onClick={() => void save(on)} disabled={saving || message.trim() === (current?.message ?? "")}>
           {saving && <Loader2 className="animate-spin" />} Save message
         </Button>
@@ -294,7 +294,7 @@ function BackupsPanel() {
               ))}
             </ul>
           )}
-          <p className="mt-2 text-xs text-[#94a3b8]">Backups contain personal data — keep downloaded copies somewhere safe.</p>
+          <p className="mt-2 text-xs text-[#94a3b8]">Backups contain personal data. Keep downloaded copies somewhere safe.</p>
         </>
       )}
     </Panel>
@@ -338,7 +338,7 @@ export default function MaintenancePage() {
     <>
       <PageHeader
         title="Maintenance"
-        description="Server health, background jobs, error logs and backups."
+        description="Server health, background jobs, errors and backups."
         breadcrumbs={[{ label: "Superadmin", to: "/superadmin" }, { label: "Maintenance" }]}
         actions={
           <>

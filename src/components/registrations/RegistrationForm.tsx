@@ -79,7 +79,7 @@ export function RegistrationForm({ eventId, registration }: { eventId: string; r
         toast.success(`${v.name} updated`)
       } else {
         await api.post("/registrations", { ...payload, eventId })
-        toast.success(`${v.name} added — their ticket was created`)
+        toast.success(`${v.name} added, their ticket was created`)
       }
       setGoTo(backTo)
     } catch (err) {

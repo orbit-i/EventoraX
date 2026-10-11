@@ -26,7 +26,7 @@ export function OneTimeSecret({ label, value }: { label: string; value: string }
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
     } catch {
-      toast.error("Couldn't copy — select the text and copy it yourself.")
+      toast.error("Couldn't copy. Select the text and copy it yourself.")
     }
   }
   return (
@@ -38,7 +38,7 @@ export function OneTimeSecret({ label, value }: { label: string; value: string }
           {copied ? <Check /> : <Copy />} {copied ? "Copied" : "Copy"}
         </Button>
       </div>
-      <p className="mt-2 text-xs text-amber-800">This is shown only once. Share it privately — they should change it after logging in.</p>
+      <p className="mt-2 text-xs text-amber-800">This is shown only once. Share it privately. They should change it after logging in.</p>
     </div>
   )
 }
@@ -139,7 +139,7 @@ export function CreateTenantDialog({
               <SelectField
                 label="Plan"
                 required
-                options={plans.map((p) => ({ value: p.id, label: `${p.name} — ${formatMoney(p.price)}/yr${p.isVisible ? "" : " (hidden)"}` }))}
+                options={plans.map((p) => ({ value: p.id, label: `${p.name} · ${formatMoney(p.price)}/yr${p.isVisible ? "" : " (hidden)"}` }))}
                 error={errors.planId?.message}
                 {...register("planId")}
               />
@@ -235,7 +235,7 @@ export function ChangePlanDialog({
         <DialogHeader>
           <DialogTitle>Change plan</DialogTitle>
           <DialogDescription>
-            {tenant?.name} is on <strong>{tenant?.plan?.name ?? "no plan"}</strong>. The end date doesn't change — use "Extend" for that.
+            {tenant?.name} is on <strong>{tenant?.plan?.name ?? "no plan"}</strong>. The end date doesn't change. Use "Extend" for that.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2" role="radiogroup" aria-label="Plan">

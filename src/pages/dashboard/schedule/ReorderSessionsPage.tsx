@@ -40,7 +40,7 @@ export default function ReorderSessionsPage() {
     <div className="mx-auto max-w-3xl">
       <PageHeader
         title="Reorder sessions"
-        description="The agenda is sorted by time. This order decides which comes first when sessions start at the same time, and the order on the public page."
+        description="Set the order of sessions that start at the same time."
         breadcrumbs={[
           { label: "Dashboard", to: "/dashboard" },
           { label: "Schedule", to: backTo },

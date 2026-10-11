@@ -273,7 +273,7 @@ function drawStack(doc: Doc, blocks: TextBlock[], box: Box, y: number, ruleColor
 
 /** Renders one certificate as an A4 landscape PDF. */
 export async function renderCertificate(templateKey: string, data: CertificateData): Promise<Buffer> {
-  const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 0, info: { Title: `Certificate — ${data.recipientName}`, Author: data.orgName } });
+  const doc = new PDFDocument({ size: "A4", layout: "landscape", margin: 0, info: { Title: `Certificate: ${data.recipientName}`, Author: data.orgName } });
   registerFonts(doc);
   const W = doc.page.width;
   const H = doc.page.height;

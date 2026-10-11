@@ -45,7 +45,7 @@ function SeatCard({ label, seat, count }: { label: string; seat?: SeatUsage; cou
             <div className={cn("h-full rounded-full", full ? "bg-rose-500" : "bg-[#7c3aed]")} style={{ width: `${pct}%` }} />
           </div>
           <p className={cn("mt-1.5 text-xs", full ? "font-medium text-rose-600" : "text-[#94a3b8]")}>
-            {full ? "All seats used — upgrade or free one" : `${seatsLeft(seat!)} left · pending invites count`}
+            {full ? "All seats used. Upgrade or free one." : `${seatsLeft(seat!)} left · pending invites count`}
           </p>
         </>
       )}
@@ -276,7 +276,7 @@ export default function TeamPage() {
     <>
       <PageHeader
         title="Team"
-        description="People who can work in this organization and what they're allowed to do."
+        description="People in your organization and their roles."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Team" }]}
         actions={
           manage && (

@@ -29,16 +29,16 @@ function ResultCard({ data }: { data: VerifyResult }) {
   const banner = data.valid
     ? { icon: ShieldCheck, title: 'VERIFIED', text: 'This certificate is genuine and was issued through EventoraX.', cls: 'bg-emerald-50 border-emerald-200 text-emerald-800', iconCls: 'text-emerald-600' }
     : data.status === 'REVOKED'
-      ? { icon: ShieldX, title: 'INVALID — REVOKED', text: `The issuer revoked this certificate${data.revokedAt ? ` on ${formatDate(data.revokedAt)}` : ''}.`, cls: 'bg-rose-50 border-rose-200 text-rose-800', iconCls: 'text-rose-600' }
+      ? { icon: ShieldX, title: 'REVOKED', text: `The issuer revoked this certificate${data.revokedAt ? ` on ${formatDate(data.revokedAt)}` : ''}.`, cls: 'bg-rose-50 border-rose-200 text-rose-800', iconCls: 'text-rose-600' }
       : { icon: ShieldAlert, title: 'INVALID', text: "This certificate's details don't match its security fingerprint. It may have been altered.", cls: 'bg-rose-50 border-rose-200 text-rose-800', iconCls: 'text-rose-600' };
 
   async function share() {
-    const shareData = { title: `${data.recipientName} — ${data.event.title}`, text: `Verified certificate issued by ${data.organization.name}`, url: data.verifyUrl };
+    const shareData = { title: `${data.recipientName} | ${data.event.title}`, text: `Verified certificate issued by ${data.organization.name}`, url: data.verifyUrl };
     try {
       if (navigator.share) await navigator.share(shareData);
       else {
         await navigator.clipboard.writeText(data.verifyUrl);
-        toast.success('Link copied — paste it anywhere to share');
+        toast.success('Link copied. Paste it anywhere to share.');
       }
     } catch {
       /* the person closed the share sheet */
@@ -213,7 +213,7 @@ export default function Verify() {
               <div>
                 <p className="text-lg font-bold tracking-wide">INVALID</p>
                 <p className="text-sm">
-                  No certificate has the code <span className="font-mono">{state.code}</span>. Check for typos — codes look like EVX-7K3M-Q9TD.
+                  No certificate has the code <span className="font-mono">{state.code}</span>. Check for typos. Codes look like EVX-7K3M-Q9TD.
                 </p>
               </div>
             </div>

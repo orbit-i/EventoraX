@@ -80,7 +80,7 @@ const FAQS: Faq[] = [
   },
   {
     q: "Why can't I edit an archived event?",
-    a: "Events that already have registrations are archived instead of deleted, so their history is kept. Archived events are read-only — restore one from its page to edit it again.",
+    a: "Events that already have registrations are archived instead of deleted, so their history is kept. Archived events are read-only. Restore one from its page to edit it again.",
   },
 ]
 
@@ -162,7 +162,7 @@ export default function ContactPage() {
     <>
       <PageHeader
         title="Help & support"
-        description="Questions, problems or ideas — we're here to help."
+        description="Ask a question, report a problem or share an idea."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Help & support" }]}
       />
 

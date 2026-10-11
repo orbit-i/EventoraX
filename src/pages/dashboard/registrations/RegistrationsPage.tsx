@@ -178,7 +178,7 @@ export default function RegistrationsPage() {
             ? ` (${res.skipped} weren't cancelled)`
             : action === "delete"
               ? ""
-              : ` (${res.skipped} skipped — cancelled registrations aren't changed)`
+              : ` (${res.skipped} skipped: cancelled registrations aren't changed)`
           : ""
       toast.success(`${plural(res.affected, "registration")} ${BULK_LABELS[action]}${skippedNote}`)
       setSelected(new Map())
@@ -309,7 +309,7 @@ export default function RegistrationsPage() {
     <>
       <PageHeader
         title="Registrations"
-        description="Everyone registered for the selected event, with their tickets and attendance."
+        description="Attendees, tickets and attendance for the selected event."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Registrations" }]}
         actions={
           eventId && (
@@ -358,7 +358,7 @@ export default function RegistrationsPage() {
         <>
           {archived && (
             <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
-              This event is archived — registrations can be viewed and exported but not changed.
+              This event is archived. Registrations can be viewed and exported but not changed.
             </div>
           )}
 

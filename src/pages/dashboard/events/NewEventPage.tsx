@@ -6,7 +6,6 @@ export default function NewEventPage() {
     <div className="mx-auto max-w-4xl">
       <PageHeader
         title="New event"
-        description="Fill in the details. You can change everything later."
         breadcrumbs={[
           { label: "Dashboard", to: "/dashboard" },
           { label: "Events", to: "/dashboard/events" },

@@ -6,7 +6,7 @@ const sections: LegalSection[] = [
     title: 'What we collect',
     body: (
       <>
-        <p><strong>Organizations and team members:</strong> name, email, phone, organization name, logo, signature image and brand colours, and your password (stored only as a secure hash — we can never see it).</p>
+        <p><strong>Organizations and team members:</strong> name, email, phone, organization name, logo, signature image and brand colours, and your password (stored only as a secure hash, so we can never see it).</p>
         <p><strong>Attendees</strong> (added by an organization or registering themselves): name, email, phone, department, roll number and registration category, plus check-in time and certificates issued.</p>
         <p><strong>Payments:</strong> the plan, amount, payment method, transaction ID and the receipt image you upload. We never receive card or bank login details.</p>
         <p><strong>Technical data:</strong> login attempts, IP address, browser type and an activity log of actions taken in the dashboard.</p>
@@ -20,7 +20,7 @@ const sections: LegalSection[] = [
         <li>to run the service: events, registrations, QR tickets, certificates, ID cards and analytics;</li>
         <li>to send emails you trigger (tickets, certificates, invites) and account emails (verification, password reset, payment confirmations, plan reminders);</li>
         <li>to confirm payments and keep billing records;</li>
-        <li>to keep accounts secure — for example locking an account after repeated wrong passwords;</li>
+        <li>to keep accounts secure, for example locking an account after repeated wrong passwords;</li>
         <li>to support you when you contact us.</li>
       </ul>
     ),
@@ -30,7 +30,7 @@ const sections: LegalSection[] = [
     body: (
       <p>
         The organization running an event decides what attendee data to collect and how to use it; we process it on their behalf. If you are an attendee and want your details
-        changed or removed, please contact the organizer first — we will help if they can&rsquo;t.
+        changed or removed, please contact the organizer first. We will help if they can&rsquo;t.
       </p>
     ),
   },

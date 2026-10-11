@@ -138,7 +138,7 @@ export default function IdCardsPage() {
     <>
       <PageHeader
         title="ID cards"
-        description="Print name badges for attendees — pick a design, then download one, some or all as a PDF."
+        description="Design and print name badges for attendees."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "ID cards" }]}
         actions={
           eventId && (

@@ -18,7 +18,7 @@ const features = [
   {
     icon: ClipboardList,
     title: 'Attendee Registration',
-    desc: 'Add attendees or import a CSV — with duplicate checks and attendance tracking.',
+    desc: 'Add attendees or import a CSV, with duplicate checks and attendance tracking.',
   },
   {
     icon: Award,
@@ -38,7 +38,7 @@ const features = [
   {
     icon: BarChart3,
     title: 'Analytics Dashboard',
-    desc: 'Registrations, attendance and certificates over time — and a PDF report.',
+    desc: 'Registrations, attendance and certificates over time, plus a PDF report.',
   },
   {
     icon: Mail,
@@ -48,7 +48,7 @@ const features = [
   {
     icon: Layers,
     title: 'Multi-Tenancy',
-    desc: 'One platform, multiple organizations — fully isolated.',
+    desc: 'One platform, many organizations, each fully separate.',
   },
 ];
 

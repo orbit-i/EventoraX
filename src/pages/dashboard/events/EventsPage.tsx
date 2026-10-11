@@ -180,7 +180,7 @@ export default function EventsPage() {
     <>
       <PageHeader
         title="Events"
-        description="Create and manage your organization's events."
+        description="Create, publish and archive your events."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Events" }]}
         actions={newEventButton}
       />

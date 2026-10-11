@@ -15,7 +15,7 @@ const HELP: Record<RegistrationStatus, string> = {
   REGISTERED: "Signed up, event not attended yet",
   ATTENDED: "Showed up",
   ABSENT: "Didn't show up (keeps the seat)",
-  CANCELLED: "Withdrew — frees the seat",
+  CANCELLED: "Withdrew, frees the seat",
 }
 
 /** A status badge that opens a menu to change the status (read-only badge for viewers). */

@@ -13,7 +13,7 @@ export default function PricingSection() {
           Simple yearly pricing in PKR
         </h2>
         <p className="font-body text-lg md:text-xl mb-12 md:mb-16 text-[#64748b]">
-          Every feature you need, one price per year. Try it free for {trialDays} {trialDays === 1 ? 'day' : 'days'} — no card needed.
+          Every feature you need, one price per year. Try it free for {trialDays} {trialDays === 1 ? 'day' : 'days'}, no card needed.
         </p>
         <PlanCards plans={plans} loading={loading} error={error} />
         <PaymentBadges className="mt-10" />

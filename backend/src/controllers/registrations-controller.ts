@@ -311,7 +311,7 @@ export async function bulkAction(req: Request, res: Response) {
           res,
           409,
           "EVENT_FULL",
-          `Only ${left} seat(s) left — select ${left} or fewer cancelled attendees to restore`
+          `Only ${left} seat(s) left. Select ${left} or fewer cancelled attendees to restore`
         );
       }
     }

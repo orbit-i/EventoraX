@@ -53,7 +53,7 @@ export default function SettingsPage() {
     <>
       <PageHeader
         title="Settings"
-        description={can("manage") ? "Your account and your organization's details, branding and preferences." : "Your profile, password and sessions."}
+        description={can("manage") ? "Your account, organization, branding and preferences." : "Your profile, password and sessions."}
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Settings" }]}
       />
 

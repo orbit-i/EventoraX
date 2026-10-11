@@ -273,7 +273,7 @@ export async function renderAnalyticsReport(
   data: AnalyticsReportData,
   org: { orgName: string; logoUrl: string | null; primaryColor: string | null; generatedBy: string }
 ): Promise<Buffer> {
-  const doc = newReport(`Analytics report — ${org.orgName}`, org.orgName);
+  const doc = newReport(`Analytics report: ${org.orgName}`, org.orgName);
   doc.addPage();
   const kit = new ReportKit(doc, org.primaryColor);
   const logo = await loadImage(org.logoUrl);

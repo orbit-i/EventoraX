@@ -8,7 +8,7 @@ gsap.registerPlugin(ScrollTrigger);
 const faqs = [
   {
     q: 'Is there a free trial?',
-    a: 'Yes. Every new organization gets the full Pro plan free for a short trial — no payment details needed. Your data stays safe when it ends.',
+    a: 'Yes. Every new organization gets the full Pro plan free for a short trial, with no payment details needed. Your data stays safe when it ends.',
   },
   {
     q: 'How much does it cost?',
@@ -20,11 +20,11 @@ const faqs = [
   },
   {
     q: 'How does certificate verification work?',
-    a: 'Every certificate has a unique code and QR code. Anyone can check it on our public Verify page — it also shows if a certificate was revoked.',
+    a: 'Every certificate has a unique code and QR code. Anyone can check it on our public Verify page, which also shows if a certificate was revoked.',
   },
   {
     q: 'Can I import attendee lists?',
-    a: 'Yes — upload a CSV file. EventoraX shows a preview, flags duplicates and mistakes, and only imports after you confirm.',
+    a: 'Yes. Upload a CSV file. EventoraX shows a preview, flags duplicates and mistakes, and only imports after you confirm.',
   },
   {
     q: 'Can my whole team use it?',

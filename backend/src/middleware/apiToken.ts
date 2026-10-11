@@ -32,7 +32,7 @@ export async function requireApiToken(req: Request, res: Response, next: NextFun
   }
   const token = await prisma.apiToken.findUnique({ where: { tokenHash: hashToken(raw) }, include: { organization: { include: { plan: true } } } });
   if (!token || token.revokedAt) return fail(res, 401, "BAD_TOKEN", "This API token is invalid or has been revoked");
-  if (token.expiresAt && token.expiresAt < new Date()) return fail(res, 401, "TOKEN_EXPIRED", "This API token has expired — create a new one in Dashboard → API");
+  if (token.expiresAt && token.expiresAt < new Date()) return fail(res, 401, "TOKEN_EXPIRED", "This API token has expired. Create a new one in Dashboard → API.");
 
   const org = token.organization;
   if (org.status === "suspended") return fail(res, 403, "ORG_SUSPENDED", "This organization is suspended");

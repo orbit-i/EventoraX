@@ -83,7 +83,7 @@ export async function dashboardSupport(req: Request, res: Response) {
   });
 
   await notifyTeam(`Support request: ${subject}`, [
-    `From: ${user.name} <${user.email}> — ${org.name} (${org.plan?.name ?? "no plan"}, ${org.status})`,
+    `From: ${user.name} <${user.email}>, ${org.name} (${org.plan?.name ?? "no plan"}, ${org.status})`,
     message,
   ]);
   await logActivity(req, { action: "support.request", entityType: "ContactMessage", entityId: saved.id });

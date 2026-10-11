@@ -36,7 +36,7 @@ export async function createToken(req: Request, res: Response) {
   const parsed = createSchema.safeParse(req.body ?? {});
   if (!parsed.success) return validationFail(res, parsed.error);
   const active = await db.apiToken.count({ where: { revokedAt: null } });
-  if (active >= MAX_ACTIVE_TOKENS) return fail(res, 409, "TOO_MANY_TOKENS", `You can have at most ${MAX_ACTIVE_TOKENS} active tokens — revoke one you no longer use`);
+  if (active >= MAX_ACTIVE_TOKENS) return fail(res, 409, "TOO_MANY_TOKENS", `You can have at most ${MAX_ACTIVE_TOKENS} active tokens. Revoke one you no longer use.`);
 
   const raw = `${API_TOKEN_PREFIX}${randomToken(20)}`; // 40 hex characters after the prefix
   const token = await db.apiToken.create({

@@ -112,7 +112,7 @@ export default function SchedulePage() {
     <>
       <PageHeader
         title="Schedule"
-        description="The event's agenda, grouped by day."
+        description="The agenda of the selected event, by day."
         breadcrumbs={[{ label: "Dashboard", to: "/dashboard" }, { label: "Schedule" }]}
         actions={
           eventId &&
