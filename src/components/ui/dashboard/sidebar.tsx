@@ -143,15 +143,23 @@ export default function Sidebar() {
       {/* User Profile Footer */}
       <div className="p-4 border-t border-[#e2e8f0]">
         <div className="flex items-center gap-3 px-3 py-2 rounded-xl bg-white border border-[#e2e8f0] shadow-xs">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs">
-            {userInitials}
+          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-[#1d4ed8] to-[#3b82f6] flex items-center justify-center text-white font-bold text-xs shrink-0 shadow-xs overflow-hidden">
+            {user?.avatarUrl || user?.avatar_url ? (
+              <img 
+                src={user.avatarUrl || user.avatar_url} 
+                alt={user?.fullName || "Avatar"} 
+                className="w-full h-full object-cover rounded-full" 
+              />
+            ) : (
+              userInitials
+            )}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-[#0f172a] truncate">
               {user?.fullName || "Event Organizer"}
             </p>
             <p className="text-[10px] text-[#94a3b8] truncate">
-              EventoraX Administrator
+              {user?.role === 'admin' ? 'EventoraX Administrator' : (user?.orgName || 'Organizer')}
             </p>
           </div>
           <button 

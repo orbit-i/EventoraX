@@ -493,12 +493,26 @@ function handleMemoryQuery(sql, params = []) {
   }
 
   if (s.includes('update `users`') || s.includes('update users')) {
-    const user = memoryStore.users[0];
-    if (user && s.includes('set `password` =')) {
-      user.password = params[0];
-    }
-    if (user && s.includes('set `plan` =')) {
-      user.plan = params[0];
+    const userId = parseInt(params[params.length - 1], 10);
+    const user = memoryStore.users.find(u => u.id === userId) || memoryStore.users[0];
+    if (user) {
+      if (s.includes('set `password` =')) {
+        user.password = params[0];
+      } else if (s.includes('set `plan` =')) {
+        user.plan = params[0];
+      } else {
+        // [fullName, orgName, phone, bio, avatarUrl, timezone, language, notificationsEnabled, marketingEmailsEnabled, twoFactorEnabled, id]
+        if (params[0] !== null && params[0] !== undefined) user.full_name = params[0];
+        if (params[1] !== null && params[1] !== undefined) user.org_name = params[1];
+        if (params[2] !== null && params[2] !== undefined) user.phone = params[2];
+        if (params[3] !== null && params[3] !== undefined) user.bio = params[3];
+        if (params[4] !== null && params[4] !== undefined) user.avatar_url = params[4];
+        if (params[5] !== null && params[5] !== undefined) user.timezone = params[5];
+        if (params[6] !== null && params[6] !== undefined) user.language = params[6];
+        if (params[7] !== null && params[7] !== undefined) user.notifications_enabled = params[7];
+        if (params[8] !== null && params[8] !== undefined) user.marketing_emails_enabled = params[8];
+        if (params[9] !== null && params[9] !== undefined) user.two_factor_enabled = params[9];
+      }
     }
     return [{ affectedRows: 1 }];
   }
@@ -999,7 +1013,7 @@ export async function initDatabase() {
         \`password\` VARCHAR(255) NOT NULL,
         \`phone\` VARCHAR(50) DEFAULT '',
         \`role\` ENUM('admin', 'organizer', 'attendee') DEFAULT 'organizer',
-        \`avatar_url\` VARCHAR(255) DEFAULT '',
+        \`avatar_url\` MEDIUMTEXT DEFAULT NULL,
         \`bio\` TEXT DEFAULT NULL,
         \`timezone\` VARCHAR(50) DEFAULT 'UTC+0 (GMT)',
         \`language\` VARCHAR(50) DEFAULT 'English (US)',
@@ -1011,6 +1025,12 @@ export async function initDatabase() {
         \`updated_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
+
+    try {
+      await pool.query('ALTER TABLE `users` MODIFY COLUMN `avatar_url` MEDIUMTEXT DEFAULT NULL;');
+    } catch {
+      // already up to date
+    }
 
     await pool.query(`
       CREATE TABLE IF NOT EXISTS \`tenants\` (

@@ -210,6 +210,7 @@ router.post('/login', async (req, res) => {
       email: userRow.email,
       phone: userRow.phone,
       role: userRow.role,
+      avatarUrl: userRow.avatar_url || '',
       bio: userRow.bio,
       timezone: userRow.timezone,
       language: userRow.language,
@@ -281,6 +282,7 @@ router.get('/me', verifyToken, async (req, res) => {
       email: userRow.email,
       phone: userRow.phone,
       role: userRow.role,
+      avatarUrl: userRow.avatar_url || '',
       bio: userRow.bio,
       timezone: userRow.timezone,
       language: userRow.language,
@@ -305,7 +307,8 @@ router.get('/me', verifyToken, async (req, res) => {
 // PUT /api/users/profile
 router.put('/profile', verifyToken, async (req, res) => {
   try {
-    const { fullName, orgName, phone, bio, timezone, language, notificationsEnabled, marketingEmailsEnabled, twoFactorEnabled } = req.body;
+    const { fullName, orgName, phone, bio, avatarUrl, avatar_url, timezone, language, notificationsEnabled, marketingEmailsEnabled, twoFactorEnabled } = req.body;
+    const finalAvatar = avatarUrl !== undefined ? avatarUrl : (avatar_url !== undefined ? avatar_url : null);
 
     await query(
       `UPDATE \`users\`
@@ -313,6 +316,7 @@ router.put('/profile', verifyToken, async (req, res) => {
            \`org_name\` = COALESCE(?, \`org_name\`),
            \`phone\` = COALESCE(?, \`phone\`),
            \`bio\` = COALESCE(?, \`bio\`),
+           \`avatar_url\` = COALESCE(?, \`avatar_url\`),
            \`timezone\` = COALESCE(?, \`timezone\`),
            \`language\` = COALESCE(?, \`language\`),
            \`notifications_enabled\` = COALESCE(?, \`notifications_enabled\`),
@@ -320,7 +324,7 @@ router.put('/profile', verifyToken, async (req, res) => {
            \`two_factor_enabled\` = COALESCE(?, \`two_factor_enabled\`)
        WHERE \`id\` = ?`,
       [
-        fullName, orgName, phone, bio, timezone, language,
+        fullName, orgName, phone, bio, finalAvatar, timezone, language,
         notificationsEnabled !== undefined ? (notificationsEnabled ? 1 : 0) : null,
         marketingEmailsEnabled !== undefined ? (marketingEmailsEnabled ? 1 : 0) : null,
         twoFactorEnabled !== undefined ? (twoFactorEnabled ? 1 : 0) : null,
@@ -346,6 +350,7 @@ router.put('/profile', verifyToken, async (req, res) => {
         email: u.email,
         phone: u.phone,
         role: u.role,
+        avatarUrl: u.avatar_url || finalAvatar || '',
         bio: u.bio,
         timezone: u.timezone,
         language: u.language,

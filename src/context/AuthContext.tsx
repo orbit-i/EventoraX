@@ -8,6 +8,8 @@ export interface User {
   email: string;
   phone?: string;
   role: 'admin' | 'organizer' | 'attendee';
+  avatarUrl?: string;
+  avatar_url?: string;
   bio?: string;
   timezone?: string;
   language?: string;
@@ -191,9 +193,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const updateUser = (userData: Partial<User>) => {
     setUser((prev) => {
-      if (!prev) return null;
-      const updated = { ...prev, ...userData };
+      const updated = { ...(prev || {}), ...userData } as User;
       localStorage.setItem('user', JSON.stringify(updated));
+      window.dispatchEvent(new CustomEvent('userProfileUpdated', { detail: updated }));
       return updated;
     });
   };

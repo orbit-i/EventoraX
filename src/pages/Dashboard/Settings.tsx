@@ -17,7 +17,9 @@ import {
   Sparkles,
   Ticket,
   Globe,
-  ShieldCheck
+  ShieldCheck,
+  Upload,
+  Trash2
 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/services/api";
@@ -30,6 +32,7 @@ export default function Settings() {
   const [orgName, setOrgName] = useState("");
   const [phone, setPhone] = useState("");
   const [bio, setBio] = useState("");
+  const [avatarUrl, setAvatarUrl] = useState("");
   const [timezone, setTimezone] = useState("UTC+0 (GMT)");
   const [language, setLanguage] = useState("English (US)");
 
@@ -67,6 +70,7 @@ export default function Settings() {
       setOrgName(user.orgName || "");
       setPhone(user.phone || "");
       setBio(user.bio || "");
+      setAvatarUrl(user.avatarUrl || user.avatar_url || "");
       setTimezone(user.timezone || "UTC+0 (GMT)");
       setLanguage(user.language || "English (US)");
       setNotifications(user.notificationsEnabled ?? true);
@@ -82,6 +86,29 @@ export default function Settings() {
     }
   }, [user, currentTenant]);
 
+  const handleAvatarUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setSaveError("Avatar image must be smaller than 5MB.");
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const result = event.target?.result as string;
+        setAvatarUrl(result);
+        // Live instantaneous update in context so header/sidebar updates immediately
+        updateUser({ avatarUrl: result });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveAvatar = () => {
+    setAvatarUrl("");
+    updateUser({ avatarUrl: "" });
+  };
+
   const handleSaveProfile = async () => {
     setSaving(true);
     setSaveSuccess(false);
@@ -93,6 +120,7 @@ export default function Settings() {
         orgName,
         phone,
         bio,
+        avatarUrl,
         timezone,
         language,
         notificationsEnabled: notifications,
@@ -400,20 +428,67 @@ export default function Settings() {
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center gap-4">
-              <div className="relative">
-                <Avatar className="w-20 h-20 shadow-md shadow-[#7c3aed]/15">
-                  <AvatarFallback className="bg-gradient-to-br from-[#7c3aed] to-[#a78bfa] text-white text-2xl font-bold">
-                    {userInitials}
-                  </AvatarFallback>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-5 p-4 rounded-2xl bg-[#faf8ff] border border-[#e9e4ff]">
+              <div className="relative group shrink-0">
+                <Avatar className="w-20 h-20 shadow-md shadow-[#7c3aed]/15 ring-2 ring-white overflow-hidden">
+                  {avatarUrl ? (
+                    <img src={avatarUrl} alt={fullName || "Avatar"} className="w-full h-full object-cover rounded-full" />
+                  ) : (
+                    <AvatarFallback className="bg-gradient-to-br from-[#7c3aed] to-[#a78bfa] text-white text-2xl font-bold">
+                      {userInitials}
+                    </AvatarFallback>
+                  )}
                 </Avatar>
+                <label 
+                  htmlFor="avatar-upload"
+                  className="absolute bottom-0 right-0 w-7 h-7 bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-full flex items-center justify-center cursor-pointer shadow-md transition-transform hover:scale-110"
+                  title="Upload profile photo"
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <input 
+                    id="avatar-upload" 
+                    type="file" 
+                    accept="image/*" 
+                    onChange={handleAvatarUpload} 
+                    className="hidden" 
+                  />
+                </label>
               </div>
-              <div>
-                <p className="font-semibold text-[#0f172a] text-lg">{fullName || "Event Organizer"}</p>
-                <p className="text-sm text-[#475569]">{user?.email || "organizer@eventorax.com"}</p>
-                <span className="inline-block mt-1 text-xs bg-[#f5f3ff] text-[#7c3aed] font-bold px-2.5 py-0.5 rounded-full border border-[#ddd6fe]">
-                  {user?.role ? user.role.toUpperCase() : "ORGANIZER"}
-                </span>
+
+              <div className="space-y-1.5 flex-1 min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <p className="font-bold text-[#0f172a] text-lg truncate">{fullName || "Event Organizer"}</p>
+                  <span className="text-[10px] bg-[#f5f3ff] text-[#7c3aed] font-bold px-2 py-0.5 rounded-full border border-[#ddd6fe] uppercase">
+                    {user?.role ? user.role.toUpperCase() : "ORGANIZER"}
+                  </span>
+                </div>
+                <p className="text-xs text-[#475569]">{user?.email || "organizer@eventorax.com"}</p>
+                <div className="flex items-center gap-2 pt-1">
+                  <label 
+                    htmlFor="avatar-upload-btn" 
+                    className="px-3 py-1 rounded-xl bg-white border border-[#e9e4ff] text-xs font-semibold text-[#7c3aed] hover:bg-[#f3f0ff] cursor-pointer shadow-2xs transition-colors inline-flex items-center gap-1.5"
+                  >
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>Upload Profile Photo</span>
+                    <input 
+                      id="avatar-upload-btn" 
+                      type="file" 
+                      accept="image/*" 
+                      onChange={handleAvatarUpload} 
+                      className="hidden" 
+                    />
+                  </label>
+                  {avatarUrl && (
+                    <button
+                      type="button"
+                      onClick={handleRemoveAvatar}
+                      className="px-2.5 py-1 rounded-xl bg-white border border-rose-200 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition-colors inline-flex items-center gap-1"
+                    >
+                      <Trash2 className="w-3 h-3" />
+                      <span>Remove</span>
+                    </button>
+                  )}
+                </div>
               </div>
             </div>
 
@@ -422,7 +497,11 @@ export default function Settings() {
                 <Label className="text-[#0f172a] font-semibold text-xs">Full Name</Label>
                 <Input 
                   value={fullName}
-                  onChange={(e) => setFullName(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setFullName(val);
+                    updateUser({ fullName: val });
+                  }}
                   className="bg-white border-[#e9e4ff] focus:border-[#7c3aed]" 
                 />
               </div>
@@ -430,7 +509,11 @@ export default function Settings() {
                 <Label className="text-[#0f172a] font-semibold text-xs">Phone Number</Label>
                 <Input 
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setPhone(val);
+                    updateUser({ phone: val });
+                  }}
                   placeholder="+92 300 1234567"
                   className="bg-white border-[#e9e4ff] focus:border-[#7c3aed]" 
                 />
@@ -441,7 +524,11 @@ export default function Settings() {
                   className="w-full min-h-[90px] rounded-xl border border-[#e9e4ff] bg-white px-4 py-3 text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/30 outline-none transition-all resize-none"
                   placeholder="Tell us about yourself and your event organizing portfolio..."
                   value={bio}
-                  onChange={(e) => setBio(e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setBio(val);
+                    updateUser({ bio: val });
+                  }}
                 />
               </div>
             </div>
