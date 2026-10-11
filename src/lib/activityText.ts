@@ -187,6 +187,8 @@ export function describeActivity(item: ActivityItem): string {
       return `changed the SMTP server to ${s("host")}`
     case "email.smtp.clear":
       return "removed the saved SMTP server"
+    case "security.export":
+      return `exported ${n("count")} security log rows as CSV`
     case "upload.image":
       return "uploaded an image"
     default:

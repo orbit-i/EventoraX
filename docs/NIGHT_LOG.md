@@ -241,3 +241,27 @@ Nothing existing was changed or dropped.
 2. **Reset to default** → confirm → the original text is back.
 3. **SMTP server** → **Test connection** → "Connected to the SMTP server (.env)".
 4. (Optional, sends a real email) change your superadmin email to a real inbox first, then **Send test to me**.
+
+---
+
+## 10D (part 3) — Security & activity log ✅
+
+**What was built** (`/superadmin/security`)
+- Stats: logins and failed logins in the last 24 h, suspicious IPs, locked accounts.
+- **Activity log** tab: every action on the platform (all organizations + superadmin actions) — who, what (readable
+  sentence + the raw action code), organization, IP + device, when. Filters: search (IP, name, email), action type,
+  organization (or "Platform only"), date range — all in the URL. **Export CSV** (same filters, up to 20,000 rows).
+  Actions done while "logged in as" are marked "(via log in as)". The tenant page's "All" link opens this filtered by that org.
+- **Login attempts** tab: every login try with result, email, IP (click an IP to filter by it), device, time.
+- **Threats & sessions** tab: suspicious IPs (10+ failed logins in 24 h, or failures for 3+ different emails) with
+  "View attempts"; currently locked accounts (5 wrong passwords in 15 minutes → locked 15 minutes, same rule as login);
+  recent sessions (logged in during the last 24 h) with **Force logout** (ends every session of that person).
+
+**Decisions made for you**
+- No "unlock now" button: locks expire by themselves after 15 minutes, and unlocking would mean deleting audit records.
+- Blocking an IP is left to the server/firewall (Phase 12), the page only detects it.
+
+**Test it**
+1. **Security & activity** → filter Action = "Tenants (superadmin)" → you see what you did tonight → **Export CSV**.
+2. In a private window try logging in with a wrong password 5 times → **Threats & sessions** shows the account as locked.
+3. **Login attempts** → click an IP address to see all its attempts.

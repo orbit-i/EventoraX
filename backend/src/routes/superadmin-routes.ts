@@ -42,6 +42,7 @@ import { getPlatformAnalytics, platformAnalyticsReport, platformAnalyticsCsv } f
 
 import { getSettings, updateSettings, uploadPlatformImage } from "../controllers/superadmin/settings-controller";
 import { imageUpload } from "../utils/upload";
+import { platformActivity, exportPlatformActivity, loginAttempts, securityOverview } from "../controllers/superadmin/security-controller";
 import {
   listTemplates,
   saveTemplate,
@@ -130,3 +131,9 @@ superadminRouter.get("/smtp", getSmtp);
 superadminRouter.put("/smtp", saveSmtp);
 superadminRouter.delete("/smtp", clearSmtp);
 superadminRouter.post("/smtp/verify", verifySmtp);
+
+// Security & activity log
+superadminRouter.get("/security/overview", securityOverview);
+superadminRouter.get("/security/activity", platformActivity);
+superadminRouter.get("/security/activity/export", exportPlatformActivity);
+superadminRouter.get("/security/logins", loginAttempts);
