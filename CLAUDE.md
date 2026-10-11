@@ -90,9 +90,12 @@ pdf/                assets (fonts from @fontsource WOFF, loadImage PNG/JPEG only
                     renderCertificate), ticket (A6 ticket, TICKET_QR_PREFIX), idcard (4 CR80 templates, sheet/single),
                     report (ReportKit: header/kpis/barChart/hBars/table/columns/footer + renderAnalyticsReport)
 services/           certificates (verify code, SHA-256 over frozen facts, issue/email/autoIssueForAttended, private PDF
-                    storage), tickets (ticket PDF/email, parseScanned), announcements (deliverAnnouncement, sendDueAnnouncements)
+                    storage), tickets (ticket PDF/email, parseScanned), announcements (deliverAnnouncement, sendDueAnnouncements),
+                    orgNotifications (notifyNewRegistration / notifyCertificatesSent / notifyAttendanceSummary — follow notificationPrefs,
+                    email + bell for active admins)
 jobs/               in-process scheduler (registerJob/runJob/startScheduler, started in index.ts): expire-orgs (10 min),
-                    expiry-reminders (6 h, 3 days before the end, once per end date), announcements (1 min)
+                    expiry-reminders (6 h, 3 days before the end, once per end date), announcements (1 min),
+                    attendance-summaries (30 min, once per ended event; marked even when the pref is off)
 prisma/seed.ts      plans, settings, superadmin    prisma/seed-demo.ts  demo organization (see above)
 prisma/client.ts    default export `prisma` (base client)
 prisma/scopedClient.ts   org-scoped client: auto-injects organizationId into queries for org models
@@ -102,11 +105,13 @@ middleware/
   scopedPrisma.ts   attaches req.db (scoped client)
   role-check.auth.ts requireRole(["admin", ...])
   orgChain.ts       orgScoped, orgScopedAllowExpired, canWrite (blocks viewers), adminOnly, superAdminOnly
+  apiToken.ts       requireApiToken (Bearer evx_live_…, SHA-256 lookup, plan features.restApi, sets req.org/req.db/req.apiToken)
   maintenance.ts    maintenanceGate: 503 MAINTENANCE for non-superadmins when maintenance.enabled (auth, superadmin,
                     verify, contact, plans, platform stay open)
 controllers/        auth (in routes/auth-route.ts), org, team, events, program (speakers/sponsors/sessions/reorder),
                     registrations, dashboard (overview + analytics), activity, billing, support (contact + support),
                     certificates (incl. public verify), tickets (incl. check-in), idcards, notifications (bell),
+                    public (org page, event page, self-registration), api-tokens, ext-api (public REST API),
                     superadmin/* (dashboard, tenants, plans, payments, users, certificates, analytics, settings, emails,
                     security, maintenance, announcements)
 routes/             one router file per area; mounted under /api/v1
@@ -153,7 +158,12 @@ idcards (+ /options, /stats, /preview, /pdf), analytics/report (PDF),
 certificates (+ /templates, /preview, /stats, /candidates, /bulk, /email, /:id/pdf, /:id/email, /:id/revoke, /:id/restore),
 verify/:code and verify/:code/pdf (public, 30/min), tickets (+ /stats, /zip, /email, /check-in, /:id/pdf, /:id/email,
 /:id/undo-check-in), notifications (+ /:id/read, /read-all), public GET platform (name, banner, maintenance, SEO, upload
-limit) and GET plans (visible plans).
+limit, social) + GET platform/website (stats/testimonials/logos) and GET plans (visible plans),
+public/orgs/:slug, public/events/:id, POST public/events/:id/register (10/h per IP, honeypot `website`),
+api-tokens (GET/POST, /:id/revoke — admin + Enterprise).
+**REST API (`/api/v1/ext`, API token, 120/min per token, documented at `/developers` — keep shapes backwards compatible)**:
+GET events, events/:id, events/:id/registrations, events/:id/certificates, registrations/:id, certificates/:code;
+POST events/:id/registrations, check-in; PATCH registrations/:id (status).
 **Superadmin (`/api/v1/superadmin`, superAdminOnly)**: dashboard; tenants (+ /stats, /export, POST create, /:id, PATCH,
 /:id/plan, /:id/extend, /:id/suspend, /:id/unsuspend, /:id/impersonate, DELETE with `confirm` = exact name); plans CRUD;
 revenue; payments (+ /stats, /export, /:id/confirm, /:id/reject — `notify` flag); users (+ /stats, /export, /:id,
@@ -174,7 +184,7 @@ main.tsx            createBrowserRouter([{ path: "*", element: <PlatformProvider
 App.tsx             all routes (<Routes>); writer(page) wraps create/edit pages (admins + managers only)
 context/AuthContext.tsx   user, organization, impersonator, status, login/register/acceptInvite/logout/refresh,
                     impersonate/stopImpersonating; homeFor(user)
-context/PlatformContext.tsx  GET /platform every 60 s + on any 503 MAINTENANCE: banner, maintenance, favicon/title/SEO, maxUploadMb
+context/PlatformContext.tsx  GET /platform every 60 s + on any 503 MAINTENANCE: banner, maintenance, favicon/title/SEO, maxUploadMb, social
 lib/api.ts          api.get/list/getList/post/patch/delete/upload/download/blob, buildQuery, ApiError, errorMessage, tokenStore
 lib/status.ts       ONE place for every status label + colour (event, mode, registration, tier, org, role, payment, cert, certType, visibility)
 lib/format.ts       formatDate/DateTime/Time/PKR/Duration/Relative/TimeLeft/Month, plural  (locale en-PK)
@@ -197,13 +207,15 @@ components/<feature>/  events, registrations, speakers, sponsors, sessions, team
                     per tab + shared SaveBar/saveOrg), billing (PayDialog, paymentInfo), certificates (TemplatePickerDialog,
                     IssueDialogs, pdf.ts usePdfUrl/openPdf), tickets (QrCode, TicketDialog), idcards (DesignPanel, design.ts),
                     superadmin (SuperadminLayout, ActivityFeed, TenantDialogs + OneTimeSecret, PaymentReviewDialog,
-                    useImpersonate) — feature forms and pieces
-pages/              public pages (root), auth pages, dashboard/*Page.tsx + dashboard/<module>/*Page.tsx, superadmin/
+                    useImpersonate, WebsiteContentPanel), public (plans: usePublicPlans/PlanCards/PlanComparison/PaymentBadges,
+                    SocialLinks, LegalPage, PublicShell), events/PublicLinkCard — feature forms and pieces
+pages/              public pages (root; Developers = API docs), public/ (EventPage /e/:id, OrgPage /o/:slug — bare layout via
+                    PublicShell), auth pages, dashboard/ApiPage, dashboard/*Page.tsx + dashboard/<module>/*Page.tsx, superadmin/
                     (Dashboard, Tenants, TenantDetail, Revenue, Plans, Users, PlatformCertificates, PlatformAnalytics,
                     SystemSettings, EmailTemplates, Security, Maintenance, Announcements),
                     dev/ (ComponentGallery at /dev/components)
 types/              API shapes (auth, event, registration, speaker, sponsor, session, dashboard, team, billing, certificate, ticket,
-                    idcard, platform, superadmin)
+                    idcard, platform, superadmin, website, public)
 ```
 
 **Page templates (follow them for every new page)**
@@ -249,6 +261,12 @@ use them) + SMTP settings, security page (activity log, login attempts, suspicio
 maintenance page (health, scheduled jobs, error logs, cache, mysqldump backups), announcements (in-app + email,
 schedule/draft) + notification bell. Night-run details and manual test steps: `docs/NIGHT_LOG.md`.
 
+**Phase 11 complete:** 11A honest, data-driven public website (PKR plans from the DB, comparison table, real FAQ/features,
+testimonials/logos/social/live stats managed in System settings → Website, real Terms & Privacy), 11B public event page
+`/e/:id` + org page `/o/:slug` + self-registration (QR ticket on screen + confirmation email with PDF, rate limit + honeypot,
+"Public page" card with poster QR in the dashboard), 11C org notification emails (new registration, attendance summary job,
+certificate batches; email + bell), 11D API tokens (`/dashboard/api`) + REST API `/api/v1/ext` + docs `/developers`.
+
 Notes for later phases:
 - Notification preferences (`notificationPrefs`) are saved but nothing sends those emails yet (Phase 11).
 - Analytics shows the generic 402 error for expired orgs; a friendlier "renew to see analytics" screen would be nicer.
@@ -257,14 +275,10 @@ Notes for later phases:
 - The SMTP password saved in System settings is stored as plain text in `system_settings` (encrypt in Phase 12).
 - SEO title/description are applied client-side only (SPA); proper server-side meta tags come with deployment (Phase 12).
 - Background jobs run inside the API process — fine for one server; move to a worker if the app is ever scaled out.
-- `REGISTRATION_CONFIRM` email template exists but is sent only once public self-registration is built (Phase 11).
+- Terms/Privacy are a good-faith draft — have them reviewed before launch.
+- Public event pages are client-rendered (no link previews/SEO for each event until server-side rendering or prerendering, Phase 12).
 
 ## Remaining work
-
-**11** — API tokens + public REST API (Enterprise), public website fixes (PKR pricing from `GET /api/v1/plans`, CTAs,
-FAQ), **public event page + self-registration** (send the `REGISTRATION_CONFIRM` template), org notification emails from
-`notificationPrefs`, more in-app notifications (the bell + `notifications` table are ready; `link` is supported).
-(Editable email templates and in-app notifications were done in Phase 10.)
 
 **12** — Security hardening (helmet, more rate limits), Docker/CI, Hostinger deployment (one Express server serves the
 API + built Vite app), backups, final knip, then move the repo to its own GitHub repository.

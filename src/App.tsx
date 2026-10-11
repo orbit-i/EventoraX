@@ -21,6 +21,8 @@ import Verify from './pages/Verify';
 import NotFound from './pages/NotFound';
 import { SiteBanner } from './components/layout/SiteBanner';
 import EventPage from './pages/public/EventPage';
+import Developers from './pages/Developers';
+import ApiPage from './pages/dashboard/ApiPage';
 import OrgPage from './pages/public/OrgPage';
 import ComponentGallery from './pages/dev/ComponentGallery';
 import SuperadminLayout from './components/superadmin/SuperadminLayout';
@@ -134,6 +136,7 @@ export default function App() {
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
           <Route path="/verify" element={<Verify />} />
+          <Route path="/developers" element={<Developers />} />
           <Route path="/verify/:code" element={<Verify />} />
 
           {/* An organization's public pages: event list and event page with self-registration */}
@@ -170,6 +173,7 @@ export default function App() {
             <Route path="settings" element={<SettingsPage />} />
             <Route path="billing" element={<ProtectedRoute roles={['admin']}><BillingPage /></ProtectedRoute>} />
             <Route path="contact" element={<ContactPage />} />
+            <Route path="api" element={<ProtectedRoute roles={['admin']}><ApiPage /></ProtectedRoute>} />
 
             {/* Events */}
             <Route path="events" element={<EventsPage />} />

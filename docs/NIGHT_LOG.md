@@ -459,3 +459,34 @@ to the demo org's admins (`willkariim@gmail.com`, `willkariim+hira@gmail.com`).
 2. Certificates → issue certificates for an event with "email them" ticked → when the emails are done, the admins get
    "Certificates sent" (email + bell).
 3. Superadmin → Maintenance → "Attendance summaries" → **Run now** after an event has ended.
+
+---
+
+## 11D — API tokens + public REST API (Enterprise) ✅ (Phase 11 complete)
+
+**What was built**
+- **Dashboard → API** (`/dashboard/api`, admins; sidebar → Organization → API): on plans without "REST API access" it
+  explains that the API is Enterprise and links to Billing. On Enterprise: base URL with Copy, a curl example, a token list
+  (name, prefix, status Active / Expired / Revoked, last used, expiry, created by) and **Create token** (name + expiry
+  30 / 90 / 365 days / never). The full token (`evx_live_…`) is shown **once** with a copy button; only its SHA-256 hash is
+  stored. **Revoke** (asks first) stops it immediately. Max 20 active tokens per organization.
+- **REST API** at `/api/v1/ext/…` with `Authorization: Bearer evx_live_…`: list/get events, list registrations, **register
+  someone** (creates the QR ticket; `sendTicket` to email it), get a registration, change attendance status (attended →
+  auto-issues the certificate if the event has that on), **check in** a ticket (QR text or TKT-number, first scan wins),
+  list an event's certificates, look up a certificate by verify code. Fixed, documented response shapes; same
+  `{ data, error, meta }` envelope and error codes as the rest of the app. 120 requests/minute per token. Every write is in
+  the Activity log as done "via API (token name)". Suspended / expired orgs and non-Enterprise plans are refused.
+- **API documentation** page `/developers` (public; linked from the footer "API docs" and the API page): getting started,
+  authentication, errors table, every endpoint with parameters, request body and response example.
+- `backend/api-tests.http` now also covers ID cards, analytics PDF, public pages, self-registration, notifications,
+  API tokens, the REST API and a few superadmin calls.
+
+**Test data:** the "Night Pay Test" org is now on the **Enterprise** plan (to test the API), with one revoked token
+"Test integration" and one API-created registration "API Person" on the self-registration test event.
+
+**Test it**
+1. As `willkariim@gmail.com` (Pro) → sidebar **API** → "part of the Enterprise plan".
+2. Superadmin → Tenants → Night Pay Test → **Log in as admin** → sidebar **API** → **Create token** → copy it.
+3. In VS Code open `backend/api-tests.http`, paste the token into `@apiToken`, run **API2** requests.
+4. Revoke the token → the same request now answers 401.
+5. Open `/developers` and read through the docs.

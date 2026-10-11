@@ -16,6 +16,7 @@ import {
   ClipboardList,
   CreditCard,
   Handshake,
+  Code2,
   IdCard,
   LayoutDashboard,
   LifeBuoy,
@@ -77,6 +78,7 @@ export const NAV: NavGroup[] = [
     items: [
       { to: "/dashboard/team", label: "Team", icon: Users },
       { to: "/dashboard/billing", label: "Billing", icon: CreditCard, need: "manage" },
+      { to: "/dashboard/api", label: "API", icon: Code2, need: "manage" },
       { to: "/dashboard/settings", label: "Settings", icon: Settings },
       { to: "/dashboard/contact", label: "Help & support", icon: LifeBuoy },
     ],

@@ -11,6 +11,7 @@ const productLinks = [
   { label: 'Features', href: '/features' },
   { label: 'Pricing', href: '/pricing' },
   { label: 'Verify a certificate', href: '/verify' },
+  { label: 'API docs', href: '/developers' },
   { label: 'Start free trial', href: '/register' },
 ];
 

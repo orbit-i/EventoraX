@@ -491,3 +491,89 @@ Authorization: Bearer {{token}}
 
 ### CE8. Public verify — no login (paste a verify code; lower case / spaces are fine)
 GET {{baseUrl}}/verify/EVX-XXXX-XXXX
+
+# ═══════════════════════ Phase 9D–11 ═══════════════════════
+
+### ID1. ID cards: options, stats, then a PDF (9 per A4 page) for the whole event
+GET {{baseUrl}}/idcards/options
+Authorization: Bearer {{token}}
+
+###
+GET {{baseUrl}}/idcards/pdf?eventId={{eventId}}&template=classic&fields=category,department,rollNo,qr&layout=sheet
+Authorization: Bearer {{token}}
+
+### AN1. Analytics PDF report
+GET {{baseUrl}}/analytics/report
+Authorization: Bearer {{token}}
+
+### PU1. Public platform info + website content (no login)
+GET {{baseUrl}}/platform
+
+###
+GET {{baseUrl}}/platform/website
+
+###
+GET {{baseUrl}}/plans
+
+### PU2. Public organization page and event page (no login)
+GET {{baseUrl}}/public/orgs/margalla-cs
+
+###
+GET {{baseUrl}}/public/events/{{eventId}}
+
+### PU3. Self-registration (no login) — sends a REAL confirmation email with the ticket: use a willkariim+… address
+POST {{baseUrl}}/public/events/{{eventId}}/register
+Content-Type: application/json
+
+{ "name": "Test Attendee", "email": "willkariim+public1@gmail.com", "phone": "+92 300 1234567" }
+
+### NO1. My notifications (bell)
+GET {{baseUrl}}/notifications
+Authorization: Bearer {{token}}
+
+### API1. API tokens (Enterprise admins only) — the full token is in the response ONCE
+POST {{baseUrl}}/api-tokens
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "name": "REST client test", "expiresInDays": 30 }
+
+### API2. REST API with a token (paste the evx_live_… token)
+@apiToken = evx_live_paste-your-token-here
+GET {{baseUrl}}/ext/events
+Authorization: Bearer {{apiToken}}
+
+###
+POST {{baseUrl}}/ext/events/{{eventId}}/registrations
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{ "name": "API Attendee", "email": "willkariim+api1@gmail.com", "sendTicket": false }
+
+###
+POST {{baseUrl}}/ext/check-in
+Authorization: Bearer {{apiToken}}
+Content-Type: application/json
+
+{ "code": "TKT-XXXXXXXXXX" }
+
+### SA1. Superadmin (log in with the superadmin account first and put its token here)
+@saToken = paste-superadmin-token
+GET {{baseUrl}}/superadmin/dashboard
+Authorization: Bearer {{saToken}}
+
+###
+GET {{baseUrl}}/superadmin/tenants?status=trial&sort=ending
+Authorization: Bearer {{saToken}}
+
+###
+GET {{baseUrl}}/superadmin/payments?status=PENDING
+Authorization: Bearer {{saToken}}
+
+###
+GET {{baseUrl}}/superadmin/maintenance
+Authorization: Bearer {{saToken}}
+
+###
+GET {{baseUrl}}/superadmin/security/overview
+Authorization: Bearer {{saToken}}
