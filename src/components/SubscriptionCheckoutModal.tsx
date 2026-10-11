@@ -17,6 +17,7 @@ import {
 import { Button } from './ui/button';
 import { api } from '@/services/api';
 import { printElement } from '@/lib/printUtils';
+import { useAuth } from '@/context/AuthContext';
 
 export interface PlanData {
   name: string;
@@ -49,9 +50,13 @@ export default function SubscriptionCheckoutModal({
   const [successData, setSuccessData] = useState<any | null>(null);
   const [copiedBank, setCopiedBank] = useState(false);
 
+  const { user, currentTenant, register: authRegister } = useAuth();
+
   // Form states
+  const [fullName, setFullName] = useState('');
   const [orgName, setOrgName] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [trxId, setTrxId] = useState('');
   const [cardNumber, setCardNumber] = useState('');
@@ -85,6 +90,22 @@ export default function SubscriptionCheckoutModal({
     setIsProcessing(true);
 
     try {
+      // 1. If not logged in, register account first so client has login credentials & tenant workspace
+      if (!user) {
+        if (!adminEmail || !password || password.length < 6) {
+          alert('Please enter a valid email and account password (at least 6 characters) to create your login.');
+          setIsProcessing(false);
+          return;
+        }
+        await authRegister({
+          fullName: fullName.trim() || 'Organization Owner',
+          orgName: orgName.trim() || 'My Organization',
+          email: adminEmail.trim(),
+          password
+        });
+      }
+
+      // 2. Submit subscription purchase to backend
       let purchaseRes: any = null;
       try {
         purchaseRes = await api.billing.purchase({
@@ -104,6 +125,8 @@ export default function SubscriptionCheckoutModal({
 
       const invoiceNumber = purchaseRes?.invoiceNumber || (trxId ? trxId : `EVX-INV-${Date.now().toString().slice(-6)}`);
       const status = purchaseRes?.status || (isFree ? 'active' : 'pending_approval');
+      const finalOrgName = currentTenant?.name || user?.orgName || orgName || 'Your Organization';
+      const finalAdminEmail = user?.email || adminEmail || 'admin@eventorax.com';
 
       setSuccessData({
         invoiceNumber,
@@ -114,11 +137,11 @@ export default function SubscriptionCheckoutModal({
         billingCycle: isAnnual ? 'Annual (20% Discount)' : 'Monthly',
         paymentMethod: isFree ? 'Free Community Tier' : paymentMethod.toUpperCase(),
         date: new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' }),
-        orgName: orgName || 'Your Organization',
-        adminEmail: adminEmail || 'admin@eventorax.com',
+        orgName: finalOrgName,
+        adminEmail: finalAdminEmail,
       });
-    } catch (err) {
-      alert('Subscription processing error. Please try again.');
+    } catch (err: any) {
+      alert(err.message || 'Subscription processing error. Please try again.');
     } finally {
       setIsProcessing(false);
     }
@@ -214,30 +237,78 @@ export default function SubscriptionCheckoutModal({
             </div>
 
             {/* Organization Info */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Organization / Brand Name *</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="e.g. Acme Innovations"
-                  value={orgName}
-                  onChange={(e) => setOrgName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+            {user ? (
+              <div className="bg-[#f0f9ff] border border-blue-200 rounded-2xl p-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-[#1d4ed8] text-white flex items-center justify-center font-bold text-sm">
+                    {(currentTenant?.name || user.fullName || 'EX').slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-slate-900">{currentTenant?.name || user.orgName || 'Your Organization Workspace'}</p>
+                    <p className="text-[11px] text-slate-500">Account: {user.email} • {user.fullName}</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-bold px-2.5 py-1 rounded-full bg-blue-100 text-blue-800 border border-blue-200">
+                  Verified Workspace
+                </span>
               </div>
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Admin Account Email *</label>
-                <input
-                  type="email"
-                  required
-                  placeholder="admin@yourcompany.com"
-                  value={adminEmail}
-                  onChange={(e) => setAdminEmail(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
+            ) : (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="text-xs font-bold text-slate-800">Create Client Organization Account</label>
+                  <a href="/login" className="text-xs font-semibold text-blue-600 hover:underline">
+                    Already registered? Log in &rarr;
+                  </a>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Your Full Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. John Doe"
+                      value={fullName}
+                      onChange={(e) => setFullName(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Organization / Brand Name *</label>
+                    <input
+                      type="text"
+                      required
+                      placeholder="e.g. Acme Innovations"
+                      value={orgName}
+                      onChange={(e) => setOrgName(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Work / Admin Email *</label>
+                    <input
+                      type="email"
+                      required
+                      placeholder="admin@yourcompany.com"
+                      value={adminEmail}
+                      onChange={(e) => setAdminEmail(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Account Login Password *</label>
+                    <input
+                      type="password"
+                      required
+                      minLength={6}
+                      placeholder="Minimum 6 characters"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Payment Method Selector (Skip if Free) */}
             {!isFree ? (
