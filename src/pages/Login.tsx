@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Eye, EyeOff, LogIn, Sparkles, AlertCircle } from 'lucide-react';
+import { Eye, EyeOff, LogIn, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import BrandLogo from '@/components/BrandLogo';
 
 export default function Login() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
-  const [form, setForm] = useState({ email: '', password: '', remember: true });
+  const [form, setForm] = useState({ email: 'client@eventorax.com', password: 'client123', remember: true });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,40 +27,17 @@ export default function Login() {
     }
   };
 
-  const fillDemo = () => {
-    setForm({
-      email: 'admin@eventorax.com',
-      password: 'admin123',
-      remember: true,
-    });
-    setError(null);
-  };
-
   return (
-    <main className="min-h-screen flex items-center justify-center bg-[#f3f0ff] px-4 py-20">
+    <main className="min-h-screen flex items-center justify-center bg-[#f8fafc] px-4 py-20">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <Link to="/" className="font-heading text-3xl font-bold text-[#0f172a]">
-            Eventora<span className="text-[#7c3aed]">X</span>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <Link to="/" className="inline-block mb-2">
+            <BrandLogo variant="compact" size="lg" showTagline={true} />
           </Link>
           <p className="font-body text-sm mt-2 text-[#64748b]">
-            Welcome back! Sign in to your account.
+            Sign in to your organization workspace.
           </p>
-        </div>
-
-        {/* Demo Credentials Quick Pill */}
-        <div 
-          onClick={fillDemo}
-          className="flex items-center justify-between gap-2 p-3 rounded-xl mb-4 bg-gradient-to-r from-[#f5f3ff] to-[#faf8ff] border border-[#e9e4ff] cursor-pointer hover:border-[#7c3aed] transition-all duration-200 shadow-sm group"
-        >
-          <div className="flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-[#7c3aed] animate-pulse" />
-            <span className="text-xs font-semibold text-[#0f172a]">Demo Admin Account</span>
-          </div>
-          <span className="text-xs font-semibold text-[#7c3aed] group-hover:underline">
-            Click to Auto-fill
-          </span>
         </div>
 
         {/* Error Alert */}

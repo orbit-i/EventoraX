@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Eye, EyeOff, UserPlus, Check, AlertCircle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import BrandLogo from '@/components/BrandLogo';
 
 export default function Register() {
   const navigate = useNavigate();
@@ -70,9 +71,9 @@ export default function Register() {
     <main className="min-h-screen flex items-center justify-center bg-[#f3f0ff] px-4 py-20">
       <div className="w-full max-w-md">
         {/* Logo */}
-        <div className="text-center mb-8">
-          <Link to="/" className="font-heading text-3xl font-bold text-[#0f172a]">
-            Eventora<span className="text-[#7c3aed]">X</span>
+        <div className="text-center mb-8 flex flex-col items-center">
+          <Link to="/" className="inline-block mb-2">
+            <BrandLogo variant="compact" size="lg" showTagline={true} />
           </Link>
           <p className="font-body text-sm mt-2 text-[#64748b]">
             Create your account and start your free trial.

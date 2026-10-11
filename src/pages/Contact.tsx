@@ -48,10 +48,10 @@ export default function Contact() {
             {/* Contact Info */}
             <div className="lg:col-span-1 space-y-6">
               {[
-                { icon: Mail, label: 'Email', value: 'hello@eventorax.com' },
-                { icon: Phone, label: 'Phone', value: '+92 300 1234567' },
-                { icon: MapPin, label: 'Location', value: 'Islamabad, Pakistan' },
-                { icon: Clock, label: 'Response Time', value: 'Within 24 hours' },
+                { icon: Mail, label: 'Email', value: 'eventorax@orbit-i.tech' },
+                { icon: Phone, label: 'Phone & WhatsApp', value: '+92 3190375751' },
+                { icon: MapPin, label: 'Headquarters', value: 'ORBIT-I, Islamabad, Pakistan' },
+                { icon: Clock, label: 'Support Response', value: 'Within 2-4 hours (Active 24/7)' },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-4">
                   <div className="w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 bg-[#f5f3ff] text-[#7c3aed]">
@@ -66,13 +66,13 @@ export default function Contact() {
 
               {/* WhatsApp Button */}
               <a
-                href="https://wa.me/923001234567"
+                href="https://wa.me/923190375751"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl font-body font-semibold text-sm transition-all duration-300 hover:scale-[1.02] hover:shadow-lg text-white bg-[#25D366] hover:bg-[#128C7E]"
               >
                 <MessageCircle size={18} />
-                Chat on WhatsApp
+                Chat on WhatsApp (+92 3190375751)
               </a>
             </div>
 

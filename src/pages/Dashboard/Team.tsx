@@ -57,11 +57,13 @@ export default function Team() {
 
   const handleRemove = async (id: number, name: string) => {
     if (!confirm(`Are you sure you want to remove ${name} from your team?`)) return;
+    // Optimistic immediate update
+    setTeam(prev => prev.filter(m => m.id !== id));
     try {
       await api.team.remove(id);
-      fetchTeam();
     } catch (err: any) {
-      alert(err.message || 'Failed to remove team member.');
+      console.warn('Backend sync:', err);
+      fetchTeam();
     }
   };
 

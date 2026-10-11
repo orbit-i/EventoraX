@@ -1,82 +1,95 @@
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Link } from 'react-router-dom';
-import { Check, X, HelpCircle, Sparkles } from 'lucide-react';
+import { Check, X, Sparkles, CreditCard } from 'lucide-react';
+import SubscriptionCheckoutModal, { type PlanData } from '@/components/SubscriptionCheckoutModal';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const plans = [
+const plansData: PlanData[] = [
   {
     name: 'Starter',
-    price: 'Free',
-    period: '',
-    description: 'Perfect for getting started',
+    priceUsdMonthly: 0,
+    pricePkrMonthly: 0,
+    description: 'Perfect for small events, meetups & initial certificate testing',
+    badge: null,
     features: [
-      { text: 'Up to 50 attendees', included: true },
-      { text: '1 event at a time', included: true },
-      { text: 'Basic certificates', included: true },
-      { text: 'Email support', included: true },
-      { text: 'Custom branding', included: false },
-      { text: 'QR ticketing', included: false },
-      { text: 'Analytics dashboard', included: false },
-      { text: 'API access', included: false },
-      { text: 'White-label', included: false },
-      { text: 'Priority support', included: false },
+      'Up to 500 attendees & 5 events',
+      'Automated Certificate Generator (50 certs/mo)',
+      'Instant QR Code Verification',
+      'Digital QR Ticketing',
+      'Analytics Dashboard',
+      'Community Support',
     ],
-    active: false,
-    cta: 'Get Started Free',
   },
   {
-    name: 'Pro',
-    price: '$29',
-    period: '/month',
-    description: 'Best for growing organizers',
+    name: 'Professional',
+    priceUsdMonthly: 49,
+    pricePkrMonthly: 13800,
+    description: 'Best for frequent event organizers, bootcamps & training centers',
+    badge: 'Most Popular',
     features: [
-      { text: 'Unlimited attendees', included: true },
-      { text: '10 events', included: true },
-      { text: 'Custom certificates', included: true },
-      { text: 'QR tickets', included: true },
-      { text: 'Priority support', included: true },
-      { text: 'Custom branding', included: true },
-      { text: 'Analytics dashboard', included: true },
-      { text: 'API access', included: false },
-      { text: 'White-label', included: false },
-      { text: 'Priority support', included: true },
+      'Up to 5,000 attendees & 25 events',
+      'Bulk Certificate Automation (2,500 certs/mo)',
+      'CSV / Excel Recipient Auto-Merge',
+      'High-Res PNG, PDF & Batch ZIP Downloads',
+      'Individual Email Dispatch & Delivery Tracking',
+      'Custom Brand Colors & Branded Portal (/t/slug)',
+      'Multi-Role Team Collaborators',
+      'Real-time Check-in Scanner',
     ],
-    active: true,
-    cta: 'Start Pro Trial',
   },
   {
     name: 'Enterprise',
-    price: '$99',
-    period: '/month',
-    description: 'For large organizations',
+    priceUsdMonthly: 199,
+    pricePkrMonthly: 55000,
+    description: 'For universities, government, agencies & global conferences',
+    badge: 'Enterprise White-Label',
     features: [
-      { text: 'Everything in Pro', included: true },
-      { text: 'Unlimited events', included: true },
-      { text: 'White-label', included: true },
-      { text: 'Full API access', included: true },
-      { text: 'Dedicated support', included: true },
-      { text: 'SSO integration', included: true },
-      { text: 'Custom domains', included: true },
-      { text: 'SLA guarantee', included: true },
-      { text: 'Onboarding training', included: true },
-      { text: 'Priority support', included: true },
+      '50,000+ attendees & 500 events',
+      'Unlimited Certificate & ID Badge Generation',
+      'Full White-Labeling (Remove EventoraX)',
+      'Custom Domain (events.yourdomain.com)',
+      'Multi-Tenant Workspaces Isolation',
+      'Tamper-Proof Public Verification Portal',
+      'Dedicated Account Manager & SLA',
+      'PaaS REST API (10k req/mo)',
+      'Webhooks & Embed Widgets',
     ],
-    active: false,
-    cta: 'Contact Sales',
+  },
+  {
+    name: 'PaaS Developer',
+    priceUsdMonthly: 299,
+    pricePkrMonthly: 83000,
+    description: 'For SaaS founders & developers building credential systems',
+    badge: 'API & Platform',
+    features: [
+      'Full RESTful PaaS v1 API',
+      'Certificate & ID Engine API (Issue, Revoke, Verify)',
+      'Real-time Webhook Callbacks',
+      'Embeddable Ticket & Credential Widget SDK',
+      'Unlimited Multi-Tenant Sub-Accounts',
+      '100,000 API calls/month included',
+      'Custom Barcode & Scanner Integration',
+      'Stripe & Regional Payment Gateways',
+      'Priority Developer Support',
+    ],
   },
 ];
 
 const faqs = [
-  { q: 'Can I switch plans later?', a: 'Yes, you can upgrade or downgrade your plan at any time. Changes take effect immediately.' },
-  { q: 'Is there a free trial?', a: 'Yes! Every paid plan includes a 14-day free trial. No credit card required to start.' },
-  { q: 'What payment methods do you accept?', a: 'We accept all major credit cards, PayPal, and bank transfers for annual plans.' },
-  { q: 'Can I cancel anytime?', a: 'Absolutely. You can cancel your subscription at any time with no cancellation fees.' },
+  { q: 'How does Multi-Tenancy work in EventoraX?', a: 'Every organizer gets an isolated workspace with partitioned events, attendees, team permissions, branding, and API keys. You can also manage multiple client workspaces from a single login.' },
+  { q: 'Can I sell EventoraX to my clients under my own brand (White-Label)?', a: 'Yes! On Enterprise and PaaS Developer plans, you can attach custom domains, upload your own logo, set custom theme colors, and remove all EventoraX branding.' },
+  { q: 'What is included in the PaaS Developer plan?', a: 'You get full programmatic access to our /api/v1 REST endpoints (create events, register attendees, scan tickets, check stats), webhooks, and embeddable iframe widgets to integrate ticketing directly into your mobile app or website.' },
+  { q: 'Which payment methods are supported for Pakistani and international organizations?', a: 'We natively support Pakistani local gateways including JazzCash, Easypaisa, Raast Instant Pay, and Direct Bank Transfer (Meezan, HBL, Alfalah), as well as international Credit/Debit cards via Stripe.' },
+  { q: 'Is there a free trial?', a: 'Yes! Every tier includes a 14-day free trial. You can start right away without committing.' },
 ];
 
 export default function Pricing() {
+  const [currency, setCurrency] = useState<'USD' | 'PKR'>('USD');
+  const [isAnnual, setIsAnnual] = useState(false);
+  const [selectedPlanModal, setSelectedPlanModal] = useState<PlanData | null>(null);
+
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
@@ -92,146 +105,226 @@ export default function Pricing() {
   }, []);
 
   return (
-    <main className="pt-14">
+    <main className="pt-14 bg-[#f8fafc]">
       {/* Hero */}
-      <section className="bg-[#f3f0ff] py-20 md:py-32 text-center">
-        <div className="content-max">
-          <p className="font-body text-sm uppercase tracking-[0.1em] mb-4 text-[#a78bfa] font-semibold">Pricing</p>
-          <h1 className="font-heading text-4xl md:text-6xl font-bold tracking-[-0.02em] mb-6 text-[#0f172a]">
-            Simple, transparent pricing
+      <section className="bg-gradient-to-b from-[#eff6ff] to-[#f8fafc] py-16 md:py-24 text-center px-4">
+        <div className="max-w-4xl mx-auto">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white border border-blue-200 text-xs font-bold text-[#1d4ed8] mb-5 shadow-xs">
+            <Sparkles className="w-4 h-4 text-[#2563eb]" />
+            SaaS & PaaS Flexible Monetization
+          </div>
+          <h1 className="font-heading text-4xl md:text-6xl font-extrabold tracking-tight text-slate-900 mb-6">
+            Predictable pricing for organizers & developers
           </h1>
-          <p className="font-body text-lg md:text-xl max-w-2xl mx-auto text-[#64748b] leading-relaxed">
-            Start free. Scale as you grow. No hidden fees, no surprises.
+          <p className="text-base md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed mb-8">
+            Host standalone events, generate instant attendee ID cards, run QR check-in, or integrate our ticketing API into your custom portal.
           </p>
+
+          {/* Currency & Annual Switcher Bar */}
+          <div className="flex flex-wrap items-center justify-center gap-4 bg-white p-3 rounded-2xl shadow-sm border border-slate-200 max-w-lg mx-auto">
+            {/* Currency Toggle */}
+            <div className="inline-flex rounded-xl p-1 bg-slate-100 border border-slate-200">
+              <button
+                onClick={() => setCurrency('USD')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  currency === 'USD' ? 'bg-[#1d4ed8] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                USD ($)
+              </button>
+              <button
+                onClick={() => setCurrency('PKR')}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  currency === 'PKR' ? 'bg-[#1d4ed8] text-white shadow-sm' : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                PKR (Rs)
+              </button>
+            </div>
+
+            {/* Annual Billing Toggle */}
+            <div className="inline-flex items-center gap-2">
+              <span className={`text-xs font-semibold ${!isAnnual ? 'text-slate-900' : 'text-slate-500'}`}>Monthly</span>
+              <button
+                onClick={() => setIsAnnual(!isAnnual)}
+                className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors ${
+                  isAnnual ? 'bg-[#1d4ed8]' : 'bg-slate-300'
+                }`}
+              >
+                <div
+                  className={`bg-white w-4 h-4 rounded-full shadow-md transform transition-transform ${
+                    isAnnual ? 'translate-x-6' : 'translate-x-0'
+                  }`}
+                />
+              </button>
+              <span className={`text-xs font-semibold flex items-center gap-1 ${isAnnual ? 'text-[#1d4ed8]' : 'text-slate-500'}`}>
+                Annual
+                <span className="bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-1.5 py-0.5 rounded-full">Save 20%</span>
+              </span>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Pricing Cards */}
-      <section className="bg-white section-padding">
-        <div className="content-max">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8 max-w-5xl mx-auto">
-            {plans.map((plan, i) => (
+      {/* Pricing Cards Grid */}
+      <section className="py-12 px-4 max-w-7xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {plansData.map((plan, i) => {
+            const isFree = plan.priceUsdMonthly === 0;
+            const multiplier = isAnnual ? 0.8 : 1.0;
+            const priceUsd = Math.round(plan.priceUsdMonthly * multiplier);
+            const pricePkr = Math.round(plan.pricePkrMonthly * multiplier);
+            const displayPrice = isFree ? 'Free' : currency === 'USD' ? `$${priceUsd}` : `PKR ${pricePkr.toLocaleString()}`;
+            const period = isFree ? '' : '/month';
+            const isPopular = plan.badge === 'Most Popular';
+
+            return (
               <div
                 key={i}
-                className={`scroll-reveal rounded-2xl p-8 transition-all duration-300 ${
-                  plan.active
-                    ? 'border-2 border-[#7c3aed] shadow-xl shadow-[#7c3aed]/10 scale-105 z-10'
-                    : 'border border-[#e9e4ff] hover:border-[#c4b5fd] hover:shadow-lg'
+                className={`scroll-reveal rounded-3xl p-6 sm:p-8 transition-all duration-300 flex flex-col justify-between ${
+                  isPopular
+                    ? 'border-2 border-[#1d4ed8] shadow-2xl shadow-blue-500/15 bg-gradient-to-b from-blue-50/50 to-white relative ring-1 ring-[#1d4ed8]'
+                    : 'border border-slate-200 hover:border-blue-300 hover:shadow-lg bg-white'
                 }`}
-                style={{
-                  background: plan.active ? '#f5f3ff' : '#FFFFFF',
-                  transitionDelay: `${i * 100}ms`,
-                }}
               >
-                {plan.active && (
-                  <div className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold mb-4 text-white bg-[#7c3aed] shadow-sm shadow-[#7c3aed]/20">
-                    <Sparkles size={12} />
-                    Most Popular
+                <div>
+                  {plan.badge && (
+                    <span className="inline-block px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-[#1d4ed8] text-white mb-4 shadow-sm">
+                      {plan.badge}
+                    </span>
+                  )}
+                  <h3 className="font-heading text-2xl font-bold text-slate-900 mb-2">{plan.name}</h3>
+                  <p className="text-xs text-slate-600 mb-6 min-h-[32px]">{plan.description}</p>
+
+                  <div className="flex items-baseline gap-1 mb-6">
+                    <span className="font-heading text-3xl sm:text-4xl font-extrabold text-slate-900">{displayPrice}</span>
+                    <span className="text-xs text-slate-500 font-medium">{period}</span>
                   </div>
-                )}
-                <h3 className="font-heading text-2xl font-bold mb-1 text-[#0f172a]">{plan.name}</h3>
-                <p className="font-body text-sm mb-6 text-[#475569]">{plan.description}</p>
-                <div className="flex items-baseline mb-8">
-                  <span className="font-heading text-5xl font-bold text-[#0f172a]">{plan.price}</span>
-                  <span className="font-body text-lg ml-1 text-[#94a3b8]">{plan.period}</span>
+
+                  {isAnnual && !isFree && (
+                    <div className="text-[11px] font-semibold text-emerald-600 mb-4 bg-emerald-50 px-2.5 py-1 rounded-lg">
+                      Billed annually (Includes 20% discount)
+                    </div>
+                  )}
+
+                  <ul className="space-y-3 pt-4 border-t border-slate-100 mb-8">
+                    {plan.features.map((feature, j) => (
+                      <li key={j} className="flex items-center gap-2.5 text-xs">
+                        <Check className="w-4 h-4 text-emerald-600 shrink-0" />
+                        <span className="text-slate-700 font-medium">{feature}</span>
+                      </li>
+                    ))}
+                    {/* Exclusions for starter */}
+                    {isFree && (
+                      <>
+                        <li className="flex items-center gap-2.5 text-xs text-slate-400">
+                          <X className="w-4 h-4 text-slate-300 shrink-0" />
+                          <span>Custom White-labeling</span>
+                        </li>
+                        <li className="flex items-center gap-2.5 text-xs text-slate-400">
+                          <X className="w-4 h-4 text-slate-300 shrink-0" />
+                          <span>Custom Domain (CNAME)</span>
+                        </li>
+                        <li className="flex items-center gap-2.5 text-xs text-slate-400">
+                          <X className="w-4 h-4 text-slate-300 shrink-0" />
+                          <span>PaaS API & Webhooks</span>
+                        </li>
+                      </>
+                    )}
+                    {plan.name === 'Professional' && (
+                      <>
+                        <li className="flex items-center gap-2.5 text-xs text-slate-400">
+                          <X className="w-4 h-4 text-slate-300 shrink-0" />
+                          <span>Custom Domain (CNAME)</span>
+                        </li>
+                        <li className="flex items-center gap-2.5 text-xs text-slate-400">
+                          <X className="w-4 h-4 text-slate-300 shrink-0" />
+                          <span>Full PaaS API Access</span>
+                        </li>
+                      </>
+                    )}
+                  </ul>
                 </div>
-                <ul className="space-y-3 mb-8">
-                  {plan.features.map((f, fi) => (
-                    <li key={fi} className="flex items-center gap-3">
-                      {f.included ? (
-                        <div className="w-5 h-5 rounded-full bg-[#f0fdf4] flex items-center justify-center flex-shrink-0">
-                          <Check size={14} className="text-[#16a34a]" />
-                        </div>
-                      ) : (
-                        <div className="w-5 h-5 rounded-full bg-[#f8fafc] flex items-center justify-center flex-shrink-0">
-                          <X size={14} className="text-[#cbd5e1]" />
-                        </div>
-                      )}
-                      <span className={`font-body text-sm ${f.included ? 'text-[#0f172a]' : 'text-[#94a3b8]'}`}>
-                        {f.text}
-                      </span>
-                    </li>
-                  ))}
-                </ul>
-                <Link
-                  to="/register"
-                  className={`block w-full text-center py-3.5 rounded-xl font-body font-semibold transition-all duration-200 ${
-                    plan.active
-                      ? 'bg-[#7c3aed] text-white shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0'
-                      : 'border-2 border-[#e2e8f0] text-[#0f172a] hover:border-[#c4b5fd] hover:bg-[#f5f3ff] hover:text-[#7c3aed]'
+
+                <button
+                  onClick={() => setSelectedPlanModal(plan)}
+                  className={`w-full py-3 rounded-xl font-bold text-xs text-center transition-all cursor-pointer ${
+                    isPopular
+                      ? 'bg-[#1d4ed8] text-white shadow-lg shadow-blue-600/25 hover:bg-[#1e40af]'
+                      : 'bg-slate-100 text-[#1d4ed8] hover:bg-blue-50 border border-slate-200'
                   }`}
                 >
-                  {plan.cta}
-                </Link>
+                  {isFree ? 'Get Started Free' : isPopular ? 'Start Pro Trial' : plan.name === 'Enterprise' ? 'Purchase Enterprise' : 'Get API Access'}
+                </button>
               </div>
-            ))}
+            );
+          })}
+        </div>
+
+        {/* Payment Gateways Showcase Bar */}
+        <div className="mt-16 bg-white p-6 rounded-3xl border border-slate-200 text-center shadow-xs">
+          <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">
+            <CreditCard className="w-4 h-4 text-[#1d4ed8]" />
+            Supported Global & Local Pakistani Payment Methods
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs font-bold text-slate-700">
+            <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+              Visa & MasterCard
+            </span>
+            <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-red-600" />
+              JazzCash
+            </span>
+            <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
+              Easypaisa
+            </span>
+            <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
+              Raast Instant IBFT
+            </span>
+            <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
+              SadaPay & NayaPay
+            </span>
+            <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
+              Direct Bank Transfer (Meezan / HBL)
+            </span>
           </div>
         </div>
       </section>
 
-      {/* Comparison Table */}
-      <section className="bg-[#f5f3ff] section-padding">
-        <div className="content-max">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-center mb-12 tracking-[-0.02em] text-[#0f172a]">
-            Feature comparison
-          </h2>
-          <div className="overflow-x-auto">
-            <table className="w-full max-w-4xl mx-auto bg-white rounded-2xl border border-[#e9e4ff] shadow-sm overflow-hidden">
-              <thead>
-                <tr className="border-b-2 border-[#7c3aed] bg-[#f5f3ff]">
-                  <th className="text-left py-4 px-6 font-body text-sm font-semibold text-[#0f172a]">Feature</th>
-                  <th className="text-center py-4 px-6 font-body text-sm font-semibold text-[#0f172a]">Starter</th>
-                  <th className="text-center py-4 px-6 font-body text-sm font-semibold text-[#7c3aed]">Pro</th>
-                  <th className="text-center py-4 px-6 font-body text-sm font-semibold text-[#0f172a]">Enterprise</th>
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ['Attendees', 'Up to 50', 'Unlimited', 'Unlimited'],
-                  ['Events', '1', '10', 'Unlimited'],
-                  ['Certificates', 'Basic', 'Custom', 'Custom'],
-                  ['QR Ticketing', '—', 'Included', 'Included'],
-                  ['Analytics', '—', 'Full', 'Full'],
-                  ['Custom Branding', '—', 'Included', 'Full White-label'],
-                  ['API Access', '—', '—', 'Full'],
-                  ['Support', 'Email', 'Priority', 'Dedicated'],
-                ].map((row, i) => (
-                  <tr key={i} className="border-b border-[#e9e4ff] last:border-b-0 hover:bg-[#faf8ff] transition-colors duration-150">
-                    <td className="py-4 px-6 font-body text-sm font-medium text-[#0f172a]">{row[0]}</td>
-                    <td className="text-center py-4 px-6 font-body text-sm text-[#64748b]">{row[1]}</td>
-                    <td className="text-center py-4 px-6 font-body text-sm font-semibold text-[#7c3aed]">{row[2]}</td>
-                    <td className="text-center py-4 px-6 font-body text-sm text-[#0f172a]">{row[3]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+      {/* FAQ Section */}
+      <section className="py-16 px-4 bg-slate-50 border-t border-slate-200">
+        <div className="max-w-3xl mx-auto space-y-6">
+          <div className="text-center mb-10">
+            <h2 className="text-3xl font-extrabold text-slate-900 font-heading">Frequently Asked Questions</h2>
+            <p className="text-sm text-slate-600 mt-2">Everything you need to know about EventoraX SaaS & PaaS</p>
           </div>
-        </div>
-      </section>
 
-      {/* FAQ */}
-      <section className="bg-white section-padding">
-        <div className="content-max">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-center mb-12 tracking-[-0.02em] text-[#0f172a]">
-            Billing questions
-          </h2>
-          <div className="max-w-3xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
             {faqs.map((faq, i) => (
-              <div key={i} className="scroll-reveal p-6 rounded-2xl border border-[#e9e4ff] bg-[#faf8ff] hover:shadow-md transition-all duration-200">
-                <div className="flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-[#f5f3ff] flex items-center justify-center flex-shrink-0">
-                    <HelpCircle size={18} className="text-[#7c3aed]" />
-                  </div>
-                  <div>
-                    <h4 className="font-body text-base font-semibold mb-2 text-[#0f172a]">{faq.q}</h4>
-                    <p className="font-body text-sm text-[#475569] leading-relaxed">{faq.a}</p>
-                  </div>
-                </div>
+              <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
+                <h4 className="text-base font-bold text-slate-900 mb-2">{faq.q}</h4>
+                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{faq.a}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {/* Subscription Checkout Modal */}
+      {selectedPlanModal && (
+        <SubscriptionCheckoutModal
+          isOpen={!!selectedPlanModal}
+          onClose={() => setSelectedPlanModal(null)}
+          selectedPlan={selectedPlanModal}
+          initialCurrency={currency}
+          initialAnnual={isAnnual}
+        />
+      )}
     </main>
   );
 }

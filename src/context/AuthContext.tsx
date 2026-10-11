@@ -17,9 +17,27 @@ export interface User {
   plan?: string;
 }
 
+export interface Tenant {
+  id: number;
+  name: string;
+  slug: string;
+  custom_domain?: string;
+  logo_url?: string;
+  primary_color?: string;
+  secondary_color?: string;
+  owner_id?: number;
+  plan?: string;
+  status?: string;
+  user_role?: string;
+  userRole?: string;
+}
+
 interface AuthContextType {
   user: User | null;
   token: string | null;
+  currentTenant: Tenant | null;
+  userTenants: Tenant[];
+  isSuperAdmin: boolean;
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: { email: string; password: string }) => Promise<void>;
@@ -27,6 +45,8 @@ interface AuthContextType {
   logout: () => void;
   updateUser: (userData: Partial<User>) => void;
   refreshUser: () => Promise<void>;
+  switchTenant: (tenant: Tenant) => void;
+  refreshTenants: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -44,6 +64,31 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
     return null;
   });
+
+  const [currentTenant, setCurrentTenant] = useState<Tenant | null>(() => {
+    const saved = localStorage.getItem('activeTenant');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return null;
+      }
+    }
+    return null;
+  });
+
+  const [userTenants, setUserTenants] = useState<Tenant[]>(() => {
+    const saved = localStorage.getItem('userTenants');
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return [];
+      }
+    }
+    return [];
+  });
+
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Validate stored token on boot
@@ -56,13 +101,26 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
           if (res.success && res.user) {
             setUser(res.user);
             localStorage.setItem('user', JSON.stringify(res.user));
+
+            if (res.tenant) {
+              setCurrentTenant(res.tenant);
+              localStorage.setItem('activeTenant', JSON.stringify(res.tenant));
+            }
+            if (res.tenants && Array.isArray(res.tenants)) {
+              setUserTenants(res.tenants);
+              localStorage.setItem('userTenants', JSON.stringify(res.tenants));
+            }
           }
         } catch {
           // Token expired or invalid
           localStorage.removeItem('token');
           localStorage.removeItem('user');
+          localStorage.removeItem('activeTenant');
+          localStorage.removeItem('userTenants');
           setToken(null);
           setUser(null);
+          setCurrentTenant(null);
+          setUserTenants([]);
         }
       }
       setIsLoading(false);
@@ -80,6 +138,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('user', JSON.stringify(res.user));
         setToken(res.token);
         setUser(res.user);
+
+        if (res.tenant) {
+          setCurrentTenant(res.tenant);
+          localStorage.setItem('activeTenant', JSON.stringify(res.tenant));
+        }
+        if (res.tenants && Array.isArray(res.tenants)) {
+          setUserTenants(res.tenants);
+          localStorage.setItem('userTenants', JSON.stringify(res.tenants));
+        }
       }
     } finally {
       setIsLoading(false);
@@ -95,6 +162,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         localStorage.setItem('user', JSON.stringify(res.user));
         setToken(res.token);
         setUser(res.user);
+
+        if (res.tenant) {
+          setCurrentTenant(res.tenant);
+          localStorage.setItem('activeTenant', JSON.stringify(res.tenant));
+        }
+        if (res.tenants && Array.isArray(res.tenants)) {
+          setUserTenants(res.tenants);
+          localStorage.setItem('userTenants', JSON.stringify(res.tenants));
+        }
       }
     } finally {
       setIsLoading(false);
@@ -104,8 +180,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
+    localStorage.removeItem('activeTenant');
+    localStorage.removeItem('userTenants');
     setToken(null);
     setUser(null);
+    setCurrentTenant(null);
+    setUserTenants([]);
     window.location.href = '/login';
   };
 
@@ -118,12 +198,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
   };
 
+  const switchTenant = (tenant: Tenant) => {
+    setCurrentTenant(tenant);
+    localStorage.setItem('activeTenant', JSON.stringify(tenant));
+    // Trigger window storage event or reload data
+    window.dispatchEvent(new Event('tenantChanged'));
+  };
+
+  const refreshTenants = async () => {
+    try {
+      const res = await api.tenants.list();
+      if (res.success && res.tenants) {
+        setUserTenants(res.tenants);
+        localStorage.setItem('userTenants', JSON.stringify(res.tenants));
+        // If current tenant is not in list, select first
+        if (currentTenant && !res.tenants.some((t: Tenant) => t.id === currentTenant.id)) {
+          if (res.tenants.length > 0) {
+            switchTenant(res.tenants[0]);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to refresh tenants:', err);
+    }
+  };
+
   const refreshUser = async () => {
     try {
       const res = await api.auth.getMe();
       if (res.success && res.user) {
         setUser(res.user);
         localStorage.setItem('user', JSON.stringify(res.user));
+        if (res.tenant) {
+          setCurrentTenant(res.tenant);
+          localStorage.setItem('activeTenant', JSON.stringify(res.tenant));
+        }
+        if (res.tenants) {
+          setUserTenants(res.tenants);
+          localStorage.setItem('userTenants', JSON.stringify(res.tenants));
+        }
       }
     } catch (err) {
       console.error('Failed to refresh user:', err);
@@ -135,6 +248,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       value={{
         user,
         token,
+        currentTenant,
+        userTenants,
+        isSuperAdmin: user?.role === 'admin',
         isAuthenticated: !!token && !!user,
         isLoading,
         login,
@@ -142,6 +258,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         logout,
         updateUser,
         refreshUser,
+        switchTenant,
+        refreshTenants,
       }}
     >
       {children}

@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /dashboard/
+
+# Sitemap location
+Sitemap: https://eventorax.orbit-i.tech/sitemap.xml
+Sitemap: https://eventorax.com/sitemap.xml

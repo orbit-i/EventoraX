@@ -1,6 +1,8 @@
 import express from 'express';
 import { query } from '../db/db.js';
 import { verifyToken } from '../middleware/auth.js';
+import { resolveTenant } from '../middleware/tenant.js';
+import { contentPolicyGuard } from '../middleware/securityScanner.js';
 
 const router = express.Router();
 
@@ -14,13 +16,20 @@ function createSlug(title) {
   return `${base}-${randomSuffix}`;
 }
 
-// GET /api/events - List events (Public with optional filters)
-router.get('/', async (req, res) => {
+// GET /api/events - List events (Public or Tenant-scoped)
+router.get('/', resolveTenant, async (req, res) => {
   try {
-    const { search, category, status, limit = 50, offset = 0 } = req.query;
+    const { search, category, status, limit = 50, offset = 0, tenantOnly = 'false' } = req.query;
 
     let sql = 'SELECT * FROM `events` WHERE 1=1';
     const params = [];
+
+    // If tenantOnly is requested or tenant is explicitly supplied via header
+    const hasExplicitTenant = req.headers['x-tenant-id'] || req.headers['x-tenant-slug'] || tenantOnly === 'true';
+    if (hasExplicitTenant && req.tenantId) {
+      sql += ' AND `tenant_id` = ?';
+      params.push(req.tenantId);
+    }
 
     if (search) {
       sql += ' AND (`title` LIKE ? OR `description` LIKE ? OR `venue_name` LIKE ?)';
@@ -42,9 +51,13 @@ router.get('/', async (req, res) => {
 
     const [rows] = await query(sql, params);
 
-    // Get total count
+    // Count
     let countSql = 'SELECT COUNT(*) as total FROM `events` WHERE 1=1';
     const countParams = [];
+    if (hasExplicitTenant && req.tenantId) {
+      countSql += ' AND `tenant_id` = ?';
+      countParams.push(req.tenantId);
+    }
     if (search) {
       countSql += ' AND (`title` LIKE ? OR `description` LIKE ? OR `venue_name` LIKE ?)';
       countParams.push(`%${search}%`, `%${search}%`, `%${search}%`);
@@ -62,7 +75,8 @@ router.get('/', async (req, res) => {
     return res.json({
       success: true,
       events: rows,
-      total: countRows[0].total
+      total: countRows[0]?.total || rows.length,
+      tenantId: req.tenantId
     });
   } catch (error) {
     console.error('[Events List Error]:', error);
@@ -71,7 +85,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /api/events/:id - Get event by ID or slug
-router.get('/:id', async (req, res) => {
+router.get('/:id', resolveTenant, async (req, res) => {
   try {
     const param = req.params.id;
     let sql, params;
@@ -96,69 +110,66 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// POST /api/events - Create new event (Protected)
-router.post('/', verifyToken, async (req, res) => {
+// POST /api/events - Create new event (Protected, scoped to active tenant)
+router.post('/', verifyToken, resolveTenant, contentPolicyGuard, async (req, res) => {
   try {
     const {
       title,
-      category = 'Conference',
-      description = '',
-      eventType = 'in-person',
-      venueName = '',
-      venueAddress = '',
-      virtualLink = '',
+      category,
+      eventType,
+      venueName,
+      venueAddress,
+      virtualLink,
       startDate,
-      startTime = '09:00',
-      endDate = null,
-      endTime = '17:00',
-      price = 0,
-      capacity = 500,
-      bannerImage = ''
+      startTime,
+      endDate,
+      endTime,
+      price,
+      capacity,
+      description,
+      bannerImage
     } = req.body;
 
     if (!title || !startDate) {
-      return res.status(400).json({ success: false, message: 'Event title and start date are required.' });
+      return res.status(400).json({ success: false, message: 'Title and Start Date are required.' });
     }
 
+    const tenantId = req.tenantId || 1;
     const slug = createSlug(title);
 
     const [result] = await query(
-      `INSERT INTO \`events\` (
-        \`title\`, \`slug\`, \`category\`, \`description\`, \`event_type\`,
-        \`venue_name\`, \`venue_address\`, \`virtual_link\`, \`start_date\`,
-        \`start_time\`, \`end_date\`, \`end_time\`, \`price\`, \`capacity\`,
-        \`registered_count\`, \`status\`, \`banner_image\`, \`organizer_id\`
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, 'upcoming', ?, ?)`,
+      `INSERT INTO \`events\` 
+       (\`tenant_id\`, \`title\`, \`slug\`, \`category\`, \`description\`, \`event_type\`, \`venue_name\`, \`venue_address\`, \`virtual_link\`, \`start_date\`, \`start_time\`, \`end_date\`, \`end_time\`, \`price\`, \`capacity\`, \`status\`, \`banner_image\`, \`organizer_id\`)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'upcoming', ?, ?)`,
       [
+        tenantId,
         title.trim(),
         slug,
-        category,
-        description,
-        eventType,
-        venueName,
-        venueAddress,
-        virtualLink,
+        category || 'General',
+        description || '',
+        eventType || 'in-person',
+        venueName || '',
+        venueAddress || '',
+        virtualLink || '',
         startDate,
-        startTime,
-        endDate || null,
-        endTime,
+        startTime || '09:00',
+        endDate || startDate,
+        endTime || '17:00',
         parseFloat(price) || 0,
         parseInt(capacity, 10) || 500,
-        bannerImage,
+        bannerImage || '',
         req.user.id
       ]
     );
 
-    const eventId = result.insertId;
-
     // Log activity
     await query(
-      `INSERT INTO \`activity_logs\` (\`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
-       VALUES (?, ?, 'event', 'Event created', ?)`,
-      [req.user.id, req.user.email, `Created event "${title}" scheduled for ${startDate}`]
+      `INSERT INTO \`activity_logs\` (\`tenant_id\`, \`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
+       VALUES (?, ?, ?, 'event', 'Event created', ?)`,
+      [tenantId, req.user.id, req.user.email, `Created event: "${title.trim()}"`]
     );
 
-    const [newEvent] = await query('SELECT * FROM `events` WHERE `id` = ?', [eventId]);
+    const [newEvent] = await query('SELECT * FROM `events` WHERE `id` = ?', [result.insertId]);
 
     return res.status(201).json({
       success: true,
@@ -171,55 +182,52 @@ router.post('/', verifyToken, async (req, res) => {
   }
 });
 
-// PUT /api/events/:id - Update event (Protected)
-router.put('/:id', verifyToken, async (req, res) => {
+// PUT /api/events/:id - Update event
+router.put('/:id', verifyToken, resolveTenant, contentPolicyGuard, async (req, res) => {
   try {
     const eventId = parseInt(req.params.id, 10);
-    const {
-      title,
-      category,
-      description,
-      eventType,
-      venueName,
-      venueAddress,
-      virtualLink,
-      startDate,
-      startTime,
-      endDate,
-      endTime,
-      price,
-      capacity,
-      status,
-      bannerImage
-    } = req.body;
+    const tenantId = req.tenantId || 1;
+    const isSuperAdmin = req.user.role === 'admin';
 
-    const [existing] = await query('SELECT * FROM `events` WHERE `id` = ?', [eventId]);
-    if (existing.length === 0) {
-      return res.status(404).json({ success: false, message: 'Event not found.' });
+    // Verify ownership
+    let checkSql = 'SELECT * FROM `events` WHERE `id` = ?';
+    let checkParams = [eventId];
+    if (!isSuperAdmin) {
+      checkSql += ' AND `tenant_id` = ?';
+      checkParams.push(tenantId);
     }
 
+    const [existing] = await query(checkSql, checkParams);
+    if (existing.length === 0) {
+      return res.status(404).json({ success: false, message: 'Event not found or access denied.' });
+    }
+
+    const ev = existing[0];
+    const {
+      title = ev.title,
+      category = ev.category,
+      eventType = ev.event_type,
+      venueName = ev.venue_name,
+      venueAddress = ev.venue_address,
+      virtualLink = ev.virtual_link,
+      startDate = ev.start_date,
+      startTime = ev.start_time,
+      endDate = ev.end_date,
+      endTime = ev.end_time,
+      price = ev.price,
+      capacity = ev.capacity,
+      status = ev.status,
+      description = ev.description,
+      bannerImage = ev.banner_image
+    } = req.body;
+
     await query(
-      `UPDATE \`events\` SET
-        \`title\` = COALESCE(?, \`title\`),
-        \`category\` = COALESCE(?, \`category\`),
-        \`description\` = COALESCE(?, \`description\`),
-        \`event_type\` = COALESCE(?, \`event_type\`),
-        \`venue_name\` = COALESCE(?, \`venue_name\`),
-        \`venue_address\` = COALESCE(?, \`venue_address\`),
-        \`virtual_link\` = COALESCE(?, \`virtual_link\`),
-        \`start_date\` = COALESCE(?, \`start_date\`),
-        \`start_time\` = COALESCE(?, \`start_time\`),
-        \`end_date\` = COALESCE(?, \`end_date\`),
-        \`end_time\` = COALESCE(?, \`end_time\`),
-        \`price\` = COALESCE(?, \`price\`),
-        \`capacity\` = COALESCE(?, \`capacity\`),
-        \`status\` = COALESCE(?, \`status\`),
-        \`banner_image\` = COALESCE(?, \`banner_image\`)
+      `UPDATE \`events\`
+       SET \`title\` = ?, \`category\` = ?, \`event_type\` = ?, \`venue_name\` = ?, \`venue_address\` = ?, \`virtual_link\` = ?, \`start_date\` = ?, \`start_time\` = ?, \`end_date\` = ?, \`end_time\` = ?, \`price\` = ?, \`capacity\` = ?, \`status\` = ?, \`description\` = ?, \`banner_image\` = ?
        WHERE \`id\` = ?`,
       [
         title,
         category,
-        description,
         eventType,
         venueName,
         venueAddress,
@@ -228,18 +236,13 @@ router.put('/:id', verifyToken, async (req, res) => {
         startTime,
         endDate,
         endTime,
-        price !== undefined ? parseFloat(price) : null,
-        capacity !== undefined ? parseInt(capacity, 10) : null,
+        parseFloat(price) || 0,
+        parseInt(capacity, 10) || 500,
         status,
+        description,
         bannerImage,
         eventId
       ]
-    );
-
-    await query(
-      `INSERT INTO \`activity_logs\` (\`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
-       VALUES (?, ?, 'event', 'Event updated', ?)`,
-      [req.user.id, req.user.email, `Updated event #${eventId} details`]
     );
 
     const [updated] = await query('SELECT * FROM `events` WHERE `id` = ?', [eventId]);
@@ -255,21 +258,31 @@ router.put('/:id', verifyToken, async (req, res) => {
   }
 });
 
-// DELETE /api/events/:id - Delete event (Protected)
-router.delete('/:id', verifyToken, async (req, res) => {
+// DELETE /api/events/:id - Delete event
+router.delete('/:id', verifyToken, resolveTenant, async (req, res) => {
   try {
     const eventId = parseInt(req.params.id, 10);
-    const [existing] = await query('SELECT `title` FROM `events` WHERE `id` = ?', [eventId]);
+    const tenantId = req.tenantId || 1;
+    const isSuperAdmin = req.user.role === 'admin';
+
+    let checkSql = 'SELECT * FROM `events` WHERE `id` = ?';
+    let checkParams = [eventId];
+    if (!isSuperAdmin) {
+      checkSql += ' AND `tenant_id` = ?';
+      checkParams.push(tenantId);
+    }
+
+    const [existing] = await query(checkSql, checkParams);
     if (existing.length === 0) {
-      return res.status(404).json({ success: false, message: 'Event not found.' });
+      return res.status(404).json({ success: false, message: 'Event not found or access denied.' });
     }
 
     await query('DELETE FROM `events` WHERE `id` = ?', [eventId]);
 
     await query(
-      `INSERT INTO \`activity_logs\` (\`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
-       VALUES (?, ?, 'event', 'Event deleted', ?)`,
-      [req.user.id, req.user.email, `Deleted event "${existing[0].title}"`]
+      `INSERT INTO \`activity_logs\` (\`tenant_id\`, \`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
+       VALUES (?, ?, ?, 'event', 'Event deleted', ?)`,
+      [tenantId, req.user.id, req.user.email, `Deleted event "${existing[0].title}"`]
     );
 
     return res.json({ success: true, message: 'Event deleted successfully.' });
@@ -279,67 +292,8 @@ router.delete('/:id', verifyToken, async (req, res) => {
   }
 });
 
-// POST /api/events/:id/register - Register attendee / Buy ticket
-router.post('/:id/register', async (req, res) => {
-  try {
-    const eventId = parseInt(req.params.id, 10);
-    const { name, email, phone = '', ticketType = 'General Admission', userId = null } = req.body;
-
-    if (!name || !email) {
-      return res.status(400).json({ success: false, message: 'Attendee name and email are required.' });
-    }
-
-    const [events] = await query('SELECT * FROM `events` WHERE `id` = ?', [eventId]);
-    if (events.length === 0) {
-      return res.status(404).json({ success: false, message: 'Event not found.' });
-    }
-
-    const event = events[0];
-    if (event.registered_count >= event.capacity) {
-      return res.status(400).json({ success: false, message: 'Event is fully booked! No more tickets available.' });
-    }
-
-    // Generate unique ticket code
-    const ticketCode = `EVX-${eventId}-${Date.now().toString(36).toUpperCase()}-${Math.floor(100 + Math.random() * 900)}`;
-
-    const [result] = await query(
-      `INSERT INTO \`event_attendees\` (\`event_id\`, \`user_id\`, \`name\`, \`email\`, \`phone\`, \`ticket_code\`, \`ticket_type\`, \`status\`)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')`,
-      [eventId, userId, name.trim(), email.toLowerCase().trim(), phone.trim(), ticketCode, ticketType]
-    );
-
-    // Update event registered count
-    await query('UPDATE `events` SET `registered_count` = `registered_count` + 1 WHERE `id` = ?', [eventId]);
-
-    // Log activity
-    await query(
-      `INSERT INTO \`activity_logs\` (\`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
-       VALUES (?, ?, 'event', 'Attendee registered', ?)`,
-      [userId, name, `Registered for event "${event.title}" (Ticket: ${ticketCode})`]
-    );
-
-    return res.status(201).json({
-      success: true,
-      message: 'Registration successful! Your digital ticket has been confirmed.',
-      registration: {
-        id: result.insertId,
-        eventId,
-        eventTitle: event.title,
-        attendeeName: name,
-        attendeeEmail: email,
-        ticketCode,
-        ticketType,
-        status: 'confirmed'
-      }
-    });
-  } catch (error) {
-    console.error('[Event Registration Error]:', error);
-    return res.status(500).json({ success: false, message: 'Failed to process event registration.' });
-  }
-});
-
-// GET /api/events/:id/attendees - View event attendees (Protected)
-router.get('/:id/attendees', verifyToken, async (req, res) => {
+// GET /api/events/:id/attendees - Get event attendees
+router.get('/:id/attendees', verifyToken, resolveTenant, async (req, res) => {
   try {
     const eventId = parseInt(req.params.id, 10);
     const [attendees] = await query(
@@ -347,10 +301,191 @@ router.get('/:id/attendees', verifyToken, async (req, res) => {
       [eventId]
     );
 
-    return res.json({ success: true, attendees });
+    return res.json({
+      success: true,
+      attendees
+    });
   } catch (error) {
     console.error('[Get Attendees Error]:', error);
     return res.status(500).json({ success: false, message: 'Failed to retrieve attendees.' });
+  }
+});
+
+// GET /api/events/public/:slug - Public view of single event by slug
+router.get('/public/:slug', async (req, res) => {
+  try {
+    const slug = req.params.slug;
+    const [rows] = await query('SELECT * FROM `events` WHERE `slug` = ?', [slug]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Event not found.' });
+    }
+    const ev = rows[0];
+    return res.json({
+      success: true,
+      event: ev
+    });
+  } catch (error) {
+    console.error('[Public Event Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve public event.' });
+  }
+});
+
+// POST /api/events/:id/register - Public event attendee registration
+router.post('/:id/register', contentPolicyGuard, async (req, res) => {
+  try {
+    const eventId = parseInt(req.params.id, 10);
+    const { 
+      name, 
+      email, 
+      phone = '', 
+      ticketType = 'General Admission',
+      organization = '',
+      designation = '',
+      currency = 'USD',
+      paymentMethod = 'free'
+    } = req.body;
+
+    if (!name || !email) {
+      return res.status(400).json({ success: false, message: 'Name and email are required.' });
+    }
+
+    const [events] = await query('SELECT * FROM `events` WHERE `id` = ?', [eventId]);
+    if (events.length === 0) {
+      return res.status(404).json({ success: false, message: 'Event not found.' });
+    }
+
+    const ev = events[0];
+    const ticketCode = `EVX-${eventId}-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+
+    const [result] = await query(
+      `INSERT INTO \`event_attendees\` (\`tenant_id\`, \`event_id\`, \`name\`, \`email\`, \`phone\`, \`ticket_code\`, \`ticket_type\`, \`status\`)
+       VALUES (?, ?, ?, ?, ?, ?, ?, 'confirmed')`,
+      [ev.tenant_id || 1, eventId, name.trim(), email.toLowerCase().trim(), phone.trim(), ticketCode, ticketType]
+    );
+
+    await query('UPDATE `events` SET `registered_count` = `registered_count` + 1 WHERE `id` = ?', [eventId]);
+
+    return res.status(201).json({
+      success: true,
+      message: 'Registration successful!',
+      registration: {
+        id: result.insertId,
+        ticketCode,
+        name: name.trim(),
+        email: email.toLowerCase().trim(),
+        phone: phone.trim(),
+        organization: organization.trim(),
+        designation: designation.trim(),
+        eventTitle: ev.title,
+        ticketType,
+        currency,
+        paymentMethod,
+        event: {
+          id: ev.id,
+          title: ev.title,
+          start_date: ev.start_date,
+          start_time: ev.start_time,
+          venue_name: ev.venue_name,
+          venue_address: ev.venue_address,
+          city: ev.city,
+          country: ev.country,
+          event_type: ev.event_type
+        }
+      }
+    });
+  } catch (error) {
+    console.error('[Register Attendee Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to process registration.' });
+  }
+});
+
+// POST /api/events/check-in - QR Code scanner ticket validation
+router.post('/check-in', async (req, res) => {
+  try {
+    const ticketCode = req.body.ticketCode || req.body.ticket_code;
+    const eventId = req.body.eventId || req.body.event_id;
+    if (!ticketCode) {
+      return res.status(400).json({ success: false, message: 'Ticket code is required for check-in.' });
+    }
+
+    const cleanCode = String(ticketCode).trim().toUpperCase();
+    let sql = 'SELECT * FROM `event_attendees` WHERE UPPER(`ticket_code`) = ?';
+    let params = [cleanCode];
+
+    if (eventId) {
+      sql += ' AND `event_id` = ?';
+      params.push(parseInt(eventId, 10));
+    }
+
+    const [attendees] = await query(sql, params);
+    if (!attendees || attendees.length === 0) {
+      return res.status(404).json({
+        success: false,
+        status: 'invalid',
+        message: 'Invalid QR Ticket! No attendee found with this ticket code.'
+      });
+    }
+
+    const attendee = attendees[0];
+
+    // Already checked in check
+    if (attendee.status === 'checked_in') {
+      return res.status(200).json({
+        success: false,
+        status: 'already_checked_in',
+        message: `Already Checked In! Pass was verified on ${attendee.checked_in_at ? new Date(attendee.checked_in_at).toLocaleTimeString() : 'earlier today'}.`,
+        attendee
+      });
+    }
+
+    // Mark as checked in
+    await query(
+      'UPDATE `event_attendees` SET `status` = ?, `checked_in_at` = ? WHERE `id` = ?',
+      ['checked_in', new Date().toISOString(), attendee.id]
+    );
+
+    const [updated] = await query('SELECT * FROM `event_attendees` WHERE `id` = ?', [attendee.id]);
+
+    return res.json({
+      success: true,
+      status: 'valid',
+      message: `Verified! Welcome ${attendee.name} to the event.`,
+      attendee: updated[0] || { ...attendee, status: 'checked_in', checked_in_at: new Date().toISOString() }
+    });
+  } catch (error) {
+    console.error('[Check-in Error]:', error);
+    return res.status(500).json({ success: false, message: 'Server error verifying ticket.' });
+  }
+});
+
+// PATCH /api/events/:id/attendees/:attendeeId/check-in - Toggle manual check-in
+router.patch('/:id/attendees/:attendeeId/check-in', verifyToken, resolveTenant, async (req, res) => {
+  try {
+    const attendeeId = parseInt(req.params.attendeeId, 10);
+    const [rows] = await query('SELECT * FROM `event_attendees` WHERE `id` = ?', [attendeeId]);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Attendee not found.' });
+    }
+
+    const current = rows[0];
+    const newStatus = current.status === 'checked_in' ? 'confirmed' : 'checked_in';
+    const checkedInAt = newStatus === 'checked_in' ? new Date().toISOString() : null;
+
+    await query(
+      'UPDATE `event_attendees` SET `status` = ?, `checked_in_at` = ? WHERE `id` = ?',
+      [newStatus, checkedInAt, attendeeId]
+    );
+
+    const [updated] = await query('SELECT * FROM `event_attendees` WHERE `id` = ?', [attendeeId]);
+
+    return res.json({
+      success: true,
+      message: newStatus === 'checked_in' ? 'Attendee checked in successfully!' : 'Attendee check-in status reverted.',
+      attendee: updated[0]
+    });
+  } catch (error) {
+    console.error('[Toggle Check-in Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to update check-in status.' });
   }
 });
 

@@ -3,15 +3,27 @@ import Header from "@/components/ui/dashboard/header";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Switch } from "@/components/ui/switch";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Camera, Save, Shield, Bell, Globe, Check, AlertCircle, Lock } from "lucide-react";
+import { 
+  Camera, 
+  Save, 
+  Shield, 
+  Check, 
+  AlertCircle, 
+  Lock, 
+  Palette, 
+  ExternalLink, 
+  Sparkles,
+  Ticket,
+  Globe,
+  ShieldCheck
+} from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { api } from "@/services/api";
 
 export default function Settings() {
-  const { user, updateUser } = useAuth();
+  const { user, updateUser, currentTenant, switchTenant } = useAuth();
 
   // Profile Form
   const [fullName, setFullName] = useState("");
@@ -25,6 +37,16 @@ export default function Settings() {
   const [notifications, setNotifications] = useState(true);
   const [twoFactor, setTwoFactor] = useState(false);
   const [marketingEmails, setMarketingEmails] = useState(false);
+
+  // Tenant Branding Form (Multi-Tenant White-Label)
+  const [brandOrgName, setBrandOrgName] = useState("");
+  const [brandSlug, setBrandSlug] = useState("");
+  const [brandPrimaryColor, setBrandPrimaryColor] = useState("#7c3aed");
+  const [brandSecondaryColor, setBrandSecondaryColor] = useState("#6d28d9");
+  const [customDomain, setCustomDomain] = useState("");
+  const [savingBrand, setSavingBrand] = useState(false);
+  const [brandSuccess, setBrandSuccess] = useState(false);
+  const [brandError, setBrandError] = useState<string | null>(null);
 
   // Password Form
   const [currentPassword, setCurrentPassword] = useState("");
@@ -51,7 +73,14 @@ export default function Settings() {
       setTwoFactor(user.twoFactorEnabled ?? false);
       setMarketingEmails(user.marketingEmailsEnabled ?? false);
     }
-  }, [user]);
+    if (currentTenant) {
+      setBrandOrgName(currentTenant.name || "");
+      setBrandSlug(currentTenant.slug || "");
+      setBrandPrimaryColor(currentTenant.primary_color || "#7c3aed");
+      setBrandSecondaryColor(currentTenant.secondary_color || "#6d28d9");
+      setCustomDomain(currentTenant.custom_domain || "");
+    }
+  }, [user, currentTenant]);
 
   const handleSaveProfile = async () => {
     setSaving(true);
@@ -80,6 +109,32 @@ export default function Settings() {
       setSaveError(err.message || "Failed to update profile settings.");
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleSaveBranding = async () => {
+    setSavingBrand(true);
+    setBrandSuccess(false);
+    setBrandError(null);
+
+    try {
+      const res = await api.tenants.updateCurrent({
+        name: brandOrgName,
+        slug: brandSlug,
+        primaryColor: brandPrimaryColor,
+        secondaryColor: brandSecondaryColor,
+        customDomain: customDomain,
+      });
+
+      if (res.success && res.tenant) {
+        switchTenant(res.tenant);
+        setBrandSuccess(true);
+        setTimeout(() => setBrandSuccess(false), 3000);
+      }
+    } catch (err: any) {
+      setBrandError(err.message || "Failed to update workspace branding.");
+    } finally {
+      setSavingBrand(false);
     }
   };
 
@@ -126,7 +181,7 @@ export default function Settings() {
   return (
     <div>
       <Header title="Settings" />
-      <div className="p-6 space-y-6 max-w-4xl">
+      <div className="p-6 space-y-8 max-w-4xl">
         
         {/* Feedback alerts */}
         {saveSuccess && (
@@ -143,7 +198,195 @@ export default function Settings() {
           </div>
         )}
 
-        {/* Profile Section */}
+        {/* SECTION 1: Multi-Tenant Workspace Branding & White-Label */}
+        <Card className="border-[#e9e4ff] shadow-sm bg-white overflow-hidden">
+          <div className="h-2 w-full" style={{ backgroundColor: brandPrimaryColor }} />
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div className="w-9 h-9 rounded-xl bg-[#f5f3ff] flex items-center justify-center text-[#7c3aed]">
+                  <Palette className="w-5 h-5" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg font-bold text-[#0f172a]">
+                    Workspace Branding & White-Label
+                  </CardTitle>
+                  <CardDescription className="text-[#475569]">
+                    Customize your public event portal URL, colors, and tenant domain
+                  </CardDescription>
+                </div>
+              </div>
+
+              {brandSlug && (
+                <a
+                  href={`/t/${brandSlug}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="hidden sm:inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#faf8ff] border border-[#e9e4ff] text-xs font-semibold text-[#7c3aed] hover:bg-[#f3f0ff] transition-colors"
+                >
+                  <ExternalLink className="w-3.5 h-3.5" />
+                  Preview Public Portal
+                </a>
+              )}
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            {brandSuccess && (
+              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+                <Check className="w-4 h-4 text-emerald-600" />
+                <span>Branding configuration updated successfully!</span>
+              </div>
+            )}
+            {brandError && (
+              <div className="p-3.5 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-600" />
+                <span>{brandError}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-[#0f172a] font-semibold text-xs">Organization Workspace Name</Label>
+                <Input
+                  value={brandOrgName}
+                  onChange={(e) => setBrandOrgName(e.target.value)}
+                  placeholder="e.g. Acme Tech, EventoraX HQ"
+                  className="bg-white border-[#e9e4ff]"
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[#0f172a] font-semibold text-xs">Portal URL Slug</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-[#94a3b8] font-mono">/t/</span>
+                  <Input
+                    value={brandSlug}
+                    onChange={(e) => setBrandSlug(e.target.value)}
+                    placeholder="my-workspace"
+                    className="bg-white border-[#e9e4ff] font-mono text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-[#0f172a] font-semibold text-xs">Primary Brand Color</Label>
+                <div className="flex items-center gap-3">
+                  <input
+                    type="color"
+                    value={brandPrimaryColor}
+                    onChange={(e) => setBrandPrimaryColor(e.target.value)}
+                    className="w-10 h-10 rounded-xl border border-[#e9e4ff] cursor-pointer"
+                  />
+                  <Input
+                    value={brandPrimaryColor}
+                    onChange={(e) => setBrandPrimaryColor(e.target.value)}
+                    className="w-36 rounded-xl font-mono text-xs"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5 md:col-span-2">
+                <div className="flex items-center justify-between">
+                  <Label className="text-[#0f172a] font-semibold text-xs flex items-center gap-1.5">
+                    <Globe className="w-3.5 h-3.5 text-blue-600" />
+                    Custom Domain (CNAME White-Label)
+                  </Label>
+                  <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                    currentTenant?.plan === 'Enterprise' || currentTenant?.plan === 'PaaS Developer'
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-amber-100 text-amber-800'
+                  }`}>
+                    {currentTenant?.plan === 'Enterprise' || currentTenant?.plan === 'PaaS Developer'
+                      ? 'Included in Plan'
+                      : 'Requires Enterprise Plan'}
+                  </span>
+                </div>
+
+                {currentTenant?.plan === 'Enterprise' || currentTenant?.plan === 'PaaS Developer' ? (
+                  <div className="space-y-2 mt-1">
+                    <div className="flex gap-2">
+                      <Input
+                        value={customDomain}
+                        onChange={(e) => setCustomDomain(e.target.value)}
+                        placeholder="e.g. events.yourcompany.com"
+                        className="bg-white border-[#e9e4ff] text-xs font-mono"
+                      />
+                    </div>
+                    {/* DNS Configuration Instructions */}
+                    <div className="p-3 bg-blue-50/70 border border-blue-200 rounded-xl text-xs space-y-1.5 text-slate-700">
+                      <p className="font-bold text-blue-900 flex items-center gap-1.5">
+                        <ShieldCheck className="w-4 h-4 text-blue-600" />
+                        DNS Setup Instructions (Your DNS Provider):
+                      </p>
+                      <div className="grid grid-cols-3 gap-2 bg-white p-2 rounded-lg border border-blue-100 font-mono text-[11px]">
+                        <div><span className="text-slate-400 block text-[9px] font-sans">TYPE</span>CNAME</div>
+                        <div><span className="text-slate-400 block text-[9px] font-sans">HOST</span>events</div>
+                        <div><span className="text-slate-400 block text-[9px] font-sans">TARGET</span>cname.eventorax.com</div>
+                      </div>
+                      <p className="text-[10px] text-slate-500">
+                        SSL Certificates (HTTPS) are provisioned automatically within 15 minutes of DNS propagation.
+                      </p>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2">
+                    <p className="text-xs text-slate-600">
+                      Connect your own branded domain (e.g., <code className="text-blue-700 bg-blue-50 px-1 py-0.5 rounded">events.yourdomain.com</code>) with automatic SSL. This feature is unlocked on the <strong>Enterprise ($199/mo)</strong> and <strong>PaaS Developer</strong> plans.
+                    </p>
+                    <a
+                      href="/pricing"
+                      className="inline-block text-xs font-bold text-[#1d4ed8] hover:underline"
+                    >
+                      View Enterprise Plan Details →
+                    </a>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Live Interactive Branding Preview */}
+            <div className="p-4 rounded-2xl bg-[#faf8ff] border border-[#e9e4ff] space-y-3">
+              <p className="text-xs font-bold text-[#0f172a] flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#7c3aed]" />
+                Live White-Label Preview
+              </p>
+              <div className="flex items-center justify-between p-3 rounded-xl bg-white border border-[#e9e4ff]">
+                <div className="flex items-center gap-3">
+                  <div 
+                    className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs"
+                    style={{ backgroundColor: brandPrimaryColor }}
+                  >
+                    {(brandOrgName || "EX").slice(0, 2).toUpperCase()}
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#0f172a]">{brandOrgName || "Organization Name"}</p>
+                    <p className="text-[10px] text-[#94a3b8]">eventorax.com/t/{brandSlug || "slug"}</p>
+                  </div>
+                </div>
+                <Button 
+                  size="sm" 
+                  className="text-white text-xs h-8 rounded-lg shadow-sm"
+                  style={{ backgroundColor: brandPrimaryColor }}
+                >
+                  <Ticket className="w-3.5 h-3.5 mr-1" />
+                  Sample Ticket
+                </Button>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2">
+              <Button
+                onClick={handleSaveBranding}
+                disabled={savingBrand}
+                className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs h-10 px-6 shadow-md"
+              >
+                {savingBrand ? "Saving Branding..." : "Save Workspace Branding"}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* SECTION 2: Profile Section */}
         <Card className="border-[#e9e4ff] shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -164,13 +407,6 @@ export default function Settings() {
                     {userInitials}
                   </AvatarFallback>
                 </Avatar>
-                <button 
-                  type="button"
-                  title="Change avatar"
-                  className="absolute bottom-0 right-0 w-8 h-8 bg-[#7c3aed] rounded-full flex items-center justify-center text-white shadow-lg hover:bg-[#6d28d9] transition-colors"
-                >
-                  <Camera className="w-4 h-4" />
-                </button>
               </div>
               <div>
                 <p className="font-semibold text-[#0f172a] text-lg">{fullName || "Event Organizer"}</p>
@@ -200,15 +436,6 @@ export default function Settings() {
                 />
               </div>
               <div className="space-y-2 md:col-span-2">
-                <Label className="text-[#0f172a] font-semibold text-xs">Organization / Company</Label>
-                <Input 
-                  value={orgName}
-                  onChange={(e) => setOrgName(e.target.value)}
-                  placeholder="e.g. Acme Tech, ORBIT-I"
-                  className="bg-white border-[#e9e4ff] focus:border-[#7c3aed]" 
-                />
-              </div>
-              <div className="space-y-2 md:col-span-2">
                 <Label className="text-[#0f172a] font-semibold text-xs">Bio & Description</Label>
                 <textarea 
                   className="w-full min-h-[90px] rounded-xl border border-[#e9e4ff] bg-white px-4 py-3 text-sm text-[#0f172a] placeholder:text-[#94a3b8] focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/30 outline-none transition-all resize-none"
@@ -218,104 +445,21 @@ export default function Settings() {
                 />
               </div>
             </div>
-          </CardContent>
-        </Card>
 
-        {/* Preferences Section */}
-        <Card className="border-[#e9e4ff] shadow-sm">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#f5f3ff] flex items-center justify-center">
-                <Bell className="w-4 h-4 text-[#7c3aed]" />
-              </div>
-              <div>
-                <CardTitle className="text-lg font-bold text-[#0f172a]">Preferences & Notifications</CardTitle>
-                <CardDescription className="text-[#475569]">Customize alerts and notifications</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="font-semibold text-sm text-[#0f172a]">Email Notifications</p>
-                <p className="text-xs text-[#475569]">Receive real-time alerts whenever attendees RSVP or buy tickets</p>
-              </div>
-              <Switch checked={notifications} onCheckedChange={setNotifications} className="data-[state=checked]:bg-[#7c3aed]" />
-            </div>
-            <div className="h-px bg-[#e9e4ff]" />
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="font-semibold text-sm text-[#0f172a]">Marketing & Product Updates</p>
-                <p className="text-xs text-[#475569]">Receive monthly insights, tips, and feature launches</p>
-              </div>
-              <Switch checked={marketingEmails} onCheckedChange={setMarketingEmails} className="data-[state=checked]:bg-[#7c3aed]" />
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Regional Section */}
-        <Card className="border-[#e9e4ff] shadow-sm">
-          <CardHeader>
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-[#f5f3ff] flex items-center justify-center">
-                <Globe className="w-4 h-4 text-[#7c3aed]" />
-              </div>
-              <div>
-                <CardTitle className="text-lg font-bold text-[#0f172a]">Regional Settings</CardTitle>
-                <CardDescription className="text-[#475569]">Language and local timezone configuration</CardDescription>
-              </div>
-            </div>
-          </CardHeader>
-          <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-[#0f172a] font-semibold text-xs">Language</Label>
-              <select 
-                value={language}
-                onChange={(e) => setLanguage(e.target.value)}
-                className="w-full h-10 rounded-xl border border-[#e9e4ff] bg-white px-4 text-sm text-[#0f172a] focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/30 outline-none"
+            <div className="flex justify-end pt-2">
+              <Button 
+                onClick={handleSaveProfile}
+                disabled={saving}
+                className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs h-10 px-6 shadow-md shadow-[#7c3aed]/20"
               >
-                <option value="English (US)">English (US)</option>
-                <option value="English (UK)">English (UK)</option>
-                <option value="Urdu (اردو)">Urdu (اردو)</option>
-                <option value="Spanish">Spanish</option>
-                <option value="French">French</option>
-              </select>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-[#0f172a] font-semibold text-xs">Timezone</Label>
-              <select 
-                value={timezone}
-                onChange={(e) => setTimezone(e.target.value)}
-                className="w-full h-10 rounded-xl border border-[#e9e4ff] bg-white px-4 text-sm text-[#0f172a] focus:border-[#7c3aed] focus:ring-2 focus:ring-[#7c3aed]/30 outline-none"
-              >
-                <option value="UTC+5 (Pakistan Standard Time)">UTC+5 (Pakistan Standard Time)</option>
-                <option value="UTC+0 (GMT / London)">UTC+0 (GMT / London)</option>
-                <option value="UTC-5 (Eastern Time)">UTC-5 (Eastern Time)</option>
-                <option value="UTC-8 (Pacific Time)">UTC-8 (Pacific Time)</option>
-                <option value="UTC+1 (CET)">UTC+1 (CET)</option>
-                <option value="UTC+4 (Dubai / UAE)">UTC+4 (Dubai / UAE)</option>
-              </select>
+                <Save className="w-4 h-4 mr-2" />
+                {saving ? "Saving..." : "Save Profile"}
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        {/* Save Button for Profile & Preferences */}
-        <div className="flex justify-end">
-          <Button 
-            onClick={handleSaveProfile}
-            disabled={saving}
-            className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl shadow-lg shadow-[#7c3aed]/25 px-8 h-11"
-          >
-            {saving ? (
-              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2" />
-            ) : (
-              <Save className="w-4 h-4 mr-2" />
-            )}
-            Save Profile & Preferences
-          </Button>
-        </div>
-
-        {/* Security / Password Section */}
+        {/* SECTION 3: Security & Password */}
         <Card className="border-[#e9e4ff] shadow-sm">
           <CardHeader>
             <div className="flex items-center gap-2">
@@ -323,22 +467,12 @@ export default function Settings() {
                 <Shield className="w-4 h-4 text-[#7c3aed]" />
               </div>
               <div>
-                <CardTitle className="text-lg font-bold text-[#0f172a]">Security & Password</CardTitle>
-                <CardDescription className="text-[#475569]">Update your account credentials</CardDescription>
+                <CardTitle className="text-lg font-bold text-[#0f172a]">Security & Authentication</CardTitle>
+                <CardDescription className="text-[#475569]">Manage your account password and security options</CardDescription>
               </div>
             </div>
           </CardHeader>
           <CardContent className="space-y-6">
-            <div className="flex items-center justify-between py-2">
-              <div>
-                <p className="font-semibold text-sm text-[#0f172a]">Two-Factor Authentication (2FA)</p>
-                <p className="text-xs text-[#475569]">Add an extra verification layer to protect your events</p>
-              </div>
-              <Switch checked={twoFactor} onCheckedChange={setTwoFactor} className="data-[state=checked]:bg-[#7c3aed]" />
-            </div>
-            <div className="h-px bg-[#e9e4ff]" />
-
-            {/* Password Change Form */}
             <form onSubmit={handleChangePassword} className="space-y-4">
               <h4 className="text-xs font-bold uppercase tracking-wider text-[#7c3aed] flex items-center gap-1.5">
                 <Lock className="w-3.5 h-3.5" />

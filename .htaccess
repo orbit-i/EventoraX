@@ -1,0 +1,41 @@
+# ==============================================================
+# EventoraX Enterprise Multi-Tenant SaaS & PaaS (.htaccess)
+# Compatible with Hostinger LiteSpeed / Apache Web Server
+# ==============================================================
+
+# Enable Rewrite Engine
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+
+  # 1. Force HTTPS
+  RewriteCond %{HTTPS} off
+  RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+  # 2. Block direct HTTP access to sensitive files and credentials
+  RewriteRule ^(\.env|\.git|database\.sql|package\.json|package-lock\.json|tsconfig.*\.json|server\.js)$ - [F,L]
+
+  # 3. Ensure Authorization header is passed to Node.js backend
+  RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+</IfModule>
+
+# Security HTTP Headers
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-XSS-Protection "1; mode=block"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  # Allow framing for embeddable ticketing widgets across client domains
+  Header always set Content-Security-Policy "frame-ancestors 'self' *;"
+</IfModule>
+
+# Caching for Static Assets
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType text/css "access plus 1 year"
+  ExpiresByType application/javascript "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 month"
+  ExpiresByType image/png "access plus 1 month"
+  ExpiresByType image/jpeg "access plus 1 month"
+  ExpiresByType image/webp "access plus 1 month"
+  ExpiresByType font/woff2 "access plus 1 year"
+</IfModule>

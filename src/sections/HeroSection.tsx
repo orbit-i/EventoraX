@@ -40,30 +40,38 @@ export default function HeroSection() {
 
         {/* Headline */}
         <h1
-          className="font-heading font-bold leading-[1.1] tracking-[-0.02em] text-[#0f172a]"
-          style={{ fontSize: 'clamp(2.5rem, 6vw, 4rem)' }}
+          className="font-heading font-extrabold leading-[1.08] tracking-[-0.03em] text-[#0f172a]"
+          style={{ fontSize: 'clamp(2.5rem, 6vw, 4.25rem)' }}
         >
-          Where
+          Plan • Manage • Experience
           <br />
-          Every Moment
-          <br />
-          Becomes a Memory
+          <span className="bg-gradient-to-r from-[#1d4ed8] via-[#2563eb] to-[#38bdf8] bg-clip-text text-transparent">
+            Automated Certificate & Event SaaS
+          </span>
         </h1>
 
         {/* Subtext */}
         <p
-          className="font-body font-normal mt-6 max-w-[480px] mx-auto text-[#475569] text-xl leading-relaxed"
+          className="font-body font-normal mt-5 max-w-[580px] mx-auto text-[#475569] text-lg sm:text-xl leading-relaxed"
         >
-          An event management platform for modern organizers. Built by ORBIT-I — turning ideas into impact.
+          Create world-class events and automate tamper-evident certificate issuance with visual canvas editing, bulk generation, and 1:1 email delivery.
         </p>
 
-        {/* CTA */}
-        <Link
-          to="/register"
-          className="inline-flex items-center justify-center px-8 py-3.5 bg-[#7c3aed] text-white font-semibold rounded-xl shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9] hover:shadow-xl hover:shadow-[#7c3aed]/30 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 mt-8 text-base"
-        >
-          Start Free Trial
-        </Link>
+        {/* CTAs */}
+        <div className="flex flex-wrap items-center justify-center gap-4 mt-8">
+          <Link
+            to="/register"
+            className="inline-flex items-center justify-center px-8 py-3.5 bg-[#1d4ed8] text-white font-bold rounded-xl shadow-lg shadow-[#1d4ed8]/25 hover:bg-[#1e40af] hover:shadow-xl hover:shadow-[#1d4ed8]/35 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-200 text-sm sm:text-base"
+          >
+            Start 14-Day Free Trial
+          </Link>
+          <Link
+            to="/verify"
+            className="inline-flex items-center justify-center px-6 py-3.5 bg-white/90 backdrop-blur-md border-2 border-[#cbd5e1] hover:border-[#1d4ed8] text-[#1e40af] font-bold rounded-xl shadow-sm hover:bg-[#eff6ff] transition-all duration-200 text-sm sm:text-base"
+          >
+            Verify a Certificate
+          </Link>
+        </div>
       </div>
 
       {/* Scroll Indicator */}

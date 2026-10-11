@@ -5,10 +5,22 @@ import { generateToken, verifyToken } from '../middleware/auth.js';
 
 const router = express.Router();
 
+function slugify(text) {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]+/g, '')
+    .replace(/\-\-+/g, '-')
+    .replace(/^-+/, '')
+    .replace(/-+$/, '');
+}
+
 // POST /api/auth/register
 router.post('/register', async (req, res) => {
   try {
-    const { fullName, orgName, email, password, phone } = req.body;
+    const { fullName, orgName, email, password, phone } = req.body || {};
 
     if (!fullName || !email || !password) {
       return res.status(400).json({ success: false, message: 'Please provide full name, email, and password.' });
@@ -36,18 +48,46 @@ router.post('/register', async (req, res) => {
 
     const userId = result.insertId;
 
-    // Create default subscription
+    // 1. Create Dedicated Multi-Tenant Organization for the User
+    const workspaceName = orgName && orgName.trim().length > 0 ? orgName.trim() : `${fullName.trim()}'s Workspace`;
+    let tenantSlug = slugify(workspaceName);
+    if (!tenantSlug) tenantSlug = `tenant-${userId}`;
+    tenantSlug = `${tenantSlug}-${Math.floor(100 + Math.random() * 900)}`;
+
+    const [tenantResult] = await query(
+      `INSERT INTO \`tenants\` (\`name\`, \`slug\`, \`custom_domain\`, \`logo_url\`, \`primary_color\`, \`secondary_color\`, \`owner_id\`, \`plan\`)
+       VALUES (?, ?, '', '', '#7c3aed', '#6d28d9', ?, 'Starter')`,
+      [workspaceName, tenantSlug, userId]
+    );
+    const tenantId = tenantResult.insertId;
+
+    // 2. Assign User as Owner in tenant_members
     await query(
-      `INSERT INTO \`subscriptions\` (\`user_id\`, \`plan\`, \`price\`, \`billing_cycle\`, \`attendees_limit\`, \`status\`)
-       VALUES (?, 'Starter', 0.00, 'monthly', 500, 'active')`,
-      [userId]
+      `INSERT INTO \`tenant_members\` (\`tenant_id\`, \`user_id\`, \`role\`, \`status\`)
+       VALUES (?, ?, 'owner', 'active')`,
+      [tenantId, userId]
     );
 
-    // Log activity
+    // 3. Generate initial PaaS API key for developer access
+    const apiKey = `evx_live_${Math.random().toString(36).substring(2)}${Date.now().toString(36)}`;
     await query(
-      `INSERT INTO \`activity_logs\` (\`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
-       VALUES (?, ?, 'user', 'Account created', 'Registered new organizer account')`,
-      [userId, fullName]
+      `INSERT INTO \`tenant_api_keys\` (\`tenant_id\`, \`name\`, \`api_key\`, \`permissions\`, \`is_active\`)
+       VALUES (?, 'Default API Key', ?, 'read_write', 1)`,
+      [tenantId, apiKey]
+    );
+
+    // 4. Create default subscription for this tenant
+    await query(
+      `INSERT INTO \`subscriptions\` (\`tenant_id\`, \`user_id\`, \`plan\`, \`price\`, \`billing_cycle\`, \`attendees_limit\`, \`status\`)
+       VALUES (?, ?, 'Starter', 0.00, 'monthly', 500, 'active')`,
+      [tenantId, userId]
+    );
+
+    // 5. Log activity
+    await query(
+      `INSERT INTO \`activity_logs\` (\`tenant_id\`, \`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
+       VALUES (?, ?, ?, 'user', 'Account & Organization created', 'Registered new organizer tenant')`,
+      [tenantId, userId, fullName]
     );
 
     const user = {
@@ -60,13 +100,23 @@ router.post('/register', async (req, res) => {
       plan: 'Starter'
     };
 
-    const token = generateToken({ id: user.id, email: user.email, role: user.role });
+    const activeTenant = {
+      id: tenantId,
+      name: workspaceName,
+      slug: tenantSlug,
+      plan: 'Starter',
+      userRole: 'owner'
+    };
+
+    const token = generateToken({ id: user.id, email: user.email, role: user.role, tenantId });
 
     return res.status(201).json({
       success: true,
-      message: 'Account created successfully!',
+      message: 'Account and organization workspace created successfully!',
       token,
-      user
+      user,
+      tenant: activeTenant,
+      tenants: [activeTenant]
     });
   } catch (error) {
     console.error('[Auth Register Error]:', error);
@@ -77,7 +127,7 @@ router.post('/register', async (req, res) => {
 // POST /api/auth/login
 router.post('/login', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password } = req.body || {};
 
     if (!email || !password) {
       return res.status(400).json({ success: false, message: 'Please provide both email and password.' });
@@ -95,11 +145,53 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ success: false, message: 'Invalid email or password.' });
     }
 
+    // Get user's tenants
+    let userTenants = [];
+    if (userRow.role === 'admin') {
+      const [allTenants] = await query('SELECT * FROM `tenants` ORDER BY `created_at` ASC');
+      userTenants = allTenants;
+    } else {
+      const [myTenants] = await query(
+        `SELECT t.*, tm.role as user_role 
+         FROM \`tenants\` t 
+         LEFT JOIN \`tenant_members\` tm ON t.id = tm.tenant_id 
+         WHERE t.owner_id = ? OR tm.user_id = ? 
+         GROUP BY t.id`,
+        [userRow.id, userRow.id]
+      );
+      userTenants = myTenants;
+    }
+
+    let activeTenant = userTenants[0];
+    if (!activeTenant) {
+      if (userRow.role === 'admin') {
+        const [hq] = await query('SELECT * FROM `tenants` WHERE `id` = 1');
+        activeTenant = hq[0] || { id: 1, name: 'EventoraX HQ', slug: 'eventorax-hq', plan: 'Enterprise' };
+      } else {
+        const workspaceName = userRow.org_name || `${userRow.full_name}'s Workspace`;
+        let tenantSlug = slugify(workspaceName) || `client-${userRow.id}`;
+        tenantSlug = `${tenantSlug}-${Math.floor(100 + Math.random() * 900)}`;
+
+        const [tResult] = await query(
+          'INSERT INTO `tenants` (`name`, `slug`, `owner_id`, `plan`, `status`, `primary_color`, `secondary_color`) VALUES (?, ?, ?, "Starter", "active", "#7c3aed", "#6d28d9")',
+          [workspaceName, tenantSlug, userRow.id]
+        );
+        const newId = tResult.insertId;
+        await query(
+          'INSERT INTO `tenant_members` (`tenant_id`, `user_id`, `role`, `status`) VALUES (?, ?, "owner", "active")',
+          [newId, userRow.id]
+        );
+        const [newT] = await query('SELECT * FROM `tenants` WHERE `id` = ?', [newId]);
+        activeTenant = newT[0];
+        userTenants = [activeTenant];
+      }
+    }
+
     // Log login activity
     await query(
-      `INSERT INTO \`activity_logs\` (\`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
-       VALUES (?, ?, 'login', 'User logged in', ?)`,
-      [userRow.id, userRow.full_name, `Successful login from ${req.ip || 'web client'}`]
+      `INSERT INTO \`activity_logs\` (\`tenant_id\`, \`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
+       VALUES (?, ?, ?, 'login', 'User logged in', ?)`,
+      [activeTenant.id, userRow.id, userRow.full_name, `Successful login from ${req.ip || 'web client'}`]
     );
 
     const user = {
@@ -118,13 +210,20 @@ router.post('/login', async (req, res) => {
       plan: userRow.plan
     };
 
-    const token = generateToken({ id: user.id, email: user.email, role: user.role });
+    const token = generateToken({
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      tenantId: activeTenant.id
+    });
 
     return res.json({
       success: true,
       message: 'Logged in successfully!',
       token,
-      user
+      user,
+      tenant: activeTenant,
+      tenants: userTenants
     });
   } catch (error) {
     console.error('[Auth Login Error]:', error);
@@ -141,6 +240,31 @@ router.get('/me', verifyToken, async (req, res) => {
     }
 
     const userRow = rows[0];
+
+    // Fetch user tenants
+    let userTenants = [];
+    if (userRow.role === 'admin') {
+      const [allTenants] = await query('SELECT * FROM `tenants` ORDER BY `created_at` ASC');
+      userTenants = allTenants;
+    } else {
+      const [myTenants] = await query(
+        `SELECT t.*, tm.role as user_role 
+         FROM \`tenants\` t 
+         LEFT JOIN \`tenant_members\` tm ON t.id = tm.tenant_id 
+         WHERE t.owner_id = ? OR tm.user_id = ? 
+         GROUP BY t.id`,
+        [userRow.id, userRow.id]
+      );
+      userTenants = myTenants;
+    }
+
+    const activeTenant = userTenants[0] || {
+      id: 1,
+      name: userRow.org_name || 'EventoraX Workspace',
+      slug: 'default',
+      plan: userRow.plan || 'Starter'
+    };
+
     const user = {
       id: userRow.id,
       fullName: userRow.full_name,
@@ -157,7 +281,12 @@ router.get('/me', verifyToken, async (req, res) => {
       plan: userRow.plan
     };
 
-    return res.json({ success: true, user });
+    return res.json({
+      success: true,
+      user,
+      tenant: activeTenant,
+      tenants: userTenants
+    });
   } catch (error) {
     console.error('[Auth Me Error]:', error);
     return res.status(500).json({ success: false, message: 'Failed to fetch user profile.' });
@@ -190,12 +319,10 @@ router.put('/profile', verifyToken, async (req, res) => {
       ]
     );
 
-    // Log activity
-    await query(
-      `INSERT INTO \`activity_logs\` (\`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
-       VALUES (?, ?, 'settings', 'Profile updated', 'Updated profile information and preferences')`,
-      [req.user.id, fullName || 'User']
-    );
+    // If orgName updated, update tenant name as well
+    if (orgName) {
+      await query('UPDATE `tenants` SET `name` = ? WHERE `owner_id` = ? LIMIT 1', [orgName.trim(), req.user.id]);
+    }
 
     const [rows] = await query('SELECT * FROM `users` WHERE `id` = ?', [req.user.id]);
     const u = rows[0];
@@ -252,12 +379,6 @@ router.put('/change-password', verifyToken, async (req, res) => {
     const hashedPassword = await bcrypt.hash(newPassword, salt);
 
     await query('UPDATE `users` SET `password` = ? WHERE `id` = ?', [hashedPassword, req.user.id]);
-
-    await query(
-      `INSERT INTO \`activity_logs\` (\`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
-       VALUES (?, ?, 'security', 'Password changed', 'Successfully changed account password')`,
-      [req.user.id, rows[0].full_name]
-    );
 
     return res.json({ success: true, message: 'Password changed successfully!' });
   } catch (error) {

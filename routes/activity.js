@@ -1,16 +1,18 @@
 import express from 'express';
 import { query } from '../db/db.js';
 import { verifyToken } from '../middleware/auth.js';
+import { resolveTenant } from '../middleware/tenant.js';
 
 const router = express.Router();
 
-// GET /api/activity - Get activity logs
-router.get('/', verifyToken, async (req, res) => {
+// GET /api/activity - Get activity logs for current tenant
+router.get('/', verifyToken, resolveTenant, async (req, res) => {
   try {
     const { type, limit = 50 } = req.query;
+    const tenantId = req.tenantId || 1;
 
-    let sql = 'SELECT * FROM `activity_logs` WHERE 1=1';
-    const params = [];
+    let sql = 'SELECT * FROM `activity_logs` WHERE `tenant_id` = ?';
+    const params = [tenantId];
 
     if (type && type !== 'All') {
       sql += ' AND `type` = ?';
@@ -29,17 +31,19 @@ router.get('/', verifyToken, async (req, res) => {
 });
 
 // POST /api/activity - Add custom activity
-router.post('/', verifyToken, async (req, res) => {
+router.post('/', verifyToken, resolveTenant, async (req, res) => {
   try {
     const { type, action, detail } = req.body;
+    const tenantId = req.tenantId || 1;
+
     if (!type || !action || !detail) {
       return res.status(400).json({ success: false, message: 'Type, action, and detail are required.' });
     }
 
     const [result] = await query(
-      `INSERT INTO \`activity_logs\` (\`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
-       VALUES (?, ?, ?, ?, ?)`,
-      [req.user.id, req.user.email, type, action, detail]
+      `INSERT INTO \`activity_logs\` (\`tenant_id\`, \`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [tenantId, req.user.id, req.user.email, type, action, detail]
     );
 
     return res.status(201).json({ success: true, id: result.insertId });

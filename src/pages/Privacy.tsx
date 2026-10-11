@@ -38,20 +38,31 @@ export default function Privacy() {
                 You have the right to access, correct, or delete your personal information. You may also request a copy of your data or object to certain processing activities. Contact us to exercise these rights.
               </p>
 
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">6. Cookies</h2>
+              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">6. Cookies and Google AdSense Disclosures</h2>
+              <p className="font-body text-base mb-4 text-[#475569] leading-relaxed">
+                We use cookies and similar technologies to enhance your experience, maintain session state, and understand platform usage. 
+              </p>
               <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We use cookies and similar technologies to enhance your experience, analyze usage patterns, and improve the Service. You can control cookies through your browser settings.
+                <strong>Third-Party Vendors & Google AdSense:</strong> Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to our website or other websites. Google's use of advertising cookies enables it and its partners to serve ads to users based on their visits to our site and/or other sites on the Internet. Users may opt out of personalized advertising by visiting <a href="https://adssettings.google.com" target="_blank" rel="noreferrer" className="text-blue-600 underline">Google Ads Settings</a>. Alternatively, you can opt out of third-party vendor cookies for personalized advertising by visiting <a href="https://www.aboutads.info" target="_blank" rel="noreferrer" className="text-blue-600 underline">www.aboutads.info</a>.
               </p>
 
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">7. Changes to This Policy</h2>
+              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">7. Acceptable Use and Security Sentinel</h2>
               <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the effective date.
+                EventoraX employs 24/7 automated security and compliance monitoring to safeguard our ecosystem against fraudulent credentials, phishing, illegal gambling, counterfeit certificates, and unauthorized access attempts. Prohibited activity is automatically terminated and flagged to compliance officers.
               </p>
 
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">8. Contact Us</h2>
+              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">8. Changes to This Policy</h2>
+              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
+                We may update this Privacy Policy periodically. We will post all revisions directly on this page with an updated timestamp.
+              </p>
+
+              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">9. Official Contact Details</h2>
               <p className="font-body text-base text-[#475569] leading-relaxed">
-                If you have questions about this Privacy Policy, please contact us at{' '}
-                <a href="mailto:hello@eventorax.com" className="text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors duration-200 font-medium">hello@eventorax.com</a>.
+                For privacy inquiries or compliance requests, reach our Data Protection Officer at:{' '}
+                <a href="mailto:eventorax@orbit-i.tech" className="text-[#7c3aed] hover:underline font-semibold">eventorax@orbit-i.tech</a>
+                {' '}or via WhatsApp at{' '}
+                <a href="https://wa.me/923190375751" target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline font-semibold">+92 3190375751</a>.
+                Operated by ORBIT-I Private Limited, Islamabad, Pakistan.
               </p>
             </div>
           </div>

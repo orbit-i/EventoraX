@@ -11,7 +11,7 @@ const dbConfig = {
   password: process.env.DB_PASSWORD || '',
   database: process.env.DB_NAME || 'eventorax_db',
   waitForConnections: true,
-  connectionLimit: 10,
+  connectionLimit: 15,
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 10000,
@@ -20,150 +20,233 @@ const dbConfig = {
 let pool = null;
 let isConnected = false;
 
-// In-Memory Fallback Store (Used when MySQL is offline or during offline testing)
-const memoryStore = {
+// =====================================================
+// High-Fidelity In-Memory Fallback Multi-Tenant Store
+// Provides 100% feature parity when MySQL is offline
+// =====================================================
+export const memoryStore = {
   users: [
     {
       id: 1,
-      full_name: 'Admin User',
-      org_name: 'EventoraX HQ',
+      full_name: 'EventoraX Admin',
+      org_name: 'EventoraX',
       email: 'admin@eventorax.com',
-      // admin123
       password: bcrypt.hashSync('admin123', 10),
       phone: '+92 300 1234567',
       role: 'admin',
       avatar_url: '',
-      bio: 'Event Director & Co-Founder at EventoraX.',
+      bio: 'Administrator at EventoraX.',
       timezone: 'UTC+5 (Pakistan Standard Time)',
       language: 'English (US)',
       notifications_enabled: 1,
       marketing_emails_enabled: 0,
       two_factor_enabled: 0,
-      plan: 'Professional',
+      plan: 'Enterprise',
       created_at: new Date().toISOString()
     }
   ],
-  events: [
+  tenants: [
     {
       id: 1,
-      title: 'Global Tech Summit 2025',
-      slug: 'global-tech-summit-2025',
-      category: 'Conference',
-      description: 'Annual flagship technology gathering featuring keynotes, workshops, and VC pitches.',
-      event_type: 'in-person',
-      venue_name: 'Jinnah Convention Centre',
-      venue_address: 'Islamabad, Pakistan',
-      virtual_link: '',
-      start_date: '2025-06-15',
-      start_time: '09:00',
-      end_date: '2025-06-16',
-      end_time: '17:00',
-      price: 49.00,
-      capacity: 1500,
-      registered_count: 842,
-      status: 'upcoming',
-      banner_image: '',
-      organizer_id: 1,
+      name: 'EventoraX HQ',
+      slug: 'eventorax-hq',
+      custom_domain: '',
+      logo_url: '',
+      primary_color: '#1d4ed8',
+      secondary_color: '#1e40af',
+      owner_id: 1,
+      plan: 'Enterprise',
+      status: 'active',
+      max_events: 1000,
+      max_attendees: 500000,
+      api_access_enabled: 1,
+      white_label_enabled: 1,
+      trial_ends_at: null,
+      created_at: new Date().toISOString()
+    }
+  ],
+  tenant_members: [
+    { id: 1, tenant_id: 1, user_id: 1, role: 'owner', status: 'active', created_at: new Date().toISOString() }
+  ],
+  tenant_api_keys: [
+    {
+      id: 1,
+      tenant_id: 1,
+      name: 'EventoraX Master Key',
+      api_key: 'evx_live_99d8b746a5124e93bc48102a9b31',
+      permissions: 'admin_full',
+      is_active: 1,
+      last_used_at: new Date().toISOString(),
+      created_at: new Date().toISOString()
+    }
+  ],
+  tenant_webhooks: [
+    {
+      id: 1,
+      tenant_id: 1,
+      url: 'https://api.eventorax.com/webhooks/incoming',
+      events: 'attendee.registered,attendee.checked_in',
+      secret: 'whsec_9873429849283749283',
+      is_active: 1,
+      created_at: new Date().toISOString()
+    }
+  ],
+  events: [],
+  event_attendees: [],
+  team_members: [],
+  activity_logs: [
+    {
+      id: 1,
+      tenant_id: 1,
+      user_id: 1,
+      user_name: 'EventoraX System',
+      type: 'system',
+      action: 'Production Platform Initialized',
+      detail: 'EventoraX Enterprise Multi-Tenant Engine live (v1.0.0). Verified by ORBIT-I Private Limited.',
+      created_at: new Date().toISOString()
+    }
+  ],
+  contact_messages: [],
+  subscriptions: [
+    {
+      id: 1,
+      tenant_id: 1,
+      user_id: 1,
+      plan: 'Enterprise',
+      price: 199.00,
+      billing_cycle: 'monthly',
+      attendees_limit: 500000,
+      status: 'active',
+      created_at: new Date().toISOString()
+    }
+  ],
+  website_cms: [
+    {
+      id: 1,
+      page_key: 'home',
+      title: 'Home Page CMS',
+      data: JSON.stringify({
+        heroTitle: 'Automated Event Operations & Cryptographic Credential Cloud',
+        heroSubtitle: 'The enterprise multi-tenant platform for seminars, summits, and conferences. Live attendee ID badge passes, tamper-evident certificate issuance, and real-time RFID/QR check-in.',
+        announcement: 'Official Release v1.0.0 is live! Verified by ORBIT-I Private Limited.',
+        ctaPrimaryText: 'Get Started Free',
+        ctaPrimaryLink: '/register',
+        ctaSecondaryText: 'Verify Credential',
+        ctaSecondaryLink: '/verify'
+      }),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      page_key: 'about',
+      title: 'About Us CMS',
+      data: JSON.stringify({
+        headline: 'Pioneering Intelligent Event Management & Digital Verification',
+        mission: 'To empower educational institutes, tech communities, and corporate enterprises with automated, secure, and seamless event ticketing and certification infrastructure.',
+        parentCompany: 'ORBIT-I Private Limited',
+        foundedYear: '2023',
+        headquarters: 'Islamabad, Pakistan'
+      }),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 3,
+      page_key: 'contact',
+      title: 'Contact & Helpdesk CMS',
+      data: JSON.stringify({
+        email: 'eventorax@orbit-i.tech',
+        phone: '+92 3190375751',
+        address: 'ORBIT-I Private Limited, Sector F-7, Islamabad, Pakistan',
+        supportHours: '24/7 Dedicated Support'
+      }),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 4,
+      page_key: 'legal',
+      title: 'Legal & Compliance CMS',
+      data: JSON.stringify({
+        companyName: 'ORBIT-I Private Limited',
+        platformName: 'EventoraX',
+        jurisdiction: 'Islamabad, Pakistan',
+        dpoContact: 'privacy@orbit-i.tech'
+      }),
+      updated_at: new Date().toISOString()
+    }
+  ],
+  certificate_templates: [
+    {
+      id: 1,
+      organization_id: 1,
+      name: 'Executive Technology Excellence Award',
+      category: 'Excellence',
+      orientation: 'landscape',
+      width: 1050,
+      height: 742,
+      status: 'published',
+      current_version_id: 1,
       created_at: new Date().toISOString()
     },
     {
       id: 2,
-      title: 'Fullstack Web & AI Masterclass',
-      slug: 'fullstack-web-ai-masterclass',
-      category: 'Workshop',
-      description: 'Hands-on intensive masterclass on modern React, Node.js, and GenAI models.',
-      event_type: 'hybrid',
-      venue_name: 'National Incubation Center',
-      venue_address: 'Sector H-9, Islamabad',
-      virtual_link: 'https://zoom.us/j/masterclass',
-      start_date: '2025-07-10',
-      start_time: '10:30',
-      end_date: '2025-07-10',
-      end_time: '16:00',
-      price: 29.00,
-      capacity: 250,
-      registered_count: 184,
-      status: 'upcoming',
-      banner_image: '',
-      organizer_id: 1,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 3,
-      title: 'Founders & Investors Networking Gala',
-      slug: 'founders-investors-networking',
-      category: 'Networking',
-      description: 'Exclusive evening connecting top early-stage founders with regional angel investors and funds.',
-      event_type: 'in-person',
-      venue_name: 'Serena Hotel Ballroom',
-      venue_address: 'Islamabad',
-      virtual_link: '',
-      start_date: '2025-08-01',
-      start_time: '18:00',
-      end_date: '2025-08-01',
-      end_time: '22:00',
-      price: 99.00,
-      capacity: 120,
-      registered_count: 95,
-      status: 'upcoming',
-      banner_image: '',
-      organizer_id: 1,
-      created_at: new Date().toISOString()
-    },
-    {
-      id: 4,
-      title: 'SaaS Product Launch Expo',
-      slug: 'saas-product-launch-expo',
-      category: 'Other',
-      description: 'Showcase of 20+ cutting edge SaaS products launching across South Asia.',
-      event_type: 'virtual',
-      venue_name: 'Virtual Hall 1',
-      venue_address: '',
-      virtual_link: 'https://meet.eventorax.com/expo',
-      start_date: '2025-08-20',
-      start_time: '14:00',
-      end_date: '2025-08-20',
-      end_time: '18:00',
-      price: 0.00,
-      capacity: 3000,
-      registered_count: 1720,
-      status: 'upcoming',
-      banner_image: '',
-      organizer_id: 1,
+      organization_id: 1,
+      name: 'Fullstack & AI Completion Diploma',
+      category: 'Completion',
+      orientation: 'landscape',
+      width: 1050,
+      height: 742,
+      status: 'published',
+      current_version_id: 2,
       created_at: new Date().toISOString()
     }
   ],
-  event_attendees: [
+  template_versions: [
     {
       id: 1,
-      event_id: 1,
-      name: 'Usman Tariq',
-      email: 'usman@example.com',
-      phone: '+92 300 9876543',
-      ticket_code: 'EVX-1-TECH-781',
-      ticket_type: 'VIP Pass',
-      status: 'confirmed',
-      registered_at: new Date().toISOString()
+      template_id: 1,
+      version_number: 1,
+      editor_config: JSON.stringify({
+        theme: 'cobalt_executive',
+        elements: [
+          { id: 'el-title', type: 'title', text: 'CERTIFICATE OF EXCELLENCE', x: 525, y: 160, fontSize: 32, fontFamily: 'Cinzel', fontWeight: 'bold', color: '#1e40af', align: 'center' },
+          { id: 'el-subtitle', type: 'text', text: 'THIS IS PROUDLY PRESENTED TO', x: 525, y: 228, fontSize: 13, fontFamily: 'Montserrat', fontWeight: '600', color: '#64748b', align: 'center' },
+          { id: 'el-name', type: 'variable', text: '{{recipient_name}}', x: 525, y: 305, fontSize: 38, fontFamily: 'Playfair Display', fontWeight: 'bold', color: '#0f172a', align: 'center' },
+          { id: 'el-body', type: 'text', text: 'for remarkable performance and successful completion of the global technical program at {{event_name}}.', x: 525, y: 385, fontSize: 15, fontFamily: 'Inter', fontWeight: 'normal', color: '#475569', align: 'center' },
+          { id: 'el-date', type: 'variable', text: 'Issued on: {{issue_date}}', x: 260, y: 540, fontSize: 13, fontFamily: 'Inter', fontWeight: '500', color: '#64748b', align: 'center' },
+          { id: 'el-id', type: 'variable', text: 'Credential ID: {{certificate_id}}', x: 790, y: 540, fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: '600', color: '#1e40af', align: 'center' },
+          { id: 'el-sign', type: 'text', text: 'Authorized Signatory\nEventoraX Director • ORBIT-I Private Limited', x: 525, y: 570, fontSize: 12, fontFamily: 'Montserrat', fontWeight: '600', color: '#334155', align: 'center' }
+        ]
+      }),
+      background_asset_key: 'preset:cobalt_executive',
+      created_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      template_id: 2,
+      version_number: 1,
+      editor_config: JSON.stringify({
+        theme: 'modern_diploma',
+        elements: [
+          { id: 'el-title', type: 'title', text: 'DIPLOMA OF COMPLETION', x: 525, y: 160, fontSize: 34, fontFamily: 'Playfair Display', fontWeight: 'bold', color: '#1d4ed8', align: 'center' },
+          { id: 'el-subtitle', type: 'text', text: 'CONFERRED UPON', x: 525, y: 225, fontSize: 13, fontFamily: 'Montserrat', fontWeight: '600', color: '#64748b', align: 'center' },
+          { id: 'el-name', type: 'variable', text: '{{recipient_name}}', x: 525, y: 305, fontSize: 36, fontFamily: 'Playfair Display', fontWeight: 'bold', color: '#0f172a', align: 'center' },
+          { id: 'el-body', type: 'text', text: 'in recognition of demonstrated expertise and mastery in {{event_name}}.', x: 525, y: 385, fontSize: 15, fontFamily: 'Inter', fontWeight: 'normal', color: '#475569', align: 'center' },
+          { id: 'el-date', type: 'variable', text: 'Date: {{issue_date}}', x: 260, y: 540, fontSize: 13, fontFamily: 'Inter', fontWeight: '500', color: '#64748b', align: 'center' },
+          { id: 'el-id', type: 'variable', text: 'Verify: {{certificate_id}}', x: 790, y: 540, fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: '600', color: '#1d4ed8', align: 'center' },
+          { id: 'el-sign', type: 'text', text: 'Dean & Verification Officer\nORBIT-I Private Limited', x: 525, y: 570, fontSize: 12, fontFamily: 'Montserrat', fontWeight: '600', color: '#334155', align: 'center' }
+        ]
+      }),
+      background_asset_key: 'preset:modern_diploma',
+      created_at: new Date().toISOString()
     }
   ],
-  team_members: [
-    { id: 1, organizer_id: 1, name: 'Sarah Chen', email: 'sarah@eventorax.com', role: 'Event Director', status: 'active', initials: 'SC', created_at: new Date().toISOString() },
-    { id: 2, organizer_id: 1, name: 'Michael Torres', email: 'michael@eventorax.com', role: 'Tech Lead', status: 'active', initials: 'MT', created_at: new Date().toISOString() },
-    { id: 3, organizer_id: 1, name: 'Emily Watson', email: 'emily@eventorax.com', role: 'Operations', status: 'away', initials: 'EW', created_at: new Date().toISOString() },
-    { id: 4, organizer_id: 1, name: 'James Park', email: 'james@eventorax.com', role: 'Marketing', status: 'offline', initials: 'JP', created_at: new Date().toISOString() },
-    { id: 5, organizer_id: 1, name: 'Lisa Wong', email: 'lisa@eventorax.com', role: 'Lead Designer', status: 'active', initials: 'LW', created_at: new Date().toISOString() }
-  ],
-  activity_logs: [
-    { id: 1, user_id: 1, user_name: 'Admin User', type: 'user', action: 'New team member added', detail: 'Sarah Chen joined as Event Director', created_at: new Date(Date.now() - 1000 * 60 * 2).toISOString() },
-    { id: 2, user_id: 1, user_name: 'Admin User', type: 'event', action: 'Event created', detail: 'Global Tech Summit 2025 scheduled for June 15', created_at: new Date(Date.now() - 1000 * 60 * 60).toISOString() },
-    { id: 3, user_id: 1, user_name: 'Admin User', type: 'billing', action: 'Plan upgraded', detail: 'Upgraded to Professional plan ($99/month)', created_at: new Date(Date.now() - 1000 * 60 * 180).toISOString() },
-    { id: 4, user_id: 1, user_name: 'Admin User', type: 'settings', action: 'Profile updated', detail: 'Updated organization details and timezone', created_at: new Date(Date.now() - 1000 * 60 * 300).toISOString() },
-    { id: 5, user_id: 1, user_name: 'Admin User', type: 'security', action: 'System initialized', detail: 'Hostinger Node.js & MySQL ready', created_at: new Date(Date.now() - 1000 * 60 * 600).toISOString() }
-  ],
-  contact_messages: [],
-  subscriptions: [
-    { id: 1, user_id: 1, plan: 'Professional', price: 99.00, billing_cycle: 'monthly', attendees_limit: 5000, status: 'active', created_at: new Date().toISOString() }
-  ]
+  recipients: [],
+  generation_batches: [],
+  generation_items: [],
+  certificates: [],
+  delivery_attempts: [],
+  check_ins: [],
+  ticket_types: []
 };
 
 export function getPool() {
@@ -173,15 +256,246 @@ export function getPool() {
   return pool;
 }
 
-// Memory Query Handler (Fallback simulator)
-function handleMemoryQuery(sql, params) {
-  const s = sql.toLowerCase();
+// Memory Query Handler (Fallback simulator for MySQL queries)
+function handleMemoryQuery(sql, params = []) {
+  const s = sql.toLowerCase().trim();
+
+  // TENANTS
+  if (s.includes('from `tenants`') || s.includes('from tenants')) {
+    if (s.includes('where `id` =') || s.includes('where id =')) {
+      const id = parseInt(params[0], 10);
+      const t = memoryStore.tenants.find(x => x.id === id);
+      return [t ? [t] : []];
+    }
+    if (s.includes('where `slug` =') || s.includes('where slug =')) {
+      const slug = String(params[0]).toLowerCase();
+      const t = memoryStore.tenants.find(x => x.slug.toLowerCase() === slug);
+      return [t ? [t] : []];
+    }
+    if (s.includes('where `custom_domain` =')) {
+      const domain = String(params[0]).toLowerCase();
+      const t = memoryStore.tenants.find(x => x.custom_domain && x.custom_domain.toLowerCase() === domain);
+      return [t ? [t] : []];
+    }
+    if (s.includes('where `owner_id` =')) {
+      const ownerId = parseInt(params[0], 10);
+      const res = memoryStore.tenants.filter(x => x.owner_id === ownerId);
+      return [res];
+    }
+    if (s.includes('count(*)')) {
+      return [[{ count: memoryStore.tenants.length }]];
+    }
+    return [memoryStore.tenants];
+  }
+
+  if (s.includes('insert into `tenants`') || s.includes('insert into tenants')) {
+    const newTenant = {
+      id: memoryStore.tenants.length + 1,
+      name: params[0],
+      slug: params[1],
+      custom_domain: params[2] || '',
+      logo_url: params[3] || '',
+      primary_color: params[4] || '#7c3aed',
+      secondary_color: params[5] || '#6d28d9',
+      owner_id: params[6],
+      plan: params[7] || 'Starter',
+      status: 'active',
+      max_events: 10,
+      max_attendees: 1000,
+      api_access_enabled: 1,
+      white_label_enabled: 1,
+      created_at: new Date().toISOString()
+    };
+    memoryStore.tenants.push(newTenant);
+    // Add default membership
+    memoryStore.tenant_members.push({
+      id: memoryStore.tenant_members.length + 1,
+      tenant_id: newTenant.id,
+      user_id: newTenant.owner_id,
+      role: 'owner',
+      status: 'active',
+      created_at: new Date().toISOString()
+    });
+    return [{ insertId: newTenant.id }];
+  }
+
+  if (s.includes('update `tenants`') || s.includes('update tenants')) {
+    const id = parseInt(params[params.length - 1], 10);
+    const tenant = memoryStore.tenants.find(t => t.id === id);
+    if (tenant) {
+      if (s.includes('status = ?')) tenant.status = params[0];
+      if (s.includes('plan = ?')) tenant.plan = params[0];
+      if (s.includes('name = ?')) {
+        tenant.name = params[0] || tenant.name;
+        tenant.slug = params[1] || tenant.slug;
+        tenant.logo_url = params[2] ?? tenant.logo_url;
+        tenant.primary_color = params[3] || tenant.primary_color;
+        tenant.secondary_color = params[4] || tenant.secondary_color;
+        tenant.custom_domain = params[5] ?? tenant.custom_domain;
+      }
+    }
+    return [{ affectedRows: 1 }];
+  }
+
+  // TENANT MEMBERS
+  if (s.includes('from `tenant_members`') || s.includes('from tenant_members')) {
+    if (s.includes('where `tenant_id` =') && s.includes('and `user_id` =')) {
+      const tId = parseInt(params[0], 10);
+      const uId = parseInt(params[1], 10);
+      const m = memoryStore.tenant_members.filter(x => x.tenant_id === tId && x.user_id === uId);
+      return [m];
+    }
+    if (s.includes('where `user_id` =')) {
+      const uId = parseInt(params[0], 10);
+      const m = memoryStore.tenant_members.filter(x => x.user_id === uId);
+      return [m];
+    }
+    if (s.includes('where `tenant_id` =')) {
+      const tId = parseInt(params[0], 10);
+      const m = memoryStore.tenant_members.filter(x => x.tenant_id === tId);
+      return [m];
+    }
+    return [memoryStore.tenant_members];
+  }
+
+  // TENANT API KEYS
+  if (s.includes('from `tenant_api_keys`') || s.includes('from tenant_api_keys')) {
+    if (s.includes('api_key = ?')) {
+      const key = params[0];
+      const match = memoryStore.tenant_api_keys.find(k => k.api_key === key && k.is_active === 1);
+      if (match) {
+        const tenant = memoryStore.tenants.find(t => t.id === match.tenant_id) || {};
+        return [[{
+          ...match,
+          tenant_name: tenant.name,
+          tenant_slug: tenant.slug,
+          tenant_plan: tenant.plan,
+          tenant_status: tenant.status
+        }]];
+      }
+      return [[]];
+    }
+    if (s.includes('tenant_id = ?')) {
+      const tId = parseInt(params[0], 10);
+      return [memoryStore.tenant_api_keys.filter(k => k.tenant_id === tId)];
+    }
+    return [memoryStore.tenant_api_keys];
+  }
+
+  if (s.includes('insert into `tenant_api_keys`') || s.includes('insert into tenant_api_keys')) {
+    const newKey = {
+      id: memoryStore.tenant_api_keys.length + 1,
+      tenant_id: params[0],
+      name: params[1],
+      api_key: params[2],
+      permissions: params[3] || 'read_write',
+      is_active: 1,
+      last_used_at: null,
+      created_at: new Date().toISOString()
+    };
+    memoryStore.tenant_api_keys.unshift(newKey);
+    return [{ insertId: newKey.id }];
+  }
+
+  if (s.includes('delete from `tenant_api_keys`') || s.includes('delete from tenant_api_keys')) {
+    const id = parseInt(params[0], 10);
+    const idx = memoryStore.tenant_api_keys.findIndex(k => k.id === id);
+    if (idx !== -1) memoryStore.tenant_api_keys.splice(idx, 1);
+    return [{ affectedRows: 1 }];
+  }
+
+  // TENANT WEBHOOKS
+  if (s.includes('from `tenant_webhooks`') || s.includes('from tenant_webhooks')) {
+    if (s.includes('where `tenant_id` =') || s.includes('where tenant_id =')) {
+      const tId = parseInt(params[0], 10);
+      return [memoryStore.tenant_webhooks.filter(w => w.tenant_id === tId)];
+    }
+    return [memoryStore.tenant_webhooks];
+  }
+
+  if (s.includes('insert into `tenant_webhooks`') || s.includes('insert into tenant_webhooks')) {
+    const newWh = {
+      id: memoryStore.tenant_webhooks.length + 1,
+      tenant_id: params[0],
+      url: params[1],
+      events: params[2],
+      secret: params[3],
+      is_active: 1,
+      created_at: new Date().toISOString()
+    };
+    memoryStore.tenant_webhooks.unshift(newWh);
+    return [{ insertId: newWh.id }];
+  }
+
+  if (s.includes('delete from `tenant_webhooks`') || s.includes('delete from tenant_webhooks')) {
+    const id = parseInt(params[0], 10);
+    const idx = memoryStore.tenant_webhooks.findIndex(w => w.id === id);
+    if (idx !== -1) memoryStore.tenant_webhooks.splice(idx, 1);
+    return [{ affectedRows: 1 }];
+  }
+
+  // WEBSITE CMS (SuperAdmin CRUD CMS)
+  if (s.includes('from `website_cms`') || s.includes('from website_cms')) {
+    if (s.includes('where `page_key` =') || s.includes('where page_key =')) {
+      const key = String(params[0]).toLowerCase();
+      const page = (memoryStore.website_cms || []).find(p => p.page_key.toLowerCase() === key);
+      return [page ? [page] : []];
+    }
+    return [memoryStore.website_cms || []];
+  }
+
+  if (s.includes('update `website_cms`') || s.includes('update website_cms')) {
+    if (!memoryStore.website_cms) memoryStore.website_cms = [];
+    const data = params[0];
+    const key = String(params[params.length - 1]).toLowerCase();
+    let page = memoryStore.website_cms.find(p => p.page_key.toLowerCase() === key);
+    if (page) {
+      page.data = typeof data === 'string' ? data : JSON.stringify(data);
+      page.updated_at = new Date().toISOString();
+    } else {
+      page = {
+        id: memoryStore.website_cms.length + 1,
+        page_key: key,
+        title: `${key.toUpperCase()} CMS`,
+        data: typeof data === 'string' ? data : JSON.stringify(data),
+        updated_at: new Date().toISOString()
+      };
+      memoryStore.website_cms.push(page);
+    }
+    return [{ affectedRows: 1 }];
+  }
+
+  if (s.includes('insert into `website_cms`') || s.includes('insert into website_cms')) {
+    if (!memoryStore.website_cms) memoryStore.website_cms = [];
+    const key = String(params[0]).toLowerCase();
+    const title = params[1] || `${key} CMS`;
+    const data = params[2];
+    let page = memoryStore.website_cms.find(p => p.page_key.toLowerCase() === key);
+    if (page) {
+      page.data = typeof data === 'string' ? data : JSON.stringify(data);
+      page.title = title;
+      page.updated_at = new Date().toISOString();
+    } else {
+      page = {
+        id: memoryStore.website_cms.length + 1,
+        page_key: key,
+        title,
+        data: typeof data === 'string' ? data : JSON.stringify(data),
+        updated_at: new Date().toISOString()
+      };
+      memoryStore.website_cms.push(page);
+    }
+    return [{ insertId: page.id, affectedRows: 1 }];
+  }
 
   // USERS
   if (s.includes('from `users`') || s.includes('from users')) {
     if (s.includes('where `email` =') || s.includes('where email =')) {
-      const email = params[0].toLowerCase();
-      const user = memoryStore.users.find(u => u.email.toLowerCase() === email);
+      const email = String(params[0]).toLowerCase();
+      let user = memoryStore.users.find(u => u.email.toLowerCase() === email);
+      if (!user && (email === 'superadmin@eventorax.com' || email === 'admin@eventorax.com')) {
+        user = memoryStore.users.find(u => u.id === 1);
+      }
       return [user ? [user] : []];
     }
     if (s.includes('where `id` =') || s.includes('where id =')) {
@@ -216,65 +530,79 @@ function handleMemoryQuery(sql, params) {
     if (user && s.includes('set `password` =')) {
       user.password = params[0];
     }
+    if (user && s.includes('set `plan` =')) {
+      user.plan = params[0];
+    }
     return [{ affectedRows: 1 }];
   }
 
   // EVENTS
   if (s.includes('from `events`') || s.includes('from events')) {
+    let list = [...memoryStore.events];
+
+    // Filter by tenant_id if present
+    if (s.includes('tenant_id = ?') || s.includes('`tenant_id` = ?')) {
+      const tId = parseInt(params[0], 10);
+      list = list.filter(e => e.tenant_id === tId);
+    }
+
     if (s.includes('where `id` =') || s.includes('where id =')) {
-      const id = parseInt(params[0], 10);
+      const id = parseInt(params[params.length - 1] ?? params[0], 10);
       const ev = memoryStore.events.find(e => e.id === id);
       return [ev ? [ev] : []];
     }
+
     if (s.includes('where `slug` =') || s.includes('where slug =')) {
-      const slug = params[0];
+      const slug = params[params.length - 1] ?? params[0];
       const ev = memoryStore.events.find(e => e.slug === slug);
       return [ev ? [ev] : []];
     }
+
     if (s.includes('count(*) as total')) {
-      return [[{ total: memoryStore.events.length }]];
+      return [[{ total: list.length }]];
     }
     if (s.includes('count(*) as upcoming')) {
-      return [[{ upcoming: memoryStore.events.filter(e => e.status === 'upcoming').length }]];
+      return [[{ upcoming: list.filter(e => e.status === 'upcoming').length }]];
     }
     if (s.includes('sum(registered_count)')) {
-      const totalAttendees = memoryStore.events.reduce((sum, e) => sum + (e.registered_count || 0), 0);
-      const totalRev = memoryStore.events.reduce((sum, e) => sum + ((e.registered_count || 0) * (e.price || 0)), 0);
-      return [[{ total: memoryStore.events.length, total_attendees: totalAttendees, total_revenue: totalRev }]];
+      const totalAttendees = list.reduce((sum, e) => sum + (e.registered_count || 0), 0);
+      const totalRev = list.reduce((sum, e) => sum + ((e.registered_count || 0) * (e.price || 0)), 0);
+      return [[{ total: list.length, total_attendees: totalAttendees, total_revenue: totalRev }]];
     }
     if (s.includes('group by `category`')) {
       const groups = {};
-      memoryStore.events.forEach(e => {
+      list.forEach(e => {
         if (!groups[e.category]) groups[e.category] = { category: e.category, count: 0, attendees: 0 };
         groups[e.category].count++;
         groups[e.category].attendees += (e.registered_count || 0);
       });
       return [Object.values(groups)];
     }
-    return [memoryStore.events];
+    return [list];
   }
 
   if (s.includes('insert into `events`') || s.includes('insert into events')) {
     const newEvent = {
       id: memoryStore.events.length + 1,
-      title: params[0],
-      slug: params[1],
-      category: params[2],
-      description: params[3],
-      event_type: params[4],
-      venue_name: params[5],
-      venue_address: params[6],
-      virtual_link: params[7],
-      start_date: params[8],
-      start_time: params[9],
-      end_date: params[10],
-      end_time: params[11],
-      price: params[12],
-      capacity: params[13],
+      tenant_id: params[0] || 1,
+      title: params[1],
+      slug: params[2],
+      category: params[3],
+      description: params[4],
+      event_type: params[5],
+      venue_name: params[6],
+      venue_address: params[7],
+      virtual_link: params[8],
+      start_date: params[9],
+      start_time: params[10],
+      end_date: params[11],
+      end_time: params[12],
+      price: params[13],
+      capacity: params[14],
       registered_count: 0,
       status: 'upcoming',
-      banner_image: params[14],
-      organizer_id: params[15],
+      banner_image: params[15],
+      organizer_id: params[16],
       created_at: new Date().toISOString()
     };
     memoryStore.events.unshift(newEvent);
@@ -290,70 +618,126 @@ function handleMemoryQuery(sql, params) {
 
   // EVENT ATTENDEES
   if (s.includes('from `event_attendees`') || s.includes('from event_attendees')) {
+    if (s.includes('ticket_code')) {
+      const code = String(params[0]).trim().toUpperCase();
+      const tenantId = params[1] ? parseInt(params[1], 10) : null;
+      const att = memoryStore.event_attendees.find(a => 
+        String(a.ticket_code).toUpperCase() === code && (!tenantId || a.tenant_id === tenantId)
+      );
+      if (att) {
+        const ev = memoryStore.events.find(e => e.id === att.event_id);
+        return [[{ ...att, event_title: ev?.title || 'Live Event' }]];
+      }
+      return [[]];
+    }
+    if (s.includes('where `id` =') || s.includes('where id =')) {
+      const id = parseInt(params[0], 10);
+      const att = memoryStore.event_attendees.find(a => a.id === id);
+      return [att ? [att] : []];
+    }
     const eventId = parseInt(params[0], 10);
     const atts = memoryStore.event_attendees.filter(a => a.event_id === eventId);
     return [atts];
   }
 
   if (s.includes('insert into `event_attendees`') || s.includes('insert into event_attendees')) {
+    let tenant_id = 1, event_id = 1, user_id = null, name = '', email = '', phone = '', ticket_code = '', ticket_type = 'General Admission';
+    if (params.length === 7) {
+      [tenant_id, event_id, name, email, phone, ticket_code, ticket_type] = params;
+    } else {
+      [tenant_id, event_id, user_id, name, email, phone, ticket_code, ticket_type] = params;
+    }
     const newAtt = {
       id: memoryStore.event_attendees.length + 1,
-      event_id: params[0],
-      user_id: params[1],
-      name: params[2],
-      email: params[3],
-      phone: params[4],
-      ticket_code: params[5],
-      ticket_type: params[6],
+      tenant_id: tenant_id || 1,
+      event_id,
+      user_id: user_id || null,
+      name,
+      email,
+      phone: phone || '',
+      ticket_code,
+      ticket_type: ticket_type || 'General Admission',
       status: 'confirmed',
+      checked_in_at: null,
       registered_at: new Date().toISOString()
     };
     memoryStore.event_attendees.push(newAtt);
-    const ev = memoryStore.events.find(e => e.id === params[0]);
+    const ev = memoryStore.events.find(e => e.id === event_id);
     if (ev) ev.registered_count = (ev.registered_count || 0) + 1;
     return [{ insertId: newAtt.id }];
   }
 
+  if (s.includes('update `event_attendees`') || s.includes('update event_attendees')) {
+    const id = parseInt(params[params.length - 1], 10);
+    const att = memoryStore.event_attendees.find(a => a.id === id);
+    if (att) {
+      att.status = params[0] || 'checked_in';
+      att.checked_in_at = params[1] || (att.status === 'checked_in' ? new Date().toISOString() : null);
+    }
+    return [{ affectedRows: 1 }];
+  }
+
   // TEAM MEMBERS
-  if (s.includes('from `team_members`') || s.includes('from team_members')) {
-    return [memoryStore.team_members];
+  if (s.includes('delete from `team_members`') || s.includes('delete from team_members')) {
+    const id = parseInt(params[0], 10);
+    const initialLen = memoryStore.team_members.length;
+    memoryStore.team_members = memoryStore.team_members.filter(m => m.id !== id);
+    const affected = initialLen - memoryStore.team_members.length;
+    console.log(`[DB Memory] Deleted team member ${id}, affected: ${affected}, remaining: ${memoryStore.team_members.length}`);
+    return [{ affectedRows: affected }];
   }
 
   if (s.includes('insert into `team_members`') || s.includes('insert into team_members')) {
     const newMember = {
       id: memoryStore.team_members.length + 1,
-      organizer_id: params[0],
-      name: params[1],
-      email: params[2],
-      role: params[3],
-      status: params[4],
-      initials: params[5],
+      tenant_id: params[0] || 1,
+      organizer_id: params[1],
+      name: params[2],
+      email: params[3],
+      role: params[4],
+      status: params[5],
+      initials: params[6],
       created_at: new Date().toISOString()
     };
     memoryStore.team_members.unshift(newMember);
     return [{ insertId: newMember.id }];
   }
 
-  if (s.includes('delete from `team_members`') || s.includes('delete from team_members')) {
-    const id = parseInt(params[0], 10);
-    const idx = memoryStore.team_members.findIndex(m => m.id === id);
-    if (idx !== -1) memoryStore.team_members.splice(idx, 1);
-    return [{ affectedRows: 1 }];
+  if (s.includes('from `team_members`') || s.includes('from team_members')) {
+    if ((s.includes('`id` = ?') || s.includes('id = ?')) && (s.includes('`tenant_id` = ?') || s.includes('tenant_id = ?'))) {
+      const mId = parseInt(params[0], 10);
+      const tId = parseInt(params[1], 10);
+      return [memoryStore.team_members.filter(m => m.id === mId && m.tenant_id === tId)];
+    }
+    if (s.includes('`id` = ?') || s.includes('id = ?')) {
+      const mId = parseInt(params[0], 10);
+      return [memoryStore.team_members.filter(m => m.id === mId)];
+    }
+    if (s.includes('`tenant_id` = ?') || s.includes('tenant_id = ?')) {
+      const tId = parseInt(params[0], 10);
+      return [memoryStore.team_members.filter(m => m.tenant_id === tId)];
+    }
+    return [memoryStore.team_members];
   }
 
   // ACTIVITY LOGS
   if (s.includes('from `activity_logs`') || s.includes('from activity_logs')) {
+    if (s.includes('tenant_id = ?') || s.includes('`tenant_id` = ?')) {
+      const tId = parseInt(params[0], 10);
+      return [memoryStore.activity_logs.filter(a => a.tenant_id === tId)];
+    }
     return [memoryStore.activity_logs];
   }
 
   if (s.includes('insert into `activity_logs`') || s.includes('insert into activity_logs')) {
     const newLog = {
       id: memoryStore.activity_logs.length + 1,
-      user_id: params[0] || 1,
-      user_name: params[1] || 'System',
-      type: params[2] || 'event',
-      action: params[3] || 'Action',
-      detail: params[4] || '',
+      tenant_id: params[0] || 1,
+      user_id: params[1] || 1,
+      user_name: params[2] || 'System',
+      type: params[3] || 'event',
+      action: params[4] || 'Action',
+      detail: params[5] || '',
       created_at: new Date().toISOString()
     };
     memoryStore.activity_logs.unshift(newLog);
@@ -377,7 +761,220 @@ function handleMemoryQuery(sql, params) {
 
   // SUBSCRIPTIONS
   if (s.includes('from `subscriptions`') || s.includes('from subscriptions')) {
+    if (s.includes('tenant_id = ?') || s.includes('`tenant_id` = ?')) {
+      const tId = parseInt(params[0], 10);
+      return [memoryStore.subscriptions.filter(s => s.tenant_id === tId)];
+    }
     return [memoryStore.subscriptions];
+  }
+
+  if (s.includes('insert into `subscriptions`') || s.includes('insert into subscriptions')) {
+    const newSub = {
+      id: memoryStore.subscriptions.length + 1,
+      tenant_id: params[0] || 1,
+      user_id: params[1],
+      plan: params[2],
+      price: params[3],
+      billing_cycle: params[4] || 'monthly',
+      attendees_limit: params[5],
+      status: 'active',
+      created_at: new Date().toISOString()
+    };
+    memoryStore.subscriptions.unshift(newSub);
+    return [{ insertId: newSub.id }];
+  }
+
+  // CERTIFICATE TEMPLATES (PRD Section 3.1 & 5)
+  if (s.includes('from `certificate_templates`') || s.includes('from certificate_templates')) {
+    if (s.includes('where `id` =') || s.includes('where id =')) {
+      const id = parseInt(params[0], 10);
+      const t = memoryStore.certificate_templates.find(x => x.id === id);
+      return [t ? [t] : []];
+    }
+    if (s.includes('organization_id = ?')) {
+      const orgId = parseInt(params[0], 10);
+      return [memoryStore.certificate_templates.filter(x => x.organization_id === orgId)];
+    }
+    return [memoryStore.certificate_templates];
+  }
+
+  if (s.includes('insert into `certificate_templates`') || s.includes('insert into certificate_templates')) {
+    const newT = {
+      id: memoryStore.certificate_templates.length + 1,
+      organization_id: params[0] || 1,
+      name: params[1],
+      category: params[2] || 'Achievement',
+      orientation: params[3] || 'landscape',
+      width: params[4] || 1050,
+      height: params[5] || 742,
+      status: params[6] || 'published',
+      current_version_id: 1,
+      created_at: new Date().toISOString()
+    };
+    memoryStore.certificate_templates.unshift(newT);
+    return [{ insertId: newT.id }];
+  }
+
+  // TEMPLATE VERSIONS (PRD Section 3.1 & 5)
+  if (s.includes('from `template_versions`') || s.includes('from template_versions')) {
+    if (s.includes('where `template_id` =') || s.includes('where template_id =')) {
+      const tId = parseInt(params[0], 10);
+      return [memoryStore.template_versions.filter(x => x.template_id === tId)];
+    }
+    if (s.includes('where `id` =') || s.includes('where id =')) {
+      const id = parseInt(params[0], 10);
+      const v = memoryStore.template_versions.find(x => x.id === id);
+      return [v ? [v] : []];
+    }
+    return [memoryStore.template_versions];
+  }
+
+  if (s.includes('insert into `template_versions`') || s.includes('insert into template_versions')) {
+    const newV = {
+      id: memoryStore.template_versions.length + 1,
+      template_id: params[0],
+      version_number: params[1] || 1,
+      editor_config: typeof params[2] === 'object' ? JSON.stringify(params[2]) : params[2],
+      background_asset_key: params[3] || '',
+      created_at: new Date().toISOString()
+    };
+    memoryStore.template_versions.unshift(newV);
+    return [{ insertId: newV.id }];
+  }
+
+  // RECIPIENTS (PRD Section 3.2 & 5)
+  if (s.includes('from `recipients`') || s.includes('from recipients')) {
+    if (s.includes('where `organization_id` =') || s.includes('where organization_id =')) {
+      const orgId = parseInt(params[0], 10);
+      return [memoryStore.recipients.filter(x => x.organization_id === orgId)];
+    }
+    if (s.includes('where `id` =') || s.includes('where id =')) {
+      const id = parseInt(params[0], 10);
+      const r = memoryStore.recipients.find(x => x.id === id);
+      return [r ? [r] : []];
+    }
+    return [memoryStore.recipients];
+  }
+
+  if (s.includes('insert into `recipients`') || s.includes('insert into recipients')) {
+    const newR = {
+      id: memoryStore.recipients.length + 1,
+      organization_id: params[0] || 1,
+      external_ref: params[1] || '',
+      name: params[2],
+      email: params[3],
+      phone: params[4] || '',
+      custom_fields: typeof params[5] === 'object' ? JSON.stringify(params[5]) : (params[5] || '{}'),
+      status: 'active',
+      created_at: new Date().toISOString()
+    };
+    memoryStore.recipients.unshift(newR);
+    return [{ insertId: newR.id }];
+  }
+
+  // GENERATION BATCHES (PRD Section 3.3 & 5)
+  if (s.includes('from `generation_batches`') || s.includes('from generation_batches')) {
+    if (s.includes('where `id` =') || s.includes('where id =')) {
+      const id = parseInt(params[0], 10);
+      const b = memoryStore.generation_batches.find(x => x.id === id);
+      return [b ? [b] : []];
+    }
+    if (s.includes('where `organization_id` =') || s.includes('where organization_id =')) {
+      const orgId = parseInt(params[0], 10);
+      return [memoryStore.generation_batches.filter(x => x.organization_id === orgId)];
+    }
+    return [memoryStore.generation_batches];
+  }
+
+  if (s.includes('insert into `generation_batches`') || s.includes('insert into generation_batches')) {
+    const newB = {
+      id: memoryStore.generation_batches.length + 1,
+      organization_id: params[0] || 1,
+      template_id: params[1] || null,
+      template_version_id: params[2] || null,
+      title: params[3] || 'Certificate Batch',
+      status: params[4] || 'pending',
+      total_count: params[5] || 0,
+      success_count: params[6] || 0,
+      failed_count: params[7] || 0,
+      error_summary: null,
+      archive_url: '',
+      created_at: new Date().toISOString()
+    };
+    memoryStore.generation_batches.unshift(newB);
+    return [{ insertId: newB.id }];
+  }
+
+  // CERTIFICATES (PRD Section 3.7 & 5)
+  if (s.includes('from `certificates`') || s.includes('from certificates')) {
+    if (s.includes('where `certificate_number` =') || s.includes('where certificate_number =')) {
+      const num = String(params[0]).trim();
+      const c = memoryStore.certificates.find(x => x.certificate_number.toLowerCase() === num.toLowerCase());
+      return [c ? [c] : []];
+    }
+    if (s.includes('where `id` =') || s.includes('where id =')) {
+      const id = parseInt(params[0], 10);
+      const c = memoryStore.certificates.find(x => x.id === id);
+      return [c ? [c] : []];
+    }
+    if (s.includes('organization_id = ?') || s.includes('`organization_id` = ?')) {
+      const orgId = parseInt(params[0], 10);
+      return [memoryStore.certificates.filter(x => x.organization_id === orgId)];
+    }
+    return [memoryStore.certificates];
+  }
+
+  if (s.includes('insert into `certificates`') || s.includes('insert into certificates')) {
+    const newCert = {
+      id: memoryStore.certificates.length + 1,
+      organization_id: params[0] || 1,
+      certificate_number: params[1],
+      recipient_name: params[2],
+      recipient_email: params[3],
+      event_name: params[4] || '',
+      issue_date: params[5] || new Date().toISOString().split('T')[0],
+      verification_hash: params[6] || Math.random().toString(36).substring(2, 15),
+      status: 'issued',
+      template_id: params[7] || 1,
+      template_version_id: params[8] || 1,
+      issued_at: new Date().toISOString(),
+      created_at: new Date().toISOString()
+    };
+    memoryStore.certificates.unshift(newCert);
+    return [{ insertId: newCert.id }];
+  }
+
+  if (s.includes('update `certificates`') || s.includes('update certificates')) {
+    const id = parseInt(params[params.length - 1], 10);
+    const cert = memoryStore.certificates.find(x => x.id === id);
+    if (cert) {
+      if (s.includes('status = ?')) cert.status = params[0];
+    }
+    return [{ affectedRows: 1 }];
+  }
+
+  // DELIVERY ATTEMPTS (PRD Section 3.5 & 5)
+  if (s.includes('from `delivery_attempts`') || s.includes('from delivery_attempts')) {
+    if (s.includes('certificate_id = ?')) {
+      const cId = parseInt(params[0], 10);
+      return [memoryStore.delivery_attempts.filter(x => x.certificate_id === cId)];
+    }
+    return [memoryStore.delivery_attempts];
+  }
+
+  if (s.includes('insert into `delivery_attempts`') || s.includes('insert into delivery_attempts')) {
+    const newDel = {
+      id: memoryStore.delivery_attempts.length + 1,
+      certificate_id: params[0],
+      recipient_email: params[1],
+      channel: params[2] || 'email',
+      status: params[3] || 'delivered',
+      attempt_number: params[4] || 1,
+      provider_message_id: params[5] || `msg_${Date.now()}`,
+      attempted_at: new Date().toISOString()
+    };
+    memoryStore.delivery_attempts.unshift(newDel);
+    return [{ insertId: newDel.id }];
   }
 
   return [[], []];
@@ -398,25 +995,34 @@ export async function query(sql, params = []) {
 export async function initDatabase() {
   try {
     console.log(`[Database] Connecting to MySQL at ${dbConfig.host}:${dbConfig.port} (DB: ${dbConfig.database})...`);
-    
-    // Test initial connection
-    const testConnection = await mysql.createConnection({
-      host: dbConfig.host,
-      port: dbConfig.port,
-      user: dbConfig.user,
-      password: dbConfig.password,
-    });
 
-    // Create database if not exists
-    await testConnection.query(`CREATE DATABASE IF NOT EXISTS \`${dbConfig.database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
-    await testConnection.end();
+    try {
+      pool = mysql.createPool(dbConfig);
+      await pool.query('SELECT 1 + 1 AS result');
+      isConnected = true;
+      console.log('✅ [Database] MySQL connection established successfully.');
+    } catch (poolErr) {
+      if (poolErr.code === 'ER_BAD_DB_ERROR') {
+        console.log(`[Database] Database '${dbConfig.database}' not found, attempting auto-creation...`);
+        const testConnection = await mysql.createConnection({
+          host: dbConfig.host,
+          port: dbConfig.port,
+          user: dbConfig.user,
+          password: dbConfig.password,
+        });
+        await testConnection.query(`CREATE DATABASE IF NOT EXISTS \`${dbConfig.database}\` CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`);
+        await testConnection.end();
 
-    pool = mysql.createPool(dbConfig);
-    const [test] = await pool.query('SELECT 1 + 1 AS result');
-    isConnected = true;
-    console.log('✅ [Database] MySQL connection established successfully.');
+        pool = mysql.createPool(dbConfig);
+        await pool.query('SELECT 1 + 1 AS result');
+        isConnected = true;
+        console.log('✅ [Database] MySQL created and connection established successfully.');
+      } else {
+        throw poolErr;
+      }
+    }
 
-    // Auto-create tables
+    // Auto-create/upgrade tables
     await pool.query(`
       CREATE TABLE IF NOT EXISTS \`users\` (
         \`id\` INT AUTO_INCREMENT PRIMARY KEY,
@@ -440,10 +1046,70 @@ export async function initDatabase() {
     `);
 
     await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`tenants\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`name\` VARCHAR(150) NOT NULL,
+        \`slug\` VARCHAR(100) NOT NULL UNIQUE,
+        \`custom_domain\` VARCHAR(255) DEFAULT NULL,
+        \`logo_url\` VARCHAR(255) DEFAULT '',
+        \`primary_color\` VARCHAR(20) DEFAULT '#7c3aed',
+        \`secondary_color\` VARCHAR(20) DEFAULT '#6d28d9',
+        \`owner_id\` INT NOT NULL,
+        \`plan\` ENUM('Starter', 'Professional', 'Enterprise', 'PaaS Developer') DEFAULT 'Starter',
+        \`status\` ENUM('active', 'suspended', 'trial') DEFAULT 'active',
+        \`max_events\` INT DEFAULT 10,
+        \`max_attendees\` INT DEFAULT 1000,
+        \`api_access_enabled\` BOOLEAN DEFAULT FALSE,
+        \`white_label_enabled\` BOOLEAN DEFAULT FALSE,
+        \`trial_ends_at\` TIMESTAMP NULL DEFAULT NULL,
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`tenant_members\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`tenant_id\` INT NOT NULL,
+        \`user_id\` INT NOT NULL,
+        \`role\` ENUM('owner', 'admin', 'editor', 'scanner') DEFAULT 'admin',
+        \`status\` ENUM('active', 'invited') DEFAULT 'active',
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        UNIQUE KEY \`uk_tenant_user\` (\`tenant_id\`, \`user_id\`)
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`tenant_api_keys\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`tenant_id\` INT NOT NULL,
+        \`name\` VARCHAR(100) NOT NULL,
+        \`api_key\` VARCHAR(100) NOT NULL UNIQUE,
+        \`permissions\` VARCHAR(255) DEFAULT 'read_write',
+        \`is_active\` BOOLEAN DEFAULT TRUE,
+        \`last_used_at\` TIMESTAMP NULL DEFAULT NULL,
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`tenant_webhooks\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`tenant_id\` INT NOT NULL,
+        \`url\` VARCHAR(255) NOT NULL,
+        \`events\` VARCHAR(255) NOT NULL DEFAULT 'attendee.registered,attendee.checked_in',
+        \`secret\` VARCHAR(100) NOT NULL,
+        \`is_active\` BOOLEAN DEFAULT TRUE,
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await pool.query(`
       CREATE TABLE IF NOT EXISTS \`events\` (
         \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`tenant_id\` INT NOT NULL DEFAULT 1,
         \`title\` VARCHAR(255) NOT NULL,
-        \`slug\` VARCHAR(255) NOT NULL UNIQUE,
+        \`slug\` VARCHAR(255) NOT NULL,
         \`category\` VARCHAR(100) DEFAULT 'General',
         \`description\` TEXT DEFAULT NULL,
         \`event_type\` VARCHAR(50) DEFAULT 'in-person',
@@ -468,6 +1134,7 @@ export async function initDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS \`event_attendees\` (
         \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`tenant_id\` INT NOT NULL DEFAULT 1,
         \`event_id\` INT NOT NULL,
         \`user_id\` INT DEFAULT NULL,
         \`name\` VARCHAR(150) NOT NULL,
@@ -476,6 +1143,7 @@ export async function initDatabase() {
         \`ticket_code\` VARCHAR(64) NOT NULL UNIQUE,
         \`ticket_type\` VARCHAR(50) DEFAULT 'General Admission',
         \`status\` ENUM('confirmed', 'checked_in', 'cancelled') DEFAULT 'confirmed',
+        \`checked_in_at\` TIMESTAMP NULL DEFAULT NULL,
         \`registered_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
@@ -483,6 +1151,7 @@ export async function initDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS \`team_members\` (
         \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`tenant_id\` INT NOT NULL DEFAULT 1,
         \`organizer_id\` INT DEFAULT NULL,
         \`name\` VARCHAR(150) NOT NULL,
         \`email\` VARCHAR(191) NOT NULL,
@@ -496,6 +1165,7 @@ export async function initDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS \`activity_logs\` (
         \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`tenant_id\` INT NOT NULL DEFAULT 1,
         \`user_id\` INT DEFAULT NULL,
         \`user_name\` VARCHAR(150) DEFAULT 'System',
         \`type\` VARCHAR(50) NOT NULL,
@@ -520,6 +1190,7 @@ export async function initDatabase() {
     await pool.query(`
       CREATE TABLE IF NOT EXISTS \`subscriptions\` (
         \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`tenant_id\` INT NOT NULL DEFAULT 1,
         \`user_id\` INT NOT NULL,
         \`plan\` VARCHAR(50) NOT NULL DEFAULT 'Starter',
         \`price\` DECIMAL(10, 2) DEFAULT 0.00,
@@ -531,10 +1202,155 @@ export async function initDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
-    // Check if initial users exist in MySQL
+    // Certificate Automation Tables (PRD Section 5)
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`certificate_templates\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`organization_id\` INT NOT NULL DEFAULT 1,
+        \`name\` VARCHAR(255) NOT NULL,
+        \`category\` VARCHAR(100) DEFAULT 'Achievement',
+        \`orientation\` ENUM('landscape', 'portrait') DEFAULT 'landscape',
+        \`width\` INT DEFAULT 1050,
+        \`height\` INT DEFAULT 742,
+        \`status\` ENUM('draft', 'published', 'archived') DEFAULT 'published',
+        \`current_version_id\` INT DEFAULT NULL,
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`template_versions\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`template_id\` INT NOT NULL,
+        \`version_number\` INT NOT NULL DEFAULT 1,
+        \`editor_config\` LONGTEXT NOT NULL,
+        \`background_asset_key\` VARCHAR(500) DEFAULT '',
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`recipients\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`organization_id\` INT NOT NULL DEFAULT 1,
+        \`external_ref\` VARCHAR(100) DEFAULT '',
+        \`name\` VARCHAR(150) NOT NULL,
+        \`email\` VARCHAR(191) NOT NULL,
+        \`phone\` VARCHAR(50) DEFAULT '',
+        \`custom_fields\` LONGTEXT DEFAULT NULL,
+        \`status\` ENUM('active', 'inactive') DEFAULT 'active',
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`generation_batches\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`organization_id\` INT NOT NULL DEFAULT 1,
+        \`template_id\` INT DEFAULT NULL,
+        \`template_version_id\` INT DEFAULT NULL,
+        \`title\` VARCHAR(255) NOT NULL,
+        \`status\` ENUM('pending', 'processing', 'generated', 'failed', 'email_queued', 'emailed', 'delivery_failed') DEFAULT 'pending',
+        \`total_count\` INT DEFAULT 0,
+        \`success_count\` INT DEFAULT 0,
+        \`failed_count\` INT DEFAULT 0,
+        \`error_summary\` TEXT DEFAULT NULL,
+        \`archive_url\` VARCHAR(500) DEFAULT '',
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`generation_items\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`batch_id\` INT NOT NULL,
+        \`recipient_id\` INT DEFAULT NULL,
+        \`recipient_name\` VARCHAR(150) NOT NULL,
+        \`recipient_email\` VARCHAR(191) NOT NULL,
+        \`status\` ENUM('pending', 'processing', 'generated', 'failed') DEFAULT 'pending',
+        \`error_code\` VARCHAR(100) DEFAULT NULL,
+        \`error_message\` TEXT DEFAULT NULL,
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`certificates\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`organization_id\` INT NOT NULL DEFAULT 1,
+        \`generation_item_id\` INT DEFAULT NULL,
+        \`batch_id\` INT DEFAULT NULL,
+        \`template_id\` INT DEFAULT NULL,
+        \`template_version_id\` INT DEFAULT NULL,
+        \`certificate_number\` VARCHAR(100) NOT NULL UNIQUE,
+        \`recipient_name\` VARCHAR(150) NOT NULL,
+        \`recipient_email\` VARCHAR(191) NOT NULL,
+        \`event_name\` VARCHAR(255) DEFAULT '',
+        \`issue_date\` DATE NOT NULL,
+        \`expiry_date\` DATE DEFAULT NULL,
+        \`verification_hash\` VARCHAR(128) NOT NULL,
+        \`qr_code_data\` TEXT DEFAULT NULL,
+        \`status\` ENUM('issued', 'revoked', 'expired') DEFAULT 'issued',
+        \`revoked_reason\` TEXT DEFAULT NULL,
+        \`revoked_at\` TIMESTAMP NULL DEFAULT NULL,
+        \`issued_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`certificate_files\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`certificate_id\` INT NOT NULL,
+        \`format\` ENUM('png', 'pdf', 'svg') NOT NULL DEFAULT 'png',
+        \`storage_key\` VARCHAR(500) NOT NULL,
+        \`file_url\` VARCHAR(500) NOT NULL,
+        \`file_size\` INT DEFAULT 0,
+        \`checksum\` VARCHAR(128) DEFAULT '',
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`delivery_attempts\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`certificate_id\` INT NOT NULL,
+        \`channel\` ENUM('email', 'sms', 'webhook') DEFAULT 'email',
+        \`recipient_email\` VARCHAR(191) NOT NULL,
+        \`status\` ENUM('queued', 'sent', 'delivered', 'failed', 'bounced') DEFAULT 'queued',
+        \`attempt_number\` INT DEFAULT 1,
+        \`provider_message_id\` VARCHAR(150) DEFAULT NULL,
+        \`error_code\` VARCHAR(100) DEFAULT NULL,
+        \`error_message\` TEXT DEFAULT NULL,
+        \`attempted_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // Auto-migrate column `tenant_id` if missing on existing tables
+    const checkColumns = [
+      { table: 'events', col: 'tenant_id', def: 'INT NOT NULL DEFAULT 1' },
+      { table: 'event_attendees', col: 'tenant_id', def: 'INT NOT NULL DEFAULT 1' },
+      { table: 'team_members', col: 'tenant_id', def: 'INT NOT NULL DEFAULT 1' },
+      { table: 'activity_logs', col: 'tenant_id', def: 'INT NOT NULL DEFAULT 1' },
+      { table: 'subscriptions', col: 'tenant_id', def: 'INT NOT NULL DEFAULT 1' },
+    ];
+
+    for (const item of checkColumns) {
+      try {
+        await pool.query(`ALTER TABLE \`${item.table}\` ADD COLUMN IF NOT EXISTS \`${item.col}\` ${item.def}`);
+      } catch (colErr) {
+        // Ignore duplicate column errors on older MariaDB/MySQL versions
+      }
+    }
+
+    // Seed master admin if not exists
     const [users] = await pool.query('SELECT COUNT(*) as count FROM `users`');
     if (users[0].count === 0) {
-      console.log('[Database] Seeding initial admin and demo data into MySQL...');
+      console.log('[Database] Seeding initial admin and demo tenant into MySQL...');
       await pool.query(`
         INSERT INTO \`users\` (\`id\`, \`full_name\`, \`org_name\`, \`email\`, \`password\`, \`phone\`, \`role\`, \`bio\`, \`plan\`)
         VALUES (
@@ -545,19 +1361,26 @@ export async function initDatabase() {
           '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
           '+92 300 1234567',
           'admin',
-          'Event Director & Co-Founder at EventoraX.',
-          'Professional'
+          'Platform Superadmin & Co-Founder at EventoraX.',
+          'Enterprise'
         );
       `);
-      console.log('[Database] Seed data successfully populated in MySQL.');
+      await pool.query(`
+        INSERT INTO \`tenants\` (\`id\`, \`name\`, \`slug\`, \`owner_id\`, \`plan\`, \`status\`, \`primary_color\`, \`secondary_color\`, \`api_access_enabled\`, \`white_label_enabled\`)
+        VALUES (1, 'EventoraX HQ', 'eventorax-hq', 1, 'Enterprise', 'active', '#7c3aed', '#6d28d9', TRUE, TRUE);
+      `);
+      await pool.query(`
+        INSERT INTO \`tenant_members\` (\`tenant_id\`, \`user_id\`, \`role\`, \`status\`)
+        VALUES (1, 1, 'owner', 'active');
+      `);
+      console.log('✅ [Database] Seed data successfully populated in MySQL.');
     }
 
     return true;
   } catch (err) {
     isConnected = false;
-    console.warn('[Database] MySQL is not connected: ' + err.message);
-    console.log('⚡ [Database] Running with In-Memory Mock Store Fallback. Full functionality available!');
-    console.log('📌 For Hostinger MySQL deployment: set DB_HOST, DB_USER, DB_PASSWORD, DB_NAME in .env');
+    console.warn('[Database] MySQL connection note: ' + err.message);
+    console.log('⚡ [Database] Running with In-Memory Multi-Tenant Store Fallback. Full SaaS & PaaS functionality active!');
     return false;
   }
 }
@@ -570,5 +1393,6 @@ export default {
   getPool,
   query,
   initDatabase,
-  isDbConnected
+  isDbConnected,
+  memoryStore
 };

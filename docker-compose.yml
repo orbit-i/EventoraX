@@ -1,0 +1,49 @@
+version: '3.8'
+
+services:
+  # EventoraX Multi-Tenant SaaS App
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: eventorax_app
+    restart: always
+    ports:
+      - "5000:5000"
+    environment:
+      - PORT=5000
+      - NODE_ENV=production
+      - DB_HOST=db
+      - DB_PORT=3306
+      - DB_USER=eventorax_user
+      - DB_PASSWORD=eventorax_secure_pass_2025
+      - DB_NAME=eventorax_db
+      - JWT_SECRET=eventorax_enterprise_secret_jwt_key_2025
+    depends_on:
+      db:
+        condition: service_healthy
+
+  # MySQL 8.0 Database Container
+  db:
+    image: mysql:8.0
+    container_name: eventorax_mysql
+    restart: always
+    command: --default-authentication-plugin=mysql_native_password
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root_secure_password_2025
+      MYSQL_DATABASE: eventorax_db
+      MYSQL_USER: eventorax_user
+      MYSQL_PASSWORD: eventorax_secure_pass_2025
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./database.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-proot_secure_password_2025"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  mysql_data:

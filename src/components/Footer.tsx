@@ -1,41 +1,60 @@
 import { Link } from 'react-router-dom';
+import BrandLogo from '@/components/BrandLogo';
 
 const productLinks = [
+  { label: 'Home', href: '/' },
   { label: 'Features', href: '/features' },
+  { label: 'Verify Credential', href: '/verify' },
   { label: 'Pricing', href: '/pricing' },
-  { label: 'API', href: '#' },
-  { label: 'Changelog', href: '#' },
+  { label: 'Developer API', href: '/dashboard/developer' },
 ];
 
 const companyLinks = [
-  { label: 'About', href: '/about' },
-  { label: 'Blog', href: '#' },
-  { label: 'Careers', href: '#' },
-  { label: 'Contact', href: '/contact' },
+  { label: 'About EventoraX', href: '/about' },
+  { label: 'Contact Support', href: '/contact' },
+  { label: 'System Status', href: '/maintenance' },
 ];
 
 const legalLinks = [
-  { label: 'Privacy', href: '/privacy' },
-  { label: 'Terms', href: '/terms' },
-  { label: 'Security', href: '#' },
+  { label: 'Terms of Service', href: '/terms' },
+  { label: 'Privacy Policy', href: '/privacy' },
+  { label: 'Cookie Policy', href: '/cookies' },
+  { label: 'Service Usage & SLA', href: '/service-usage' },
+  { label: 'Credential Verification', href: '/verify' },
 ];
 
 export default function Footer() {
   return (
-    <footer className="bg-[#0f172a] text-white">
+    <footer className="bg-[#0b0f19] text-white border-t border-[#1e293b]">
       <div className="content-max py-16 md:py-20">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
           {/* Brand */}
           <div>
-            <Link to="/" className="font-heading text-2xl font-bold">
-              Eventora<span className="text-[#a78bfa]">X</span>
+            <Link to="/" className="inline-block">
+              <BrandLogo variant="compact" size="lg" theme="dark" showTagline={true} />
             </Link>
             <p className="mt-3 text-sm text-[#94a3b8] leading-relaxed">
-              Event management made simple. Built by ORBIT-I.
+              Automated event management, Canva-style visual credential design, and cryptographic certificate verification. Developed by ORBIT-I.
             </p>
+            <div className="mt-3 space-y-1 text-xs text-[#94a3b8]">
+              <p>
+                Email:{' '}
+                <a href="mailto:eventorax@orbit-i.tech" className="text-blue-400 hover:underline">
+                  eventorax@orbit-i.tech
+                </a>
+              </p>
+              <p>
+                WhatsApp:{' '}
+                <a href="https://wa.me/923190375751" target="_blank" rel="noreferrer" className="text-emerald-400 hover:underline">
+                  +92 3190375751
+                </a>
+              </p>
+            </div>
             <div className="mt-4 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-[#22c55e] animate-pulse" />
-              <span className="text-xs text-[#94a3b8]">All systems operational</span>
+              <Link to="/maintenance" className="text-xs text-[#94a3b8] hover:text-white transition-colors">
+                Systems Operational • 24/7 Security Sentinel
+              </Link>
             </div>
           </div>
 
@@ -100,7 +119,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="mt-10 pt-6 border-t border-[#1e293b] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-[#64748b]">
-            &copy; 2025 EventoraX by ORBIT-I. All rights reserved.
+            &copy; 2026 EventoraX • Developed &amp; Maintained by ORBIT-I Private Limited. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
           </div>

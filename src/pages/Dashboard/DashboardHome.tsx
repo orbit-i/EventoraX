@@ -16,7 +16,8 @@ import {
   MapPin, 
   CheckCircle2, 
   Sparkles,
-  Ticket
+  Ticket,
+  BarChart3
 } from 'lucide-react';
 import { api } from '@/services/api';
 import { useAuth } from '@/context/AuthContext';
@@ -56,15 +57,15 @@ export default function DashboardHome() {
     fetchData();
   }, []);
 
-  const totalEvents = stats?.totalEvents ?? 28;
-  const totalAttendees = stats?.totalAttendees ?? 1420;
-  const totalRevenue = stats?.totalRevenue ? `$${Number(stats.totalRevenue).toLocaleString()}` : '$34,800';
-  const activeNow = stats?.activeUpcoming ?? 6;
+  const totalEvents = stats?.totalEvents ?? 0;
+  const totalAttendees = stats?.totalAttendees ?? 0;
+  const totalRevenue = stats?.totalRevenue ? `$${Number(stats.totalRevenue).toLocaleString()}` : '$0';
+  const activeNow = stats?.activeUpcoming ?? 0;
 
   const statCards = [
-    { title: "Total Events", value: totalEvents.toString(), change: "+15% this quarter", icon: Calendar, trend: "up" as const },
-    { title: "Attendees Registered", value: totalAttendees.toLocaleString(), change: "+24% engagement", icon: Users, trend: "up" as const },
-    { title: "Total Revenue", value: totalRevenue, change: "+18.2% sales", icon: DollarSign, trend: "up" as const },
+    { title: "Total Events", value: totalEvents.toString(), change: totalEvents > 0 ? "Published on Platform" : "No events created yet", icon: Calendar, trend: "up" as const },
+    { title: "Attendees Registered", value: totalAttendees.toLocaleString(), change: totalAttendees > 0 ? "Confirmed participants" : "Awaiting first registration", icon: Users, trend: "up" as const },
+    { title: "Total Revenue", value: totalRevenue, change: totalRevenue !== '$0' ? "Gross ticket volume" : "No ticket sales yet", icon: DollarSign, trend: "up" as const },
     { title: "Upcoming Events", value: activeNow.toString(), change: "Active in queue", icon: TrendingUp, trend: "up" as const },
   ];
 
@@ -81,10 +82,13 @@ export default function DashboardHome() {
               EventoraX Enterprise Cloud
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
-              Welcome back, {user?.fullName || "Organizer"}! 👋
+              Welcome back, {user?.fullName || "Organizer"}!
             </h1>
             <p className="text-sm text-purple-100/90 leading-relaxed">
-              Your events are running smoothly. You have {activeNow} active upcoming events and {totalAttendees.toLocaleString()} registered attendees ready for check-in.
+              {totalEvents > 0 
+                ? `Your events are running smoothly. You have ${activeNow} active upcoming events and ${totalAttendees.toLocaleString()} registered attendees ready for check-in.`
+                : "Your client organization workspace is ready. Launch your first event or seminar to start receiving attendee registrations and generating live ID passes."
+              }
             </p>
             <div className="pt-2 flex flex-wrap items-center gap-3">
               <Link to="/dashboard/events">
@@ -94,9 +98,10 @@ export default function DashboardHome() {
                 </Button>
               </Link>
               <Link to="/dashboard/statistics">
-                <Button variant="outline" className="border-white/30 text-white hover:bg-white/10 rounded-xl h-10 px-5 text-sm">
-                  View Analytics
-                </Button>
+                <button className="border-2 border-white/50 bg-white/15 !text-white hover:bg-white/25 hover:border-white font-semibold rounded-xl h-10 px-5 text-sm transition-all shadow-sm backdrop-blur-md flex items-center gap-2">
+                  <BarChart3 className="w-4 h-4 text-white shrink-0" />
+                  <span className="text-white font-semibold">View Analytics</span>
+                </button>
               </Link>
             </div>
           </div>

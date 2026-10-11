@@ -58,10 +58,10 @@ function StatItem({ value, suffix, label, prefix = '' }: StatItemProps) {
 }
 
 const stats = [
-  { value: 5200, suffix: '+', label: 'Events Hosted' },
-  { value: 180000, suffix: '+', label: 'Certificates Issued' },
-  { value: 350, suffix: '+', label: 'Organizations' },
-  { value: 99.9, suffix: '%', label: 'Uptime' },
+  { value: 100, suffix: '%', label: 'Tamper-Proof QR Verification' },
+  { value: 24, suffix: '/7', label: 'Security & Policy Sentinel' },
+  { value: 10, suffix: '+', label: 'Badge & Certificate Presets' },
+  { value: 99, suffix: '.9%', label: 'Infrastructure Reliability' },
 ];
 
 export default function StatsSection() {
