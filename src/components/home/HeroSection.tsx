@@ -3,7 +3,7 @@ import { ChevronDown } from 'lucide-react';
 import { lazy, Suspense } from 'react';
 
 // The 3D waves use three.js (~450 kB): load them after the text so the page appears straight away.
-const OceanCanvas = lazy(() => import('../components/OceanCanvas'));
+const OceanCanvas = lazy(() => import('@/components/OceanCanvas'));
 import { Button } from "@/components/ui/button";
 
 export default function HeroSection() {

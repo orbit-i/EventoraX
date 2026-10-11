@@ -1,15 +1,10 @@
 {
   "$schema": "https://unpkg.com/knip@6/schema.json",
-  "project": [
-    "src/**/*.ts"
-  ],
+  "project": ["src/**/*.ts", "prisma/**/*.prisma"],
   "ignoreExportsUsedInFile": true,
   "rules": {
     "types": "off",
     "exports": "warn"
   },
-  "ignoreDependencies": [
-    "@fontsource/great-vibes",
-    "@fontsource/playfair-display"
-  ]
+  "ignoreDependencies": ["@fontsource/great-vibes", "@fontsource/playfair-display"]
 }

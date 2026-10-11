@@ -1,5 +1,6 @@
-  **Full requirements:** `docs/EventoraX_Complete.md` — read the relevant section before starting each phase.
-  # EventoraX — Project Guide for Claude Code
+# EventoraX — Project Guide for Claude Code
+
+**Full requirements:** `docs/requirements.md`. Read the relevant section before starting a new area.
 
 EventoraX is a **multi-tenant event management SaaS** for Pakistani universities and organizations
 (events, registrations, QR tickets, certificates, ID cards, analytics, billing, superadmin).
@@ -16,7 +17,7 @@ This repo consolidates 17 fragmented team branches into one clean codebase.
 3. **Every change must pass the checks** before reporting it done:
    - Backend: `cd backend && npx tsc --noEmit` (no output = pass)
    - Frontend: `npm run build` (repo root; a chunk-size warning is fine)
-   - Periodically: `npx knip` (root) and `cd backend && npx knip`
+   - Periodically: `npx knip` (root) and `cd backend && npx knip` (both print nothing when clean; CI runs all four)
 4. **Commit after each completed step** using Conventional Commits:
    `feat(scope): …`, `fix(scope): …`, `chore: …`, `docs: …`
 5. The user is a student building up his skills. **Explain what you changed and why** in plain language,
@@ -56,6 +57,9 @@ npm run dev
 - **After `npm install` of a new frontend package, restart `npm run dev`** (Vite pre-bundles deps at start → 504
   "Outdated Optimize Dep" and an in-app 404 otherwise).
 - **Manual API tests:** `backend/api-tests.http` (VS Code REST Client). Variables: `{{baseUrl}}`, `{{token}}`, `{{eventId}}`, etc.
+- **Docs:** `docs/product-guide/` (users, by role, screenshots in `screenshots/`), `docs/handover.md` (placeholders to replace
+  before launch), `docs/technical/` (developer docs, progress checklist in its README), `docs/manual-testing.md` (click-by-click
+  test scripts per area). Update the matching doc when a feature changes.
 - **Prisma:** `npx prisma migrate dev --name <name>`, `npx prisma generate`, `npx prisma db seed`, `npx prisma studio`.
 - **Windows gotcha:** case-only renames need two steps (`git mv A tmp && git mv tmp a`).
 
@@ -79,6 +83,16 @@ npm run dev
   no certificate/emails; restorable if seats allow)**.
 - Events with registrations are **archived, never hard-deleted** (`status = ARCHIVED`, restorable).
 - Spec wording: PUBLISHED → "Upcoming", ONGOING → "Active", OFFLINE → "Physical". Money is always **PKR**.
+- **Extending / confirming payments** adds time to the later of today and the current end date (paying early never loses days).
+  An extended expired org becomes `active` if it has ever paid, else `trial`. Reactivating a suspended org gives its natural status.
+- Changing an org's plan never removes people; limits apply to new invites. A plan in use can't be deleted (hide it instead).
+- Deleting a tenant is real (with files) but needs the exact name typed; the UI recommends suspending.
+- Bulk certificate revoke is limited to one event or one organization, with a count check first.
+- No "unlock now" for locked accounts (locks expire after 15 minutes); IP blocking is left to the server/firewall.
+- ID card design choice is remembered in the browser (localStorage), not the URL. Cards show initials (no photo field);
+  cancelled registrations get no card. CR80 portrait, 9 per A4.
+- Email templates are edited as HTML with a toolbar + live preview (no WYSIWYG library).
+- Public registration limit is 60/hour per IP because a campus Wi-Fi shares one IP.
 
 ---
 
@@ -209,7 +223,7 @@ components/app/     PageHeader, EventPicker, StatsRow/StatCard, SegmentedTabs, T
 components/layout/  DashboardLayout, Sidebar (grouped nav, collapsible, plan card; variant="platform" for superadmin),
                     Topbar (account menu, NotificationBell; variant), AccountBanners (trial / expiring / expired / verify email),
                     ImpersonationBanner, SiteBanner (sitewide banner), MaintenanceScreen, nav.ts (NAV + SUPERADMIN_NAV)
-components/<feature>/  events, registrations, speakers, sponsors, sessions, team (InviteDialog, roles), settings (one file
+components/<feature>/  home (landing page sections), events, registrations, speakers, sponsors, sessions, team (InviteDialog, roles), settings (one file
                     per tab + shared SaveBar/saveOrg), billing (PayDialog, paymentInfo), certificates (TemplatePickerDialog,
                     IssueDialogs, pdf.ts usePdfUrl/openPdf), tickets (QrCode, TicketDialog), idcards (DesignPanel, design.ts),
                     superadmin (SuperadminLayout, ActivityFeed, TenantDialogs + OneTimeSecret, PaymentReviewDialog,
@@ -257,7 +271,7 @@ module API; shared components; real auth pages; the whole **events module UI reb
 (events list + hub + form, registrations + CSV import wizard with dry-run review, speakers, sponsors, schedule,
 reorder); **Phase 8 complete**: dashboard layout + Overview (8B), Analytics, Activity log, Help & support, public
 contact form (8C), Team, Settings (6 tabs), Billing with manual payments (8D); old mock pages and unused UI files
-removed; knip clean (only deliberately kept: `ui/scroll-area`, `ui/separator`).
+removed; knip clean.
 **Phase 9 complete:** 9A certificate engine, 9B Certificates page + design picker + public `/verify`,
 9C QR tickets + Tickets page + camera check-in scanner (`/dashboard/tickets/scan`, qr-scanner; needs https or
 localhost for the camera), 9D ID cards (`/dashboard/idcards`: 4 templates, field choice, logo, 9-per-A4 sheet or one per page,
@@ -273,7 +287,7 @@ reset link or temporary password), global certificates (revoke/restore, bulk rev
 superadmin's own account), maintenance mode (gate + screen), sitewide banner, editable email templates (all system emails
 use them) + SMTP settings, security page (activity log, login attempts, suspicious IPs, locked accounts, sessions),
 maintenance page (health, scheduled jobs, error logs, cache, mysqldump backups), announcements (in-app + email,
-schedule/draft) + notification bell. Night-run details and manual test steps: `docs/NIGHT_LOG.md`.
+schedule/draft) + notification bell. Manual test steps: `docs/manual-testing.md`.
 
 **Phase 11 complete:** 11A honest, data-driven public website (PKR plans from the DB, comparison table, real FAQ/features,
 testimonials/logos/social/live stats managed in System settings → Website, real Terms & Privacy), 11B public event page
@@ -302,9 +316,18 @@ Notes for later phases:
 - Link previews need the public URL: set `FRONTEND_URL` to the real https address in production (used for og:url/og:image).
 - Background jobs run inside the API process — fine for one server; move to a worker if the app is ever scaled out.
 - Terms/Privacy are a good-faith draft — have them reviewed before launch.
+- `npx eslint .` reports ~80 pre-existing findings (mostly the new React-Compiler hook rules such as set-state-in-effect).
+  ESLint is not part of the checks yet; fix them gradually, never with blanket disables.
+
+**Clean-up (2026-10-11):** removed one-off scripts (`tools/`, `.bat` files), the night log (test steps moved to
+`docs/manual-testing.md`, decisions to "Product decisions" above), the stale backend-only Dockerfile and the broken Docker Hub
+workflow (replaced by `.github/workflows/ci.yml`: build + typecheck + knip), unused avatars and `ui/scroll-area`/`ui/separator`.
+Home page sections moved from `src/sections/` to `src/components/home/`. Spec renamed to `docs/requirements.md`.
 
 ## Remaining work
 
-**12 (rest)** — Docker/CI, Hostinger deployment (the backend already serves the built site, see `web/spa.ts`; set
+**12 (rest)** — Docker (write a fresh multi-stage image that builds the website AND the API; the old one built only the API),
+Hostinger deployment (the backend already serves the built site, see `web/spa.ts`; set
 `NODE_ENV=production`, `FRONTEND_URL`, optionally `ENCRYPTION_KEY`), https, transactional email service, scheduled backups,
-final knip, then move the repo to its own GitHub repository.
+final knip, then move the repo to its own GitHub repository. Placeholders to swap before launch: `docs/handover.md`.
+**Docs:** finish `docs/technical/` (progress checklist in `docs/technical/README.md`).

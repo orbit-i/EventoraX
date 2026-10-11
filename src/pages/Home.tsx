@@ -1,15 +1,15 @@
 import { useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import HeroSection from '../sections/HeroSection';
-import TrustedBySection from '../sections/TrustedBySection';
-import StatsSection from '../sections/StatsSection';
-import HowItWorksSection from '../sections/HowItWorksSection';
-import FeaturesSection from '../sections/FeaturesSection';
-import PricingSection from '../sections/PricingSection';
-import TestimonialsSection from '../sections/TestimonialsSection';
-import FAQSection from '../sections/FAQSection';
-import CTASection from '../sections/CTASection';
+import HeroSection from '@/components/home/HeroSection';
+import TrustedBySection from '@/components/home/TrustedBySection';
+import StatsSection from '@/components/home/StatsSection';
+import HowItWorksSection from '@/components/home/HowItWorksSection';
+import FeaturesSection from '@/components/home/FeaturesSection';
+import PricingSection from '@/components/home/PricingSection';
+import TestimonialsSection from '@/components/home/TestimonialsSection';
+import FAQSection from '@/components/home/FAQSection';
+import CTASection from '@/components/home/CTASection';
 import { useApi } from '@/hooks/useApi';
 import type { WebsiteContent } from '@/types/website';
 
