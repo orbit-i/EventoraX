@@ -364,3 +364,40 @@ sees it under the bell) and "Scheduled test (Enterprise only)" (reached nobody).
 - The seed (`npx prisma db seed`) now also creates the new settings keys (banner, SEO, maintenance message, logo/favicon).
 - CLAUDE.md: Phase 9 and 10 marked done; architecture, API list, conventions (emails via templates, impersonation,
   error logs, platform activity logging) and the remaining-work list (Phase 11, 12) updated.
+
+---
+
+# Phase 11
+
+## 11A — Public website made honest and data-driven ✅
+
+**What changed**
+- **Pricing** (Home section + `/pricing`): plans now come from the database (`GET /api/v1/plans`, edited in Superadmin →
+  Plans & pricing) — PKR yearly prices, seat limits, feature ticks, "N-day free trial" badges using the real trial length,
+  JazzCash / Easypaisa / bank-transfer badges, a feature-by-feature comparison table, and honest billing FAQs
+  (manual payment + confirmation, yearly, no auto-renew, what happens when it expires).
+- **Home**: removed the fake stats, fake testimonials and fake "Trusted by" logos. These sections now show **only real
+  content** from Superadmin → System settings → **Website** (new tab) and are hidden while empty. The stats bar shows live
+  numbers from the database once you switch it on. Hero has the second button "View Pricing" (spec). FAQ rewritten to
+  8 true answers. CTA no longer claims "thousands of organizers".
+- **Features page**: every bullet now describes something that really exists (removed custom forms, waitlists, Excel
+  import, reminder sequences, delivery tracking, "end-to-end encryption", "real-time sync"); 60 certificate designs.
+- **About**: timeline without invented numbers; Mehwish (Database Design) added to the team (7 people, from the project doc).
+- **Footer**: no more dead `#` links; real contact email / WhatsApp / hours from System settings, social icons, status dot
+  that turns amber during maintenance, current year.
+- **Contact**: social links added (location and response time were already there).
+- **Register**: trial length comes from System settings instead of a fixed "1-day".
+- **Terms & Privacy**: rewritten to match how EventoraX actually works (manual PKR payments, no auto-renew, attendee data
+  owned by the organizer, what the public verify page shows, deletion, Pakistani law), with a table of contents.
+  ⚠️ This is a good-faith draft, **not legal advice** — have someone qualified review it before launch.
+- New System settings → **Website** tab: live-numbers switch, testimonials (up to 8, reorderable), logos (up to 16, with
+  upload), social links. Backend: new setting keys `website.*` and public `GET /api/v1/platform/website`.
+
+**Notice:** the WhatsApp number saved in System settings is `+92 300 0000000` — a placeholder. Change it (System settings
+→ Contact & payments) or clear it so it's hidden.
+
+**Test it**
+1. Open `/pricing` → PKR prices, comparison table. Change a price in Superadmin → Plans & pricing → refresh → it updates.
+2. Superadmin → System settings → **Website** → add a testimonial (real one) and a logo → Save → the home page shows them.
+3. Switch "Show live numbers" on → the home page shows real counts.
+4. Add a Facebook link → it appears in the footer and on `/contact`.

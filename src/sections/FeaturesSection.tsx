@@ -18,7 +18,7 @@ const features = [
   {
     icon: ClipboardList,
     title: 'Attendee Registration',
-    desc: 'Custom registration forms with automated confirmation emails.',
+    desc: 'Add attendees or import a CSV — with duplicate checks and attendance tracking.',
   },
   {
     icon: Award,
@@ -38,12 +38,12 @@ const features = [
   {
     icon: BarChart3,
     title: 'Analytics Dashboard',
-    desc: 'Real-time insights on registrations, attendance, and engagement.',
+    desc: 'Registrations, attendance and certificates over time — and a PDF report.',
   },
   {
     icon: Mail,
     title: 'Email Automation',
-    desc: 'Automated reminders, confirmations, and follow-ups.',
+    desc: 'Tickets, certificates and reminders emailed automatically, PDFs attached.',
   },
   {
     icon: Layers,

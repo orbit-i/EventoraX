@@ -1,68 +1,116 @@
 import { Link } from 'react-router';
+import { LegalPage, type LegalSection } from '@/components/public/LegalPage';
+
+const sections: LegalSection[] = [
+  {
+    title: 'What we collect',
+    body: (
+      <>
+        <p><strong>Organizations and team members:</strong> name, email, phone, organization name, logo, signature image and brand colours, and your password (stored only as a secure hash — we can never see it).</p>
+        <p><strong>Attendees</strong> (added by an organization or registering themselves): name, email, phone, department, roll number and registration category, plus check-in time and certificates issued.</p>
+        <p><strong>Payments:</strong> the plan, amount, payment method, transaction ID and the receipt image you upload. We never receive card or bank login details.</p>
+        <p><strong>Technical data:</strong> login attempts, IP address, browser type and an activity log of actions taken in the dashboard.</p>
+      </>
+    ),
+  },
+  {
+    title: 'How we use it',
+    body: (
+      <ul>
+        <li>to run the service: events, registrations, QR tickets, certificates, ID cards and analytics;</li>
+        <li>to send emails you trigger (tickets, certificates, invites) and account emails (verification, password reset, payment confirmations, plan reminders);</li>
+        <li>to confirm payments and keep billing records;</li>
+        <li>to keep accounts secure — for example locking an account after repeated wrong passwords;</li>
+        <li>to support you when you contact us.</li>
+      </ul>
+    ),
+  },
+  {
+    title: 'Who controls attendee data',
+    body: (
+      <p>
+        The organization running an event decides what attendee data to collect and how to use it; we process it on their behalf. If you are an attendee and want your details
+        changed or removed, please contact the organizer first — we will help if they can&rsquo;t.
+      </p>
+    ),
+  },
+  {
+    title: 'What is public',
+    body: (
+      <p>
+        When someone checks a certificate code, the verification page shows the recipient&rsquo;s name, the event, the organization, the issue date and whether it is valid or
+        revoked. Email addresses and phone numbers are never shown publicly.
+      </p>
+    ),
+  },
+  {
+    title: 'Sharing',
+    body: (
+      <>
+        <p>We do not sell personal data. We share it only with:</p>
+        <ul>
+          <li>the email provider that delivers our emails;</li>
+          <li>our hosting provider, which stores the database and files;</li>
+          <li>authorities, when the law requires it.</li>
+        </ul>
+        <p>Each organization&rsquo;s data is kept separate; other organizations cannot see it.</p>
+      </>
+    ),
+  },
+  {
+    title: 'How long we keep data',
+    body: (
+      <p>
+        We keep an organization&rsquo;s data while its account exists, including after a plan expires, so it can renew without losing anything. Closing an organization from
+        Settings deletes its events, attendees, certificates and files permanently. Billing records and security logs may be kept longer where the law requires it.
+      </p>
+    ),
+  },
+  {
+    title: 'Security',
+    body: (
+      <p>
+        Passwords are hashed, links in emails expire, every request checks who you are and which organization you belong to, certificate PDFs are stored privately, and every
+        important action is logged. No system is perfectly secure, so please use a strong password and log out of shared computers.
+      </p>
+    ),
+  },
+  {
+    title: 'Cookies and storage',
+    body: (
+      <p>
+        We don&rsquo;t use advertising or tracking cookies. Your browser stores your login session and a few preferences (for example a dismissed banner or your last-used
+        event) so the dashboard works smoothly.
+      </p>
+    ),
+  },
+  {
+    title: 'Your rights',
+    body: (
+      <p>
+        You can see and correct your own account details in Settings, and ask us for a copy of your data or for it to be deleted. Organization admins can export their
+        attendee lists and close their organization at any time.
+      </p>
+    ),
+  },
+  {
+    title: 'Changes',
+    body: <p>If we change this policy in an important way, we will announce it in the dashboard and update the date at the top of this page.</p>,
+  },
+];
 
 export default function Privacy() {
   return (
-    <main className="pt-14">
-      <section className="bg-[#f3f0ff] py-20 md:py-28">
-        <div className="content-max max-w-4xl mx-auto">
-          <p className="font-body text-sm uppercase tracking-[0.1em] mb-4 text-[#a78bfa] font-semibold">Legal</p>
-          <h1 className="font-heading text-4xl md:text-5xl font-bold tracking-[-0.02em] mb-8 text-[#0f172a]">
-            Privacy Policy
-          </h1>
-          <div className="bg-white rounded-2xl p-8 md:p-10 border border-[#e9e4ff] shadow-sm">
-            <div className="prose max-w-none">
-              <p className="font-body text-sm mb-6 text-[#94a3b8]">Last updated: January 2025</p>
-
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">1. Information We Collect</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We collect information you provide directly to us, including your name, email address, organization name, and phone number. We also collect data about your events, attendees, and usage of the Service.
-              </p>
-
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">2. How We Use Your Information</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We use your information to provide, maintain, and improve the Service; to process transactions; to send you technical notices and support messages; and to respond to your inquiries.
-              </p>
-
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">3. Data Storage and Security</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We implement industry-standard security measures to protect your data. All data is encrypted in transit and at rest. We use secure cloud infrastructure with regular backups and monitoring.
-              </p>
-
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">4. Data Sharing</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We do not sell, trade, or rent your personal information to third parties. We may share data with trusted service providers who assist us in operating the Service, subject to confidentiality agreements.
-              </p>
-
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">5. Your Rights</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                You have the right to access, correct, or delete your personal information. You may also request a copy of your data or object to certain processing activities. Contact us to exercise these rights.
-              </p>
-
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">6. Cookies</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We use cookies and similar technologies to enhance your experience, analyze usage patterns, and improve the Service. You can control cookies through your browser settings.
-              </p>
-
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">7. Changes to This Policy</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the effective date.
-              </p>
-
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">8. Contact Us</h2>
-              <p className="font-body text-base text-[#475569] leading-relaxed">
-                If you have questions about this Privacy Policy, please contact us at{' '}
-                <a href="mailto:hello@eventorax.com" className="text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors duration-200 font-medium">hello@eventorax.com</a>.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-8 text-center">
-            <Link to="/" className="font-body text-sm font-medium text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors duration-200">
-              Back to Home
-            </Link>
-          </div>
-        </div>
-      </section>
-    </main>
+    <LegalPage
+      title="Privacy Policy"
+      updated="October 2026"
+      intro={
+        <p>
+          This policy explains what personal data EventoraX (operated by ORBIT-I, Pakistan) collects, why, and the choices you have. It works together with our{' '}
+          <Link to="/terms" className="text-[#7c3aed] hover:underline">Terms of Service</Link>.
+        </p>
+      }
+      sections={sections}
+    />
   );
 }

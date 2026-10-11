@@ -60,9 +60,14 @@ export default function HeroSection() {
         </p>
 
               {/* CTA */}
-      <Button size="lg" asChild className="mt-8">
-        <Link to="/register">Start Free Trial</Link>
-      </Button>
+      <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+        <Button size="lg" asChild>
+          <Link to="/register">Start Free Trial</Link>
+        </Button>
+        <Button size="lg" variant="outline" asChild>
+          <Link to="/pricing">View Pricing</Link>
+        </Button>
+      </div>
 
       {/* Scroll Indicator */}
       <div className="flex flex-col items-center gap-1 mt-6 animate-float text-[#94a3b8]">

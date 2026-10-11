@@ -8,23 +8,35 @@ gsap.registerPlugin(ScrollTrigger);
 const faqs = [
   {
     q: 'Is there a free trial?',
-    a: 'Yes! Start with our Starter plan — no credit card required. Upgrade anytime.',
+    a: 'Yes. Every new organization gets the full Pro plan free for a short trial — no payment details needed. Your data stays safe when it ends.',
   },
   {
-    q: 'Can I white-label the platform?',
-    a: 'Absolutely. Enterprise plans include full white-labeling with your brand.',
+    q: 'How much does it cost?',
+    a: 'Pro is PKR 20,000 per year and Enterprise PKR 25,000 per year, with unlimited events and attendees on both. See the Pricing page for the details.',
+  },
+  {
+    q: 'How do we pay?',
+    a: 'By JazzCash, Easypaisa or bank transfer. You submit the transaction ID from your Billing page and our team confirms it, usually within one working day.',
   },
   {
     q: 'How does certificate verification work?',
-    a: 'Each certificate has a unique verification code. Anyone can verify authenticity instantly.',
-  },
-  {
-    q: 'Is my data secure?',
-    a: 'We use enterprise-grade encryption and full tenant isolation. Your data is never shared.',
+    a: 'Every certificate has a unique code and QR code. Anyone can check it on our public Verify page — it also shows if a certificate was revoked.',
   },
   {
     q: 'Can I import attendee lists?',
-    a: 'Yes — import via CSV, Excel, or connect your CRM directly.',
+    a: 'Yes — upload a CSV file. EventoraX shows a preview, flags duplicates and mistakes, and only imports after you confirm.',
+  },
+  {
+    q: 'Can my whole team use it?',
+    a: 'Yes. Invite admins, managers and read-only viewers. Pro includes 3 admins and 7 managers; Enterprise has no limits.',
+  },
+  {
+    q: 'Can I use our own name and branding?',
+    a: 'Every plan uses your logo and colours on certificates, tickets and ID cards. Enterprise also offers white-label naming and a custom domain.',
+  },
+  {
+    q: 'Is our data kept separate?',
+    a: 'Yes. Each organization only ever sees its own events and attendees, every action is recorded in an activity log, and passwords are stored securely hashed.',
   },
 ];
 

@@ -27,10 +27,10 @@ const problems = [
 ];
 
 const milestones = [
-  { year: '2023', event: 'ORBIT-I founded with a vision to simplify event management' },
-  { year: '2024', event: 'EventoraX concept born from real organizer pain points' },
-  { year: '2025', event: 'Beta launch with 50+ organizations' },
-  { year: '2025', event: 'Public release — 5,000+ events hosted' },
+  { year: 'Idea', event: 'ORBIT-I sees societies and universities juggling Google Forms, Excel and hand-made certificates' },
+  { year: 'Plan', event: 'EventoraX is designed as one platform: events, QR tickets, certificates, ID cards and analytics' },
+  { year: 'Build', event: 'A team of seven builds the public website, organization dashboard and superadmin panel' },
+  { year: 'Launch', event: 'EventoraX opens for Pakistani universities, companies and NGOs — with PKR pricing' },
 ];
 
 export default function About() {
@@ -146,7 +146,7 @@ export default function About() {
           <p className="font-body text-base text-center mb-12 text-[#475569]">
             Passionate builders creating impact — one event at a time.
           </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6">
             {[
               { name: 'Amina Sahar', role: 'UI/Frontend Lead', img: '/images/avatar-1.jpg' },
               { name: 'Shahid', role: 'Auth Developer', img: '/images/avatar-2.jpg' },
@@ -154,6 +154,7 @@ export default function About() {
               { name: 'Hasan Anser', role: 'Events Module', img: '/images/avatar-4.jpg' },
               { name: 'Isha', role: 'Certificate & QR', img: '/images/avatar-5.jpg' },
               { name: 'M Adeel Umer', role: 'Superadmin', img: '/images/avatar-6.jpg' },
+              { name: 'Mehwish', role: 'Database Design', img: '' },
             ].map((member, i) => (
               <div key={i} className="scroll-reveal text-center" style={{ transitionDelay: `${i * 100}ms` }}>
                 <div className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-3 bg-gradient-to-br from-[#7c3aed] to-[#a78bfa] flex items-center justify-center text-white font-bold text-xl">

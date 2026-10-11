@@ -17,6 +17,7 @@ import { ImageUploadField } from "@/components/app/form/ImageUploadField"
 import { FormError } from "@/components/auth/AuthShell"
 import { SaveBar } from "@/components/settings/shared"
 import { AccountTab } from "@/components/settings/AccountTab"
+import { WebsiteContentPanel } from "@/components/superadmin/WebsiteContentPanel"
 import { TemplatePickerDialog } from "@/components/certificates/TemplatePickerDialog"
 import { usePlatform } from "@/context/PlatformContext"
 import { useApi } from "@/hooks/useApi"
@@ -85,6 +86,7 @@ const TABS = [
   { value: "platform", label: "Platform", fields: ["platformName", "logoUrl", "faviconUrl", "trialDays", "maxMb", "defaultTemplate"] },
   { value: "contact", label: "Contact & payments", fields: ["contactEmail", "whatsapp", "hours", "payments"] },
   { value: "banner", label: "Banner & SEO", fields: ["banner", "seo"] },
+  { value: "website", label: "Website", fields: [] },
   { value: "account", label: "My account", fields: [] },
 ] as const
 
@@ -145,6 +147,7 @@ export default function SystemSettingsPage() {
   const [formError, setFormError] = useState<string | null>(null)
   const [pickerOpen, setPickerOpen] = useState(false)
   const [accountDirty, setAccountDirty] = useState(false)
+  const [websiteDirty, setWebsiteDirty] = useState(false)
 
   const {
     register,
@@ -161,7 +164,7 @@ export default function SystemSettingsPage() {
     if (data) reset(toValues(data))
   }, [data, reset])
 
-  useUnsavedChanges(isDirty || accountDirty)
+  useUnsavedChanges(isDirty || accountDirty || websiteDirty)
 
   async function onSubmit(v: Values) {
     setFormError(null)
@@ -192,7 +195,7 @@ export default function SystemSettingsPage() {
   const header = (
     <PageHeader
       title="System settings"
-      description="Platform-wide settings: branding, contact details, payments, the sitewide banner and SEO."
+      description="Platform-wide settings: branding, contact details, payments, the sitewide banner, SEO and the public website."
       breadcrumbs={[{ label: "Superadmin", to: "/superadmin" }, { label: "System settings" }]}
     />
   )
@@ -211,14 +214,14 @@ export default function SystemSettingsPage() {
       <SegmentedTabs
         value={url.tab}
         onChange={(tab) => set({ tab })}
-        options={TABS.map((t) => ({ value: t.value, label: t.label, dot: t.value === "account" ? accountDirty : tabDirty(t.fields) }))}
+        options={TABS.map((t) => ({ value: t.value, label: t.label, dot: t.value === "account" ? accountDirty : t.value === "website" ? websiteDirty : tabDirty(t.fields) }))}
       />
 
       {initialLoading || !data ? (
         <Skeleton className="h-96 rounded-2xl" />
       ) : (
         <>
-          <form onSubmit={handleSubmit(onSubmit)} noValidate className={cn("space-y-6", url.tab === "account" && "hidden")}>
+          <form onSubmit={handleSubmit(onSubmit)} noValidate className={cn("space-y-6", (url.tab === "account" || url.tab === "website") && "hidden")}>
             {formError && <FormError message={formError} />}
 
             <div className={cn("space-y-6", url.tab !== "platform" && "hidden")}>
@@ -335,6 +338,9 @@ export default function SystemSettingsPage() {
 
           <div className={cn(url.tab !== "account" && "hidden")}>
             <AccountTab onDirtyChange={setAccountDirty} />
+          </div>
+          <div className={cn(url.tab !== "website" && "hidden")}>
+            <WebsiteContentPanel onDirtyChange={setWebsiteDirty} />
           </div>
         </>
       )}

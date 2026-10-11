@@ -57,20 +57,20 @@ function StatItem({ value, suffix, label, prefix = '' }: StatItemProps) {
   );
 }
 
-const stats = [
-  { value: 5200, suffix: '+', label: 'Events Hosted' },
-  { value: 180000, suffix: '+', label: 'Certificates Issued' },
-  { value: 350, suffix: '+', label: 'Organizations' },
-  { value: 99.9, suffix: '%', label: 'Uptime' },
-];
-
-export default function StatsSection() {
+/** Live numbers from the database — shown only when the superadmin switches them on (System settings → Website). */
+export default function StatsSection({ stats }: { stats: { organizations: number; events: number; certificates: number } | null }) {
+  if (!stats) return null;
+  const items = [
+    { value: stats.events, suffix: '', label: 'Events hosted' },
+    { value: stats.certificates, suffix: '', label: 'Certificates issued' },
+    { value: stats.organizations, suffix: '', label: 'Organizations' },
+  ];
   return (
     <section className="bg-[#f3f0ff] py-14 md:py-20">
       <div className="content-max">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6">
-          {stats.map((stat, i) => (
-            <StatItem key={i} {...stat} />
+        <div className="mx-auto grid max-w-4xl grid-cols-1 gap-4 sm:grid-cols-3 md:gap-6">
+          {items.map((stat) => (
+            <StatItem key={stat.label} {...stat} />
           ))}
         </div>
       </div>

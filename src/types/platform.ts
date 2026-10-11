@@ -8,4 +8,5 @@ export interface PlatformInfo {
   seo: { title: string; description: string }
   trialDays: number
   maxUploadMb: number
+  social: { facebook: string; instagram: string; linkedin: string; x: string; youtube: string }
 }

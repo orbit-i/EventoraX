@@ -10,6 +10,7 @@ import { FormError } from '@/components/auth/AuthShell';
 import { api } from '@/lib/api';
 import { emailSchema } from '@/lib/validation';
 import { whatsappLink } from '@/lib/contact';
+import { SocialLinks } from '@/components/public/SocialLinks';
 import type { ContactInfo } from '@/types/dashboard';
 
 // Same limits as the backend (POST /contact).
@@ -121,6 +122,7 @@ export default function Contact() {
                   Chat on WhatsApp
                 </a>
               )}
+              <SocialLinks tone="light" />
             </div>
 
             {/* Contact Form */}

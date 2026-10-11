@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button"
 import { TextField, PasswordField } from "@/components/ui/form-fields"
 import { AuthShell, FormError, linkClass } from "@/components/auth/AuthShell"
 import { useAuth } from "@/context/AuthContext"
+import { usePlatform } from "@/context/PlatformContext"
 import { errorMessage } from "@/lib/api"
 import { emailSchema, passwordSchema, phoneSchema, PASSWORD_HINT } from "@/lib/validation"
 
@@ -30,6 +31,7 @@ type Values = z.infer<typeof schema>
 export default function Register() {
   const { register: registerAccount } = useAuth()
   const navigate = useNavigate()
+  const trialDays = usePlatform().platform?.trialDays ?? 1
   const [formError, setFormError] = useState<string | null>(null)
 
   const {
@@ -71,7 +73,7 @@ export default function Register() {
       title="Start your free trial"
       subtitle={
         <>
-          <span className="font-semibold text-[#7c3aed]">1-day free trial</span> · No credit card required
+          <span className="font-semibold text-[#7c3aed]">{trialDays}-day free trial</span> · No payment details needed
         </>
       }
       footer={

@@ -18,7 +18,7 @@ export default function CTASection() {
           Ready to create your next great event?
         </h2>
         <p className="font-body text-base md:text-lg mb-8 text-[#475569]">
-          Join thousands of organizers who trust EventoraX.
+          Set up your first event in minutes — free during your trial, then one yearly price in PKR.
         </p>
                 <Button asChild variant="default" size="lg">
           <Link to="/register">Start Free Trial</Link>

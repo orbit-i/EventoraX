@@ -8,6 +8,7 @@ import { saveUpload } from "../../utils/storage";
 import { checkImageSize } from "../../utils/upload";
 import { EMAIL_REGEX } from "../../utils/password";
 import { isTemplateKey } from "../../pdf/certificate";
+import prisma from "../../prisma/client";
 
 // ─────────────────────────── The editable settings ───────────────────────────
 // Every key, its validation and its default. The Settings page sends any subset of these.
@@ -58,6 +59,28 @@ const FIELDS = {
   "uploads.maxMb": z.coerce.number({ error: "Enter a size in MB" }).int("Whole MB only").min(1, "At least 1 MB").max(20, "At most 20 MB"),
   "certificates.defaultTemplate": z.string().refine((v) => isTemplateKey(v), "Choose one of the certificate designs"),
   seo: z.object({ title: z.string().trim().max(70), description: z.string().trim().max(160) }),
+  // Public website content (Website tab). Empty lists hide their section on the home page.
+  "website.showStats": z.boolean(),
+  "website.testimonials": z
+    .array(
+      z.object({
+        quote: z.string().trim().min(10, "At least 10 characters").max(300, "At most 300 characters"),
+        name: z.string().trim().min(2, "Enter the person's name").max(80),
+        role: z.string().trim().max(80),
+        organization: z.string().trim().max(120),
+      })
+    )
+    .max(8, "At most 8 testimonials"),
+  "website.logos": z
+    .array(z.object({ name: z.string().trim().min(2, "Enter the organization's name").max(80), logoUrl: imagePath }))
+    .max(16, "At most 16 logos"),
+  "website.social": z.object({
+    facebook: optionalLink,
+    instagram: optionalLink,
+    linkedin: optionalLink,
+    x: optionalLink,
+    youtube: optionalLink,
+  }),
 } as const;
 
 type Key = keyof typeof FIELDS;
@@ -78,6 +101,10 @@ const DEFAULTS: Record<Key, unknown> = {
   "uploads.maxMb": 2,
   "certificates.defaultTemplate": "classic-royal",
   seo: { title: "", description: "" },
+  "website.showStats": false,
+  "website.testimonials": [],
+  "website.logos": [],
+  "website.social": { facebook: "", instagram: "", linkedin: "", x: "", youtube: "" },
 };
 
 async function readAll() {
@@ -150,5 +177,25 @@ export async function publicPlatform(_req: Request, res: Response) {
     seo: s.seo,
     trialDays: s["trial.days"],
     maxUploadMb: s["uploads.maxMb"],
+    social: s["website.social"],
   });
+}
+
+// GET /api/v1/platform/website   (public: home-page content — live stats if switched on, testimonials, logos)
+export async function publicWebsite(_req: Request, res: Response) {
+  const [showStats, testimonials, logos] = await Promise.all([
+    getSetting<boolean>("website.showStats", false),
+    getSetting<unknown[]>("website.testimonials", []),
+    getSetting<unknown[]>("website.logos", []),
+  ]);
+  let stats = null;
+  if (showStats) {
+    const [organizations, events, certificates] = await Promise.all([
+      prisma.organization.count({ where: { status: { not: "suspended" } } }),
+      prisma.event.count({ where: { status: { not: "DRAFT" } } }),
+      prisma.certificate.count({ where: { status: "ISSUED" } }),
+    ]);
+    stats = { organizations, events, certificates };
+  }
+  return ok(res, { stats, testimonials, logos });
 }
