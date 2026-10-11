@@ -147,14 +147,15 @@ export default function About() {
             The people building EventoraX.
           </p>
           <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-6">
+            {/* Placeholder names for now: replace with the real team before launch (roles are real). */}
             {[
-              { name: 'Amina Sahar', role: 'UI/Frontend Lead', img: '/images/avatar-1.jpg' },
-              { name: 'Shahid', role: 'Auth Developer', img: '/images/avatar-2.jpg' },
-              { name: 'Anamta', role: 'Dashboard Core', img: '/images/avatar-3.jpg' },
-              { name: 'Hasan Anser', role: 'Events Module', img: '/images/avatar-4.jpg' },
-              { name: 'Isha', role: 'Certificate & QR', img: '/images/avatar-5.jpg' },
-              { name: 'M Adeel Umer', role: 'Superadmin', img: '/images/avatar-6.jpg' },
-              { name: 'Mehwish', role: 'Database Design', img: '' },
+              { name: 'Member One', role: 'UI/Frontend Lead' },
+              { name: 'Member Two', role: 'Auth Developer' },
+              { name: 'Member Three', role: 'Dashboard Core' },
+              { name: 'Member Four', role: 'Events Module' },
+              { name: 'Member Five', role: 'Certificate & QR' },
+              { name: 'Member Six', role: 'Superadmin' },
+              { name: 'Member Seven', role: 'Database Design' },
             ].map((member, i) => (
               <div key={i} className="scroll-reveal text-center" style={{ transitionDelay: `${i * 100}ms` }}>
                 <div className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-3 bg-gradient-to-br from-[#7c3aed] to-[#a78bfa] flex items-center justify-center text-white font-bold text-xl">
