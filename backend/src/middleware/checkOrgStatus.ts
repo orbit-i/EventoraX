@@ -30,9 +30,10 @@ export function checkOrgStatus(options: { allowExpired?: boolean } = {}) {
     }
 
     if (org.status === "suspended") {
+      const reason = org.suspendedReason ? ` Reason: ${org.suspendedReason}` : "";
       return res
         .status(403)
-        .json({ error: "This organization has been suspended. Please contact support.", code: "ORG_SUSPENDED" });
+        .json({ error: `This organization has been suspended.${reason} Please contact support.`, code: "ORG_SUSPENDED" });
     }
 
     // Trial or paid period has run out → mark the org as expired.

@@ -1,5 +1,35 @@
 # Night log — autonomous run (2026-10-11)
 
+## Summary (read this first)
+
+**All three tasks are done and pushed to `integration/v1`:** Phase 9D (ID cards), 9E (Analytics PDF report → Phase 9
+complete) and the whole of Phase 10 (Superadmin panel) in 4 sub-steps (10A–10D, 10D split into 5 commits).
+Every commit passed `cd backend && npx tsc --noEmit`, `npm run build` and knip (root + backend), and every new endpoint
+was called against the running backend; pages were checked with screenshots in a headless Chrome.
+
+**What you need to do / know**
+1. **Restart the backend once** (`cd backend && npm run dev`) — it was running with `tsx watch` all night so it's fine, but a
+   clean restart makes sure the new background jobs start fresh. No new npm packages were installed in the app.
+2. **Database:** one additive migration `20261011015410_superadmin_panel` (new nullable columns + `error_logs` table) was
+   applied to your local DB. On another machine run `cd backend && npx prisma migrate deploy` (or `migrate dev`).
+3. **Superadmin login:** the account from `backend/.env` (`SEED_SUPERADMIN_EMAIL` = `you@example.com`, password from
+   `SEED_SUPERADMIN_PASSWORD`). Change that email to a real inbox if you want "Send test to me" emails.
+4. **Test data I left behind** (delete whenever you like): organization **"Night Pay Test"** (admin
+   `willkariim+paytest@gmail.com`, with 1 pending, 1 confirmed and 1 rejected test payment), two test announcements, one
+   "Night test error" in Maintenance → Error logs, one database backup file in `backups/`, 21 "printed" ID cards on
+   "Startup Pitch Night". `npm run seed:demo -- --yes` resets all organizations if you prefer a clean slate.
+5. **No real emails were sent.** Payment confirm/reject, announcements and resets have "email" switches — I always used
+   them with email off. Careful when you test: emails to `willkariim+…@gmail.com` really arrive.
+
+**Blocked / not done:** nothing blocked. Deliberate choices are listed per step below under "Decisions made for you".
+Ideas left for later are in CLAUDE.md → "Notes for later phases".
+
+**Commits (in order):** 9D ID cards · 9E analytics PDF · 10A tenants/impersonation · 10B payments/revenue/plans ·
+10C users/certificates/analytics · 10D-1 settings/maintenance mode/banner · 10D-2 email templates/SMTP ·
+10D-3 security · 10D-4 maintenance page/jobs/backups · 10D-5 announcements/notifications · final docs.
+
+---
+
 Tasks: Phase 9D (ID cards) → 9E (Analytics PDF report) → Phase 10 (Superadmin panel).
 Every sub-step was checked with `cd backend && npx tsc --noEmit`, `npm run build`, `npx knip` (root + backend)
 and quick API calls against the running backend before committing. No real emails were sent.
@@ -326,3 +356,11 @@ sees it under the bell) and "Scheduled test (Enterprise only)" (reached nobody).
    **In the dashboard** → **Schedule** 2 minutes ahead → it appears under Scheduled → wait → it moves to Sent.
 2. Log in as `willkariim@gmail.com` → the bell shows the unread count → open it → click a notification → **Mark all as read**.
 3. Try a draft: Save as draft → Edit → Send now.
+
+---
+
+## Final touches ✅
+- Suspended organizations now see the reason the superadmin gave (on login and in the dashboard error message).
+- The seed (`npx prisma db seed`) now also creates the new settings keys (banner, SEO, maintenance message, logo/favicon).
+- CLAUDE.md: Phase 9 and 10 marked done; architecture, API list, conventions (emails via templates, impersonation,
+  error logs, platform activity logging) and the remaining-work list (Phase 11, 12) updated.

@@ -90,7 +90,9 @@ pdf/                assets (fonts from @fontsource WOFF, loadImage PNG/JPEG only
                     renderCertificate), ticket (A6 ticket, TICKET_QR_PREFIX), idcard (4 CR80 templates, sheet/single),
                     report (ReportKit: header/kpis/barChart/hBars/table/columns/footer + renderAnalyticsReport)
 services/           certificates (verify code, SHA-256 over frozen facts, issue/email/autoIssueForAttended, private PDF
-                    storage), tickets (ticket PDF/email, parseScanned)
+                    storage), tickets (ticket PDF/email, parseScanned), announcements (deliverAnnouncement, sendDueAnnouncements)
+jobs/               in-process scheduler (registerJob/runJob/startScheduler, started in index.ts): expire-orgs (10 min),
+                    expiry-reminders (6 h, 3 days before the end, once per end date), announcements (1 min)
 prisma/seed.ts      plans, settings, superadmin    prisma/seed-demo.ts  demo organization (see above)
 prisma/client.ts    default export `prisma` (base client)
 prisma/scopedClient.ts   org-scoped client: auto-injects organizationId into queries for org models
@@ -99,16 +101,23 @@ middleware/
   checkOrgStatus.ts loads req.org (+plan), auto-expires trials; option { allowExpired }
   scopedPrisma.ts   attaches req.db (scoped client)
   role-check.auth.ts requireRole(["admin", ...])
-  orgChain.ts       orgScoped, orgScopedAllowExpired, canWrite (blocks viewers), adminOnly
+  orgChain.ts       orgScoped, orgScopedAllowExpired, canWrite (blocks viewers), adminOnly, superAdminOnly
+  maintenance.ts    maintenanceGate: 503 MAINTENANCE for non-superadmins when maintenance.enabled (auth, superadmin,
+                    verify, contact, plans, platform stay open)
 controllers/        auth (in routes/auth-route.ts), org, team, events, program (speakers/sponsors/sessions/reorder),
                     registrations, dashboard (overview + analytics), activity, billing, support (contact + support),
-                    certificates (incl. public verify), tickets (incl. check-in)
+                    certificates (incl. public verify), tickets (incl. check-in), idcards, notifications (bell),
+                    superadmin/* (dashboard, tenants, plans, payments, users, certificates, analytics, settings, emails,
+                    security, maintenance, announcements)
 routes/             one router file per area; mounted under /api/v1
 utils/              http (ok/fail/validationFail/pagination/q), schemas (optionalText/optionalUrl/optionalImage/
                     parseDate/isUniqueViolation/isOneOf), activity (logActivity), mail (sendMail/escapeHtml + templates),
                     storage (saveUpload/deleteUpload/deleteUploadFolder + PRIVATE files: savePrivate/readPrivate/
                     deletePrivateFolder in backend/private-files, never served statically), upload (multer imageUpload/csvUpload),
-                    settings (getSetting), tokens, jwt, password, roleLimit, codes (refNo/ticketNo/qr), csv (csvCell/toCsv)
+                    settings (getSetting/setSetting, 30 s cache, clearSettingsCache), tokens, jwt (+ signImpersonationToken),
+                    password, roleLimit, codes (refNo/ticketNo/qr), csv (csvCell/toCsv), emailTemplates (10 editable
+                    templates: {{var}}, {{{rawVar}}}, {{button "Label" linkVar}}), orgStatus (expireOverdueOrgs/naturalStatus),
+                    months (monthStart/fillMonths), orgContacts (orgAdminEmails), errorLog (recordError → error_logs)
 ```
 
 **Conventions**
@@ -126,6 +135,12 @@ utils/              http (ok/fail/validationFail/pagination/q), schemas (optiona
 - Uploads go to local disk `uploads/orgs/<orgId>/<folder>` and are served at `/uploads/...`. Logo/signature must be
   PNG/JPEG (they're printed on PDFs). Certificate PDFs live in `private-files/orgs/<orgId>/certificates/` (API only).
 - Long jobs (bulk emails) run in the background after the response (`void (async () => …)()`), errors only logged.
+- **Emails** always go through `renderEmail(type, vars)` (DB template or built-in default) — add new system emails as a
+  template in `utils/emailTemplates.ts`. SMTP: System settings `smtp` → else `.env` → else printed as DEV EMAIL.
+- **Impersonation** ("log in as"): JWT with `imp = superadminId`, 1 h; `req.user.impersonatorId`; logActivity adds
+  `impersonatedBy`; password change is blocked. Frontend keeps it in sessionStorage (this tab only).
+- 5xx errors are saved to `error_logs` by the error handler (Superadmin → Maintenance).
+- Platform actions are logged with `organizationId = null`; when they concern a tenant use `entityType: "Organization", entityId`.
   Generic pre-upload: `POST /api/v1/uploads/image?kind=speaker|sponsor|logo|signature|payment` → `{ url }`.
 
 **Mounted API (`/api/v1`)**: health, auth, org, team, events (+ /stats, /:id/stats, /:id/restore, /:id/duplicate),
@@ -137,7 +152,17 @@ org/me/delete-data, org/me/close (name + password confirmation), PATCH auth/me,
 idcards (+ /options, /stats, /preview, /pdf), analytics/report (PDF),
 certificates (+ /templates, /preview, /stats, /candidates, /bulk, /email, /:id/pdf, /:id/email, /:id/revoke, /:id/restore),
 verify/:code and verify/:code/pdf (public, 30/min), tickets (+ /stats, /zip, /email, /check-in, /:id/pdf, /:id/email,
-/:id/undo-check-in).
+/:id/undo-check-in), notifications (+ /:id/read, /read-all), public GET platform (name, banner, maintenance, SEO, upload
+limit) and GET plans (visible plans).
+**Superadmin (`/api/v1/superadmin`, superAdminOnly)**: dashboard; tenants (+ /stats, /export, POST create, /:id, PATCH,
+/:id/plan, /:id/extend, /:id/suspend, /:id/unsuspend, /:id/impersonate, DELETE with `confirm` = exact name); plans CRUD;
+revenue; payments (+ /stats, /export, /:id/confirm, /:id/reject — `notify` flag); users (+ /stats, /export, /:id,
+/:id/disable, /:id/enable, /:id/logout, /:id/reset-password `mode: link|temporary`); certificates (+ /stats, /events,
+/templates, /preview, /bulk-revoke with dryRun, /:id, /:id/pdf, /:id/revoke, /:id/restore); analytics (+ /report PDF,
+/export?dataset=); settings (GET/PATCH flat keys) + uploads?kind=logo|favicon; emails (+ PUT/DELETE /:type, /:type/preview,
+/:type/test); smtp (GET/PUT/DELETE, /verify); security (/overview, /activity, /activity/export, /logins); maintenance
+(+ /jobs/:name/run, /cache/clear, /errors GET/DELETE, /backups GET/POST, /backups/:file); announcements (+ /stats,
+/audience, POST, PATCH /:id, /:id/send, /:id/unschedule, DELETE /:id).
 - Uploads for `payment`, `logo` and `signature` still work when the plan has expired; other kinds return 402.
 
 ---
@@ -145,9 +170,11 @@ verify/:code and verify/:code/pdf (public, 30/min), tickets (+ /stats, /zip, /em
 ## Frontend architecture (`src/`)
 
 ```
-main.tsx            createBrowserRouter([{ path: "*", element: <AuthProvider><ConfirmProvider><App/> }]) — data router (needed by useBlocker)
+main.tsx            createBrowserRouter([{ path: "*", element: <PlatformProvider><AuthProvider><ConfirmProvider><App/> }]) — data router (needed by useBlocker)
 App.tsx             all routes (<Routes>); writer(page) wraps create/edit pages (admins + managers only)
-context/AuthContext.tsx   user, organization, status, login/register/acceptInvite/logout/refresh; homeFor(user)
+context/AuthContext.tsx   user, organization, impersonator, status, login/register/acceptInvite/logout/refresh,
+                    impersonate/stopImpersonating; homeFor(user)
+context/PlatformContext.tsx  GET /platform every 60 s + on any 503 MAINTENANCE: banner, maintenance, favicon/title/SEO, maxUploadMb
 lib/api.ts          api.get/list/getList/post/patch/delete/upload/download/blob, buildQuery, ApiError, errorMessage, tokenStore
 lib/status.ts       ONE place for every status label + colour (event, mode, registration, tier, org, role, payment, cert, certType, visibility)
 lib/format.ts       formatDate/DateTime/Time/PKR/Duration/Relative/TimeLeft/Month, plural  (locale en-PK)
@@ -161,16 +188,22 @@ components/ui/      shadcn primitives + our button.tsx + form-fields.tsx (TextFi
 components/app/     PageHeader, EventPicker, StatsRow/StatCard, SegmentedTabs, Toolbar (SearchInput, FilterSelect,
                     FilterChips, ViewToggle), ServerTable, CardGrid, PaginationBar, BulkActionBar, RowActions,
                     StatusBadge, States (EmptyState, NoResults, ErrorState), ConfirmDialog (useConfirm), RoleGate,
-                    Avatar, ReorderList, Panel/PanelLink (titled card), form/ (FormLayout: FormSection, FullWidth, SwitchField, FormFooter;
+                    Avatar, ReorderList, Panel/PanelLink (titled card), DateRangeFilter (+ dayStart/dayEnd), form/ (FormLayout: FormSection, FullWidth, SwitchField, FormFooter;
                     ImageUploadField; serverErrors.applyServerErrors)
-components/layout/  DashboardLayout, Sidebar (grouped nav, collapsible, plan card), Topbar (account menu),
-                    AccountBanners (trial / expiring / expired / verify email), nav.ts (menu config)
+components/layout/  DashboardLayout, Sidebar (grouped nav, collapsible, plan card; variant="platform" for superadmin),
+                    Topbar (account menu, NotificationBell; variant), AccountBanners (trial / expiring / expired / verify email),
+                    ImpersonationBanner, SiteBanner (sitewide banner), MaintenanceScreen, nav.ts (NAV + SUPERADMIN_NAV)
 components/<feature>/  events, registrations, speakers, sponsors, sessions, team (InviteDialog, roles), settings (one file
                     per tab + shared SaveBar/saveOrg), billing (PayDialog, paymentInfo), certificates (TemplatePickerDialog,
-                    IssueDialogs, pdf.ts usePdfUrl/openPdf), tickets (QrCode, TicketDialog) — feature forms and pieces
-pages/              public pages (root), auth pages, dashboard/*Page.tsx + dashboard/<module>/*Page.tsx, superadmin/,
+                    IssueDialogs, pdf.ts usePdfUrl/openPdf), tickets (QrCode, TicketDialog), idcards (DesignPanel, design.ts),
+                    superadmin (SuperadminLayout, ActivityFeed, TenantDialogs + OneTimeSecret, PaymentReviewDialog,
+                    useImpersonate) — feature forms and pieces
+pages/              public pages (root), auth pages, dashboard/*Page.tsx + dashboard/<module>/*Page.tsx, superadmin/
+                    (Dashboard, Tenants, TenantDetail, Revenue, Plans, Users, PlatformCertificates, PlatformAnalytics,
+                    SystemSettings, EmailTemplates, Security, Maintenance, Announcements),
                     dev/ (ComponentGallery at /dev/components)
-types/              API shapes (auth, event, registration, speaker, sponsor, session, dashboard, team, billing, certificate, ticket)
+types/              API shapes (auth, event, registration, speaker, sponsor, session, dashboard, team, billing, certificate, ticket,
+                    idcard, platform, superadmin)
 ```
 
 **Page templates (follow them for every new page)**
@@ -192,34 +225,46 @@ types/              API shapes (auth, event, registration, speaker, sponsor, ses
 
 ## Status (as of this handoff)
 
-✅ **Done:** branch audit; backend base + unified Prisma schema (22 tables) + seed; secure auth (register/trial,
+✅ **Done:** branch audit; backend base + unified Prisma schema (23 tables incl. `error_logs`) + seed; secure auth (register/trial,
 login with lockout + remember-me, verify, reset, change password, logout-all, invites); org/team API; events
 module API; shared components; real auth pages; the whole **events module UI rebuilt on the design system**
 (events list + hub + form, registrations + CSV import wizard with dry-run review, speakers, sponsors, schedule,
 reorder); **Phase 8 complete**: dashboard layout + Overview (8B), Analytics, Activity log, Help & support, public
 contact form (8C), Team, Settings (6 tabs), Billing with manual payments (8D); old mock pages and unused UI files
-removed; knip clean (only deliberately kept: `ui/popover`, `ui/scroll-area`, `ui/separator`).
+removed; knip clean (only deliberately kept: `ui/scroll-area`, `ui/separator`).
 **Phase 9 complete:** 9A certificate engine, 9B Certificates page + design picker + public `/verify`,
 9C QR tickets + Tickets page + camera check-in scanner (`/dashboard/tickets/scan`, qr-scanner; needs https or
 localhost for the camera), 9D ID cards (`/dashboard/idcards`: 4 templates, field choice, logo, 9-per-A4 sheet or one per page,
 print tracking in `IdCard`), 9E Analytics PDF report (`GET /analytics/report`, `pdf/report.ts` ReportKit — reuse it for
 other PDF reports). Event form has the certificate design picker. Demo seed added.
 
+**Phase 10 complete (superadmin panel, `/superadmin`):** 10A layout + platform dashboard + tenants (list, detail,
+add by hand with temporary password, change plan, extend, suspend/reactivate with reason, delete with typed name, log in
+as admin), 10B payment confirmation/rejection (+ emails, plan +1 year from the later of today / current end), revenue
+charts + outstanding list, plans CRUD + feature matrix, public `GET /plans`, 10C users (disable/enable, force logout,
+reset link or temporary password), global certificates (revoke/restore, bulk revoke with count check), platform analytics
+(PDF + CSV), 10D system settings (branding, contact, payments, banner, SEO, upload limit, default certificate design,
+superadmin's own account), maintenance mode (gate + screen), sitewide banner, editable email templates (all system emails
+use them) + SMTP settings, security page (activity log, login attempts, suspicious IPs, locked accounts, sessions),
+maintenance page (health, scheduled jobs, error logs, cache, mysqldump backups), announcements (in-app + email,
+schedule/draft) + notification bell. Night-run details and manual test steps: `docs/NIGHT_LOG.md`.
+
 Notes for later phases:
 - Notification preferences (`notificationPrefs`) are saved but nothing sends those emails yet (Phase 11).
 - Analytics shows the generic 402 error for expired orgs; a friendlier "renew to see analytics" screen would be nicer.
 - Phones can't use the scanner over plain http on the LAN — works once deployed with https (Phase 12).
 - Gmail SMTP allows ~500 emails/day; use a transactional email service in production (Phase 12).
+- The SMTP password saved in System settings is stored as plain text in `system_settings` (encrypt in Phase 12).
+- SEO title/description are applied client-side only (SPA); proper server-side meta tags come with deployment (Phase 12).
+- Background jobs run inside the API process — fine for one server; move to a worker if the app is ever scaled out.
+- `REGISTRATION_CONFIRM` email template exists but is sent only once public self-registration is built (Phase 11).
 
 ## Remaining work
 
-**10** — Superadmin panel (`/superadmin`, role superAdmin): dashboard, tenants (suspend, extend trial, change plan,
-impersonate), plans CRUD, revenue + **payment confirmation** (sets plan, `status = active`, `subscriptionEndsAt` +1 year),
-users, global certificates, analytics, email template editor, system settings (`payments.accounts`, `contact.email`,
-`contact.whatsapp`, `trial.days`…), security/login logs, maintenance mode, announcements.
-
-**11** — Editable email templates from the DB, in-app notifications, API tokens + public REST API (Enterprise),
-public website fixes (PKR pricing, CTAs, FAQ), **public event page + self-registration**.
+**11** — API tokens + public REST API (Enterprise), public website fixes (PKR pricing from `GET /api/v1/plans`, CTAs,
+FAQ), **public event page + self-registration** (send the `REGISTRATION_CONFIRM` template), org notification emails from
+`notificationPrefs`, more in-app notifications (the bell + `notifications` table are ready; `link` is supported).
+(Editable email templates and in-app notifications were done in Phase 10.)
 
 **12** — Security hardening (helmet, more rate limits), Docker/CI, Hostinger deployment (one Express server serves the
 API + built Vite app), backups, final knip, then move the repo to its own GitHub repository.

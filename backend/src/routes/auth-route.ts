@@ -223,7 +223,7 @@ router.post("/login", async (req, res) => {
 
   const user = await prisma.user.findUnique({
     where: { email },
-    include: { organization: { select: { status: true } } },
+    include: { organization: { select: { status: true, suspendedReason: true } } },
   });
   const passwordOk = await bcrypt.compare(password, user?.password ?? DUMMY_HASH);
   const success = !!user && passwordOk;
@@ -247,9 +247,10 @@ router.post("/login", async (req, res) => {
       .json({ error: "This account has been disabled. Contact your administrator.", code: "ACCOUNT_DISABLED" });
   }
   if (user.organization?.status === "suspended") {
+    const reason = user.organization.suspendedReason ? ` Reason: ${user.organization.suspendedReason}` : "";
     return res
       .status(403)
-      .json({ error: "This organization has been suspended. Please contact support.", code: "ORG_SUSPENDED" });
+      .json({ error: `This organization has been suspended.${reason} Please contact support.`, code: "ORG_SUSPENDED" });
   }
 
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });

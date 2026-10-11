@@ -96,6 +96,12 @@ async function seedSettings() {
     "payments.accounts": { jazzcash: "", easypaisa: "", bankIban: "" },
     "uploads.maxMb": 5,
     "certificates.defaultTemplate": "classic-royal",
+    // Superadmin → System settings (Phase 10)
+    "platform.logoUrl": "",
+    "platform.faviconUrl": "",
+    "maintenance.message": "",
+    banner: { enabled: false, text: "", tone: "info", link: "", linkLabel: "" },
+    seo: { title: "", description: "" },
   };
 
   for (const [key, value] of Object.entries(defaults)) {
