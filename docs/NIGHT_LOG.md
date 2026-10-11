@@ -490,3 +490,32 @@ to the demo org's admins (`willkariim@gmail.com`, `willkariim+hira@gmail.com`).
 3. In VS Code open `backend/api-tests.http`, paste the token into `@apiToken`, run **API2** requests.
 4. Revoke the token → the same request now answers 401.
 5. Open `/developers` and read through the docs.
+
+---
+
+## 12 (part 1) — Security, speed and link previews ✅
+
+**Security**
+- Helmet headers + content policy, rate limits on login / 2FA / register / password / email links / invites and the whole API,
+  SMTP password encrypted in the database (AES-256-GCM).
+- **Two-factor login** for every account. Settings → My account → **Two-factor login → Turn on** → scan the QR with
+  Google Authenticator / Microsoft Authenticator / Authy → type the 6-digit code → **save the 10 recovery codes** (Copy or
+  Download; shown once). From then on, login asks for the code after the password ("Lost your phone? Use a recovery code"
+  takes one code, each works once). Turn off / new recovery codes ask for the password.
+- Superadmin → Users → a user's menu → **Reset two-factor login** (only after confirming who they are).
+- Superadmin lost their own phone and codes: on the server `cd backend && npm run reset-2fa -- their@email`.
+
+**Speed:** every page is its own JS file, loaded when opened. Home first load went from 2.4 MB to 0.74 MB (240 kB over the
+network, gzipped); the dashboards, charts, PDF tools and the 3D waves are no longer in it.
+
+**Link previews:** when the backend finds `dist/` (after `npm run build`) it serves the website too, and writes the title,
+description and image into the HTML of `/e/:id` (event, date, place, organizer + description, org logo), `/o/:slug` and
+`/verify/:code` (recipient + event, or "Revoked"). Other pages get the site title/description from System settings → SEO
+and the share card `public/og-image.png`.
+
+**Test it**
+1. Log in with 2FA as described above (use a test account, e.g. `willkariim+bilal@gmail.com`), then turn it off again.
+2. `npm run build` in the repo root, restart the backend, open http://localhost:5000 → the whole app works from the backend.
+3. `curl -s http://localhost:5000/o/margalla-cs` → look for `og:title` / `og:image` in the output.
+4. Real WhatsApp/Facebook previews need a public https address, so check them after deployment with
+   https://developers.facebook.com/tools/debug/ (paste an event link).

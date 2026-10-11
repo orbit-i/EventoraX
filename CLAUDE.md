@@ -85,7 +85,9 @@ npm run dev
 ## Backend architecture (`backend/src`)
 
 ```
-index.ts            app setup, route mounting, /uploads static, JSON 404, error handler
+index.ts            app setup (helmet CSP, apiLimiter), route mounting, /uploads static, JSON 404, mountWebApp, error handler
+web/spa.ts          serves the built site (dist/) + SPA fallback; writes link-preview tags (og/twitter) into the HTML for
+                    /e/:id, /o/:slug, /verify/:code (org logo or public/og-image.png); missing files → 404; skipped if no dist/
 pdf/                assets (fonts from @fontsource WOFF, loadImage PNG/JPEG only, toBuffer), certificate (60 templates,
                     renderCertificate), ticket (A6 ticket, TICKET_QR_PREFIX), idcard (4 CR80 templates, sheet/single),
                     report (ReportKit: header/kpis/barChart/hBars/table/columns/footer + renderAnalyticsReport)
@@ -97,6 +99,7 @@ jobs/               in-process scheduler (registerJob/runJob/startScheduler, sta
                     expiry-reminders (6 h, 3 days before the end, once per end date), announcements (1 min),
                     attendance-summaries (30 min, once per ended event; marked even when the pref is off)
 prisma/seed.ts      plans, settings, superadmin    prisma/seed-demo.ts  demo organization (see above)
+prisma/reset-2fa.ts `npm run reset-2fa -- <email>`: turns off two-factor login from the server (superadmin lost phone + codes)
 prisma/client.ts    default export `prisma` (base client)
 prisma/scopedClient.ts   org-scoped client: auto-injects organizationId into queries for org models
 middleware/
@@ -122,7 +125,10 @@ utils/              http (ok/fail/validationFail/pagination/q), schemas (optiona
                     settings (getSetting/setSetting, 30 s cache, clearSettingsCache), tokens, jwt (+ signImpersonationToken),
                     password, roleLimit, codes (refNo/ticketNo/qr), csv (csvCell/toCsv), emailTemplates (10 editable
                     templates: {{var}}, {{{rawVar}}}, {{button "Label" linkVar}}), orgStatus (expireOverdueOrgs/naturalStatus),
-                    months (monthStart/fillMonths), orgContacts (orgAdminEmails), errorLog (recordError → error_logs)
+                    months (monthStart/fillMonths), orgContacts (orgAdminEmails), errorLog (recordError → error_logs),
+                    rateLimits (login/twoFactor/register/password/emailLink/invite/api limiters, JSON 429),
+                    secrets (encryptSecret/decryptSecret AES-256-GCM, "enc:v1:" prefix; key = ENCRYPTION_KEY or derived from
+                    JWT_SECRET; used for the SMTP password and 2FA secrets), totp (RFC 6238 codes, otpauth URL, recovery codes)
 ```
 
 **Conventions**
@@ -275,18 +281,30 @@ testimonials/logos/social/live stats managed in System settings → Website, rea
 "Public page" card with poster QR in the dashboard), 11C org notification emails (new registration, attendance summary job,
 certificate batches; email + bell), 11D API tokens (`/dashboard/api`) + REST API `/api/v1/ext` + docs `/developers`.
 
+**Phase 12 (part 1) done:** helmet security headers with a content policy (HSTS + upgrade-insecure only in production),
+rate limits on every sensitive auth route + 600/min on the whole API, SMTP password encrypted at rest, **two-factor login**
+for every account (authenticator app + 10 one-time recovery codes; Settings → My account → Two-factor login; login has a
+second "code" step; superadmin can reset it for a user on Users; `npm run reset-2fa` on the server), **code splitting**
+(every page is `React.lazy` in App.tsx, libraries grouped in `vite.config.ts` manualChunks: react / ui / icons / charts /
+forms; home first load 2.4 MB → 0.74 MB, the three.js hero waves load after the text), **link previews** (backend serves
+`dist/` with per-page og/twitter tags, `web/spa.ts`). Open tabs reload once if a page file vanished after a deploy
+(`vite:preloadError` in main.tsx).
+- 2FA flow: `POST /auth/login` → `{ twoFactorRequired, challengeToken }` (5-minute JWT signed with a separate secret, never a
+  session) → `POST /auth/login/2fa { challengeToken, code }`. Login attempts are recorded only after the second factor.
+  Management: `/auth/2fa/setup|enable|disable|recovery-codes` (not while impersonating); `POST /superadmin/users/:id/reset-2fa`.
+- Try the production setup locally: `npm run build` (root), restart the backend, open http://localhost:5000.
+  To see the preview tags: `curl -s http://localhost:5000/e/<eventId> | findstr og:` (or grep).
+
 Notes for later phases:
-- Notification preferences (`notificationPrefs`) are saved but nothing sends those emails yet (Phase 11).
 - Analytics shows the generic 402 error for expired orgs; a friendlier "renew to see analytics" screen would be nicer.
 - Phones can't use the scanner over plain http on the LAN — works once deployed with https (Phase 12).
 - Gmail SMTP allows ~500 emails/day; use a transactional email service in production (Phase 12).
-- The SMTP password saved in System settings is stored as plain text in `system_settings` (encrypt in Phase 12).
-- SEO title/description are applied client-side only (SPA); proper server-side meta tags come with deployment (Phase 12).
+- Link previews need the public URL: set `FRONTEND_URL` to the real https address in production (used for og:url/og:image).
 - Background jobs run inside the API process — fine for one server; move to a worker if the app is ever scaled out.
 - Terms/Privacy are a good-faith draft — have them reviewed before launch.
-- Public event pages are client-rendered (no link previews/SEO for each event until server-side rendering or prerendering, Phase 12).
 
 ## Remaining work
 
-**12** — Security hardening (helmet, more rate limits), Docker/CI, Hostinger deployment (one Express server serves the
-API + built Vite app), backups, final knip, then move the repo to its own GitHub repository.
+**12 (rest)** — Docker/CI, Hostinger deployment (the backend already serves the built site, see `web/spa.ts`; set
+`NODE_ENV=production`, `FRONTEND_URL`, optionally `ENCRYPTION_KEY`), https, transactional email service, scheduled backups,
+final knip, then move the repo to its own GitHub repository.

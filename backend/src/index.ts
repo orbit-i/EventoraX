@@ -25,6 +25,7 @@ import { publicPlatform, publicWebsite } from "./controllers/superadmin/settings
 import { maintenanceGate } from "./middleware/maintenance";
 import { recordError } from "./utils/errorLog";
 import { startScheduler } from "./jobs";
+import { mountWebApp } from "./web/spa";
    import {
      dashboardRouter,
      analyticsRouter,
@@ -121,6 +122,9 @@ app.get("/api/v1/plans", publicPlans); // public: pricing page
 app.use("/api", (_req, res) => {
   res.status(404).json({ error: "Not found" });
 });
+
+// The built website (dist/) with link-preview tags for shared event, organization and certificate pages
+mountWebApp(app);
 
 function statusOf(err: unknown): number {
   if (err && typeof err === "object" && "status" in err) {
