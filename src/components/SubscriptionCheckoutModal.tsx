@@ -57,6 +57,7 @@ export default function SubscriptionCheckoutModal({
   const [orgName, setOrgName] = useState('');
   const [adminEmail, setAdminEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [mobileNumber, setMobileNumber] = useState('');
   const [trxId, setTrxId] = useState('');
   const [cardNumber, setCardNumber] = useState('');
@@ -92,8 +93,13 @@ export default function SubscriptionCheckoutModal({
     try {
       // 1. If not logged in, register account first so client has login credentials & tenant workspace
       if (!user) {
-        if (!adminEmail || !password || password.length < 6) {
-          alert('Please enter a valid email and account password (at least 6 characters) to create your login.');
+        if (!adminEmail || !password || password.length < 8) {
+          alert('Please enter a secure password with at least 8 characters to protect your account.');
+          setIsProcessing(false);
+          return;
+        }
+        if (password !== confirmPassword) {
+          alert('Passwords do not match. Please verify both password fields.');
           setIsProcessing(false);
           return;
         }
@@ -295,18 +301,36 @@ export default function SubscriptionCheckoutModal({
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-slate-700 block mb-1">Account Login Password *</label>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">
+                      Account Login Password * <span className="text-[10px] text-blue-600 font-semibold">(Min 8 chars)</span>
+                    </label>
                     <input
                       type="password"
                       required
-                      minLength={6}
-                      placeholder="Minimum 6 characters"
+                      minLength={8}
+                      placeholder="Create secure password (8+ chars)"
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
                     />
                   </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Confirm Password *</label>
+                    <input
+                      type="password"
+                      required
+                      minLength={8}
+                      placeholder="Re-type your password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                  </div>
                 </div>
+                <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                  Your 8+ character password securely encrypts your organization account so you can log in anytime.
+                </p>
               </div>
             )}
 

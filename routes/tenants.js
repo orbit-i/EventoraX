@@ -222,6 +222,16 @@ router.get('/public/:slug', async (req, res) => {
     }
 
     const tenant = rows[0];
+
+    // Master SuperAdmin HQ is the platform authority, not an event organizer
+    if (tenant.id === 1 || tenant.slug === 'eventorax-hq' || slug.toLowerCase() === 'eventorax-hq') {
+      return res.status(404).json({
+        success: false,
+        isMasterAuthority: true,
+        message: 'EventoraX HQ is the Platform Authority, not an event organizer workspace. Public attendee portals only exist for client organizations.'
+      });
+    }
+
     if (tenant.status === 'suspended') {
       return res.status(403).json({ success: false, message: 'Organization portal is unavailable.' });
     }

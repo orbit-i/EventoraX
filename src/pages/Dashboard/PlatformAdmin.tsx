@@ -1791,12 +1791,21 @@ export default function PlatformAdmin() {
                 </div>
               </div>
 
-              <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100 text-xs text-blue-900 space-y-1">
-                <span className="font-bold block">Isolated Public Portal URL:</span>
-                <code className="text-[11px] text-blue-700 font-mono block break-all">
-                  {window.location.origin}/c/{inspectingTenant.slug}
-                </code>
-              </div>
+              {inspectingTenant.id === 1 || inspectingTenant.slug === 'eventorax-hq' ? (
+                <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100 text-xs text-blue-900 space-y-1">
+                  <span className="font-bold block">Platform Master SuperAdmin Authority</span>
+                  <p className="text-[11px] text-slate-500">
+                    EventoraX HQ governs the entire multi-tenant SaaS platform. Public event portals only exist for registered client organizations.
+                  </p>
+                </div>
+              ) : (
+                <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100 text-xs text-blue-900 space-y-1">
+                  <span className="font-bold block">Isolated Public Portal URL:</span>
+                  <code className="text-[11px] text-blue-700 font-mono block break-all">
+                    {window.location.origin}/c/{inspectingTenant.slug}
+                  </code>
+                </div>
+              )}
 
               <div className="flex items-center gap-2 pt-2">
                 <Button
@@ -1806,19 +1815,21 @@ export default function PlatformAdmin() {
                 >
                   Close
                 </Button>
-                <a
-                  href={`/c/${inspectingTenant.slug}`}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="flex-1"
-                >
-                  <Button
-                    className="w-full bg-[#1d4ed8] text-white rounded-xl text-xs h-10 font-bold flex items-center justify-center gap-1.5"
+                {inspectingTenant.id !== 1 && inspectingTenant.slug !== 'eventorax-hq' && (
+                  <a
+                    href={`/c/${inspectingTenant.slug}`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex-1"
                   >
-                    <ExternalLink className="w-3.5 h-3.5" />
-                    Open Public Portal
-                  </Button>
-                </a>
+                    <Button
+                      className="w-full bg-[#1d4ed8] text-white rounded-xl text-xs h-10 font-bold flex items-center justify-center gap-1.5"
+                    >
+                      <ExternalLink className="w-3.5 h-3.5" />
+                      Open Public Portal
+                    </Button>
+                  </a>
+                )}
               </div>
             </div>
           </div>

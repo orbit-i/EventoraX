@@ -184,6 +184,32 @@ export default function PublicTenantPortal() {
     (e.city && e.city.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
+  // EventoraX HQ is the Master Platform Authority, not an event organizer
+  if (slug?.toLowerCase() === 'eventorax-hq' || tenant?.id === 1 || tenant?.slug === 'eventorax-hq') {
+    return (
+      <div className="min-h-screen bg-[#faf8ff] flex items-center justify-center p-6 text-center">
+        <div className="max-w-md bg-white p-8 rounded-3xl border border-blue-200 shadow-xl space-y-4 animate-in fade-in zoom-in-95">
+          <div className="w-16 h-16 rounded-3xl bg-blue-100 text-[#1d4ed8] flex items-center justify-center mx-auto">
+            <ShieldCheck className="w-9 h-9" />
+          </div>
+          <h2 className="text-xl font-bold text-[#0f172a] font-heading">
+            EventoraX Master HQ • Platform Authority
+          </h2>
+          <p className="text-xs text-[#64748b] leading-relaxed">
+            EventoraX HQ is the master platform governance authority and owns this software. SuperAdmin governs the platform and does not host public events. Public event portals only exist for our registered client organizations.
+          </p>
+          <div className="pt-2">
+            <Link to="/">
+              <Button className="w-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs font-bold h-10">
+                Return to Official EventoraX Platform
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen bg-[#faf8ff] flex items-center justify-center">
