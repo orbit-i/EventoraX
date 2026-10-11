@@ -33,7 +33,7 @@ code. The next session continues with the first unticked box.
 - [x] 5. Services, PDFs and jobs
 - [x] 6. Database
 - [x] 7. Frontend core
-- [ ] 8. Frontend components
+- [x] 8. Frontend components
 - [ ] 9. Frontend pages
 - [ ] 10. Operations
 
