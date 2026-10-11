@@ -29,7 +29,7 @@ code. The next session continues with the first unticked box.
 - [x] 1. Architecture
 - [x] 2. Repository layout
 - [x] 3. Backend foundation
-- [ ] 4. Backend API
+- [x] 4. Backend API
 - [ ] 5. Services, PDFs and jobs
 - [ ] 6. Database
 - [ ] 7. Frontend core

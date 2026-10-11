@@ -10,8 +10,10 @@ The cards count admins, managers and viewers and show your plan's limit for each
 status (for example "Email not verified"), last login and join date. The **Roles** panel explains what each role can do
 (see the [role table](README.md#what-each-role-can-do)).
 
-- **Change a role:** pick a new one from the member's role menu.
-- **Remove from team:** from the member's menu. You can **Undo** for a few seconds.
+- **Change a role:** pick a new one from the member's role menu. A message with **Undo** appears for a few seconds.
+  You can't change your own role, and the organization must always keep at least one admin.
+- **Remove from team:** from the member's **⋯** menu, after confirming. Their account is deleted (what they did stays in
+  the activity log); you can invite them again later.
 - **Pending invites** (below the list): **Resend** (sends a fresh link) or cancel an invite.
 
 ### Invite someone
@@ -110,7 +112,8 @@ payment history.
 3. Choose the plan and how you paid, enter the **transaction ID** from your SMS or app receipt, upload a **screenshot of
    the receipt** (recommended) and add a note if needed. Submit.
 4. The payment shows as **Pending**. The EventoraX team checks it, usually within one working day. When it's confirmed
-   you get an email and your plan runs for another year **from your current end date** (paying early never loses days).
+   you get an email and your plan runs for another year: from your current end date if a paid plan is still running
+   (renewing early never loses days), otherwise from the day it's confirmed.
    If it's rejected, the reason is shown under the payment.
 
 You can cancel a pending payment you submitted by mistake. Billing keeps working even after your plan has expired.
