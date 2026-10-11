@@ -186,6 +186,10 @@ model User {
   emailVerified  Boolean       @default(false)
   isActive       Boolean       @default(true) // superadmin can disable
   tokenVersion   Int           @default(0) // bump to force-logout everywhere
+  // Two-factor login (authenticator app). The secret is encrypted (utils/secrets); recovery codes are SHA-256 hashes.
+  twoFactorSecret        String?   @db.Text
+  twoFactorEnabledAt     DateTime?
+  twoFactorRecoveryCodes Json?
   lastLoginAt    DateTime?
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt

@@ -23,6 +23,7 @@ const USER_SELECT = {
   emailVerified: true,
   lastLoginAt: true,
   createdAt: true,
+  twoFactorEnabledAt: true,
   organization: { select: { id: true, name: true, status: true } },
 } as const;
 
@@ -176,4 +177,19 @@ export async function resetUserPassword(req: Request, res: Response) {
   await prisma.user.update({ where: { id: user.id }, data: { password: await bcrypt.hash(password, 10), tokenVersion: { increment: 1 } } });
   await logActivity(req, { action: "user.password.temporary", entityType: "User", entityId: user.id, metadata: { name: user.name, email: user.email } });
   return ok(res, { mode: "temporary", temporaryPassword: password });
+}
+
+// POST /api/v1/superadmin/users/:id/reset-2fa   (they lost their phone and their recovery codes)
+export async function resetTwoFactor(req: Request, res: Response) {
+  const user = await findUser(req);
+  if (!user) return fail(res, 404, "NOT_FOUND", "User not found");
+  const blocked = guard(req, res, user);
+  if (blocked) return blocked;
+  if (!user.twoFactorEnabledAt) return fail(res, 409, "NOT_ENABLED", "Two-factor login is already off for this account");
+  await prisma.user.update({
+    where: { id: user.id },
+    data: { twoFactorEnabledAt: null, twoFactorSecret: null, twoFactorRecoveryCodes: Prisma.DbNull, tokenVersion: { increment: 1 } },
+  });
+  await logActivity(req, { action: "user.2fa.reset", entityType: "User", entityId: user.id, metadata: { name: user.name, email: user.email } });
+  return ok(res, { id: user.id, twoFactorEnabled: false });
 }

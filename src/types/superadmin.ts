@@ -170,6 +170,8 @@ export interface PlatformUser {
   emailVerified: boolean
   lastLoginAt: string | null
   createdAt: string
+  /** Set while two-factor login is on */
+  twoFactorEnabledAt?: string | null
   organization: { id: string; name: string; status: OrgStatus } | null
 }
 

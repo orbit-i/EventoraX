@@ -25,7 +25,7 @@ import {
   revenueOverview,
 } from "../controllers/superadmin/payments-controller";
 
-import { listUsers, userStats, exportUsers, getUser, disableUser, enableUser, forceLogout, resetUserPassword } from "../controllers/superadmin/users-controller";
+import { listUsers, userStats, exportUsers, getUser, disableUser, enableUser, forceLogout, resetUserPassword, resetTwoFactor } from "../controllers/superadmin/users-controller";
 import {
   listAllCertificates,
   allCertificateStats,
@@ -118,6 +118,7 @@ superadminRouter.post("/users/:id/disable", disableUser);
 superadminRouter.post("/users/:id/enable", enableUser);
 superadminRouter.post("/users/:id/logout", forceLogout);
 superadminRouter.post("/users/:id/reset-password", resetUserPassword);
+superadminRouter.post("/users/:id/reset-2fa", resetTwoFactor);
 
 // Certificates across all tenants
 superadminRouter.get("/certificates", listAllCertificates);

@@ -4,6 +4,8 @@ import type {
   AcceptInviteInput,
   AuthResponse,
   AuthUser,
+  LoginResult,
+  TwoFactorChallengeResponse,
   MeResponse,
   Organization,
   RegisterInput,
@@ -20,7 +22,10 @@ interface AuthState {
 }
 
 interface AuthContextValue extends AuthState {
-  login: (email: string, password: string, remember: boolean) => Promise<AuthUser>
+  /** Returns { challengeToken } when the account needs its two-factor code next. */
+  login: (email: string, password: string, remember: boolean) => Promise<LoginResult>
+  /** Second step of login: the 6-digit app code or a recovery code. */
+  completeTwoFactor: (challengeToken: string, code: string, remember: boolean) => Promise<{ user: AuthUser; recoveryCodeUsed: boolean }>
   register: (input: RegisterInput) => Promise<AuthUser>
   acceptInvite: (input: AcceptInviteInput) => Promise<AuthUser>
   logout: () => void
@@ -84,10 +89,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   )
 
   const login = useCallback(
-    async (email: string, password: string, remember: boolean) => {
-      const res = await api.post<AuthResponse>("/auth/login", { email, password, remember }, { auth: false })
+    async (email: string, password: string, remember: boolean): Promise<LoginResult> => {
+      const res = await api.post<AuthResponse | TwoFactorChallengeResponse>("/auth/login", { email, password, remember }, { auth: false })
+      if ("twoFactorRequired" in res) return { challengeToken: res.challengeToken }
       await startSession(res.token, remember)
-      return res.user
+      return { user: res.user }
+    },
+    [startSession]
+  )
+
+  const completeTwoFactor = useCallback(
+    async (challengeToken: string, code: string, remember: boolean) => {
+      const res = await api.post<AuthResponse & { recoveryCodeUsed?: boolean }>("/auth/login/2fa", { challengeToken, code }, { auth: false })
+      await startSession(res.token, remember)
+      return { user: res.user, recoveryCodeUsed: res.recoveryCodeUsed === true }
     },
     [startSession]
   )
@@ -129,8 +144,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [loadMe, logout])
 
   const value = useMemo<AuthContextValue>(
-    () => ({ ...state, login, register, acceptInvite, logout, refresh: loadMe, impersonate, stopImpersonating }),
-    [state, login, register, acceptInvite, logout, loadMe, impersonate, stopImpersonating]
+    () => ({ ...state, login, completeTwoFactor, register, acceptInvite, logout, refresh: loadMe, impersonate, stopImpersonating }),
+    [state, login, completeTwoFactor, register, acceptInvite, logout, loadMe, impersonate, stopImpersonating]
   )
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>

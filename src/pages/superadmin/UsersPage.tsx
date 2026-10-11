@@ -41,12 +41,18 @@ function useUserActions(onChanged: () => void) {
   const confirm = useConfirm()
   const [secret, setSecret] = useState<{ name: string; password: string } | null>(null)
 
-  async function run(u: PlatformUser, action: "disable" | "enable" | "logout" | "link" | "temporary") {
+  async function run(u: PlatformUser, action: "disable" | "enable" | "logout" | "link" | "temporary" | "reset-2fa") {
     const prompts = {
       disable: { title: `Disable ${u.name}'s account?`, description: "They're logged out everywhere and can't log in until you enable the account again.", confirmLabel: "Disable account", tone: "danger" as const },
       enable: { title: `Enable ${u.name}'s account?`, description: "They can log in again with their current password.", confirmLabel: "Enable account" },
       logout: { title: `Log ${u.name} out everywhere?`, description: "Every session on every device ends. They can log in again straight away.", confirmLabel: "Log out everywhere" },
       link: { title: `Email ${u.name} a reset link?`, description: `A link valid for 15 minutes is sent to ${u.email}.`, confirmLabel: "Send link" },
+      "reset-2fa": {
+        title: `Reset two-factor login for ${u.name}?`,
+        description: "Only do this after confirming who they are (they lost their phone and their recovery codes). They're logged out everywhere and can log in with just their password, then turn it on again.",
+        confirmLabel: "Reset two-factor",
+        tone: "danger" as const,
+      },
       temporary: {
         title: `Set a temporary password for ${u.name}?`,
         description: "Their current password stops working and they're logged out everywhere. You'll see the new password once, to share privately.",
@@ -62,7 +68,8 @@ function useUserActions(onChanged: () => void) {
         else toast.success(`Reset link sent to ${res.sentTo}`)
       } else {
         await api.post(`/superadmin/users/${u.id}/${action}`)
-        toast.success(action === "disable" ? `${u.name} is disabled` : action === "enable" ? `${u.name} can log in again` : `${u.name} was logged out everywhere`, {
+        const done = { disable: `${u.name} is disabled`, enable: `${u.name} can log in again`, logout: `${u.name} was logged out everywhere`, "reset-2fa": `Two-factor login is off for ${u.name}` }
+        toast.success(done[action], {
           action: action === "disable" ? { label: "Undo", onClick: () => void api.post(`/superadmin/users/${u.id}/enable`).then(onChanged) } : undefined,
         })
       }
@@ -91,7 +98,7 @@ function useUserActions(onChanged: () => void) {
   return { run, secretDialog }
 }
 
-function UserSheet({ userId, onOpenChange, onAction }: { userId: string | null; onOpenChange: (o: boolean) => void; onAction: (u: PlatformUser, a: "disable" | "enable" | "logout" | "link" | "temporary") => void }) {
+function UserSheet({ userId, onOpenChange, onAction }: { userId: string | null; onOpenChange: (o: boolean) => void; onAction: (u: PlatformUser, a: "disable" | "enable" | "logout" | "link" | "temporary" | "reset-2fa") => void }) {
   const { user: me } = useAuth()
   const { data, error, initialLoading } = useApi<UserDetail>(userId ? `/superadmin/users/${userId}` : null)
   const u = data?.user
@@ -117,6 +124,7 @@ function UserSheet({ userId, onOpenChange, onAction }: { userId: string | null; 
                   <div className="flex flex-wrap items-center gap-2">
                     <StatusBadge kind="role" value={u.role} />
                     {!u.isActive && <span className="rounded-full bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700">Disabled</span>}
+                    {u.twoFactorEnabledAt && <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">Two-factor on</span>}
                     {!u.emailVerified && <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">Email not verified</span>}
                   </div>
                   <p className="mt-1 text-[#64748b]">
@@ -152,6 +160,11 @@ function UserSheet({ userId, onOpenChange, onAction }: { userId: string | null; 
                   <Button size="sm" variant="outline" onClick={() => onAction(u, "temporary")}>
                     <KeyRound /> Temporary password
                   </Button>
+                  {u.twoFactorEnabledAt && (
+                    <Button size="sm" variant="outline" onClick={() => onAction(u, "reset-2fa")}>
+                      <ShieldOff /> Reset two-factor
+                    </Button>
+                  )}
                 </div>
               )}
 
@@ -232,6 +245,7 @@ export default function UsersPage() {
       { label: "Log out everywhere", icon: LogOut, hidden: locked, onClick: () => void run(u, "logout") },
       { label: "Email reset link", icon: Mail, hidden: locked, onClick: () => void run(u, "link") },
       { label: "Set temporary password", icon: KeyRound, hidden: locked, onClick: () => void run(u, "temporary") },
+      { label: "Reset two-factor login", icon: ShieldOff, hidden: locked || !u.twoFactorEnabledAt, onClick: () => void run(u, "reset-2fa") },
     ]
   }
 

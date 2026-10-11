@@ -9,6 +9,8 @@ export interface AuthUser {
   role: Role
   organizationId: string | null
   emailVerified: boolean
+  /** Two-factor login (authenticator app) is on */
+  twoFactorEnabled?: boolean
 }
 
 export interface Plan {
@@ -53,6 +55,15 @@ export interface AuthResponse {
   token: string
   user: AuthUser
 }
+
+/** POST /auth/login when the account has two-factor login: no session yet, a code is needed first. */
+export interface TwoFactorChallengeResponse {
+  twoFactorRequired: true
+  challengeToken: string
+}
+
+/** What login() gives back: logged in, or "now enter your 6-digit code". */
+export type LoginResult = { user: AuthUser } | { challengeToken: string }
 
 export interface RegisterInput {
   fullName: string

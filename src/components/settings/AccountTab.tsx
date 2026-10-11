@@ -14,6 +14,7 @@ import { useAuth } from "@/context/AuthContext"
 import { api, errorMessage, tokenStore } from "@/lib/api"
 import { passwordSchema, phoneSchema, PASSWORD_HINT } from "@/lib/validation"
 import { SaveBar, useReportDirty, type TabProps } from "./shared"
+import { TwoFactorSection } from "./TwoFactorSection"
 
 const profileSchema = z.object({
   name: z.string().trim().min(2, "Name must be 2–100 characters").max(100, "Name must be 2–100 characters"),
@@ -199,6 +200,7 @@ export function AccountTab({ onDirtyChange }: TabProps) {
     <div className="space-y-6">
       <ProfileSection onDirtyChange={(d) => setDirty((s) => (s.profile === d ? s : { ...s, profile: d }))} />
       <PasswordSection onDirtyChange={(d) => setDirty((s) => (s.password === d ? s : { ...s, password: d }))} />
+      <TwoFactorSection />
       <SessionsSection />
     </div>
   )

@@ -24,6 +24,12 @@ export function describeActivity(item: ActivityItem): string {
       return "logged out of all devices"
     case "auth.profile.update":
       return "updated their profile"
+    case "auth.2fa.enable":
+      return "turned on two-factor login"
+    case "auth.2fa.disable":
+      return "turned off two-factor login"
+    case "auth.2fa.codes":
+      return "made new two-factor recovery codes"
     case "event.create":
       return `created the event "${s("title")}"`
     case "event.update":
@@ -159,6 +165,8 @@ export function describeActivity(item: ActivityItem): string {
       return `sent ${s("name")} a password reset link`
     case "user.password.temporary":
       return `set a temporary password for ${s("name")}`
+    case "user.2fa.reset":
+      return `reset two-factor login for ${s("name")}`
     case "user.export":
       return `exported ${n("count")} users as CSV`
     case "platform.certificate.revoke":

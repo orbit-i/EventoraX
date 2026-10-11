@@ -1,11 +1,14 @@
 import { Router, Request } from "express";
 import bcrypt from "bcrypt";
 import { isValidPhoneNumber } from "libphonenumber-js";
-import { User } from "@prisma/client";
+import { Prisma, User } from "@prisma/client";
 import prisma from "../prisma/client";
 import { requireAuth } from "../middleware/auth";
-import { loginLimiter, registerLimiter, passwordLimiter, emailLinkLimiter, inviteLimiter } from "../utils/rateLimits";
-import { signAuthToken } from "../utils/jwt";
+import { loginLimiter, registerLimiter, passwordLimiter, emailLinkLimiter, inviteLimiter, twoFactorLimiter } from "../utils/rateLimits";
+import { signAuthToken, signTwoFactorChallenge, verifyTwoFactorChallenge } from "../utils/jwt";
+import { newRecoveryCodes, newTotpSecret, normaliseRecoveryCode, otpauthUrl, verifyTotp } from "../utils/totp";
+import { decryptSecret, encryptSecret } from "../utils/secrets";
+import QRCode from "qrcode";
 import { randomToken, hashToken } from "../utils/tokens";
 import { isStrongPassword, PASSWORD_RULE_MESSAGE, EMAIL_REGEX } from "../utils/password";
 import { getSetting } from "../utils/settings";
@@ -26,7 +29,7 @@ const DUMMY_HASH = bcrypt.hashSync("dummy-password-for-timing", 10);
 const str = (value: unknown): string => (typeof value === "string" ? value.trim() : "");
 const bodyOf = (req: Request): Record<string, unknown> => (req.body ?? {}) as Record<string, unknown>;
 
-function publicUser(u: Pick<User, "id" | "name" | "email" | "phone" | "role" | "organizationId" | "emailVerified">) {
+function publicUser(u: Pick<User, "id" | "name" | "email" | "phone" | "role" | "organizationId" | "emailVerified"> & { twoFactorEnabledAt?: Date | null }) {
   return {
     id: u.id,
     name: u.name,
@@ -35,7 +38,27 @@ function publicUser(u: Pick<User, "id" | "name" | "email" | "phone" | "role" | "
     role: u.role,
     organizationId: u.organizationId,
     emailVerified: u.emailVerified,
+    twoFactorEnabled: Boolean(u.twoFactorEnabledAt),
   };
+}
+
+/** Wrong passwords (and wrong 2FA codes) since the later of 15 minutes ago and the last successful login. */
+async function isLockedOut(email: string): Promise<boolean> {
+  const lastSuccess = await prisma.loginAttempt.findFirst({
+    where: { email, success: true },
+    orderBy: { createdAt: "desc" },
+    select: { createdAt: true },
+  });
+  const windowStart = new Date(Date.now() - LOCKOUT_MINUTES * 60 * 1000);
+  const since = lastSuccess && lastSuccess.createdAt > windowStart ? lastSuccess.createdAt : windowStart;
+  const recentFailures = await prisma.loginAttempt.count({ where: { email, success: false, createdAt: { gte: since } } });
+  return recentFailures >= MAX_FAILED_LOGINS;
+}
+
+function recordAttempt(req: Request, email: string, userId: string | null, success: boolean) {
+  return prisma.loginAttempt.create({
+    data: { email, userId, success, ipAddress: req.ip ?? null, userAgent: req.get("user-agent") ?? null },
+  });
 }
 
 async function uniqueSlug(name: string): Promise<string> {
@@ -204,18 +227,7 @@ router.post("/login", loginLimiter, async (req, res) => {
 
   // Brute-force protection: count failures since the later of
   // (15 minutes ago) and (this email's last successful login).
-  const lastSuccess = await prisma.loginAttempt.findFirst({
-    where: { email, success: true },
-    orderBy: { createdAt: "desc" },
-    select: { createdAt: true },
-  });
-  const windowStart = new Date(Date.now() - LOCKOUT_MINUTES * 60 * 1000);
-  const since = lastSuccess && lastSuccess.createdAt > windowStart ? lastSuccess.createdAt : windowStart;
-
-  const recentFailures = await prisma.loginAttempt.count({
-    where: { email, success: false, createdAt: { gte: since } },
-  });
-  if (recentFailures >= MAX_FAILED_LOGINS) {
+  if (await isLockedOut(email)) {
     return res.status(429).json({
       error: `Too many failed attempts. Please try again in ${LOCKOUT_MINUTES} minutes.`,
       code: "LOCKED",
@@ -228,16 +240,11 @@ router.post("/login", loginLimiter, async (req, res) => {
   });
   const passwordOk = await bcrypt.compare(password, user?.password ?? DUMMY_HASH);
   const success = !!user && passwordOk;
+  const needsSecondStep = success && Boolean(user!.twoFactorEnabledAt);
 
-  await prisma.loginAttempt.create({
-    data: {
-      email,
-      userId: user?.id ?? null,
-      success,
-      ipAddress: req.ip ?? null,
-      userAgent: req.get("user-agent") ?? null,
-    },
-  });
+  // With two-factor login, the attempt only counts as successful after the code (so the lockout can't be reset
+  // by someone who knows only the password).
+  if (!needsSecondStep) await recordAttempt(req, email, user?.id ?? null, success);
 
   if (!user || !passwordOk) {
     return res.status(401).json({ error: "Invalid email or password" });
@@ -254,6 +261,13 @@ router.post("/login", loginLimiter, async (req, res) => {
       .json({ error: `This organization has been suspended.${reason} Please contact support.`, code: "ORG_SUSPENDED" });
   }
 
+  if (needsSecondStep) {
+    return res.json({
+      twoFactorRequired: true,
+      challengeToken: signTwoFactorChallenge({ userId: user.id, tokenVersion: user.tokenVersion, remember }),
+    });
+  }
+
   await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
   await logActivity(req, { action: "auth.login", organizationId: user.organizationId, userId: user.id });
 
@@ -262,6 +276,113 @@ router.post("/login", loginLimiter, async (req, res) => {
     user: publicUser(user),
     organizationStatus: user.organization?.status ?? null,
   });
+});
+
+/** A 6-digit app code, or one of the user's unused recovery codes (which is then used up). */
+async function checkSecondFactor(user: { id: string; twoFactorSecret: string | null; twoFactorRecoveryCodes: unknown }, code: string) {
+  if (user.twoFactorSecret && verifyTotp(decryptSecret(user.twoFactorSecret), code)) return "app" as const;
+  const hashes = Array.isArray(user.twoFactorRecoveryCodes) ? (user.twoFactorRecoveryCodes as string[]) : [];
+  const hash = hashToken(normaliseRecoveryCode(code));
+  if (hashes.includes(hash)) {
+    await prisma.user.update({ where: { id: user.id }, data: { twoFactorRecoveryCodes: hashes.filter((h) => h !== hash) } });
+    return "recovery" as const;
+  }
+  return null;
+}
+
+// ───────────────────────── TWO-FACTOR LOGIN ─────────────────────────
+// POST /api/v1/auth/login/2fa  { challengeToken, code }   (second step of login)
+router.post("/login/2fa", twoFactorLimiter, async (req, res) => {
+  const b = bodyOf(req);
+  let challenge;
+  try {
+    challenge = verifyTwoFactorChallenge(str(b.challengeToken));
+  } catch {
+    return res.status(401).json({ error: "This login step has expired. Please log in again.", code: "CHALLENGE_EXPIRED" });
+  }
+  const user = await prisma.user.findUnique({ where: { id: challenge.userId }, include: { organization: { select: { status: true } } } });
+  if (!user || !user.isActive || user.tokenVersion !== challenge.tokenVersion || !user.twoFactorEnabledAt) {
+    return res.status(401).json({ error: "This login step has expired. Please log in again.", code: "CHALLENGE_EXPIRED" });
+  }
+  if (await isLockedOut(user.email)) {
+    return res.status(429).json({ error: `Too many failed attempts. Please try again in ${LOCKOUT_MINUTES} minutes.`, code: "LOCKED" });
+  }
+  const method = await checkSecondFactor(user, str(b.code));
+  await recordAttempt(req, user.email, user.id, Boolean(method));
+  if (!method) {
+    return res.status(401).json({ error: "That code isn't right. Check your authenticator app and try again.", fieldErrors: { code: "Wrong code" } });
+  }
+
+  await prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+  await logActivity(req, { action: "auth.login", organizationId: user.organizationId, userId: user.id, metadata: { twoFactor: method } });
+  return res.json({
+    token: signAuthToken({ userId: user.id, tokenVersion: user.tokenVersion }, challenge.remember),
+    user: publicUser(user),
+    organizationStatus: user.organization?.status ?? null,
+    ...(method === "recovery" ? { recoveryCodeUsed: true } : {}),
+  });
+});
+
+function blockWhileImpersonating(req: Request, res: import("express").Response) {
+  if (req.user!.impersonatorId) {
+    res.status(403).json({ error: "You can't change two-factor login while logged in as someone else.", code: "IMPERSONATING" });
+    return true;
+  }
+  return false;
+}
+
+// POST /api/v1/auth/2fa/setup   → a new secret + QR to scan (not active until /2fa/enable confirms a code)
+router.post("/2fa/setup", requireAuth, async (req, res) => {
+  if (blockWhileImpersonating(req, res)) return;
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.userId } });
+  if (user.twoFactorEnabledAt) return res.status(409).json({ error: "Two-factor login is already on." });
+  const secret = newTotpSecret();
+  await prisma.user.update({ where: { id: user.id }, data: { twoFactorSecret: encryptSecret(secret) } });
+  const url = otpauthUrl(secret, user.email);
+  return res.json({ secret: secret.match(/.{1,4}/g)!.join(" "), otpauthUrl: url, qr: await QRCode.toDataURL(url, { margin: 1, width: 240 }) });
+});
+
+// POST /api/v1/auth/2fa/enable  { code }   → turns it on and returns 10 recovery codes (shown once)
+router.post("/2fa/enable", twoFactorLimiter, requireAuth, async (req, res) => {
+  if (blockWhileImpersonating(req, res)) return;
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.userId } });
+  if (user.twoFactorEnabledAt) return res.status(409).json({ error: "Two-factor login is already on." });
+  if (!user.twoFactorSecret) return res.status(400).json({ error: "Start the setup first." });
+  if (!verifyTotp(decryptSecret(user.twoFactorSecret), str(bodyOf(req).code))) {
+    return res.status(400).json({ error: "That code isn't right. Check the time on your phone and try the newest code.", fieldErrors: { code: "Wrong code" } });
+  }
+  const codes = newRecoveryCodes();
+  await prisma.user.update({ where: { id: user.id }, data: { twoFactorEnabledAt: new Date(), twoFactorRecoveryCodes: codes.map((c) => hashToken(c)) } });
+  await logActivity(req, { action: "auth.2fa.enable" });
+  return res.json({ enabled: true, recoveryCodes: codes });
+});
+
+// POST /api/v1/auth/2fa/disable  { password }
+router.post("/2fa/disable", passwordLimiter, requireAuth, async (req, res) => {
+  if (blockWhileImpersonating(req, res)) return;
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.userId } });
+  const password = bodyOf(req).password;
+  if (typeof password !== "string" || !(await bcrypt.compare(password, user.password))) {
+    return res.status(400).json({ error: "Your password is wrong.", fieldErrors: { password: "Wrong password" } });
+  }
+  await prisma.user.update({ where: { id: user.id }, data: { twoFactorEnabledAt: null, twoFactorSecret: null, twoFactorRecoveryCodes: Prisma.DbNull } });
+  await logActivity(req, { action: "auth.2fa.disable" });
+  return res.json({ enabled: false });
+});
+
+// POST /api/v1/auth/2fa/recovery-codes  { password }   → 10 new codes (the old ones stop working)
+router.post("/2fa/recovery-codes", passwordLimiter, requireAuth, async (req, res) => {
+  if (blockWhileImpersonating(req, res)) return;
+  const user = await prisma.user.findUniqueOrThrow({ where: { id: req.user!.userId } });
+  if (!user.twoFactorEnabledAt) return res.status(400).json({ error: "Two-factor login is off." });
+  const password = bodyOf(req).password;
+  if (typeof password !== "string" || !(await bcrypt.compare(password, user.password))) {
+    return res.status(400).json({ error: "Your password is wrong.", fieldErrors: { password: "Wrong password" } });
+  }
+  const codes = newRecoveryCodes();
+  await prisma.user.update({ where: { id: user.id }, data: { twoFactorRecoveryCodes: codes.map((c) => hashToken(c)) } });
+  await logActivity(req, { action: "auth.2fa.codes" });
+  return res.json({ recoveryCodes: codes });
 });
 
 // ───────────────────────── PASSWORD RESET ─────────────────────────

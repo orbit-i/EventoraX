@@ -40,3 +40,27 @@ export function verifyAuthToken(token: string): AuthTokenPayload {
     ...(typeof decoded.imp === "string" ? { imp: decoded.imp } : {}),
   };
 }
+// ── Two-factor login challenge ──
+// After a correct password, users with two-factor login get this short-lived token instead of a session.
+// It's signed with a different key, so it can never be used as a login token.
+interface TwoFactorChallenge {
+  userId: string;
+  tokenVersion: number;
+  remember: boolean;
+}
+
+function challengeSecret() {
+  return `${getSecret()}:two-factor-challenge`;
+}
+
+export function signTwoFactorChallenge(payload: TwoFactorChallenge): string {
+  return jwt.sign({ ...payload, purpose: "2fa" }, challengeSecret(), { expiresIn: "5m" });
+}
+
+export function verifyTwoFactorChallenge(token: string): TwoFactorChallenge {
+  const d = jwt.verify(token, challengeSecret());
+  if (typeof d === "string" || d.purpose !== "2fa" || typeof d.userId !== "string" || typeof d.tokenVersion !== "number") {
+    throw new Error("Malformed challenge");
+  }
+  return { userId: d.userId, tokenVersion: d.tokenVersion, remember: d.remember === true };
+}
