@@ -145,6 +145,7 @@ app.get('/api/public/cms/:pageKey', async (req, res) => {
   } catch (err) {
     return res.status(500).json({ success: false, message: 'Failed to fetch CMS content' });
   }
+});
 // Public Testimonials endpoint for verified client reviews
 app.get('/api/public/testimonials', async (req, res) => {
   try {
