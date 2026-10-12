@@ -136,6 +136,28 @@ router.post('/', verifyToken, resolveTenant, contentPolicyGuard, async (req, res
     }
 
     const tenantId = req.tenantId || 1;
+    const isMasterAuthority = req.user?.role === 'admin' || tenantId === 1;
+
+    // Strict Plan Limit Enforcement (Starter: 2 events, 15 attendees max)
+    if (!isMasterAuthority) {
+      const [tenantRows] = await query('SELECT plan, max_events FROM `tenants` WHERE `id` = ?', [tenantId]);
+      const currentPlan = tenantRows[0]?.plan || req.user?.plan || 'Starter';
+      const [eventCountRows] = await query('SELECT COUNT(*) as cnt FROM `events` WHERE `tenant_id` = ?', [tenantId]);
+      const currentEventsCount = eventCountRows[0]?.cnt || 0;
+
+      const allowedEvents = currentPlan === 'Enterprise' ? 500 : currentPlan === 'Professional' ? 25 : 2;
+      if (currentEventsCount >= allowedEvents) {
+        return res.status(403).json({
+          success: false,
+          message: `Event creation limit reached: The ${currentPlan} plan permits up to ${allowedEvents} event(s). Upgrade your plan to publish more events.`
+        });
+      }
+    }
+
+    const effectiveCapacity = (!isMasterAuthority && (!req.tenant?.plan || req.tenant?.plan === 'Starter'))
+      ? Math.min(parseInt(capacity, 10) || 15, 15)
+      : (parseInt(capacity, 10) || 500);
+
     const slug = createSlug(title);
 
     const [result] = await query(
@@ -157,7 +179,7 @@ router.post('/', verifyToken, resolveTenant, contentPolicyGuard, async (req, res
         endDate || startDate,
         endTime || '17:00',
         parseFloat(price) || 0,
-        parseInt(capacity, 10) || 500,
+        effectiveCapacity,
         bannerImage || '',
         req.user.id
       ]

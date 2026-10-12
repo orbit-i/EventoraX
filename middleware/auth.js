@@ -27,11 +27,16 @@ export function verifyToken(req, res, next) {
   }
 }
 
-export function generateToken(payload) {
-  return jwt.sign(payload, JWT_SECRET, { expiresIn: '7d' });
+export function verifyTokenDirect(token) {
+  try {
+    return jwt.verify(token, JWT_SECRET);
+  } catch {
+    return null;
+  }
 }
 
 export default {
   verifyToken,
-  generateToken
+  generateToken,
+  verifyTokenDirect
 };

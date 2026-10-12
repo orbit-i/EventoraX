@@ -78,6 +78,56 @@ export const memoryStore = {
   events: [],
   event_attendees: [],
   team_members: [],
+  platform_team_members: [
+    {
+      id: 1,
+      name: 'Abdul Samad Rind',
+      role: 'Founder & Platform Architect',
+      department: 'Leadership & Architecture',
+      bio: 'Platform Architect & Executive Director at ORBIT-I Private Limited. Pioneer of multi-tenant event management and tamper-evident credential verification.',
+      avatar_url: '',
+      display_order: 1,
+      is_active: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      name: 'Maria Almani',
+      role: 'Co-Founder & Head of Operations',
+      department: 'Product & Operational Excellence',
+      bio: 'Co-Founder leading global organizer operations, institutional partnerships, and platform user experience strategy.',
+      avatar_url: '',
+      display_order: 2,
+      is_active: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 3,
+      name: 'Muneeb Ur Rehman',
+      role: 'Lead Core Systems Engineer',
+      department: 'Full-Stack & Systems Engineering',
+      bio: 'Core systems architect driving high-throughput registration switches, canvas graphics rendering pipeline, and platform scalability.',
+      avatar_url: '',
+      display_order: 3,
+      is_active: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 4,
+      name: 'Shahzad Hassan Ansar',
+      role: 'Security & Cloud Infrastructure Lead',
+      department: 'Cybersecurity & Infrastructure',
+      bio: 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels.',
+      avatar_url: '',
+      display_order: 4,
+      is_active: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ],
   activity_logs: [
     {
       id: 1,
@@ -219,7 +269,132 @@ export const memoryStore = {
   delivery_attempts: [],
   check_ins: [],
   ticket_types: [],
-  testimonials: []
+  testimonials: [],
+  pricing_plans: [
+    {
+      id: 1,
+      slug: 'starter',
+      name: 'Starter',
+      monthly_price: 36.00,
+      yearly_price: 29.00,
+      price_pkr_monthly: 10000.00,
+      price_pkr_yearly: 8000.00,
+      tag: 'Starter Tier (Trial Included)',
+      attendees_limit: 500,
+      max_events: 10,
+      max_certs: 520,
+      trial_events: 2,
+      trial_attendees: 40,
+      trial_certs: 50,
+      white_label: 0,
+      features: JSON.stringify([
+        '10 Events included (Trial: 2 events)',
+        'Up to 500 total attendees (Trial: 40 attendees)',
+        '520 ID Passes & Certificates (Trial: 50 certs)',
+        'Instant QR Code Verification',
+        'Digital QR Ticketing & ID Card Designer',
+        'Analytics Dashboard & Attendance Reports',
+        'Renewal / Repurchase upon quota exhaustion'
+      ]),
+      is_active: 1,
+      display_order: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      slug: 'professional',
+      name: 'Professional',
+      monthly_price: 99,
+      yearly_price: 79,
+      tag: 'Most Popular for Organizers',
+      attendees_limit: 5000,
+      max_events: 25,
+      max_certs: 500,
+      white_label: 1,
+      features: JSON.stringify([
+        '5,000 attendees capacity',
+        'Up to 25 events per year',
+        'ID Pass Generator & One-Click Print',
+        '100+ Certificate templates & issuance',
+        'Canva Design Studio integration',
+        '5 team member collaborator seats',
+        'Priority 24/7 technical support'
+      ]),
+      is_active: 1,
+      display_order: 2,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 3,
+      slug: 'enterprise',
+      name: 'Enterprise',
+      monthly_price: 299,
+      yearly_price: 239,
+      tag: 'Large Summits & Universities',
+      attendees_limit: 50000,
+      max_events: 500,
+      max_certs: 5000,
+      white_label: 1,
+      features: JSON.stringify([
+        '50,000+ attendees capacity',
+        'Unlimited platform events',
+        'Full White-label & custom CNAME domain',
+        'Bulk CSV pass & certificate generation',
+        'Dedicated account manager & SLA',
+        'Single Sign-On (SSO) & 2FA security'
+      ]),
+      is_active: 1,
+      display_order: 3,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ],
+  coupons: [
+    {
+      id: 1,
+      code: 'ORBIT2026',
+      description: 'Official 2026 Launch Promo - 20% Off',
+      discount_type: 'percentage',
+      discount_value: 20.00,
+      min_purchase: 0.00,
+      max_uses: 1000,
+      times_used: 14,
+      expires_at: '2027-01-01T00:00:00.000Z',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 2,
+      code: 'EVENTORAX50',
+      description: 'Exclusive 50% Off Early Bird Campaign',
+      discount_type: 'percentage',
+      discount_value: 50.00,
+      min_purchase: 50.00,
+      max_uses: 500,
+      times_used: 8,
+      expires_at: '2027-01-01T00:00:00.000Z',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 3,
+      code: 'WELCOME10',
+      description: 'Flat $10 Off Any Upgrade Plan',
+      discount_type: 'fixed',
+      discount_value: 10.00,
+      min_purchase: 20.00,
+      max_uses: 2000,
+      times_used: 25,
+      expires_at: '2027-01-01T00:00:00.000Z',
+      is_active: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    }
+  ]
 };
 
 export function getPool() {
@@ -843,6 +1018,9 @@ function handleMemoryQuery(sql, params = []) {
       transaction_ref: params[8] || `TX-${Date.now().toString(36).toUpperCase()}`,
       currency: params[9] || 'USD',
       notes: params[10] || '',
+      coupon_code: params[11] || null,
+      discount_amount: params[12] || 0.00,
+      original_price: params[13] || params[3] || 0.00,
       created_at: new Date().toISOString()
     };
     memoryStore.subscriptions.unshift(newSub);
@@ -1080,6 +1258,206 @@ function handleMemoryQuery(sql, params = []) {
     };
     memoryStore.delivery_attempts.unshift(newDel);
     return [{ insertId: newDel.id }];
+  }
+
+  // PRICING PLANS (SuperAdmin Manageable Dynamic Plans)
+  if (s.includes('from `pricing_plans`') || s.includes('from pricing_plans')) {
+    if (s.includes('where `id` =') || s.includes('where id =')) {
+      const id = parseInt(params[0], 10);
+      const plan = (memoryStore.pricing_plans || []).find(p => p.id === id);
+      return [plan ? [plan] : []];
+    }
+    if (s.includes('where `slug` =') || s.includes('where slug =')) {
+      const slug = String(params[0]).toLowerCase();
+      const plan = (memoryStore.pricing_plans || []).find(p => p.slug.toLowerCase() === slug);
+      return [plan ? [plan] : []];
+    }
+    if (s.includes('where `is_active` = 1') || s.includes('where is_active = 1')) {
+      const active = (memoryStore.pricing_plans || []).filter(p => p.is_active === 1 || p.is_active === true);
+      return [active.sort((a, b) => (a.display_order || 0) - (b.display_order || 0))];
+    }
+    return [(memoryStore.pricing_plans || []).sort((a, b) => (a.display_order || 0) - (b.display_order || 0))];
+  }
+
+  if (s.includes('insert into `pricing_plans`') || s.includes('insert into pricing_plans')) {
+    if (!memoryStore.pricing_plans) memoryStore.pricing_plans = [];
+    const newPlan = {
+      id: memoryStore.pricing_plans.length + 1,
+      slug: params[0] || `plan-${Date.now()}`,
+      name: params[1] || 'New Plan',
+      monthly_price: Number(params[2]) || 0,
+      yearly_price: Number(params[3]) || 0,
+      tag: params[4] || '',
+      attendees_limit: Number(params[5]) || 500,
+      max_events: Number(params[6]) || 5,
+      max_certs: Number(params[7]) || 50,
+      white_label: params[8] ? 1 : 0,
+      features: typeof params[9] === 'string' ? params[9] : JSON.stringify(params[9] || []),
+      is_active: params[10] !== undefined ? (params[10] ? 1 : 0) : 1,
+      display_order: Number(params[11]) || (memoryStore.pricing_plans.length + 1),
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    memoryStore.pricing_plans.push(newPlan);
+    return [{ insertId: newPlan.id }];
+  }
+
+  if (s.includes('update `pricing_plans`') || s.includes('update pricing_plans')) {
+    const id = parseInt(params[params.length - 1], 10);
+    const plan = (memoryStore.pricing_plans || []).find(p => p.id === id);
+    if (plan) {
+      if (s.includes('`is_active` = ?')) {
+        plan.is_active = params[0] ? 1 : 0;
+      } else {
+        if (params[0] !== undefined) plan.name = params[0];
+        if (params[1] !== undefined) plan.monthly_price = Number(params[1]);
+        if (params[2] !== undefined) plan.yearly_price = Number(params[2]);
+        if (params[3] !== undefined) plan.tag = params[3];
+        if (params[4] !== undefined) plan.attendees_limit = Number(params[4]);
+        if (params[5] !== undefined) plan.max_events = Number(params[5]);
+        if (params[6] !== undefined) plan.max_certs = Number(params[6]);
+        if (params[7] !== undefined) plan.white_label = params[7] ? 1 : 0;
+        if (params[8] !== undefined) plan.features = typeof params[8] === 'string' ? params[8] : JSON.stringify(params[8]);
+        if (params[9] !== undefined) plan.is_active = params[9] ? 1 : 0;
+        if (params[10] !== undefined) plan.display_order = Number(params[10]);
+      }
+      plan.updated_at = new Date().toISOString();
+    }
+    return [{ affectedRows: plan ? 1 : 0 }];
+  }
+
+  if (s.includes('delete from `pricing_plans`') || s.includes('delete from pricing_plans')) {
+    const id = parseInt(params[0], 10);
+    const idx = (memoryStore.pricing_plans || []).findIndex(p => p.id === id);
+    if (idx !== -1) memoryStore.pricing_plans.splice(idx, 1);
+    return [{ affectedRows: 1 }];
+  }
+
+  // COUPONS & DISCOUNTS (SuperAdmin Manageable Dynamic Discounts)
+  if (s.includes('from `coupons`') || s.includes('from coupons')) {
+    if (s.includes('where `code` =') || s.includes('where code =')) {
+      const code = String(params[0]).trim().toUpperCase();
+      const coupon = (memoryStore.coupons || []).find(c => c.code.toUpperCase() === code);
+      return [coupon ? [coupon] : []];
+    }
+    if (s.includes('where `id` =') || s.includes('where id =')) {
+      const id = parseInt(params[0], 10);
+      const coupon = (memoryStore.coupons || []).find(c => c.id === id);
+      return [coupon ? [coupon] : []];
+    }
+    return [memoryStore.coupons || []];
+  }
+
+  if (s.includes('insert into `coupons`') || s.includes('insert into coupons')) {
+    if (!memoryStore.coupons) memoryStore.coupons = [];
+    const newCoupon = {
+      id: memoryStore.coupons.length + 1,
+      code: String(params[0] || `DISC${Date.now()}`).toUpperCase().trim(),
+      description: params[1] || '',
+      discount_type: params[2] || 'percentage',
+      discount_value: Number(params[3]) || 0,
+      min_purchase: Number(params[4]) || 0,
+      max_uses: Number(params[5]) || 1000,
+      times_used: 0,
+      expires_at: params[6] || null,
+      is_active: params[7] !== undefined ? (params[7] ? 1 : 0) : 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    memoryStore.coupons.unshift(newCoupon);
+    return [{ insertId: newCoupon.id }];
+  }
+
+  if (s.includes('update `coupons`') || s.includes('update coupons')) {
+    const id = parseInt(params[params.length - 1], 10);
+    const coupon = (memoryStore.coupons || []).find(c => c.id === id);
+    if (coupon) {
+      if (s.includes('times_used = times_used + 1') || s.includes('`times_used` = `times_used` + 1')) {
+        coupon.times_used = (coupon.times_used || 0) + 1;
+      } else if (s.includes('`is_active` = ?') || s.includes('is_active = ?')) {
+        coupon.is_active = params[0] ? 1 : 0;
+      } else {
+        if (params[0] !== undefined) coupon.code = String(params[0]).toUpperCase().trim();
+        if (params[1] !== undefined) coupon.description = params[1];
+        if (params[2] !== undefined) coupon.discount_type = params[2];
+        if (params[3] !== undefined) coupon.discount_value = Number(params[3]);
+        if (params[4] !== undefined) coupon.min_purchase = Number(params[4]);
+        if (params[5] !== undefined) coupon.max_uses = Number(params[5]);
+        if (params[6] !== undefined) coupon.expires_at = params[6];
+        if (params[7] !== undefined) coupon.is_active = params[7] ? 1 : 0;
+      }
+      coupon.updated_at = new Date().toISOString();
+    }
+    return [{ affectedRows: coupon ? 1 : 0 }];
+  }
+
+  if (s.includes('delete from `coupons`') || s.includes('delete from coupons')) {
+    const id = parseInt(params[0], 10);
+    const idx = (memoryStore.coupons || []).findIndex(c => c.id === id);
+    if (idx !== -1) memoryStore.coupons.splice(idx, 1);
+    return [{ affectedRows: 1 }];
+  }
+
+  // PLATFORM TEAM MEMBERS (ORBIT-I Leadership)
+  if (s.includes('from `platform_team_members`') || s.includes('from platform_team_members')) {
+    if (s.includes('where `id` =') || s.includes('where id =')) {
+      const id = parseInt(params[0], 10);
+      const m = (memoryStore.platform_team_members || []).find(x => x.id === id);
+      return [m ? [m] : []];
+    }
+    if (s.includes('is_active = 1') || s.includes('`is_active` = 1')) {
+      const list = (memoryStore.platform_team_members || []).filter(x => x.is_active === 1);
+      list.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+      return [list];
+    }
+    const all = [...(memoryStore.platform_team_members || [])];
+    all.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+    return [all];
+  }
+
+  if (s.includes('insert into `platform_team_members`') || s.includes('insert into platform_team_members')) {
+    if (!memoryStore.platform_team_members) memoryStore.platform_team_members = [];
+    const newMember = {
+      id: memoryStore.platform_team_members.length + 1,
+      name: params[0] || 'Team Member',
+      role: params[1] || 'Contributor',
+      department: params[2] || 'Leadership',
+      bio: params[3] || '',
+      avatar_url: params[4] || '',
+      display_order: parseInt(params[5] || 0, 10),
+      is_active: params[6] !== undefined ? (params[6] ? 1 : 0) : 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    };
+    memoryStore.platform_team_members.push(newMember);
+    return [{ insertId: newMember.id }];
+  }
+
+  if (s.includes('update `platform_team_members`') || s.includes('update platform_team_members')) {
+    const id = parseInt(params[params.length - 1], 10);
+    const m = (memoryStore.platform_team_members || []).find(x => x.id === id);
+    if (m) {
+      if (s.includes('`is_active` = ?') || s.includes('is_active = ?')) {
+        m.is_active = params[0] ? 1 : 0;
+      } else {
+        if (params[0] !== undefined) m.name = params[0];
+        if (params[1] !== undefined) m.role = params[1];
+        if (params[2] !== undefined) m.department = params[2];
+        if (params[3] !== undefined) m.bio = params[3];
+        if (params[4] !== undefined) m.avatar_url = params[4];
+        if (params[5] !== undefined) m.display_order = parseInt(params[5] || 0, 10);
+        if (params[6] !== undefined) m.is_active = params[6] ? 1 : 0;
+      }
+      m.updated_at = new Date().toISOString();
+    }
+    return [{ affectedRows: m ? 1 : 0 }];
+  }
+
+  if (s.includes('delete from `platform_team_members`') || s.includes('delete from platform_team_members')) {
+    const id = parseInt(params[0], 10);
+    const idx = (memoryStore.platform_team_members || []).findIndex(x => x.id === id);
+    if (idx !== -1) memoryStore.platform_team_members.splice(idx, 1);
+    return [{ affectedRows: 1 }];
   }
 
   return [[], []];
@@ -1456,6 +1834,61 @@ export async function initDatabase() {
       ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
     `);
 
+    // SuperAdmin Dynamic Pricing Plans Table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`pricing_plans\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`slug\` VARCHAR(50) NOT NULL UNIQUE,
+        \`name\` VARCHAR(100) NOT NULL,
+        \`monthly_price\` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+        \`yearly_price\` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+        \`tag\` VARCHAR(100) DEFAULT '',
+        \`attendees_limit\` INT DEFAULT 500,
+        \`max_events\` INT DEFAULT 5,
+        \`max_certs\` INT DEFAULT 50,
+        \`white_label\` BOOLEAN DEFAULT FALSE,
+        \`features\` LONGTEXT NOT NULL,
+        \`is_active\` BOOLEAN DEFAULT TRUE,
+        \`display_order\` INT DEFAULT 0,
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // SuperAdmin Dynamic Coupons & Discounts Table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`coupons\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`code\` VARCHAR(50) NOT NULL UNIQUE,
+        \`description\` VARCHAR(255) DEFAULT '',
+        \`discount_type\` ENUM('percentage', 'fixed') DEFAULT 'percentage',
+        \`discount_value\` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+        \`min_purchase\` DECIMAL(10, 2) DEFAULT 0.00,
+        \`max_uses\` INT DEFAULT 1000,
+        \`times_used\` INT DEFAULT 0,
+        \`expires_at\` TIMESTAMP NULL DEFAULT NULL,
+        \`is_active\` BOOLEAN DEFAULT TRUE,
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
+    // SuperAdmin Dynamic Platform Team & Leadership Table
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS \`platform_team_members\` (
+        \`id\` INT AUTO_INCREMENT PRIMARY KEY,
+        \`name\` VARCHAR(150) NOT NULL,
+        \`role\` VARCHAR(150) NOT NULL,
+        \`department\` VARCHAR(100) DEFAULT 'Leadership',
+        \`bio\` TEXT DEFAULT NULL,
+        \`avatar_url\` VARCHAR(500) DEFAULT '',
+        \`display_order\` INT DEFAULT 0,
+        \`is_active\` BOOLEAN DEFAULT TRUE,
+        \`created_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        \`updated_at\` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+      ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+    `);
+
     // Auto-migrate columns if missing on existing tables
     const checkColumns = [
       { table: 'events', col: 'tenant_id', def: 'INT NOT NULL DEFAULT 1' },
@@ -1475,6 +1908,14 @@ export async function initDatabase() {
       { table: 'subscriptions', col: 'approved_by', def: 'INT NULL' },
       { table: 'subscriptions', col: 'approved_at', def: 'TIMESTAMP NULL DEFAULT NULL' },
       { table: 'subscriptions', col: 'notes', def: 'TEXT NULL' },
+      { table: 'subscriptions', col: 'coupon_code', def: 'VARCHAR(50) NULL' },
+      { table: 'subscriptions', col: 'discount_amount', def: 'DECIMAL(10, 2) DEFAULT 0.00' },
+      { table: 'subscriptions', col: 'original_price', def: 'DECIMAL(10, 2) DEFAULT 0.00' },
+      { table: 'pricing_plans', col: 'price_pkr_monthly', def: 'DECIMAL(10, 2) DEFAULT 0.00' },
+      { table: 'pricing_plans', col: 'price_pkr_yearly', def: 'DECIMAL(10, 2) DEFAULT 0.00' },
+      { table: 'pricing_plans', col: 'trial_events', def: 'INT DEFAULT 2' },
+      { table: 'pricing_plans', col: 'trial_attendees', def: 'INT DEFAULT 40' },
+      { table: 'pricing_plans', col: 'trial_certs', def: 'INT DEFAULT 50' }
     ];
 
     for (const item of checkColumns) {
@@ -1484,6 +1925,52 @@ export async function initDatabase() {
         // Ignore duplicate column errors on older MariaDB/MySQL versions
       }
     }
+
+    // Seed default pricing plans into MySQL if empty
+    try {
+      const [planRows] = await pool.query('SELECT COUNT(*) as count FROM `pricing_plans`');
+      if (planRows[0].count === 0) {
+        console.log('[Database] Seeding default pricing plans into MySQL...');
+        await pool.query(`
+          INSERT INTO \`pricing_plans\` (\`slug\`, \`name\`, \`monthly_price\`, \`yearly_price\`, \`price_pkr_monthly\`, \`price_pkr_yearly\`, \`tag\`, \`attendees_limit\`, \`max_events\`, \`max_certs\`, \`trial_events\`, \`trial_attendees\`, \`trial_certs\`, \`white_label\`, \`features\`, \`is_active\`, \`display_order\`)
+          VALUES 
+          ('starter', 'Starter', 36.00, 29.00, 10000.00, 8000.00, 'Starter Tier (Trial Included)', 500, 10, 520, 2, 40, 50, 0, '["10 Events included (Trial: 2 events)","Up to 500 total attendees capacity (Trial: 40)","520 Attendee ID Passes & Certificates (Trial: 50)","Instant QR Code Verification & Check-in","Digital QR Ticketing & ID Card Designer","Analytics Dashboard & Attendance Reports","Renewal / Repurchase upon quota exhaustion"]', 1, 1),
+          ('professional', 'Professional', 49.00, 39.00, 13800.00, 11040.00, 'Most Popular for Organizers', 5000, 25, 2500, 0, 0, 0, 1, '["5,000 attendees capacity","Up to 25 events per year","ID Pass Generator & One-Click Print","100+ Certificate templates & issuance","Canva Design Studio integration","5 team member collaborator seats","Priority 24/7 technical support"]', 1, 2),
+          ('enterprise', 'Enterprise', 299.00, 239.00, 83000.00, 66400.00, 'Large Summits & Universities', 50000, 500, 50000, 0, 0, 0, 1, '["50,000+ attendees capacity","Unlimited platform events","Full White-label & custom CNAME domain","Bulk CSV pass & certificate generation","Dedicated account manager & SLA","Single Sign-On (SSO) & 2FA security"]', 1, 3);
+        `);
+      }
+    } catch {}
+
+    // Seed default ORBIT-I platform team members into MySQL if empty
+    try {
+      const [teamRows] = await pool.query('SELECT COUNT(*) as count FROM `platform_team_members`');
+      if (teamRows[0].count === 0) {
+        console.log('[Database] Seeding official ORBIT-I platform team members into MySQL...');
+        await pool.query(`
+          INSERT INTO \`platform_team_members\` (\`id\`, \`name\`, \`role\`, \`department\`, \`bio\`, \`avatar_url\`, \`display_order\`, \`is_active\`)
+          VALUES 
+          (1, 'Abdul Samad Rind', 'Founder & Platform Architect', 'Leadership & Architecture', 'Platform Architect & Executive Director at ORBIT-I Private Limited. Pioneer of multi-tenant event management and tamper-evident credential verification.', '', 1, 1),
+          (2, 'Maria Almani', 'Co-Founder & Head of Operations', 'Product & Operational Excellence', 'Co-Founder leading global organizer operations, institutional partnerships, and platform user experience strategy.', '', 2, 1),
+          (3, 'Muneeb Ur Rehman', 'Lead Core Systems Engineer', 'Full-Stack & Systems Engineering', 'Core systems architect driving high-throughput registration switches, canvas graphics rendering pipeline, and platform scalability.', '', 3, 1),
+          (4, 'Shahzad Hassan Ansar', 'Security & Cloud Infrastructure Lead', 'Cybersecurity & Infrastructure', 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels.', '', 4, 1);
+        `);
+      }
+    } catch {}
+
+    // Seed default coupons into MySQL if empty
+    try {
+      const [couponRows] = await pool.query('SELECT COUNT(*) as count FROM `coupons`');
+      if (couponRows[0].count === 0) {
+        console.log('[Database] Seeding default launch coupons into MySQL...');
+        await pool.query(`
+          INSERT INTO \`coupons\` (\`code\`, \`description\`, \`discount_type\`, \`discount_value\`, \`min_purchase\`, \`max_uses\`, \`times_used\`, \`expires_at\`, \`is_active\`)
+          VALUES 
+          ('ORBIT2026', 'Official 2026 Launch Promo - 20% Off', 'percentage', 20.00, 0.00, 1000, 14, '2027-01-01 00:00:00', 1),
+          ('EVENTORAX50', 'Exclusive 50% Off Early Bird Campaign', 'percentage', 50.00, 50.00, 500, 8, '2027-01-01 00:00:00', 1),
+          ('WELCOME10', 'Flat $10 Off Any Upgrade Plan', 'fixed', 10.00, 20.00, 2000, 25, '2027-01-01 00:00:00', 1);
+        `);
+      }
+    } catch {}
 
     // Seed master admin if not exists
     const [users] = await pool.query('SELECT COUNT(*) as count FROM `users`');

@@ -6,13 +6,11 @@ const productLinks = [
   { label: 'Features', href: '/features' },
   { label: 'Verify Credential', href: '/verify' },
   { label: 'Pricing', href: '/pricing' },
-  { label: 'Developer API', href: '/dashboard/developer' },
 ];
 
 const companyLinks = [
   { label: 'About EventoraX', href: '/about' },
   { label: 'Contact Support', href: '/contact' },
-  { label: 'System Status', href: '/maintenance' },
 ];
 
 const legalLinks = [
@@ -52,9 +50,9 @@ export default function Footer() {
             </div>
             <div className="mt-4 flex items-center gap-2">
               <div className="w-2 h-2 rounded-full bg-[#22c55e] animate-pulse" />
-              <Link to="/maintenance" className="text-xs text-[#94a3b8] hover:text-white transition-colors">
+              <span className="text-xs text-[#94a3b8]">
                 Systems Operational • 24/7 Security Sentinel
-              </Link>
+              </span>
             </div>
           </div>
 

@@ -18,7 +18,8 @@ import {
   Receipt,
   Download,
   KeyRound,
-  Copy
+  Copy,
+  X
 } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
@@ -28,47 +29,46 @@ import { printElement } from "@/lib/printUtils";
 const clientPlans: PlanData[] = [
   {
     name: "Starter",
-    priceUsdMonthly: 0,
-    pricePkrMonthly: 0,
-    badge: "Free Forever",
-    description: "Perfect for free community meetups, clubs and small seminars",
+    priceUsdMonthly: 36,
+    pricePkrMonthly: 10000,
+    badge: "Trial Available",
+    description: "Perfect for small events, meetups, training & credential testing",
     features: [
-      "Up to 500 attendees capacity",
-      "Up to 5 active events",
+      "10 Events included (Trial: 2 events)",
+      "500 total attendees capacity (Trial: 40 attendees)",
+      "520 ID Passes & Certificates (Trial: 50 certs)",
       "Standard digital tickets & passes",
       "Tamper-evident QR code verification",
       "Basic attendance statistics",
-      "1 organizer admin seat"
+      "Repurchase & Renewal on full usage"
     ],
   },
   {
     name: "Professional",
-    priceUsdMonthly: 99,
-    pricePkrMonthly: 27999,
+    priceUsdMonthly: 49,
+    pricePkrMonthly: 13800,
     badge: "Most Popular",
     description: "For growing organizations, colleges, institutes & frequent conferences",
     features: [
-      "5,000 attendees capacity",
-      "Up to 25 events concurrently",
+      "5,000 attendees capacity & 25 events",
+      "Bulk Certificate Automation (2,500 certs/mo)",
       "ID Card & Pass Generator with 1-click print",
-      "100+ Certificate designs & issuance",
+      "CSV Recipient Auto-Merge",
       "Canva Design Studio access",
-      "5 team organizer seats",
       "Priority email & chat support"
     ],
   },
   {
     name: "Enterprise",
     priceUsdMonthly: 299,
-    pricePkrMonthly: 84999,
+    pricePkrMonthly: 83000,
     badge: "Maximum Power",
     description: "For universities, large summits, venues & global conferences",
     features: [
-      "50,000+ attendees capacity",
-      "Unlimited platform events",
+      "50,000+ attendees capacity & 500 events",
+      "Unlimited platform events & certificates",
       "Full White-label & custom CNAME domain",
-      "Bulk CSV attendee & certificate generator",
-      "Single Sign-On (SSO) & 2FA security",
+      "Multi-tenant workspace isolation",
       "Dedicated account manager",
       "99.9% SLA uptime guarantee"
     ],
@@ -87,6 +87,7 @@ export default function Billing() {
   // Modal checkout state
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<PlanData>(clientPlans[1]);
+  const [viewingTaxInvoiceTx, setViewingTaxInvoiceTx] = useState<any | null>(null);
 
   const isPlatformAuthority = isSuperAdmin || user?.role === 'admin';
 
@@ -353,12 +354,14 @@ export default function Billing() {
                       <Badge className="bg-[#7c3aed] text-white">Current Subscription</Badge>
                       <span className="text-sm text-[#7c3aed] font-bold">{currentPlan}</span>
                     </div>
-                    <p className="text-3xl font-bold text-[#0f172a]">
-                      {currentPlan === 'Starter' ? '$0' : currentPlan === 'Professional' ? '$99' : '$299'}
-                      <span className="text-sm font-normal text-[#475569]">/month</span>
+                    <p className="text-2xl sm:text-3xl font-bold text-[#0f172a]">
+                      {currentPlan === 'Starter' ? 'PKR 10,000' : currentPlan === 'Professional' ? 'PKR 13,800' : 'PKR 83,000'}
+                      <span className="text-xs sm:text-sm font-normal text-[#475569] ml-1.5">
+                        ({currentPlan === 'Starter' ? '$36' : currentPlan === 'Professional' ? '$49' : '$299'}/month)
+                      </span>
                     </p>
                     <p className="text-xs text-[#475569] mt-1">
-                      Monthly billing cycle • Upgrade or adjust anytime
+                      Resource renewal and quota top-up available upon full utilization
                     </p>
                   </div>
 
@@ -426,14 +429,13 @@ export default function Billing() {
 
                         <Button 
                           onClick={() => handleOpenCheckout(plan)}
-                          disabled={isActive}
                           className={`w-full rounded-xl text-xs font-semibold h-10 ${
                             isActive 
-                              ? 'bg-[#f5f3ff] text-[#7c3aed] border border-[#ddd6fe] cursor-default' 
+                              ? 'bg-[#1d4ed8] hover:bg-[#1e40af] text-white shadow-md' 
                               : 'bg-[#7c3aed] hover:bg-[#6d28d9] text-white shadow-md'
                           }`}
                         >
-                          {isActive ? "Active Subscription" : `Select ${plan.name} Plan`}
+                          {isActive ? "Renew / Repurchase Plan" : `Upgrade to ${plan.name}`}
                         </Button>
                       </CardContent>
                     </Card>
@@ -493,12 +495,12 @@ export default function Billing() {
                           <td className="p-3 text-right pr-4">
                             <Button
                               size="sm"
-                              variant="ghost"
-                              onClick={() => printElement(`txn-${tx.id}`, `EventoraX Receipt - ${tx.transaction_ref || tx.id}`)}
-                              className="text-xs h-7 text-[#1d4ed8] hover:bg-blue-50"
+                              variant="outline"
+                              onClick={() => setViewingTaxInvoiceTx(tx)}
+                              className="text-xs h-7.5 text-[#1d4ed8] border-blue-200 hover:bg-blue-50 font-bold"
                             >
                               <Download className="w-3.5 h-3.5 mr-1" />
-                              Print
+                              View Tax Invoice
                             </Button>
                           </td>
                         </tr>
@@ -520,6 +522,169 @@ export default function Billing() {
           }}
           selectedPlan={selectedPlanForCheckout}
         />
+
+        {/* Official 2026 Enterprise Tax Invoice Viewer Modal */}
+        {viewingTaxInvoiceTx && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/80 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+            <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-auto relative">
+              <div className="flex justify-between items-center pb-3 border-b border-slate-200">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-blue-100 text-[#1d4ed8] flex items-center justify-center">
+                    <Receipt className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-sm text-slate-900">Official Tax Invoice &amp; Receipt</h3>
+                    <p className="text-[10px] text-slate-500">SBP Digital Merchant • 2026 Enterprise Release</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setViewingTaxInvoiceTx(null)}
+                  className="p-1.5 rounded-full hover:bg-slate-100 text-slate-500"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Printable Invoice Body */}
+              <div
+                id="billing-official-tax-invoice"
+                className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 font-sans text-xs"
+              >
+                <div className="flex justify-between items-start pb-2 border-b border-slate-200">
+                  <div>
+                    <h4 className="font-black text-xs text-slate-900">EVENTORAX TECHNOLOGIES (PVT) LTD</h4>
+                    <p className="text-[10px] text-slate-500">ORBIT-I Cloud Digital Platform</p>
+                    <p className="text-[10px] text-slate-400 font-mono">NTN: 9842104-7 • STRN: 3277876123456</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      {viewingTaxInvoiceTx.status === 'active' ? 'PAID & ACTIVATED' : 'RECORDED • PENDING SuperAdmin'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] bg-white p-3 rounded-xl border border-slate-200">
+                  <div className="break-all">
+                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Invoice / Order Ref</span>
+                    <span className="font-mono font-bold text-slate-900">
+                      {viewingTaxInvoiceTx.invoice_number || viewingTaxInvoiceTx.transaction_ref || `EVX-INV-2026-${viewingTaxInvoiceTx.id}`}
+                    </span>
+                  </div>
+                  <div className="break-all">
+                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Transaction TID</span>
+                    <span className="font-mono font-bold text-[#1d4ed8]">
+                      {viewingTaxInvoiceTx.transaction_ref || `TID-${viewingTaxInvoiceTx.id}`}
+                    </span>
+                  </div>
+                  <div className="break-all">
+                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Organization Workspace</span>
+                    <span className="font-bold text-slate-900">{currentTenant?.name || user?.orgName || 'Client Organization'}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Order Date</span>
+                    <span className="text-slate-800">
+                      {new Date(viewingTaxInvoiceTx.created_at || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="bg-blue-50/70 p-3 rounded-xl border border-blue-200 text-[11px] space-y-1">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
+                    <span className="text-slate-500">Receiving Merchant:</span>
+                    <span className="font-bold text-slate-900">ORBIT-I / EventoraX Technologies</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
+                    <span className="text-slate-500">Merchant Account / Till:</span>
+                    <span className="font-mono font-bold text-blue-700">03190375751</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
+                    <span className="text-slate-500">Payment Gateway:</span>
+                    <span className="font-bold text-slate-900 uppercase">{viewingTaxInvoiceTx.payment_method || 'ONLINE GATEWAY'}</span>
+                  </div>
+                </div>
+
+                <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-100 text-slate-600 font-bold text-[11px]">
+                      <tr>
+                        <th className="p-2">Description</th>
+                        <th className="p-2 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      <tr>
+                        <td className="p-2">
+                          <strong className="block text-slate-900">EventoraX {viewingTaxInvoiceTx.plan} Plan</strong>
+                          <span className="text-[10px] text-slate-500">Billing Cycle: {viewingTaxInvoiceTx.billing_cycle || 'Monthly'}</span>
+                        </td>
+                        <td className="p-2 text-right font-bold text-slate-900">
+                          {viewingTaxInvoiceTx.price === 0 ? 'Free ($0)' : `${viewingTaxInvoiceTx.currency || 'USD'} ${viewingTaxInvoiceTx.original_price || viewingTaxInvoiceTx.price}`}
+                        </td>
+                      </tr>
+                      {viewingTaxInvoiceTx.coupon_code && (
+                        <tr className="bg-emerald-50/60">
+                          <td className="p-2 text-emerald-800 text-[11px] font-semibold">
+                            Promo Coupon Applied ({viewingTaxInvoiceTx.coupon_code})
+                          </td>
+                          <td className="p-2 text-right font-mono font-bold text-emerald-700">
+                            -{viewingTaxInvoiceTx.currency || 'USD'} {viewingTaxInvoiceTx.discount_amount || 0}
+                          </td>
+                        </tr>
+                      )}
+                      <tr>
+                        <td className="p-1.5 text-right text-slate-500 text-[10px]">Sales Tax / GST (0% Section 65F IT Exemption):</td>
+                        <td className="p-1.5 text-right font-mono text-slate-700 text-[10px]">PKR 0.00</td>
+                      </tr>
+                      <tr className="bg-slate-50 font-bold text-xs text-[#1d4ed8]">
+                        <td className="p-2 text-right">Net Amount Paid:</td>
+                        <td className="p-2 text-right">
+                          {viewingTaxInvoiceTx.price === 0 ? 'Free ($0)' : `${viewingTaxInvoiceTx.currency || 'USD'} ${viewingTaxInvoiceTx.price}`}
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`https://eventorax.orbit-i.tech/verify-invoice?ref=${viewingTaxInvoiceTx.transaction_ref || viewingTaxInvoiceTx.id}&merchant=03190375751`)}`}
+                      alt="Verification QR"
+                      className="w-10 h-10 rounded border border-slate-200"
+                    />
+                    <div className="text-[9px] text-slate-500">
+                      <span className="font-bold text-slate-700 block">QR Authenticated</span>
+                      State Bank 2026 Compliant
+                    </div>
+                  </div>
+                  <div className="text-right text-[9px] text-slate-400">
+                    <span className="block font-bold text-slate-700">ORBIT-I Cloud Platform</span>
+                    <span>Digital Tax Invoice</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-end gap-2 pt-2">
+                <Button
+                  variant="outline"
+                  onClick={() => setViewingTaxInvoiceTx(null)}
+                  className="rounded-xl text-xs h-9 px-4"
+                >
+                  Close
+                </Button>
+                <Button
+                  onClick={() => printElement('billing-official-tax-invoice', `EventoraX Tax Invoice - ${viewingTaxInvoiceTx.transaction_ref || viewingTaxInvoiceTx.id}`)}
+                  className="rounded-xl text-xs font-bold bg-[#1d4ed8] hover:bg-[#1e40af] text-white h-9 px-4 flex items-center gap-1.5 shadow-md shadow-blue-500/20"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Print / Save PDF
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

@@ -84,7 +84,7 @@ export default function ActivationPendingGatekeeper({ onActivated }: ActivationP
 
       {/* Main Card */}
       <div className="max-w-2xl mx-auto w-full my-auto py-8">
-        <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-6 sm:p-10 text-slate-900 shadow-2xl border border-white/20 space-y-6">
+        <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-4 sm:p-8 text-slate-900 shadow-2xl border border-white/20 space-y-4 sm:space-y-6">
           {/* Status Indicator Icon */}
           <div className="w-16 h-16 rounded-3xl bg-amber-100 text-amber-700 flex items-center justify-center mx-auto shadow-lg shadow-amber-500/20">
             <Clock className="w-8 h-8 animate-pulse" />
@@ -135,7 +135,7 @@ export default function ActivationPendingGatekeeper({ onActivated }: ActivationP
 
           {/* Form: Enter License Key to Unlock Now */}
           <form onSubmit={handleActivateWithKey} className="space-y-3 pt-2 border-t border-slate-200">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
               <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                 <Key className="w-3.5 h-3.5 text-[#1d4ed8]" />
                 Received your Activation License Key?
@@ -143,18 +143,18 @@ export default function ActivationPendingGatekeeper({ onActivated }: ActivationP
               <span className="text-[10px] text-slate-400 font-mono">Format: EVX-XXX-XXXX-XXXX-XXXX</span>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex flex-col sm:flex-row gap-2.5">
               <input
                 type="text"
                 placeholder="e.g. EVX-PRO-7B29-4F91-3810"
                 value={licenseKey}
                 onChange={(e) => setLicenseKey(e.target.value.toUpperCase())}
-                className="flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-mono font-bold tracking-wide uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                className="w-full sm:flex-1 px-4 py-2.5 rounded-xl border border-slate-300 text-xs font-mono font-bold tracking-wide uppercase focus:ring-2 focus:ring-blue-500 focus:outline-none"
               />
               <Button
                 type="submit"
                 disabled={isActivating || !licenseKey.trim()}
-                className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs font-bold px-5 h-10 shadow-md shadow-blue-600/20"
+                className="w-full sm:w-auto bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs font-bold px-6 h-10 shadow-md shadow-blue-600/20 shrink-0"
               >
                 {isActivating ? 'Verifying...' : 'Activate Now'}
                 <ArrowRight className="w-3.5 h-3.5 ml-1.5" />

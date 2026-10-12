@@ -14,6 +14,7 @@ import Privacy from './pages/Privacy';
 import Cookies from './pages/Cookies';
 import ServiceUsage from './pages/ServiceUsage';
 import NotFound from './pages/NotFound';
+import Forbidden from './pages/Forbidden';
 import PublicTenantPortal from './pages/PublicTenantPortal';
 import PublicVerifyPage from './pages/PublicVerifyPage';
 import PublicEventPage from './pages/PublicEventPage';
@@ -92,9 +93,10 @@ function Layout({ children }: { children: React.ReactNode }) {
   const isTenantPortal = location.pathname.startsWith('/t/') || location.pathname.startsWith('/c/');
   const isVerifyPage = location.pathname.startsWith('/verify');
   const isPublicEvent = location.pathname.startsWith('/e/') || location.pathname.startsWith('/events/');
+  const isStandalonePage = location.pathname === '/maintenance' || location.pathname === '/404' || location.pathname === '/403';
 
-  // Dashboard, Tenant portal, Event Landing Page, Verification portal, and Secret Master Gateway have their own custom headers/layouts
-  if (isDashboard || isMasterGateway || isTenantPortal || isVerifyPage || isPublicEvent) {
+  // Dashboard, Tenant portal, Event Landing Page, Verification portal, Secret Master Gateway, and Status/Error pages have their own standalone layouts
+  if (isDashboard || isMasterGateway || isTenantPortal || isVerifyPage || isPublicEvent || isStandalonePage) {
     return <>{children}</>;
   }
 
@@ -200,9 +202,10 @@ function AppRoutes() {
             />
           </Route>
 
-          {/* Block public root /superadmin access */}
-          <Route path="/superadmin" element={<Navigate to="/" replace />} />
-          <Route path="/superadmin/*" element={<Navigate to="/" replace />} />
+          {/* SuperAdmin Master Access Aliases */}
+          <Route path="/superadmin" element={<Navigate to="/orbit-i-master-gateway/login" replace />} />
+          <Route path="/platform-admin" element={<Navigate to="/orbit-i-master-gateway/login" replace />} />
+          <Route path="/admin" element={<Navigate to="/orbit-i-master-gateway/login" replace />} />
 
           {/* Secret ORBIT-I Platform Master Gateway (Isolated from client org login) */}
           <Route path="/orbit-i-master-gateway/login" element={<OrbitMasterGatewayLogin />} />
@@ -217,7 +220,9 @@ function AppRoutes() {
             <Route index element={<PlatformAdmin />} />
           </Route>
 
-          {/* 404 */}
+          {/* Error & Maintenance Routes */}
+          <Route path="/403" element={<Forbidden />} />
+          <Route path="/404" element={<NotFound />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </Layout>

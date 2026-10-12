@@ -214,6 +214,9 @@ CREATE TABLE IF NOT EXISTS `subscriptions` (
   `license_key` VARCHAR(64) DEFAULT NULL,
   `payment_method` VARCHAR(50) DEFAULT 'card',
   `transaction_ref` VARCHAR(100) DEFAULT NULL,
+  `coupon_code` VARCHAR(50) DEFAULT NULL,
+  `discount_amount` DECIMAL(10, 2) DEFAULT 0.00,
+  `original_price` DECIMAL(10, 2) DEFAULT 0.00,
   `approved_by` INT DEFAULT NULL,
   `approved_at` TIMESTAMP NULL DEFAULT NULL,
   `notes` TEXT DEFAULT NULL,
@@ -537,5 +540,87 @@ CREATE TABLE IF NOT EXISTS `testimonials` (
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- -----------------------------------------------------
+-- Table: pricing_plans (SuperAdmin Manageable Dynamic Plans)
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `pricing_plans` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `slug` VARCHAR(50) NOT NULL UNIQUE,
+  `name` VARCHAR(100) NOT NULL,
+  `monthly_price` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  `yearly_price` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  `tag` VARCHAR(100) DEFAULT '',
+  `attendees_limit` INT DEFAULT 500,
+  `max_events` INT DEFAULT 5,
+  `max_certs` INT DEFAULT 50,
+  `white_label` BOOLEAN DEFAULT FALSE,
+  `features` LONGTEXT NOT NULL,
+  `is_active` BOOLEAN DEFAULT TRUE,
+  `display_order` INT DEFAULT 0,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table: coupons (SuperAdmin Manageable Coupons & Discounts)
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `coupons` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `code` VARCHAR(50) NOT NULL UNIQUE,
+  `description` VARCHAR(255) DEFAULT '',
+  `discount_type` ENUM('percentage', 'fixed') DEFAULT 'percentage',
+  `discount_value` DECIMAL(10, 2) NOT NULL DEFAULT 0.00,
+  `min_purchase` DECIMAL(10, 2) DEFAULT 0.00,
+  `max_uses` INT DEFAULT 1000,
+  `times_used` INT DEFAULT 0,
+  `expires_at` TIMESTAMP NULL DEFAULT NULL,
+  `is_active` BOOLEAN DEFAULT TRUE,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Table: platform_team_members (SuperAdmin Manageable ORBIT-I Team)
+-- -----------------------------------------------------
+CREATE TABLE IF NOT EXISTS `platform_team_members` (
+  `id` INT AUTO_INCREMENT PRIMARY KEY,
+  `name` VARCHAR(150) NOT NULL,
+  `role` VARCHAR(150) NOT NULL,
+  `department` VARCHAR(100) DEFAULT 'Leadership',
+  `bio` TEXT DEFAULT NULL,
+  `avatar_url` VARCHAR(500) DEFAULT '',
+  `display_order` INT DEFAULT 0,
+  `is_active` BOOLEAN DEFAULT TRUE,
+  `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- -----------------------------------------------------
+-- Default Seed Data for Plans & Launch Promo Coupons
+-- -----------------------------------------------------
+INSERT INTO `pricing_plans` (`id`, `slug`, `name`, `monthly_price`, `yearly_price`, `tag`, `attendees_limit`, `max_events`, `max_certs`, `white_label`, `features`, `is_active`, `display_order`)
+VALUES 
+(1, 'starter', 'Starter', 36.00, 29.00, 'Starter Tier (Trial Included)', 500, 10, 520, 0, '["10 Events included (Trial: 2 events)","Up to 500 total attendees capacity (Trial: 40)","520 Attendee ID Passes & Certificates (Trial: 50)","Instant QR Code Verification & Check-in","Digital QR Ticketing & ID Card Designer","Analytics Dashboard & Attendance Reports","Renewal / Repurchase upon quota exhaustion"]', 1, 1),
+(2, 'professional', 'Professional', 49.00, 39.00, 'Most Popular for Organizers', 5000, 25, 2500, 1, '["5,000 attendees capacity","Up to 25 events per year","ID Pass Generator & One-Click Print","100+ Certificate templates & issuance","Canva Design Studio integration","5 team member collaborator seats","Priority 24/7 technical support"]', 1, 2),
+(3, 'enterprise', 'Enterprise', 299.00, 239.00, 'Large Summits & Universities', 50000, 500, 50000, 1, '["50,000+ attendees capacity","Unlimited platform events","Full White-label & custom CNAME domain","Bulk CSV pass & certificate generation","Dedicated account manager & SLA","Single Sign-On (SSO) & 2FA security"]', 1, 3)
+ON DUPLICATE KEY UPDATE `id` = `id`;
+
+INSERT INTO `coupons` (`id`, `code`, `description`, `discount_type`, `discount_value`, `min_purchase`, `max_uses`, `times_used`, `expires_at`, `is_active`)
+VALUES 
+(1, 'ORBIT2026', 'Official 2026 Launch Promo - 20% Off', 'percentage', 20.00, 0.00, 1000, 14, '2027-01-01 00:00:00', 1),
+(2, 'EVENTORAX50', 'Exclusive 50% Off Early Bird Campaign', 'percentage', 50.00, 50.00, 500, 8, '2027-01-01 00:00:00', 1),
+(3, 'WELCOME10', 'Flat $10 Off Any Upgrade Plan', 'fixed', 10.00, 20.00, 2000, 25, '2027-01-01 00:00:00', 1)
+ON DUPLICATE KEY UPDATE `id` = `id`;
+
+INSERT INTO `platform_team_members` (`id`, `name`, `role`, `department`, `bio`, `avatar_url`, `display_order`, `is_active`)
+VALUES 
+(1, 'Abdul Samad Rind', 'Founder & Platform Architect', 'Leadership & Architecture', 'Platform Architect & Executive Director at ORBIT-I Private Limited. Pioneer of multi-tenant event management and tamper-evident credential verification.', '', 1, 1),
+(2, 'Maria Almani', 'Co-Founder & Head of Operations', 'Product & Operational Excellence', 'Co-Founder leading global organizer operations, institutional partnerships, and platform user experience strategy.', '', 2, 1),
+(3, 'Muneeb Ur Rehman', 'Lead Core Systems Engineer', 'Full-Stack & Systems Engineering', 'Core systems architect driving high-throughput registration switches, canvas graphics rendering pipeline, and platform scalability.', '', 3, 1),
+(4, 'Shahzad Hassan Ansar', 'Security & Cloud Infrastructure Lead', 'Cybersecurity & Infrastructure', 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels.', '', 4, 1)
+ON DUPLICATE KEY UPDATE `id` = `id`;
+
 SET FOREIGN_KEY_CHECKS = 1;
+
+
 

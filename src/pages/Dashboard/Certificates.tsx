@@ -69,49 +69,49 @@ export default function Certificates() {
   const [certificates, setCertificates] = useState<Certificate[]>([
     {
       id: 1,
-      certificate_number: 'EVX-CERT-2025-001',
+      certificate_number: 'EVX-CERT-2026-001',
       recipient_name: 'Dr. Alexander Wright',
       recipient_email: 'alexander.wright@techsummit.io',
-      event_name: 'Global Tech Summit 2025',
-      issue_date: '2025-06-16',
+      event_name: 'Global Tech Summit 2026',
+      issue_date: '2026-06-16',
       verification_hash: '7f83b1657ff1fc53b92dc18148a1d65dfc2d4b1fa3d677284addd200126d9069',
       status: 'issued'
     },
     {
       id: 2,
-      certificate_number: 'EVX-CERT-2025-002',
+      certificate_number: 'EVX-CERT-2026-002',
       recipient_name: 'Ayesha Malik',
       recipient_email: 'ayesha.malik@devcon.org',
-      event_name: 'Fullstack Web & AI Masterclass',
-      issue_date: '2025-07-10',
+      event_name: 'Fullstack Web & AI Masterclass 2026',
+      issue_date: '2026-07-10',
       verification_hash: '9b71d224bd62f3785d96d46ad3ea3d73319bfbc2890caadae2dff72519673ca7',
       status: 'issued'
     },
     {
       id: 3,
-      certificate_number: 'EVX-CERT-2025-003',
+      certificate_number: 'EVX-CERT-2026-003',
       recipient_name: 'Bilal Tariq',
       recipient_email: 'bilal.tariq@innovate.pk',
-      event_name: 'Founders & Investors Networking Gala',
-      issue_date: '2025-08-01',
+      event_name: 'Founders & Investors Networking Gala 2026',
+      issue_date: '2026-08-01',
       verification_hash: '3a4b5c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef01',
       status: 'issued'
     }
   ]);
 
   const [batches, setBatches] = useState<Batch[]>([
-    { id: 1, title: 'Global Tech Summit 2025 Keynote Certs', status: 'emailed', total_count: 842, success_count: 842, failed_count: 0, created_at: '2025-06-16T10:00:00Z' },
-    { id: 2, title: 'Fullstack AI Masterclass Cohort A', status: 'generated', total_count: 184, success_count: 184, failed_count: 0, created_at: '2025-07-10T14:30:00Z' }
+    { id: 1, title: 'Global Tech Summit 2026 Keynote Certs', status: 'emailed', total_count: 842, success_count: 842, failed_count: 0, created_at: '2026-06-16T10:00:00Z' },
+    { id: 2, title: 'Fullstack AI Masterclass Cohort 2026', status: 'generated', total_count: 184, success_count: 184, failed_count: 0, created_at: '2026-07-10T14:30:00Z' }
   ]);
 
   // Single Issuance Form
   const [singleName, setSingleName] = useState('');
   const [singleEmail, setSingleEmail] = useState('');
-  const [singleEvent, setSingleEvent] = useState('Global Tech Summit 2025');
+  const [singleEvent, setSingleEvent] = useState('Global Tech Summit 2026');
 
   // Bulk Generation Form
   const [bulkCsvText, setBulkCsvText] = useState("Name,Email\nSarah Connor,sarah@skynet.ai\nJohn Doe,john.doe@enterprise.com\nMaria Garcia,maria.garcia@techhub.org\nUsman Tariq,usman@example.com");
-  const [bulkEvent, setBulkEvent] = useState('Global Tech Summit 2025');
+  const [bulkEvent, setBulkEvent] = useState('Global Tech Summit 2026');
 
   // Custom Template Upload Form
   const [customUploadName, setCustomUploadName] = useState('');
@@ -762,9 +762,9 @@ export default function Certificates() {
 
           <div className="space-y-3">
             {[
-              { email: 'alexander.wright@techsummit.io', certId: 'EVX-CERT-2025-001', msgId: 'msg_evx_992147102', time: '10 mins ago', status: 'delivered' },
-              { email: 'ayesha.malik@devcon.org', certId: 'EVX-CERT-2025-002', msgId: 'msg_evx_992147103', time: '1 hour ago', status: 'delivered' },
-              { email: 'bilal.tariq@innovate.pk', certId: 'EVX-CERT-2025-003', msgId: 'msg_evx_992147104', time: '3 hours ago', status: 'delivered' }
+              { email: 'alexander.wright@techsummit.io', certId: 'EVX-CERT-2026-001', msgId: 'msg_evx_992147102', time: '10 mins ago', status: 'delivered' },
+              { email: 'ayesha.malik@devcon.org', certId: 'EVX-CERT-2026-002', msgId: 'msg_evx_992147103', time: '1 hour ago', status: 'delivered' },
+              { email: 'bilal.tariq@innovate.pk', certId: 'EVX-CERT-2026-003', msgId: 'msg_evx_992147104', time: '3 hours ago', status: 'delivered' }
             ].map((log, i) => (
               <div key={i} className="p-3.5 bg-[#f8fafc] rounded-xl border border-[#e2e8f0] flex items-center justify-between text-xs">
                 <div className="flex items-center gap-3">

@@ -11,7 +11,7 @@ export default function Terms() {
           </h1>
           <div className="bg-white rounded-2xl p-8 md:p-10 border border-[#e9e4ff] shadow-lg shadow-[#7c3aed]/5">
             <div className="prose max-w-none">
-              <p className="font-body text-sm mb-6 text-[#94a3b8]">Last updated: January 2025</p>
+              <p className="font-body text-sm mb-6 text-[#94a3b8]">Last updated: October 2026</p>
 
               <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">1. Acceptance of Terms</h2>
               <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">

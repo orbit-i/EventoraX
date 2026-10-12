@@ -3,23 +3,25 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Check, X, Sparkles, CreditCard } from 'lucide-react';
 import SubscriptionCheckoutModal, { type PlanData } from '@/components/SubscriptionCheckoutModal';
+import { api } from '@/services/api';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const plansData: PlanData[] = [
   {
     name: 'Starter',
-    priceUsdMonthly: 0,
-    pricePkrMonthly: 0,
-    description: 'Perfect for small events, meetups & initial certificate testing',
-    badge: null,
+    priceUsdMonthly: 36,
+    pricePkrMonthly: 10000,
+    description: 'Perfect for small events, meetups, training & initial credential testing',
+    badge: 'Trial Available',
     features: [
-      'Up to 500 attendees & 5 events',
-      'Automated Certificate Generator (50 certs/mo)',
+      '10 Events included (Trial: 2 events)',
+      'Up to 500 total attendees (Trial: 40 attendees)',
+      '520 ID Passes & Certificates (Trial: 50 certs)',
       'Instant QR Code Verification',
-      'Digital QR Ticketing',
-      'Analytics Dashboard',
-      'Community Support',
+      'Digital QR Ticketing & ID Card Designer',
+      'Analytics Dashboard & Attendance Reports',
+      'Renewal / Repurchase upon quota exhaustion',
     ],
   },
   {
@@ -69,6 +71,25 @@ export default function Pricing() {
   const [currency, setCurrency] = useState<'USD' | 'PKR'>('USD');
   const [isAnnual, setIsAnnual] = useState(false);
   const [selectedPlanModal, setSelectedPlanModal] = useState<PlanData | null>(null);
+  const [plans, setPlans] = useState<PlanData[]>(plansData);
+
+  useEffect(() => {
+    api.billing.getPlans().then((res) => {
+      if (res.success && res.plans && res.plans.length > 0) {
+        const mapped: PlanData[] = res.plans.map((p: any) => ({
+          name: p.name,
+          priceUsdMonthly: Number(p.price_usd_monthly),
+          pricePkrMonthly: Number(p.price_pkr_monthly),
+          description: p.description,
+          badge: p.badge,
+          features: typeof p.features === 'string'
+            ? (p.features.startsWith('[') ? JSON.parse(p.features) : p.features.split('\n'))
+            : (p.features || [])
+        }));
+        setPlans(mapped);
+      }
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -82,7 +103,7 @@ export default function Pricing() {
       });
     });
     return () => { ScrollTrigger.getAll().forEach((st) => st.kill()); };
-  }, []);
+  }, [plans]);
 
   return (
     <main className="pt-14 bg-[#f8fafc]">
@@ -147,9 +168,9 @@ export default function Pricing() {
       </section>
 
       {/* Pricing Cards Grid */}
-      <section className="py-12 px-4 max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-          {plansData.map((plan, i) => {
+      <section className="py-12 px-4 max-w-6xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 justify-center items-stretch">
+          {plans.map((plan, i) => {
             const isFree = plan.priceUsdMonthly === 0;
             const multiplier = isAnnual ? 0.8 : 1.0;
             const priceUsd = Math.round(plan.priceUsdMonthly * multiplier);
@@ -239,30 +260,34 @@ export default function Pricing() {
             <CreditCard className="w-4 h-4 text-[#1d4ed8]" />
             Supported Global & Local Pakistani Payment Methods
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-6 text-xs font-bold text-slate-700">
+          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-xs font-bold text-slate-700">
+            <span className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white border border-slate-800 flex items-center gap-2 shadow-2xs">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
+              Safepay (Direct Gateway)
+            </span>
             <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-              Visa & MasterCard
+              Visa &amp; MasterCard (3DS 2.0)
             </span>
-            <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
+            <span className="px-3.5 py-1.5 rounded-xl bg-red-50 text-red-900 border border-red-200 flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-red-600" />
-              JazzCash
+              JazzCash (03190375751)
             </span>
-            <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
+            <span className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
-              Easypaisa
+              Easypaisa (03190375751)
             </span>
-            <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-amber-500" />
-              Raast Instant IBFT
+            <span className="px-3.5 py-1.5 rounded-xl bg-teal-50 text-teal-900 border border-teal-200 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-teal-500" />
+              SadaPay &amp; NayaPay
             </span>
-            <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-cyan-500" />
-              SadaPay & NayaPay
+            <span className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-300 flex items-center gap-2">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-700" />
+              Raast SBP Instant Pay
             </span>
             <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
-              Direct Bank Transfer (Meezan / HBL)
+              Direct Bank IBFT (Meezan Bank)
             </span>
           </div>
         </div>

@@ -158,6 +158,18 @@ app.get('/api/public/testimonials', async (req, res) => {
   }
 });
 
+// Public Platform Team endpoint (ORBIT-I leadership & core platform team)
+app.get('/api/public/platform-team', async (req, res) => {
+  try {
+    const { query: dbQuery } = await import('./db/db.js');
+    const [rows] = await dbQuery('SELECT * FROM `platform_team_members` WHERE `is_active` = 1 ORDER BY `display_order` ASC, `id` ASC');
+    return res.json({ success: true, team: rows || [] });
+  } catch (err) {
+    console.error('[Public Platform Team Error]:', err);
+    return res.status(500).json({ success: false, message: 'Failed to fetch platform team' });
+  }
+});
+
 // Health check endpoint (for Cloud, Docker, and Production monitoring)
 app.get('/api/health', (req, res) => {
   res.json({

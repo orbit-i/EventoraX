@@ -1,8 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
 import { Target, Eye, Lightbulb, Users, Award, Zap } from 'lucide-react';
+import api from '../services/api';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -25,13 +26,55 @@ const problems = [
 ];
 
 const milestones = [
-  { year: '2023', event: 'ORBIT-I founded with a vision to simplify event management' },
-  { year: '2024', event: 'EventoraX concept born from real organizer pain points' },
-  { year: '2025', event: 'Beta launch with 50+ organizations' },
-  { year: '2025', event: 'Public release — 5,000+ events hosted' },
+  { year: '2024', event: 'EventoraX architectural core & organizer research by ORBIT-I' },
+  { year: '2025', event: 'Private Beta launch with 50+ partner institutes & pilot summits' },
+  { year: '2026', event: 'EventoraX 2026 Official Flagship Release — Multi-tenant event cloud platform' },
+  { year: '2026', event: 'Safepay, SBP Raast, JazzCash & Easypaisa real-time gateway integrations' },
+];
+
+const fallbackOrbitTeam = [
+  {
+    name: 'Abdul Samad Rind',
+    role: 'Founder & Platform Architect',
+    department: 'Leadership & Architecture',
+    bio: 'Platform Architect & Executive Director at ORBIT-I Private Limited. Pioneer of multi-tenant event management and tamper-evident credential verification.'
+  },
+  {
+    name: 'Maria Almani',
+    role: 'Co-Founder & Head of Operations',
+    department: 'Product & Operational Excellence',
+    bio: 'Co-Founder leading global organizer operations, institutional partnerships, and platform user experience strategy.'
+  },
+  {
+    name: 'Muneeb Ur Rehman',
+    role: 'Lead Core Systems Engineer',
+    department: 'Full-Stack & Systems Engineering',
+    bio: 'Core systems architect driving high-throughput registration switches, canvas graphics rendering pipeline, and platform scalability.'
+  },
+  {
+    name: 'Shahzad Hassan Ansar',
+    role: 'Security & Cloud Infrastructure Lead',
+    department: 'Cybersecurity & Infrastructure',
+    bio: 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels.'
+  }
 ];
 
 export default function About() {
+  const [teamMembers, setTeamMembers] = useState<any[]>(fallbackOrbitTeam);
+
+  useEffect(() => {
+    // Dynamic fetch from backend platform team API (managed by SuperAdmin)
+    api.platformTeam.get()
+      .then(res => {
+        if (res?.success && Array.isArray(res.team) && res.team.length > 0) {
+          setTeamMembers(res.team);
+        }
+      })
+      .catch(() => {
+        // Fallback remains fallbackOrbitTeam
+      });
+  }, []);
+
   useEffect(() => {
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
@@ -44,7 +87,7 @@ export default function About() {
       });
     });
     return () => { ScrollTrigger.getAll().forEach((st) => st.kill()); };
-  }, []);
+  }, [teamMembers]);
 
   return (
     <main className="pt-14">
@@ -138,27 +181,61 @@ export default function About() {
       {/* Team */}
       <section className="bg-[#f5f3ff] section-padding">
         <div className="content-max">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-center mb-4 tracking-[-0.02em] text-[#0f172a]">
-            Meet the Team
-          </h2>
-          <p className="font-body text-base text-center mb-12 text-[#475569]">
-            Passionate builders creating impact — one event at a time.
-          </p>
-          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
-            {[
-              { name: 'Amina Sahar', role: 'UI/Frontend Lead', img: '/images/avatar-1.jpg' },
-              { name: 'Shahid', role: 'Auth Developer', img: '/images/avatar-2.jpg' },
-              { name: 'Anamta', role: 'Dashboard Core', img: '/images/avatar-3.jpg' },
-              { name: 'Hasan Anser', role: 'Events Module', img: '/images/avatar-4.jpg' },
-              { name: 'Isha', role: 'Certificate & QR', img: '/images/avatar-5.jpg' },
-              { name: 'M Adeel Umer', role: 'Superadmin', img: '/images/avatar-6.jpg' },
-            ].map((member, i) => (
-              <div key={i} className="scroll-reveal text-center" style={{ transitionDelay: `${i * 100}ms` }}>
-                <div className="w-20 h-20 md:w-24 md:h-24 rounded-full mx-auto mb-3 bg-gradient-to-br from-[#7c3aed] to-[#a78bfa] flex items-center justify-center text-white font-bold text-xl">
-                  {member.name.split(' ').map(n => n[0]).join('')}
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold mb-3">
+              ORBIT-I Core Platform Team
+            </div>
+            <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-[-0.02em] text-[#0f172a]">
+              Meet the Leadership & Core Team
+            </h2>
+            <p className="font-body text-base md:text-lg text-[#475569] mt-3">
+              Engineered, secured, and scaled by the core engineers and visionary leadership of ORBIT-I Private Limited.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto justify-center items-stretch">
+            {teamMembers.map((member, i) => (
+              <div 
+                key={member.id || i} 
+                className="scroll-reveal bg-white rounded-2xl p-6 border border-[#e9e4ff] shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center text-center group"
+                style={{ transitionDelay: `${i * 100}ms` }}
+              >
+                <div className="relative mb-5">
+                  {member.avatar_url ? (
+                    <img 
+                      src={member.avatar_url} 
+                      alt={member.name} 
+                      className="w-24 h-24 rounded-2xl object-cover shadow-md group-hover:scale-105 transition-transform" 
+                    />
+                  ) : (
+                    <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-[#7c3aed] to-[#3b82f6] text-white flex items-center justify-center font-bold text-2xl shadow-md group-hover:scale-105 transition-transform">
+                      {member.name.split(' ').map((n: string) => n[0]).filter(Boolean).slice(0, 2).join('')}
+                    </div>
+                  )}
+                  <span className="absolute -bottom-2 -right-2 px-2 py-0.5 bg-slate-900 text-purple-300 text-[10px] font-bold rounded-md uppercase tracking-wider border border-purple-500/30">
+                    ORBIT-I
+                  </span>
                 </div>
-                <h4 className="font-body text-sm font-semibold text-[#0f172a]">{member.name}</h4>
-                <p className="font-body text-xs text-[#475569]">{member.role}</p>
+
+                <h4 className="font-heading text-lg font-bold text-[#0f172a] mb-1 group-hover:text-purple-700 transition-colors">
+                  {member.name}
+                </h4>
+
+                <div className="text-xs font-semibold text-purple-600 mb-2">
+                  {member.role}
+                </div>
+
+                {member.department && (
+                  <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-3">
+                    {member.department}
+                  </div>
+                )}
+
+                {member.bio && (
+                  <p className="font-body text-xs text-slate-600 leading-relaxed mt-auto pt-3 border-t border-slate-100">
+                    {member.bio}
+                  </p>
+                )}
               </div>
             ))}
           </div>

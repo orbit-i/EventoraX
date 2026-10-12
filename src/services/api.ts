@@ -125,6 +125,12 @@ export const api = {
         body: JSON.stringify(credentials),
       }),
 
+    gatewaySetup: (data: { fullName?: string; email: string; password: string; masterKey: string }) =>
+      request<{ success: boolean; message: string; token: string; user: any; tenant: any }>('/admin/gateway/setup', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
     getOverview: () =>
       request<{ success: boolean; metrics: any }>('/admin/overview'),
 
@@ -256,6 +262,66 @@ export const api = {
       request<{ success: boolean; message: string }>(`/admin/testimonials/${id}`, {
         method: 'DELETE',
       }),
+
+    // Dynamic Pricing Plans Management
+    getPlans: () =>
+      request<{ success: boolean; plans: any[] }>('/admin/plans'),
+
+    savePlan: (data: any) =>
+      request<{ success: boolean; message: string; planId?: number }>('/admin/plans', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    deletePlan: (id: number) =>
+      request<{ success: boolean; message: string }>(`/admin/plans/${id}`, {
+        method: 'DELETE',
+      }),
+
+    // Dynamic Coupons & Discounts Management
+    getCoupons: () =>
+      request<{ success: boolean; coupons: any[] }>('/admin/coupons'),
+
+    saveCoupon: (data: any) =>
+      request<{ success: boolean; message: string; couponId?: number }>('/admin/coupons', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    deleteCoupon: (id: number) =>
+      request<{ success: boolean; message: string }>(`/admin/coupons/${id}`, {
+        method: 'DELETE',
+      }),
+
+    // Dynamic Platform Team Management (ORBIT-I Leadership)
+    getPlatformTeam: () =>
+      request<{ success: boolean; team: any[] }>('/admin/platform-team'),
+
+    savePlatformTeam: (data: { id?: number; name: string; role: string; department?: string; bio?: string; avatar_url?: string; display_order?: number; is_active?: boolean | number }) =>
+      request<{ success: boolean; message: string; memberId?: number }>('/admin/platform-team', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    deletePlatformTeam: (id: number) =>
+      request<{ success: boolean; message: string }>(`/admin/platform-team/${id}`, {
+        method: 'DELETE',
+      }),
+
+    // Disaster Recovery Database Backups
+    createBackupSnapshot: () =>
+      request<{ success: boolean; message: string; snapshot: any }>('/admin/backup/snapshot', {
+        method: 'POST',
+      }),
+
+    getBackupSnapshots: () =>
+      request<{ success: boolean; snapshots: any[] }>('/admin/backup/snapshots'),
+  },
+
+  // Public Platform Team (ORBIT-I Leadership)
+  platformTeam: {
+    get: () =>
+      request<{ success: boolean; team: any[] }>('/public/platform-team'),
   },
 
   // Public Testimonials & Reviews
@@ -373,14 +439,31 @@ export const api = {
     get: () =>
       request<{ success: boolean; billing: any }>('/billing'),
 
+    getPlans: () =>
+      request<{ success: boolean; plans: any[] }>('/billing/plans'),
+
+    validateCoupon: (data: { code: string; plan?: string; billingCycle?: string }) =>
+      request<{ 
+        success: boolean; 
+        valid: boolean; 
+        message?: string; 
+        coupon?: { code: string; description: string; discountType: string; discountValue: number }; 
+        originalPrice?: number; 
+        discountAmount?: number; 
+        finalPrice?: number 
+      }>('/billing/validate-coupon', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
     upgrade: (plan: string) =>
       request<{ success: boolean; message: string; plan: string; price: number; attendeesLimit: number }>('/billing/upgrade', {
         method: 'POST',
         body: JSON.stringify({ plan }),
       }),
 
-    purchase: (data: { plan: string; billingCycle?: string; paymentMethod: string; transactionRef?: string; amount?: number; currency?: string; notes?: string }) =>
-      request<{ success: boolean; message: string; plan: string; status: string; invoiceNumber: string; amount?: number; currency?: string }>('/billing/purchase', {
+    purchase: (data: { plan: string; billingCycle?: string; paymentMethod: string; transactionRef?: string; amount?: number; currency?: string; notes?: string; couponCode?: string }) =>
+      request<{ success: boolean; message: string; plan: string; status: string; invoiceNumber: string; amount?: number; originalPrice?: number; discountAmount?: number; couponCode?: string; currency?: string }>('/billing/purchase', {
         method: 'POST',
         body: JSON.stringify(data),
       }),

@@ -104,7 +104,7 @@ export default function IDCardEditor() {
     {
       id: 'el-ev-header',
       type: 'text',
-      text: 'GLOBAL TECH SUMMIT 2025',
+      text: 'GLOBAL TECH SUMMIT 2026',
       x: 50,
       y: 11,
       fontSize: 14,
@@ -339,8 +339,8 @@ export default function IDCardEditor() {
     t = t.replace('{{organization}}', 'Orbit Dynamics Global');
     t = t.replace('{{ticket_code}}', 'EVX-1-TECH-781');
     t = t.replace('{{ticket_type}}', 'VIP All-Access Pass');
-    t = t.replace('{{event_title}}', 'Global Tech Summit 2025');
-    t = t.replace('{{event_name}}', 'Global Tech Summit 2025');
+    t = t.replace('{{event_title}}', 'Global Tech Summit 2026');
+    t = t.replace('{{event_name}}', 'Global Tech Summit 2026');
     return t;
   };
 

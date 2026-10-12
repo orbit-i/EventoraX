@@ -37,7 +37,7 @@ interface CertificateData {
 
 export default function PublicVerifyPage() {
   const { certNumber } = useParams<{ certNumber?: string }>();
-  const [searchQuery, setSearchQuery] = useState(certNumber || 'EVX-CERT-2025-001');
+  const [searchQuery, setSearchQuery] = useState(certNumber || 'EVX-CERT-2026-001');
   const [isLoading, setIsLoading] = useState(false);
   const [certificate, setCertificate] = useState<CertificateData | null>(null);
   const [isValid, setIsValid] = useState<boolean | null>(null);
@@ -142,7 +142,7 @@ export default function PublicVerifyPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="e.g. EVX-CERT-2025-001"
+              placeholder="e.g. EVX-CERT-2026-001"
               className="w-full pl-10 pr-4 py-3 bg-white border-2 border-[#cbd5e1] focus:border-[#1d4ed8] rounded-xl text-sm font-semibold text-[#0f172a] shadow-sm focus:outline-none focus:ring-4 focus:ring-[#1d4ed8]/10 transition-all"
             />
           </div>
@@ -167,18 +167,18 @@ export default function PublicVerifyPage() {
           <span>Try demo:</span>
           <button 
             type="button" 
-            onClick={() => { setSearchQuery('EVX-CERT-2025-001'); handleVerify('EVX-CERT-2025-001'); }}
+            onClick={() => { setSearchQuery('EVX-CERT-2026-001'); handleVerify('EVX-CERT-2026-001'); }}
             className="font-mono text-[#1d4ed8] hover:underline"
           >
-            EVX-CERT-2025-001
+            EVX-CERT-2026-001
           </button>
           <span>•</span>
           <button 
             type="button" 
-            onClick={() => { setSearchQuery('EVX-CERT-2025-002'); handleVerify('EVX-CERT-2025-002'); }}
+            onClick={() => { setSearchQuery('EVX-CERT-2026-002'); handleVerify('EVX-CERT-2026-002'); }}
             className="font-mono text-[#1d4ed8] hover:underline"
           >
-            EVX-CERT-2025-002
+            EVX-CERT-2026-002
           </button>
         </div>
       </section>
@@ -406,10 +406,10 @@ export default function PublicVerifyPage() {
             </p>
             <div className="flex items-center justify-center gap-3">
               <button 
-                onClick={() => { setSearchQuery('EVX-CERT-2025-001'); handleVerify('EVX-CERT-2025-001'); }}
+                onClick={() => { setSearchQuery('EVX-CERT-2026-001'); handleVerify('EVX-CERT-2026-001'); }}
                 className="px-5 py-2.5 rounded-xl bg-[#1d4ed8] text-white text-xs font-bold shadow-md hover:bg-[#1e40af] transition-colors"
               >
-                Try Sample EVX-CERT-2025-001
+                Try Sample EVX-CERT-2026-001
               </button>
             </div>
           </div>

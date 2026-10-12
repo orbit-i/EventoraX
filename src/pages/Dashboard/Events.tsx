@@ -620,7 +620,7 @@ export default function Events() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. South Asia AI & Web Developers Summit 2025"
+                  placeholder="e.g. South Asia AI & Web Developers Summit 2026"
                   value={form.title}
                   onChange={(e) => setForm({ ...form, title: e.target.value })}
                   className="w-full px-3.5 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"

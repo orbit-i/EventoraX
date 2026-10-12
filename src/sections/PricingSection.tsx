@@ -3,23 +3,25 @@ import { Check, Sparkles, CreditCard } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SubscriptionCheckoutModal, { type PlanData } from '@/components/SubscriptionCheckoutModal';
+import { api } from '@/services/api';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const plansData: PlanData[] = [
   {
     name: 'Starter',
-    priceUsdMonthly: 0,
-    pricePkrMonthly: 0,
-    description: 'Perfect for small events, meetups & initial certificate testing',
-    badge: null,
+    priceUsdMonthly: 36,
+    pricePkrMonthly: 10000,
+    description: 'Perfect for small events, meetups, training & initial credential testing',
+    badge: 'Trial Available',
     features: [
-      'Up to 500 attendees & 5 events',
-      'Automated Certificate Generator (50 certs/mo)',
+      '10 Events included (Trial: 2 events)',
+      'Up to 500 total attendees (Trial: 40 attendees)',
+      '520 ID Passes & Certificates (Trial: 50 certs)',
       'Instant QR Code Verification',
-      'Digital QR Ticketing',
-      'Analytics Dashboard',
-      'Community Support',
+      'Digital QR Ticketing & ID Card Designer',
+      'Analytics Dashboard & Attendance Reports',
+      'Renewal / Repurchase upon quota exhaustion',
     ],
   },
   {
@@ -62,6 +64,25 @@ export default function PricingSection() {
   const [currency, setCurrency] = useState<'USD' | 'PKR'>('USD');
   const [isAnnual, setIsAnnual] = useState(false);
   const [selectedPlanModal, setSelectedPlanModal] = useState<PlanData | null>(null);
+  const [plans, setPlans] = useState<PlanData[]>(plansData);
+
+  useEffect(() => {
+    api.billing.getPlans().then((res) => {
+      if (res.success && res.plans && res.plans.length > 0) {
+        const mapped: PlanData[] = res.plans.map((p: any) => ({
+          name: p.name,
+          priceUsdMonthly: Number(p.price_usd_monthly),
+          pricePkrMonthly: Number(p.price_pkr_monthly),
+          description: p.description,
+          badge: p.badge,
+          features: typeof p.features === 'string'
+            ? (p.features.startsWith('[') ? JSON.parse(p.features) : p.features.split('\n'))
+            : (p.features || [])
+        }));
+        setPlans(mapped);
+      }
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     const el = sectionRef.current;
@@ -81,7 +102,7 @@ export default function PricingSection() {
         ease: 'power1.out',
       });
     });
-  }, []);
+  }, [plans]);
 
   return (
     <section
@@ -142,8 +163,8 @@ export default function PricingSection() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left">
-          {plansData.map((plan, i) => {
+        <div className="grid grid-cols-1 md:grid-cols-3 max-w-6xl mx-auto gap-8 justify-center items-stretch text-left">
+          {plans.map((plan, i) => {
             const isFree = plan.priceUsdMonthly === 0;
             const multiplier = isAnnual ? 0.8 : 1.0;
             const priceUsd = Math.round(plan.priceUsdMonthly * multiplier);
@@ -201,17 +222,21 @@ export default function PricingSection() {
         </div>
 
         {/* Payment Methods Footer Strip */}
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-xs font-semibold text-slate-500">
-          <span className="flex items-center gap-1 text-slate-700">
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs font-semibold text-slate-600">
+          <span className="flex items-center gap-1 text-slate-800 font-bold">
             <CreditCard className="w-4 h-4 text-[#1d4ed8]" />
-            Supported:
+            2026 Real-Time Gateways:
           </span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200">Visa / MasterCard</span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-red-600 font-bold">JazzCash</span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-emerald-600 font-bold">Easypaisa</span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-amber-600 font-bold">Raast Instant</span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-cyan-600 font-bold">SadaPay & NayaPay</span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-blue-700 font-bold">Direct Bank (IBFT)</span>
+          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-slate-900 font-bold flex items-center gap-1 shadow-2xs">
+            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
+            Safepay (Cards &amp; Wallets)
+          </span>
+          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-slate-800 font-bold shadow-2xs">Visa / MasterCard</span>
+          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-red-600 font-bold shadow-2xs">JazzCash (03190375751)</span>
+          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-emerald-600 font-bold shadow-2xs">Easypaisa (03190375751)</span>
+          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-[#00A389] font-bold shadow-2xs">SadaPay &amp; NayaPay</span>
+          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-[#0B5D34] font-bold shadow-2xs">Raast Instant (SBP)</span>
+          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-blue-800 font-bold shadow-2xs">Meezan IBFT</span>
         </div>
       </div>
 

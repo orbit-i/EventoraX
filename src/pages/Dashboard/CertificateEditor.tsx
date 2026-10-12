@@ -187,9 +187,9 @@ export default function CertificateEditor() {
     if (!previewMode) return el.text;
     let t = el.text;
     t = t.replace('{{recipient_name}}', 'Dr. Alexander Wright');
-    t = t.replace('{{certificate_id}}', 'EVX-CERT-2025-001');
+    t = t.replace('{{certificate_id}}', 'EVX-CERT-2026-001');
     t = t.replace('{{issue_date}}', new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
-    t = t.replace('{{event_name}}', 'Global Tech Summit 2025');
+    t = t.replace('{{event_name}}', 'Global Tech Summit 2026');
     t = t.replace('{{organization_name}}', 'EventoraX Global');
     return t;
   };

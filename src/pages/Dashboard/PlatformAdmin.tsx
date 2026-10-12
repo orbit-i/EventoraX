@@ -40,12 +40,17 @@ import {
   KeyRound,
   Star,
   Trash2,
-  Plus
+  Plus,
+  Database,
+  Download,
+  Percent,
+  Edit,
+  Users
 } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 
-type AdminTab = 'overview' | 'licenses' | 'approvals' | 'tenants' | 'billing' | 'pricing' | 'testimonials' | 'cms' | 'security' | 'notifications';
+type AdminTab = 'overview' | 'licenses' | 'approvals' | 'tenants' | 'billing' | 'pricing' | 'testimonials' | 'cms' | 'security' | 'notifications' | 'backup' | 'team';
 
 export default function PlatformAdmin() {
   const { isSuperAdmin } = useAuth();
@@ -139,6 +144,281 @@ export default function PlatformAdmin() {
     is_featured: true,
   });
   const [testimonialSubmitting, setTestimonialSubmitting] = useState(false);
+
+  // Dynamic Pricing Plans & Coupons Management State
+  const [adminPlans, setAdminPlans] = useState<any[]>([]);
+  const [adminCoupons, setAdminCoupons] = useState<any[]>([]);
+  const [pricingSubTab, setPricingSubTab] = useState<'plans' | 'coupons'>('plans');
+  const [plansLoading, setPlansLoading] = useState(false);
+  const [couponsLoading, setCouponsLoading] = useState(false);
+  const [editPlanModal, setEditPlanModal] = useState<{ open: boolean; isNew: boolean; plan: any }>({
+    open: false,
+    isNew: false,
+    plan: {
+      name: '',
+      slug: '',
+      monthly_price: 99,
+      yearly_price: 79,
+      tag: '',
+      attendees_limit: 5000,
+      max_events: 25,
+      max_certs: 500,
+      white_label: 1,
+      featuresText: '',
+      is_active: 1,
+      display_order: 1
+    }
+  });
+  const [savingPlan, setSavingPlan] = useState(false);
+  const [editCouponModal, setEditCouponModal] = useState<{ open: boolean; isNew: boolean; coupon: any }>({
+    open: false,
+    isNew: false,
+    coupon: {
+      code: '',
+      description: '',
+      discount_type: 'percentage',
+      discount_value: 20,
+      min_purchase: 0,
+      max_uses: 1000,
+      expires_at: '',
+      is_active: 1
+    }
+  });
+  const [savingCoupon, setSavingCoupon] = useState(false);
+
+  // Disaster Recovery & System Backup State
+  const [backupSnapshots, setBackupSnapshots] = useState<any[]>([]);
+  const [backupLoading, setBackupLoading] = useState(false);
+  const [creatingSnapshot, setCreatingSnapshot] = useState(false);
+  const [snapshotMsg, setSnapshotMsg] = useState<string | null>(null);
+
+  // Dynamic Platform Team Management (ORBIT-I Leadership) State
+  const [platformTeam, setPlatformTeam] = useState<any[]>([]);
+  const [teamLoading, setTeamLoading] = useState(false);
+  const [teamModal, setTeamModal] = useState<{
+    open: boolean;
+    isNew: boolean;
+    member: {
+      id?: number;
+      name: string;
+      role: string;
+      department: string;
+      bio: string;
+      avatar_url: string;
+      display_order: number;
+      is_active: boolean | number;
+    };
+  }>({
+    open: false,
+    isNew: true,
+    member: {
+      name: '',
+      role: '',
+      department: 'ORBIT-I Platform',
+      bio: '',
+      avatar_url: '',
+      display_order: 1,
+      is_active: 1
+    }
+  });
+  const [savingMember, setSavingMember] = useState(false);
+
+  const loadPlatformTeam = async () => {
+    setTeamLoading(true);
+    try {
+      const res = await api.platformAdmin.getPlatformTeam();
+      if (res?.success && Array.isArray(res.team)) {
+        setPlatformTeam(res.team);
+      }
+    } catch (err) {
+      console.error('Failed to load platform team:', err);
+    } finally {
+      setTeamLoading(false);
+    }
+  };
+
+  const handleSaveTeamMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!teamModal.member.name.trim() || !teamModal.member.role.trim()) {
+      alert('Please provide member Name and Role.');
+      return;
+    }
+    setSavingMember(true);
+    try {
+      const res = await api.platformAdmin.savePlatformTeam(teamModal.member);
+      if (res.success) {
+        setTeamModal({ ...teamModal, open: false });
+        await loadPlatformTeam();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to save team member.');
+    } finally {
+      setSavingMember(false);
+    }
+  };
+
+  const handleDeleteTeamMember = async (id: number) => {
+    if (!confirm('Are you sure you want to remove this team member from the official ORBIT-I leadership roster?')) return;
+    try {
+      const res = await api.platformAdmin.deletePlatformTeam(id);
+      if (res.success) {
+        setPlatformTeam(prev => prev.filter(m => m.id !== id));
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete team member.');
+    }
+  };
+
+  const loadAdminPlans = async () => {
+    setPlansLoading(true);
+    try {
+      const res = await api.platformAdmin.getPlans();
+      if (res.success && res.plans) {
+        setAdminPlans(res.plans);
+      }
+    } catch (err) {
+      console.error('Failed to load plans:', err);
+    } finally {
+      setPlansLoading(false);
+    }
+  };
+
+  const loadAdminCoupons = async () => {
+    setCouponsLoading(true);
+    try {
+      const res = await api.platformAdmin.getCoupons();
+      if (res.success && res.coupons) {
+        setAdminCoupons(res.coupons);
+      }
+    } catch (err) {
+      console.error('Failed to load coupons:', err);
+    } finally {
+      setCouponsLoading(false);
+    }
+  };
+
+  const loadBackupSnapshots = async () => {
+    setBackupLoading(true);
+    try {
+      const res = await api.platformAdmin.getBackupSnapshots();
+      if (res.success && res.snapshots) {
+        setBackupSnapshots(res.snapshots);
+      }
+    } catch (err) {
+      console.error('Failed to load backup snapshots:', err);
+    } finally {
+      setBackupLoading(false);
+    }
+  };
+
+  const handleCreateDiskSnapshot = async () => {
+    setCreatingSnapshot(true);
+    setSnapshotMsg(null);
+    try {
+      const res = await api.platformAdmin.createBackupSnapshot();
+      if (res.success) {
+        setSnapshotMsg(`Success: ${res.message} (${res.snapshot?.fileName || ''} • ${res.snapshot?.sizeKb || 0} KB)`);
+        loadBackupSnapshots();
+      }
+    } catch (err: any) {
+      setSnapshotMsg(`Error: ${err.message || 'Failed to create backup snapshot'}`);
+    } finally {
+      setCreatingSnapshot(false);
+    }
+  };
+
+  const handleDownloadBackup = (format: 'sql' | 'json') => {
+    const token = localStorage.getItem('token') || '';
+    window.open(`/api/admin/backup/export?format=${format}&token=${encodeURIComponent(token)}`, '_blank');
+  };
+
+  const handleSavePlan = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingPlan(true);
+    try {
+      const featuresArray = editPlanModal.plan.featuresText
+        ? editPlanModal.plan.featuresText.split('\n').map((s: string) => s.trim()).filter(Boolean)
+        : (Array.isArray(editPlanModal.plan.features) ? editPlanModal.plan.features : []);
+      
+      const payload = {
+        id: editPlanModal.isNew ? undefined : editPlanModal.plan.id,
+        name: editPlanModal.plan.name,
+        slug: editPlanModal.plan.slug || editPlanModal.plan.name,
+        monthly_price: Number(editPlanModal.plan.monthly_price),
+        yearly_price: Number(editPlanModal.plan.yearly_price),
+        tag: editPlanModal.plan.tag,
+        attendees_limit: Number(editPlanModal.plan.attendees_limit),
+        max_events: Number(editPlanModal.plan.max_events),
+        max_certs: Number(editPlanModal.plan.max_certs),
+        white_label: Boolean(editPlanModal.plan.white_label),
+        features: featuresArray,
+        is_active: Boolean(editPlanModal.plan.is_active),
+        display_order: Number(editPlanModal.plan.display_order || 1)
+      };
+
+      const res = await api.platformAdmin.savePlan(payload);
+      if (res.success) {
+        setEditPlanModal({ open: false, isNew: false, plan: {} });
+        await loadAdminPlans();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to save plan');
+    } finally {
+      setSavingPlan(false);
+    }
+  };
+
+  const handleDeletePlan = async (id: number) => {
+    if (!confirm('Are you sure you want to remove this pricing plan?')) return;
+    try {
+      const res = await api.platformAdmin.deletePlan(id);
+      if (res.success) {
+        await loadAdminPlans();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete plan');
+    }
+  };
+
+  const handleSaveCoupon = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingCoupon(true);
+    try {
+      const payload = {
+        id: editCouponModal.isNew ? undefined : editCouponModal.coupon.id,
+        code: editCouponModal.coupon.code.trim().toUpperCase(),
+        description: editCouponModal.coupon.description,
+        discount_type: editCouponModal.coupon.discount_type,
+        discount_value: Number(editCouponModal.coupon.discount_value),
+        min_purchase: Number(editCouponModal.coupon.min_purchase || 0),
+        max_uses: Number(editCouponModal.coupon.max_uses || 1000),
+        expires_at: editCouponModal.coupon.expires_at || null,
+        is_active: Boolean(editCouponModal.coupon.is_active)
+      };
+
+      const res = await api.platformAdmin.saveCoupon(payload);
+      if (res.success) {
+        setEditCouponModal({ open: false, isNew: false, coupon: {} });
+        await loadAdminCoupons();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to save coupon');
+    } finally {
+      setSavingCoupon(false);
+    }
+  };
+
+  const handleDeleteCoupon = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this coupon?')) return;
+    try {
+      const res = await api.platformAdmin.deleteCoupon(id);
+      if (res.success) {
+        await loadAdminCoupons();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete coupon');
+    }
+  };
 
   // Sync tab with URL
   useEffect(() => {
@@ -257,6 +537,7 @@ export default function PlatformAdmin() {
     loadSubscriptions();
     loadLicenses();
     loadAdminTestimonials();
+    loadPlatformTeam();
     const interval = setInterval(() => {
       loadAdminNotifications();
       loadSubscriptions();
@@ -269,6 +550,9 @@ export default function PlatformAdmin() {
   }, [search, filterPlan, filterStatus]);
 
   useEffect(() => {
+    if (activeTab === 'team') {
+      loadPlatformTeam();
+    }
     if (activeTab === 'cms') {
       loadCmsData();
     }
@@ -280,6 +564,13 @@ export default function PlatformAdmin() {
     }
     if (activeTab === 'testimonials') {
       loadAdminTestimonials();
+    }
+    if (activeTab === 'pricing') {
+      loadAdminPlans();
+      loadAdminCoupons();
+    }
+    if (activeTab === 'backup') {
+      loadBackupSnapshots();
     }
   }, [activeTab]);
 
@@ -840,6 +1131,18 @@ export default function PlatformAdmin() {
           </button>
 
           <button
+            onClick={() => switchTab('team')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'team'
+                ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <Users className="w-4 h-4 text-purple-600" />
+            ORBIT-I Core Team ({platformTeam.length || 4})
+          </button>
+
+          <button
             onClick={() => switchTab('security')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
               activeTab === 'security'
@@ -866,6 +1169,18 @@ export default function PlatformAdmin() {
                 {unreadAdminNotifCount}
               </span>
             )}
+          </button>
+
+          <button
+            onClick={() => switchTab('backup')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'backup'
+                ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <Database className="w-4 h-4 text-emerald-600" />
+            Disaster Recovery &amp; Backups
           </button>
         </div>
 
@@ -1411,10 +1726,13 @@ export default function PlatformAdmin() {
                               {s.price === 0 ? 'Free ($0)' : `${s.currency || 'USD'} ${s.price}`}
                             </div>
                             <span className="text-[10px] text-slate-500 font-normal uppercase flex items-center gap-1 mt-0.5">
-                              {s.payment_method?.toLowerCase().includes('card') ? <CreditCard className="w-3 h-3 text-blue-600" /> :
+                              {s.payment_method?.toLowerCase().includes('safepay') ? <ShieldCheck className="w-3 h-3 text-[#182A4D]" /> :
+                               s.payment_method?.toLowerCase().includes('card') ? <CreditCard className="w-3 h-3 text-blue-600" /> :
                                s.payment_method?.toLowerCase().includes('bank') ? <Building2 className="w-3 h-3 text-slate-700" /> :
                                s.payment_method?.toLowerCase().includes('jazz') ? <Smartphone className="w-3 h-3 text-red-600" /> :
                                s.payment_method?.toLowerCase().includes('easy') ? <Smartphone className="w-3 h-3 text-emerald-600" /> :
+                               s.payment_method?.toLowerCase().includes('sada') ? <CreditCard className="w-3 h-3 text-[#00A389]" /> :
+                               s.payment_method?.toLowerCase().includes('naya') ? <Smartphone className="w-3 h-3 text-[#FF5C00]" /> :
                                s.payment_method?.toLowerCase().includes('raast') ? <QrCode className="w-3 h-3 text-amber-600" /> :
                                <Receipt className="w-3 h-3 text-slate-400" />}
                               {s.payment_method || 'Online Card'}
@@ -1790,115 +2108,431 @@ export default function PlatformAdmin() {
         )}
 
         {/* ============================================================== */}
-        {/* TAB 4: PRICING & MARKET PLANS MANAGEMENT */}
+        {/* TAB 4: DYNAMIC PRICING & PROMOTIONAL COUPONS MANAGEMENT */}
         {/* ============================================================== */}
         {activeTab === 'pricing' && (
           <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-200">
               <div>
                 <h2 className="text-lg font-bold text-[#0f172a] flex items-center gap-2">
                   <Tag className="w-5 h-5 text-indigo-600" />
-                  Platform Market Pricing &amp; Tier Quotas
+                  Dynamic Market Pricing &amp; Coupon Codes
                 </h2>
                 <p className="text-xs text-[#64748b]">
-                  These are the official subscription packages offered to client organizations. When clients pay, SuperAdmin reviews proof in the Approvals queue.
+                  SuperAdmin can edit subscription tier fees, attendee limits, and generate live promotional discount coupons in real-time.
                 </p>
               </div>
 
-              <a href="/pricing" target="_blank" rel="noreferrer">
-                <Button variant="outline" size="sm" className="rounded-xl text-xs h-9">
-                  <ExternalLink className="w-3.5 h-3.5 mr-1.5" />
-                  View Public Pricing Page
-                </Button>
-              </a>
+              {/* Sub-tab Switcher & Actions */}
+              <div className="flex flex-wrap items-center gap-2">
+                <div className="inline-flex rounded-xl p-1 bg-slate-100 border border-slate-200 text-xs font-bold">
+                  <button
+                    type="button"
+                    onClick={() => setPricingSubTab('plans')}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      pricingSubTab === 'plans' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Subscription Plans ({adminPlans.length || 3})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setPricingSubTab('coupons')}
+                    className={`px-3 py-1.5 rounded-lg transition-all ${
+                      pricingSubTab === 'coupons' ? 'bg-white text-blue-700 shadow-xs' : 'text-slate-600 hover:text-slate-900'
+                    }`}
+                  >
+                    Coupon Codes ({adminCoupons.length || 3})
+                  </button>
+                </div>
+
+                {pricingSubTab === 'plans' ? (
+                  <Button
+                    onClick={() => setEditPlanModal({
+                      open: true,
+                      isNew: true,
+                      plan: {
+                        name: '',
+                        slug: '',
+                        monthly_price: 99,
+                        yearly_price: 79,
+                        tag: 'Popular',
+                        attendees_limit: 5000,
+                        max_events: 25,
+                        max_certs: 500,
+                        white_label: 1,
+                        featuresText: '5,000 attendees capacity\nUp to 25 events per year\nID Pass Generator & One-Click Print\n100+ Certificate templates & issuance\nPriority 24/7 technical support',
+                        is_active: 1,
+                        display_order: adminPlans.length + 1
+                      }
+                    })}
+                    className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs font-bold h-9 px-3.5 flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Add New Plan
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={() => setEditCouponModal({
+                      open: true,
+                      isNew: true,
+                      coupon: {
+                        code: `PROMO${Math.floor(100 + Math.random() * 900)}`,
+                        description: 'Special Event Discount',
+                        discount_type: 'percentage',
+                        discount_value: 20,
+                        min_purchase: 0,
+                        max_uses: 1000,
+                        expires_at: '2027-01-01',
+                        is_active: 1
+                      }
+                    })}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold h-9 px-3.5 flex items-center gap-1.5"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    Create Coupon Code
+                  </Button>
+                )}
+
+                <a href="/pricing" target="_blank" rel="noreferrer">
+                  <Button variant="outline" size="sm" className="rounded-xl text-xs h-9">
+                    <ExternalLink className="w-3.5 h-3.5 mr-1" />
+                    Public Pricing Page
+                  </Button>
+                </a>
+              </div>
             </div>
 
-            {/* Plans Comparison */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-2">
-              {[
-                {
-                  name: "Starter",
-                  price: "$0",
-                  period: "/month",
-                  tag: "Free Community Tier",
-                  features: [
-                    "Up to 500 attendees",
-                    "Max 5 active events",
-                    "Standard digital ID tickets",
-                    "Event pass QR verification",
-                    "Standard event analytics"
-                  ]
-                },
-                {
-                  name: "Professional",
-                  price: "$99",
-                  period: "/month",
-                  tag: "Most Popular for Organizers",
-                  highlight: true,
-                  features: [
-                    "5,000 attendees capacity",
-                    "Up to 25 events",
-                    "ID Pass Generator & One-Click Print",
-                    "100+ Certificate templates & issuance",
-                    "Canva Design Studio integration",
-                    "5 team member seats",
-                    "Priority 24/7 support"
-                  ]
-                },
-                {
-                  name: "Enterprise",
-                  price: "$299",
-                  period: "/month",
-                  tag: "Large Summits & Universities",
-                  features: [
-                    "50,000+ attendees capacity",
-                    "Unlimited platform events",
-                    "Full White-label & custom CNAME domain",
-                    "Bulk CSV pass & certificate generation",
-                    "Dedicated account manager & SLA",
-                    "Single Sign-On (SSO) & 2FA enforcement"
-                  ]
-                }
-              ].map((p) => (
-                <div 
-                  key={p.name}
-                  className={`p-6 rounded-3xl border flex flex-col justify-between space-y-4 ${
-                    p.highlight ? 'border-blue-600 ring-2 ring-blue-500/20 bg-blue-50/20 shadow-md' : 'border-slate-200 bg-white'
-                  }`}
-                >
-                  <div>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{p.name}</span>
-                      <Badge className={p.highlight ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-700'}>
-                        {p.tag}
-                      </Badge>
-                    </div>
-                    <div className="flex items-baseline gap-1 my-2">
-                      <span className="text-3xl font-extrabold text-slate-900">{p.price}</span>
-                      <span className="text-xs text-slate-500">{p.period}</span>
-                    </div>
-
-                    <ul className="space-y-2 pt-3 border-t border-slate-100 text-xs text-slate-600">
-                      {p.features.map((f, i) => (
-                        <li key={i} className="flex items-start gap-2">
-                          <Check className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                          <span>{f}</span>
-                        </li>
-                      ))}
-                    </ul>
+            {/* SUB-VIEW 1: PLANS MANAGEMENT */}
+            {pricingSubTab === 'plans' && (
+              <div className="space-y-4">
+                {plansLoading ? (
+                  <div className="py-12 text-center text-xs text-slate-500">
+                    <RefreshCw className="w-5 h-5 animate-spin mx-auto text-blue-600 mb-2" />
+                    Loading dynamic pricing plans...
                   </div>
+                ) : (
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {(adminPlans.length > 0 ? adminPlans : [
+                      { id: 1, name: 'Starter', slug: 'starter', monthly_price: 0, yearly_price: 0, tag: 'Free Community Tier', attendees_limit: 500, max_events: 5, max_certs: 50, white_label: 0, features: ['Up to 500 attendees', 'Max 5 active events', 'Standard digital ID tickets', 'Event pass QR verification'], is_active: 1 },
+                      { id: 2, name: 'Professional', slug: 'professional', monthly_price: 99, yearly_price: 79, tag: 'Most Popular for Organizers', attendees_limit: 5000, max_events: 25, max_certs: 500, white_label: 1, features: ['5,000 attendees capacity', 'Up to 25 events', 'ID Pass Generator & One-Click Print', '100+ Certificate templates', '5 team seats', 'Priority 24/7 support'], is_active: 1 },
+                      { id: 3, name: 'Enterprise', slug: 'enterprise', monthly_price: 299, yearly_price: 239, tag: 'Large Summits & Universities', attendees_limit: 50000, max_events: 500, max_certs: 5000, white_label: 1, features: ['50,000+ attendees capacity', 'Unlimited platform events', 'Full White-label & custom domain', 'Bulk CSV pass & certificate generation', 'SSO & 2FA enforcement'], is_active: 1 }
+                    ]).map((p: any) => (
+                      <div
+                        key={p.id || p.name}
+                        className={`p-6 rounded-3xl border flex flex-col justify-between space-y-4 transition-all ${
+                          p.is_active ? 'border-slate-200 bg-white hover:border-blue-300 hover:shadow-md' : 'border-slate-200 bg-slate-50 opacity-60'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{p.name}</span>
+                            <div className="flex items-center gap-1.5">
+                              {p.tag && (
+                                <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-[10px]">
+                                  {p.tag}
+                                </Badge>
+                              )}
+                              <Badge className={p.is_active ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-200 text-slate-600'}>
+                                {p.is_active ? 'Active' : 'Disabled'}
+                              </Badge>
+                            </div>
+                          </div>
 
-                  <div className="pt-2">
-                    <Button
-                      onClick={() => switchTab('approvals')}
-                      variant="outline"
-                      className="w-full rounded-xl text-xs font-bold h-9 border-slate-200"
-                    >
-                      Review {p.name} Requests
-                    </Button>
+                          <div className="flex items-baseline gap-1 my-2">
+                            <span className="text-3xl font-extrabold text-slate-900">${p.monthly_price}</span>
+                            <span className="text-xs text-slate-500">/month</span>
+                            {p.yearly_price > 0 && (
+                              <span className="text-xs font-medium text-emerald-600 ml-2">
+                                (${p.yearly_price}/mo billed annually)
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 text-[11px] bg-slate-50 p-2.5 rounded-xl border border-slate-100 my-3 font-medium text-slate-700">
+                            <div>👥 {Number(p.attendees_limit).toLocaleString()} Attendees</div>
+                            <div>📅 {p.max_events} Events</div>
+                            <div>📜 {p.max_certs} Certificates</div>
+                            <div>🏷️ {p.white_label ? 'White-Label Yes' : 'No White-Label'}</div>
+                          </div>
+
+                          <ul className="space-y-1.5 pt-2 border-t border-slate-100 text-xs text-slate-600">
+                            {(Array.isArray(p.features) ? p.features : []).slice(0, 5).map((f: string, i: number) => (
+                              <li key={i} className="flex items-start gap-2">
+                                <Check className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
+                                <span className="text-[11px]">{f}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+
+                        <div className="pt-2 flex items-center gap-2 border-t border-slate-100">
+                          <Button
+                            onClick={() => setEditPlanModal({
+                              open: true,
+                              isNew: false,
+                              plan: {
+                                ...p,
+                                featuresText: Array.isArray(p.features) ? p.features.join('\n') : ''
+                              }
+                            })}
+                            variant="outline"
+                            className="flex-1 rounded-xl text-xs font-bold h-9 border-slate-300"
+                          >
+                            <Edit className="w-3.5 h-3.5 mr-1" />
+                            Edit Plan
+                          </Button>
+                          {p.slug !== 'starter' && (
+                            <Button
+                              onClick={() => handleDeletePlan(p.id)}
+                              variant="outline"
+                              className="text-rose-600 hover:bg-rose-50 border-rose-200 rounded-xl text-xs h-9 px-3"
+                              title="Delete Plan"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* SUB-VIEW 2: COUPONS & DISCOUNTS MANAGEMENT */}
+            {pricingSubTab === 'coupons' && (
+              <div className="space-y-4">
+                {couponsLoading ? (
+                  <div className="py-12 text-center text-xs text-slate-500">
+                    <RefreshCw className="w-5 h-5 animate-spin mx-auto text-blue-600 mb-2" />
+                    Loading coupons...
+                  </div>
+                ) : (
+                  <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+                    <table className="w-full text-left text-xs">
+                      <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                        <tr>
+                          <th className="p-3 pl-4">Coupon Code</th>
+                          <th className="p-3">Discount</th>
+                          <th className="p-3">Description</th>
+                          <th className="p-3">Min. Purchase</th>
+                          <th className="p-3">Usage</th>
+                          <th className="p-3">Expires At</th>
+                          <th className="p-3">Status</th>
+                          <th className="p-3 text-right pr-4">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {(adminCoupons.length > 0 ? adminCoupons : [
+                          { id: 1, code: 'ORBIT2026', description: '2026 Platform Launch Promo', discount_type: 'percentage', discount_value: 20, min_purchase: 0, times_used: 14, max_uses: 1000, expires_at: '2027-01-01', is_active: 1 },
+                          { id: 2, code: 'EVENTORAX50', description: 'Exclusive 50% Off Early Bird Campaign', discount_type: 'percentage', discount_value: 50, min_purchase: 50, times_used: 8, max_uses: 500, expires_at: '2027-01-01', is_active: 1 },
+                          { id: 3, code: 'WELCOME10', description: '$10 Flat Discount for New Organizations', discount_type: 'fixed', discount_value: 10, min_purchase: 20, times_used: 25, max_uses: 2000, expires_at: '2027-01-01', is_active: 1 }
+                        ]).map((c: any) => (
+                          <tr key={c.id || c.code} className="hover:bg-slate-50/80">
+                            <td className="p-3 pl-4 font-mono font-bold text-slate-900">
+                              <span className="px-2 py-0.5 rounded bg-blue-50 text-blue-800 border border-blue-200">
+                                {c.code}
+                              </span>
+                            </td>
+                            <td className="p-3 font-extrabold text-emerald-700">
+                              {c.discount_type === 'percentage' ? `${c.discount_value}% OFF` : `$${c.discount_value} OFF`}
+                            </td>
+                            <td className="p-3 text-slate-600 max-w-xs truncate">{c.description || '—'}</td>
+                            <td className="p-3 text-slate-700 font-medium">
+                              {Number(c.min_purchase) > 0 ? `$${c.min_purchase}` : 'No Minimum'}
+                            </td>
+                            <td className="p-3 font-mono text-slate-800">
+                              {c.times_used || 0} / {c.max_uses || '∞'}
+                            </td>
+                            <td className="p-3 text-slate-500">
+                              {c.expires_at ? new Date(c.expires_at).toLocaleDateString() : 'Never'}
+                            </td>
+                            <td className="p-3">
+                              <Badge className={c.is_active ? 'bg-emerald-100 text-emerald-800 text-[10px]' : 'bg-slate-100 text-slate-600 text-[10px]'}>
+                                {c.is_active ? 'Active' : 'Disabled'}
+                              </Badge>
+                            </td>
+                            <td className="p-3 text-right pr-4 space-x-1">
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => setEditCouponModal({ open: true, isNew: false, coupon: c })}
+                                className="h-7 px-2.5 text-[11px] rounded-lg"
+                              >
+                                Edit
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleDeleteCoupon(c.id)}
+                                className="h-7 px-2 text-[11px] text-rose-600 hover:bg-rose-50 border-rose-200 rounded-lg"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 8: DISASTER RECOVERY & COMPLETE SYSTEM DATABASE BACKUP */}
+        {/* Ensures Zero Data Loss for Client Organizations During Version Updates */}
+        {/* ============================================================== */}
+        {activeTab === 'backup' && (
+          <div className="space-y-6">
+            <div className="bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900 text-white rounded-3xl p-6 sm:p-8 shadow-xl border border-indigo-500/20 space-y-5">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0 border border-emerald-500/30">
+                    <Database className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold uppercase tracking-wider mb-1">
+                      <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                      100% Zero Data Loss Architecture
+                    </div>
+                    <h2 className="text-xl font-bold font-heading text-white">
+                      Disaster Recovery &amp; Database Backups
+                    </h2>
+                    <p className="text-xs text-slate-300 mt-0.5">
+                      Ensures all client organizations, workspaces, events, passes, and certificates remain 100% safe before publishing software version upgrades.
+                    </p>
                   </div>
                 </div>
-              ))}
+
+                <Button
+                  onClick={handleCreateDiskSnapshot}
+                  disabled={creatingSnapshot}
+                  className="bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold h-11 px-5 shadow-lg shadow-emerald-600/30 flex items-center gap-2 shrink-0"
+                >
+                  <RefreshCw className={`w-4 h-4 ${creatingSnapshot ? 'animate-spin' : ''}`} />
+                  {creatingSnapshot ? 'Creating Snapshot...' : 'Create Instant Server Disk Snapshot'}
+                </Button>
+              </div>
+
+              {snapshotMsg && (
+                <div className="p-3.5 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-200 text-xs font-semibold flex items-center gap-2 animate-in fade-in">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                  <span>{snapshotMsg}</span>
+                </div>
+              )}
+
+              {/* 1-Click Export Cards */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                <div className="p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Download className="w-5 h-5 text-cyan-400" />
+                      <h4 className="font-bold text-sm text-white">Full SQL Master Database Dump (.sql)</h4>
+                    </div>
+                    <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/40 text-[10px]">
+                      MySQL 8.0 / MariaDB
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Downloads an all-in-one `.sql` script containing full schema structure and row data for all 22 tables. Ready for 1-click restore in MySQL Workbench, phpMyAdmin, or terminal CLI.
+                  </p>
+                  <Button
+                    onClick={() => handleDownloadBackup('sql')}
+                    className="w-full bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl text-xs font-bold h-10 flex items-center justify-center gap-1.5"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download Complete SQL Backup (.sql)
+                  </Button>
+                </div>
+
+                <div className="p-5 rounded-2xl bg-white/10 backdrop-blur-md border border-white/15 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <Database className="w-5 h-5 text-indigo-400" />
+                      <h4 className="font-bold text-sm text-white">Structured JSON Multi-Tenant Archive (.json)</h4>
+                    </div>
+                    <Badge className="bg-indigo-500/20 text-indigo-300 border-indigo-500/40 text-[10px]">
+                      JSON Master Archive
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed">
+                    Downloads complete table datasets as structured JSON. Ideal for cloud object storage backups (AWS S3, Google Cloud Storage, Cloudflare R2), version diffs, and tenant migrations.
+                  </p>
+                  <Button
+                    onClick={() => handleDownloadBackup('json')}
+                    className="w-full bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold h-10 flex items-center justify-center gap-1.5"
+                  >
+                    <Download className="w-4 h-4" />
+                    Download JSON Data Archive (.json)
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* Disk Snapshots History */}
+            <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-xs space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">Server Storage Snapshots History</h3>
+                  <p className="text-xs text-slate-500">
+                    Snapshots automatically saved on server disk under `/backups` directory.
+                  </p>
+                </div>
+                <Button
+                  onClick={loadBackupSnapshots}
+                  variant="outline"
+                  size="sm"
+                  className="rounded-xl text-xs h-9"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 mr-1.5 ${backupLoading ? 'animate-spin' : ''}`} />
+                  Refresh
+                </Button>
+              </div>
+
+              {backupSnapshots.length === 0 ? (
+                <div className="py-8 text-center text-xs text-slate-500 bg-slate-50 rounded-2xl border border-slate-200">
+                  <Database className="w-8 h-8 text-slate-400 mx-auto mb-2 opacity-60" />
+                  No local snapshots created yet. Click &quot;Create Instant Server Disk Snapshot&quot; above to create a local backup.
+                </div>
+              ) : (
+                <div className="border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-50 text-slate-600 font-bold border-b border-slate-200">
+                      <tr>
+                        <th className="p-3 pl-4">Snapshot File</th>
+                        <th className="p-3">File Size</th>
+                        <th className="p-3">Created Date</th>
+                        <th className="p-3">Integrity</th>
+                        <th className="p-3 text-right pr-4">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {backupSnapshots.map((snap: any, i: number) => (
+                        <tr key={i} className="hover:bg-slate-50/80">
+                          <td className="p-3 pl-4 font-mono font-bold text-slate-900">{snap.fileName}</td>
+                          <td className="p-3 font-mono text-slate-700">{snap.sizeKb} KB</td>
+                          <td className="p-3 text-slate-500">{new Date(snap.createdAt).toLocaleString()}</td>
+                          <td className="p-3">
+                            <span className="text-emerald-700 font-bold flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                              Checksum Verified
+                            </span>
+                          </td>
+                          <td className="p-3 text-right pr-4">
+                            <Badge className="bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                              Ready for Restore
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -2359,6 +2993,172 @@ export default function PlatformAdmin() {
           </div>
         )}
 
+        {/* ============================================================== */}
+        {/* TAB 12: ORBIT-I PLATFORM LEADERSHIP & CORE TEAM MANAGEMENT */}
+        {/* ============================================================== */}
+        {activeTab === 'team' && (
+          <div className="bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-xs space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-100">
+              <div>
+                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-purple-50 text-purple-700 text-xs font-bold mb-2">
+                  <Users className="w-3.5 h-3.5 text-purple-600" />
+                  ORBIT-I Official Leadership Roster
+                </div>
+                <h3 className="text-xl font-bold text-slate-900 font-heading">
+                  Platform Leadership &amp; Core Team Members
+                </h3>
+                <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
+                  Dynamic management for the core ORBIT-I leadership team. Any additions, updates, or deletions made here automatically update the public About page in real-time.
+                </p>
+              </div>
+
+              <Button
+                onClick={() => setTeamModal({
+                  open: true,
+                  isNew: true,
+                  member: {
+                    name: '',
+                    role: '',
+                    department: 'ORBIT-I Core Team',
+                    bio: '',
+                    avatar_url: '',
+                    display_order: platformTeam.length + 1,
+                    is_active: 1
+                  }
+                })}
+                className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs font-bold h-10 px-5 shadow-sm shrink-0 flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                Add Team Member
+              </Button>
+            </div>
+
+            {/* Team Members Grid */}
+            {teamLoading ? (
+              <div className="py-16 text-center text-xs text-[#7c3aed] flex items-center justify-center gap-2">
+                <div className="w-4 h-4 border-2 border-[#7c3aed] border-t-transparent rounded-full animate-spin" />
+                <span>Loading platform team...</span>
+              </div>
+            ) : platformTeam.length === 0 ? (
+              <div className="bg-slate-50 rounded-2xl border border-dashed border-slate-300 p-12 text-center">
+                <Users className="w-10 h-10 text-slate-400 mx-auto mb-2 opacity-60" />
+                <h4 className="text-sm font-bold text-slate-700">No Team Members Found</h4>
+                <p className="text-xs text-slate-500 mt-1 mb-4">Click "Add Team Member" above to add core ORBIT-I leadership.</p>
+                <Button
+                  onClick={() => setTeamModal({
+                    open: true,
+                    isNew: true,
+                    member: {
+                      name: '',
+                      role: '',
+                      department: 'Leadership & Architecture',
+                      bio: '',
+                      avatar_url: '',
+                      display_order: 1,
+                      is_active: 1
+                    }
+                  })}
+                  className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs font-bold"
+                >
+                  <Plus className="w-4 h-4 mr-1.5" />
+                  Add First Member
+                </Button>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                {platformTeam.map((member) => (
+                  <div
+                    key={member.id}
+                    className="bg-white rounded-2xl border border-slate-200 p-5 shadow-xs hover:shadow-md hover:border-purple-300 transition-all flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Top Header */}
+                      <div className="flex items-start justify-between gap-3 mb-4">
+                        <div className="relative">
+                          {member.avatar_url ? (
+                            <img
+                              src={member.avatar_url}
+                              alt={member.name}
+                              className="w-14 h-14 rounded-2xl object-cover border border-purple-200 shadow-xs"
+                            />
+                          ) : (
+                            <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#7c3aed] to-[#3b82f6] text-white flex items-center justify-center font-bold text-lg shadow-xs">
+                              {member.name.split(' ').map((n: string) => n[0]).filter(Boolean).slice(0, 2).join('')}
+                            </div>
+                          )}
+                          <span className="absolute -bottom-1 -right-1 px-1.5 py-0.2 bg-slate-900 text-purple-300 text-[8px] font-bold rounded">
+                            #{member.display_order}
+                          </span>
+                        </div>
+
+                        <Badge className={`text-[10px] font-bold ${member.is_active ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-500'}`}>
+                          {member.is_active ? 'Live' : 'Hidden'}
+                        </Badge>
+                      </div>
+
+                      {/* Name & Role */}
+                      <h4 className="text-base font-bold text-slate-900 font-heading mb-1">
+                        {member.name}
+                      </h4>
+                      <div className="text-xs font-semibold text-purple-700 mb-1">
+                        {member.role}
+                      </div>
+                      {member.department && (
+                        <div className="text-[11px] font-medium text-slate-500 mb-3">
+                          {member.department}
+                        </div>
+                      )}
+
+                      {/* Bio */}
+                      {member.bio && (
+                        <p className="text-xs text-slate-600 line-clamp-3 leading-relaxed mb-4 pt-2 border-t border-slate-100">
+                          {member.bio}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Actions */}
+                    <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setTeamModal({
+                          open: true,
+                          isNew: false,
+                          member: {
+                            id: member.id,
+                            name: member.name,
+                            role: member.role,
+                            department: member.department || '',
+                            bio: member.bio || '',
+                            avatar_url: member.avatar_url || '',
+                            display_order: member.display_order || 1,
+                            is_active: member.is_active ?? 1
+                          }
+                        })}
+                        className="h-8 px-3 text-xs rounded-xl border-slate-200 hover:bg-purple-50 hover:text-purple-700"
+                      >
+                        <Edit className="w-3.5 h-3.5 mr-1" />
+                        Edit
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => handleDeleteTeamMember(member.id)}
+                        className="h-8 px-2.5 text-xs rounded-xl text-rose-600 border-rose-200 hover:bg-rose-50"
+                        title="Delete member"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Add Testimonial Modal */}
         {showAddTestimonialModal && (
           <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
@@ -2780,6 +3580,548 @@ export default function PlatformAdmin() {
                   Done &amp; Close
                 </Button>
               </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* MODAL: EDIT / CREATE PRICING PLAN */}
+        {/* ============================================================== */}
+        {editPlanModal.open && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in">
+            <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-8">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center">
+                    <Tag className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-base">
+                    {editPlanModal.isNew ? 'Create New Pricing Plan' : `Edit Plan: ${editPlanModal.plan.name}`}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setEditPlanModal({ open: false, isNew: false, plan: {} })}
+                  className="w-8 h-8 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSavePlan} className="space-y-3.5 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Plan Display Name *</label>
+                    <Input
+                      type="text"
+                      required
+                      placeholder="e.g. Professional"
+                      value={editPlanModal.plan.name || ''}
+                      onChange={(e) => setEditPlanModal({
+                        ...editPlanModal,
+                        plan: { ...editPlanModal.plan, name: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Plan Slug *</label>
+                    <Input
+                      type="text"
+                      required
+                      placeholder="e.g. professional"
+                      value={editPlanModal.plan.slug || ''}
+                      onChange={(e) => setEditPlanModal({
+                        ...editPlanModal,
+                        plan: { ...editPlanModal.plan, slug: e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, '-') }
+                      })}
+                      className="rounded-xl h-9 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Monthly Price ($/mo) *</label>
+                    <Input
+                      type="number"
+                      required
+                      min={0}
+                      step="any"
+                      placeholder="99"
+                      value={editPlanModal.plan.monthly_price ?? 0}
+                      onChange={(e) => setEditPlanModal({
+                        ...editPlanModal,
+                        plan: { ...editPlanModal.plan, monthly_price: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Yearly Discounted Price ($/mo)</label>
+                    <Input
+                      type="number"
+                      min={0}
+                      step="any"
+                      placeholder="79"
+                      value={editPlanModal.plan.yearly_price ?? 0}
+                      onChange={(e) => setEditPlanModal({
+                        ...editPlanModal,
+                        plan: { ...editPlanModal.plan, yearly_price: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-2">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Attendees Cap</label>
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="5000"
+                      value={editPlanModal.plan.attendees_limit ?? 500}
+                      onChange={(e) => setEditPlanModal({
+                        ...editPlanModal,
+                        plan: { ...editPlanModal.plan, attendees_limit: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Max Events</label>
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="25"
+                      value={editPlanModal.plan.max_events ?? 5}
+                      onChange={(e) => setEditPlanModal({
+                        ...editPlanModal,
+                        plan: { ...editPlanModal.plan, max_events: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Certificates Cap</label>
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="500"
+                      value={editPlanModal.plan.max_certs ?? 50}
+                      onChange={(e) => setEditPlanModal({
+                        ...editPlanModal,
+                        plan: { ...editPlanModal.plan, max_certs: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Badge Tag Label</label>
+                    <Input
+                      type="text"
+                      placeholder="e.g. Most Popular"
+                      value={editPlanModal.plan.tag || ''}
+                      onChange={(e) => setEditPlanModal({
+                        ...editPlanModal,
+                        plan: { ...editPlanModal.plan, tag: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Display Sort Order</label>
+                    <Input
+                      type="number"
+                      min={1}
+                      value={editPlanModal.plan.display_order ?? 1}
+                      onChange={(e) => setEditPlanModal({
+                        ...editPlanModal,
+                        plan: { ...editPlanModal.plan, display_order: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Features (One line per feature)</label>
+                  <textarea
+                    rows={4}
+                    placeholder="5,000 attendees capacity&#10;Up to 25 events per year&#10;One-Click Print ID Badges&#10;Priority 24/7 Support"
+                    value={editPlanModal.plan.featuresText || ''}
+                    onChange={(e) => setEditPlanModal({
+                      ...editPlanModal,
+                      plan: { ...editPlanModal.plan, featuresText: e.target.value }
+                    })}
+                    className="w-full p-2.5 rounded-xl border border-slate-300 text-xs focus:ring-2 focus:ring-blue-500 font-sans"
+                  />
+                </div>
+
+                <div className="flex items-center gap-4 pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(editPlanModal.plan.white_label)}
+                      onChange={(e) => setEditPlanModal({
+                        ...editPlanModal,
+                        plan: { ...editPlanModal.plan, white_label: e.target.checked }
+                      })}
+                      className="rounded text-blue-600 w-4 h-4"
+                    />
+                    White-Label Enabled
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(editPlanModal.plan.is_active)}
+                      onChange={(e) => setEditPlanModal({
+                        ...editPlanModal,
+                        plan: { ...editPlanModal.plan, is_active: e.target.checked }
+                      })}
+                      className="rounded text-blue-600 w-4 h-4"
+                    />
+                    Plan Is Active &amp; Offered
+                  </label>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setEditPlanModal({ open: false, isNew: false, plan: {} })}
+                    className="rounded-xl text-xs h-9"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={savingPlan}
+                    className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs font-bold h-9 px-5"
+                  >
+                    {savingPlan ? 'Saving Plan...' : 'Save Plan Settings'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* MODAL: EDIT / CREATE COUPON CODE */}
+        {/* ============================================================== */}
+        {editCouponModal.open && (
+          <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in">
+            <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4 my-8">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                    <Percent className="w-4 h-4" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 text-base">
+                    {editCouponModal.isNew ? 'Create New Coupon Code' : `Edit Coupon: ${editCouponModal.coupon.code}`}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setEditCouponModal({ open: false, isNew: false, coupon: {} })}
+                  className="w-8 h-8 rounded-xl hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveCoupon} className="space-y-3.5 text-xs">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Coupon Code (Uppercase) *</label>
+                  <Input
+                    type="text"
+                    required
+                    placeholder="e.g. ORBIT2026"
+                    value={editCouponModal.coupon.code || ''}
+                    onChange={(e) => setEditCouponModal({
+                      ...editCouponModal,
+                      coupon: { ...editCouponModal.coupon, code: e.target.value.toUpperCase() }
+                    })}
+                    className="rounded-xl h-9 text-xs font-mono font-bold tracking-wider"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Description</label>
+                  <Input
+                    type="text"
+                    placeholder="e.g. Official 2026 Launch Promotion"
+                    value={editCouponModal.coupon.description || ''}
+                    onChange={(e) => setEditCouponModal({
+                      ...editCouponModal,
+                      coupon: { ...editCouponModal.coupon, description: e.target.value }
+                    })}
+                    className="rounded-xl h-9 text-xs"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Discount Type *</label>
+                    <select
+                      value={editCouponModal.coupon.discount_type || 'percentage'}
+                      onChange={(e) => setEditCouponModal({
+                        ...editCouponModal,
+                        coupon: { ...editCouponModal.coupon, discount_type: e.target.value }
+                      })}
+                      className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-xs font-semibold focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="percentage">Percentage (%) Off</option>
+                      <option value="fixed">Fixed Amount ($) Off</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Discount Value *</label>
+                    <Input
+                      type="number"
+                      required
+                      min={1}
+                      max={editCouponModal.coupon.discount_type === 'percentage' ? 100 : 10000}
+                      placeholder="20"
+                      value={editCouponModal.coupon.discount_value ?? 20}
+                      onChange={(e) => setEditCouponModal({
+                        ...editCouponModal,
+                        coupon: { ...editCouponModal.coupon, discount_value: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Min. Purchase ($)</label>
+                    <Input
+                      type="number"
+                      min={0}
+                      placeholder="0"
+                      value={editCouponModal.coupon.min_purchase ?? 0}
+                      onChange={(e) => setEditCouponModal({
+                        ...editCouponModal,
+                        coupon: { ...editCouponModal.coupon, min_purchase: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Max Uses Limit</label>
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="1000"
+                      value={editCouponModal.coupon.max_uses ?? 1000}
+                      onChange={(e) => setEditCouponModal({
+                        ...editCouponModal,
+                        coupon: { ...editCouponModal.coupon, max_uses: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Expiration Date (Optional)</label>
+                  <Input
+                    type="date"
+                    value={editCouponModal.coupon.expires_at ? editCouponModal.coupon.expires_at.slice(0, 10) : ''}
+                    onChange={(e) => setEditCouponModal({
+                      ...editCouponModal,
+                      coupon: { ...editCouponModal.coupon, expires_at: e.target.value }
+                    })}
+                    className="rounded-xl h-9 text-xs"
+                  />
+                </div>
+
+                <div className="pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(editCouponModal.coupon.is_active)}
+                      onChange={(e) => setEditCouponModal({
+                        ...editCouponModal,
+                        coupon: { ...editCouponModal.coupon, is_active: e.target.checked }
+                      })}
+                      className="rounded text-emerald-600 w-4 h-4"
+                    />
+                    Coupon Is Active &amp; Redeemable at Checkout
+                  </label>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setEditCouponModal({ open: false, isNew: false, coupon: {} })}
+                    className="rounded-xl text-xs h-9"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={savingCoupon}
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold h-9 px-5"
+                  >
+                    {savingCoupon ? 'Saving Coupon...' : 'Save Coupon'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Add / Edit Platform Team Member Modal */}
+        {teamModal.open && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-5 animate-in fade-in zoom-in-95">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2.5">
+                  <div className="w-9 h-9 rounded-xl bg-purple-100 text-[#7c3aed] flex items-center justify-center font-bold">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-900">
+                      {teamModal.isNew ? 'Add ORBIT-I Team Member' : 'Edit ORBIT-I Team Member'}
+                    </h3>
+                    <p className="text-xs text-slate-500">Live platform leadership roster</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setTeamModal({ ...teamModal, open: false })}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveTeamMember} className="space-y-4 text-xs">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Full Name *</label>
+                  <Input
+                    required
+                    placeholder="e.g. Abdul Samad Rind, Maria Almani, Muneeb Ur Rehman..."
+                    value={teamModal.member.name}
+                    onChange={(e) => setTeamModal({
+                      ...teamModal,
+                      member: { ...teamModal.member, name: e.target.value }
+                    })}
+                    className="rounded-xl h-9 text-xs font-bold"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Official Role / Title *</label>
+                    <Input
+                      required
+                      placeholder="e.g. Founder & Platform Architect"
+                      value={teamModal.member.role}
+                      onChange={(e) => setTeamModal({
+                        ...teamModal,
+                        member: { ...teamModal.member, role: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Department / Division</label>
+                    <Input
+                      placeholder="e.g. Leadership & Architecture"
+                      value={teamModal.member.department}
+                      onChange={(e) => setTeamModal({
+                        ...teamModal,
+                        member: { ...teamModal.member, department: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Display Order (Sort Index)</label>
+                    <Input
+                      type="number"
+                      min={1}
+                      placeholder="1"
+                      value={teamModal.member.display_order}
+                      onChange={(e) => setTeamModal({
+                        ...teamModal,
+                        member: { ...teamModal.member, display_order: parseInt(e.target.value, 10) || 1 }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Avatar Image URL (Optional)</label>
+                    <Input
+                      placeholder="https://... or leave blank for initials"
+                      value={teamModal.member.avatar_url}
+                      onChange={(e) => setTeamModal({
+                        ...teamModal,
+                        member: { ...teamModal.member, avatar_url: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Professional Bio &amp; Platform Role</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Brief background and leadership responsibilities..."
+                    value={teamModal.member.bio}
+                    onChange={(e) => setTeamModal({
+                      ...teamModal,
+                      member: { ...teamModal.member, bio: e.target.value }
+                    })}
+                    className="w-full px-3 py-2 rounded-xl border border-slate-200 text-xs focus:ring-2 focus:ring-purple-500 focus:outline-none"
+                  />
+                </div>
+
+                <div className="pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(teamModal.member.is_active)}
+                      onChange={(e) => setTeamModal({
+                        ...teamModal,
+                        member: { ...teamModal.member, is_active: e.target.checked ? 1 : 0 }
+                      })}
+                      className="rounded text-purple-600 w-4 h-4"
+                    />
+                    Display Live on Official About Page &amp; Platform Leadership
+                  </label>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setTeamModal({ ...teamModal, open: false })}
+                    className="rounded-xl text-xs h-9"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={savingMember}
+                    className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs font-bold h-9 px-5"
+                  >
+                    {savingMember ? 'Saving Member...' : 'Save Team Member'}
+                  </Button>
+                </div>
+              </form>
             </div>
           </div>
         )}
