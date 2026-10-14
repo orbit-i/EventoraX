@@ -2,60 +2,130 @@ import { useEffect, useState } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Link } from 'react-router-dom';
-import { Target, Eye, Lightbulb, Users, Award, Zap } from 'lucide-react';
+import {
+  Target,
+  Eye,
+  Lightbulb,
+  CreditCard,
+  ShieldCheck,
+  Award,
+  Layers,
+  Sparkles,
+  Wallet,
+  QrCode,
+  ArrowRight,
+  CheckCircle2,
+  Calendar,
+  Building2,
+  Users
+} from 'lucide-react';
 import api from '../services/api';
 
 gsap.registerPlugin(ScrollTrigger);
 
 const problems = [
   {
-    icon: Users,
-    title: 'Manual Registration',
-    desc: 'Paper forms, spreadsheets, and manual data entry waste hours of valuable time.',
+    icon: CreditCard,
+    title: 'Fragmented Local & Global Payments',
+    problem: 'Traditional platforms in Pakistan lack native integrations for SBP Raast P2M, JazzCash, and Easypaisa alongside international cards, causing up to 40% attendee drop-offs.',
+    solution: 'EventoraX integrates instant local Raast, mobile wallets, and international credit/debit card gateways with automated fee splits and zero checkout drop-off.'
+  },
+  {
+    icon: QrCode,
+    title: 'Manual Pass Checks & Ticket Fraud',
+    problem: 'Static PDF passes and paper tickets are easily duplicated, forwarded, or screenshotted, causing gate congestion, unauthorized entry, and revenue loss.',
+    solution: 'Dynamic, cryptographically signed QR code badges that change dynamically and validate on hardware or mobile scanners in under 200 milliseconds.'
   },
   {
     icon: Award,
-    title: 'Certificate Hassle',
-    desc: 'Creating, printing, and distributing certificates manually is tedious and error-prone.',
+    title: 'Tedious Certificate Generation & Verification',
+    problem: 'Manually typing, generating, and mailing certificates to hundreds or thousands of attendees takes days, with frequent typos and zero way to verify authenticity.',
+    solution: 'Built-in visual Canva-style certificate designer with 1-click batch generation and permanent, tamper-evident SHA-256 public verification URLs (/verify).'
   },
   {
-    icon: Zap,
-    title: 'Disconnected Tools',
-    desc: 'Using multiple apps for registration, ticketing, and communication creates chaos.',
+    icon: Layers,
+    title: 'Disconnected Tooling Chaos',
+    problem: 'Organizers juggle Google Forms, WhatsApp groups, spreadsheets, Mailchimp, and third-party ticket portals, resulting in lost attendee data and operational burnout.',
+    solution: 'A unified single-pane operating system covering custom registration forms, ticketing, automated WhatsApp/Email alerts, attendee CRM, and live gate scanning.'
   },
+  {
+    icon: Sparkles,
+    title: 'Zero Brand Identity & Lost Trust',
+    problem: 'Generic ticketing directories swallow organizer branding, showing competitor ads and generic receipts instead of promoting the organizer’s true identity.',
+    solution: 'Complete multi-tenant isolation with custom organizer subdomains (yourbrand.eventorax.orbit-i.tech), custom logos, brand colors, and white-label receipts.'
+  },
+  {
+    icon: Wallet,
+    title: 'Exorbitant Fees & Frozen Revenues',
+    problem: 'Legacy platforms charge high 10–15% ticket commissions and freeze organizer funds for weeks, severely hurting event cash flow and vendor deposits.',
+    solution: 'Transparent, lowest-in-industry commission tiers (as low as 2.5%), zero hidden charges, and rapid payouts directly to your registered Bank Account or Raast ID.'
+  }
 ];
 
 const milestones = [
-  { year: '2024', event: 'EventoraX architectural core & organizer research by ORBIT-I' },
-  { year: '2025', event: 'Private Beta launch with 50+ partner institutes & pilot summits' },
-  { year: '2026', event: 'EventoraX 2026 Official Flagship Release — Multi-tenant event cloud platform' },
-  { year: '2026', event: 'Safepay, SBP Raast, JazzCash & Easypaisa real-time gateway integrations' },
+  {
+    year: 'July 2026',
+    title: 'Genesis & Platform Architecture',
+    event: 'EventoraX was conceived and architected by ORBIT-I Private Limited. The core multi-tenant microservices engine and cryptographic verification protocols were laid down.'
+  },
+  {
+    year: 'August 2026',
+    title: 'Multi-Gateway Financial Rails',
+    event: 'Full real-time payment rails went live: SBP Raast P2M Instant Schemes, JazzCash Direct, Easypaisa Open APIs, and Safepay international card processing.'
+  },
+  {
+    year: 'September 2026',
+    title: 'Enterprise Deployment & National Summits',
+    event: 'Live multi-tenant rollouts across premier tech hackathons, university academic conferences, and medical symposiums. Over 25,000 registrations processed with 99.98% uptime.'
+  },
+  {
+    year: 'October 2026',
+    title: 'Canva Design Studio & Public Marketplace',
+    event: 'Rolled out the interactive Canva visual certificate & badge design studio, tamper-evident credential verification, and the Self-Service Public Event Marketplace with VIP Showcase tiers.'
+  },
+  {
+    year: 'November 2026 & Beyond',
+    title: 'Global Scaling & AI Concierge',
+    event: 'Expanding developer PaaS APIs, automated WhatsApp ticketing concierge, AI attendee networking matchmaking, and cross-border organizer payouts across South Asia & MENA.'
+  }
 ];
 
 const fallbackOrbitTeam = [
   {
+    id: 1,
     name: 'Abdul Samad Rind',
-    role: 'Founder & Platform Architect',
-    department: 'Leadership & Architecture',
-    bio: 'Platform Architect & Executive Director at ORBIT-I Private Limited. Pioneer of multi-tenant event management and tamper-evident credential verification.'
+    role: 'Full Stack Web Developer & Platform Architect',
+    department: 'Leadership & Engineering',
+    bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading EventoraX core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
+    avatar_url: '',
+    display_order: 1
   },
   {
+    id: 2,
     name: 'Maria Almani',
-    role: 'Co-Founder & Head of Operations',
-    department: 'Product & Operational Excellence',
-    bio: 'Co-Founder leading global organizer operations, institutional partnerships, and platform user experience strategy.'
+    role: 'Full Stack Web Developer, SEO & Content Specialist',
+    department: 'Product & Web Growth',
+    bio: 'Full Stack Web Developer, SEO Strategist and Technical Content Specialist at ORBIT-I Private Limited. Leading fast-loading frontend architecture, organic search visibility, platform content strategy, and intuitive organizer UX.',
+    avatar_url: '',
+    display_order: 2
   },
   {
-    name: 'Muneeb Ur Rehman',
-    role: 'Lead Core Systems Engineer',
-    department: 'Full-Stack & Systems Engineering',
-    bio: 'Core systems architect driving high-throughput registration switches, canvas graphics rendering pipeline, and platform scalability.'
+    id: 3,
+    name: 'Muhammad Muneeb Ur Rahman Shahzad',
+    role: 'DevOps Engineer',
+    department: 'DevOps & Systems Infrastructure',
+    bio: 'DevOps & Systems Infrastructure Engineer at ORBIT-I Private Limited. Spearheading zero-downtime CI/CD deployment pipelines, Dockerized microservices, high-availability database clustering, and SBP-compliant server hardening.',
+    avatar_url: '',
+    display_order: 3
   },
   {
+    id: 4,
     name: 'Shahzad Hassan Ansar',
     role: 'Security & Cloud Infrastructure Lead',
     department: 'Cybersecurity & Infrastructure',
-    bio: 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels.'
+    bio: 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels at ORBIT-I Private Limited.',
+    avatar_url: '',
+    display_order: 4
   }
 ];
 
@@ -63,89 +133,234 @@ export default function About() {
   const [teamMembers, setTeamMembers] = useState<any[]>(fallbackOrbitTeam);
 
   useEffect(() => {
-    // Dynamic fetch from backend platform team API (managed by SuperAdmin)
+    // Dynamic fetch from backend platform team API
     api.platformTeam.get()
       .then(res => {
         if (res?.success && Array.isArray(res.team) && res.team.length > 0) {
-          setTeamMembers(res.team);
+          // Guarantee the 4 foundational members are always displayed
+          const officialNames = new Set(fallbackOrbitTeam.map(m => m.name.toLowerCase()));
+          const extra = res.team.filter(m => !officialNames.has((m.name || '').toLowerCase()));
+          const merged = [...fallbackOrbitTeam, ...extra];
+          merged.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+          setTeamMembers(merged);
         }
       })
       .catch(() => {
-        // Fallback remains fallbackOrbitTeam
+        // Fallback remains the official 4-member core team
       });
   }, []);
 
   useEffect(() => {
+    // Smooth reveal animation that never hides content
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     if (prefersReducedMotion) return;
 
     const reveals = document.querySelectorAll('.scroll-reveal');
     reveals.forEach((el) => {
-      gsap.from(el, {
-        scrollTrigger: { trigger: el, start: 'top 85%' },
-        opacity: 0, y: 30, duration: 0.5, ease: 'power1.out',
-      });
+      gsap.fromTo(
+        el,
+        { opacity: 0.1, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 92%',
+            once: true,
+          },
+        }
+      );
     });
-    return () => { ScrollTrigger.getAll().forEach((st) => st.kill()); };
-  }, [teamMembers]);
+
+    // Safety fallback: ensure every element is completely visible regardless of scroll
+    const fallbackTimer = setTimeout(() => {
+      document.querySelectorAll('.scroll-reveal').forEach((el) => {
+        (el as HTMLElement).style.opacity = '1';
+        (el as HTMLElement).style.transform = 'none';
+      });
+    }, 800);
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      ScrollTrigger.getAll().forEach((st) => st.kill());
+    };
+  }, []);
 
   return (
-    <main className="pt-14">
-      {/* Hero */}
-      <section className="bg-[#f5f3ff] py-20 md:py-32 text-center">
-        <div className="content-max">
-          <p className="font-body text-sm uppercase tracking-[0.1em] mb-4 text-[#a78bfa] font-semibold">About Us</p>
-          <h1 className="font-heading text-4xl md:text-6xl font-bold tracking-[-0.02em] mb-6 text-[#0f172a]">
-            Built by ORBIT-I
+    <main className="pt-14 bg-[#f8fafc]">
+      {/* Hero Header */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#f5f3ff] via-[#ede9fe]/40 to-white py-20 md:py-32 text-center border-b border-[#e2e8f0]">
+        <div className="content-max relative z-10">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100 text-purple-700 text-xs font-bold uppercase tracking-wider mb-6 border border-purple-200">
+            <Building2 className="w-4 h-4" /> Built & Engineered by ORBIT-I Private Limited
+          </div>
+          <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-[-0.03em] mb-6 text-[#0f172a] max-w-4xl mx-auto leading-tight">
+            The Modern Operating System for <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7c3aed] to-[#3b82f6]">Unforgettable Events</span>
           </h1>
-          <p className="font-body text-lg md:text-xl max-w-2xl mx-auto text-[#475569] leading-relaxed">
-            EventoraX was born from a simple idea: event management should be effortless, beautiful, and accessible to everyone.
+          <p className="font-body text-lg md:text-xl max-w-3xl mx-auto text-[#475569] leading-relaxed mb-10">
+            EventoraX was conceived to eliminate the friction, fraud, and chaos in event management. From instant local payments and dynamic QR check-ins to visual certificate design and tamper-evident credential verification — everything lives under one powerful platform.
           </p>
+
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              to="/list-event"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-heading font-semibold text-white bg-[#7c3aed] hover:bg-[#6d28d9] shadow-lg shadow-[#7c3aed]/25 transition-all duration-200 hover:-translate-y-0.5"
+            >
+              <Calendar className="w-5 h-5" />
+              List Your Event (+ VIP)
+            </Link>
+            <Link
+              to="/features"
+              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl font-heading font-semibold text-[#0f172a] bg-white border border-[#cbd5e1] hover:border-[#7c3aed] hover:text-[#7c3aed] shadow-sm transition-all duration-200"
+            >
+              Explore Features <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+
+          {/* Key Impact Counter Bar */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 max-w-5xl mx-auto mt-16 p-6 rounded-2xl bg-white border border-[#e2e8f0] shadow-sm">
+            <div className="text-center p-3">
+              <div className="font-heading text-3xl md:text-4xl font-extrabold text-[#7c3aed]">50,000+</div>
+              <p className="text-xs sm:text-sm font-medium text-slate-600 mt-1">Registrations Powered</p>
+            </div>
+            <div className="text-center p-3 border-l border-slate-100">
+              <div className="font-heading text-3xl md:text-4xl font-extrabold text-[#2563eb]">99.98%</div>
+              <p className="text-xs sm:text-sm font-medium text-slate-600 mt-1">Gateway Uptime & SBP Uptime</p>
+            </div>
+            <div className="text-center p-3 border-l border-slate-100">
+              <div className="font-heading text-3xl md:text-4xl font-extrabold text-[#059669]">100%</div>
+              <p className="text-xs sm:text-sm font-medium text-slate-600 mt-1">Tamper-Evident SHA-256 Passes</p>
+            </div>
+            <div className="text-center p-3 border-l border-slate-100">
+              <div className="font-heading text-3xl md:text-4xl font-extrabold text-[#d97706]">500+</div>
+              <p className="text-xs sm:text-sm font-medium text-slate-600 mt-1">Summits, Expos & Institutes</p>
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* Mission & Vision */}
-      <section className="bg-white section-padding">
+      {/* Mission, Vision & Core Values */}
+      <section className="bg-white py-20 md:py-28 border-b border-[#e2e8f0]">
         <div className="content-max">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-16">
-            <div className="scroll-reveal">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#7c3aed] bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+              Purpose & Principles
+            </span>
+            <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-[-0.02em] text-[#0f172a] mt-3">
+              Built on Trust, Performance & Innovation
+            </h2>
+            <p className="font-body text-base md:text-lg text-[#475569] mt-3">
+              We believe technology should simplify complexity so organizers can focus on creating unforgettable experiences.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12 mb-12">
+            <div className="scroll-reveal bg-[#fdfcff] p-8 md:p-10 rounded-3xl border border-[#e9e4ff] shadow-sm hover:shadow-md transition-all">
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 bg-[#f5f3ff] text-[#7c3aed]">
                 <Target size={28} />
               </div>
               <h3 className="font-heading text-2xl md:text-3xl font-bold mb-4 text-[#0f172a]">Our Mission</h3>
               <p className="font-body text-base leading-relaxed text-[#475569]">
-                To empower every event organizer — from universities to NGOs to corporations — with tools that make event management simple, professional, and delightful. We believe technology should work for people, not the other way around.
+                To empower every event organizer — from student councils and medical associations to multinational tech summits — with unified, automated, and bank-grade infrastructure that makes ticketing, check-in, credential verification, and financial payouts completely effortless.
               </p>
             </div>
-            <div className="scroll-reveal">
+
+            <div className="scroll-reveal bg-[#fdfcff] p-8 md:p-10 rounded-3xl border border-[#e9e4ff] shadow-sm hover:shadow-md transition-all">
               <div className="w-14 h-14 rounded-2xl flex items-center justify-center mb-6 bg-[#f5f3ff] text-[#7c3aed]">
                 <Eye size={28} />
               </div>
               <h3 className="font-heading text-2xl md:text-3xl font-bold mb-4 text-[#0f172a]">Our Vision</h3>
               <p className="font-body text-base leading-relaxed text-[#475569]">
-                To become the world&apos;s most trusted event management platform — where every moment becomes a memory, and every organizer feels empowered to create extraordinary experiences.
+                To establish EventoraX as the global benchmark for trust in physical and virtual events — where every ticket is fraud-proof, every certificate is cryptographically verifiable, and organizers have full sovereignty over their brand and ticket revenues.
+              </p>
+            </div>
+          </div>
+
+          {/* 4 Core Pillars */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 pt-6">
+            <div className="p-6 rounded-2xl bg-white border border-[#e2e8f0] shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center mb-4">
+                <ShieldCheck className="w-5 h-5" />
+              </div>
+              <h4 className="font-heading font-bold text-base text-slate-900 mb-2">Cryptographic Trust</h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Tamper-evident SHA-256 digital signatures on every credential and badge, preventing counterfeit certificates permanently.
+              </p>
+            </div>
+            <div className="p-6 rounded-2xl bg-white border border-[#e2e8f0] shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center mb-4">
+                <Wallet className="w-5 h-5" />
+              </div>
+              <h4 className="font-heading font-bold text-base text-slate-900 mb-2">Payment Freedom</h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Seamless support for SBP Raast P2M, JazzCash, Easypaisa, and international credit cards with transparent low commissions.
+              </p>
+            </div>
+            <div className="p-6 rounded-2xl bg-white border border-[#e2e8f0] shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center mb-4">
+                <Layers className="w-5 h-5" />
+              </div>
+              <h4 className="font-heading font-bold text-base text-slate-900 mb-2">Organizer Sovereignty</h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Dedicated multi-tenant portals, custom subdomains, white-label receipts, and zero intrusive third-party advertisements.
+              </p>
+            </div>
+            <div className="p-6 rounded-2xl bg-white border border-[#e2e8f0] shadow-sm">
+              <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center mb-4">
+                <Sparkles className="w-5 h-5" />
+              </div>
+              <h4 className="font-heading font-bold text-base text-slate-900 mb-2">Canva Visual Studio</h4>
+              <p className="text-xs text-slate-600 leading-relaxed">
+                Drag-and-drop badge and certificate customization directly in the browser with automated batch recipient merging.
               </p>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Problems */}
-      <section className="bg-[#f5f3ff] section-padding">
+      {/* The Problem We Solve */}
+      <section className="bg-[#f5f3ff] py-20 md:py-28 border-b border-[#e9e4ff]">
         <div className="content-max">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-center mb-12 tracking-[-0.02em] text-[#0f172a]">
-            The Problem We Solve
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#7c3aed] bg-purple-100 px-3 py-1 rounded-full border border-purple-200">
+              The Real-World Challenges
+            </span>
+            <h2 className="font-heading text-3xl md:text-5xl font-bold text-center tracking-[-0.02em] text-[#0f172a] mt-3">
+              The Problems We Solve
+            </h2>
+            <p className="font-body text-base md:text-lg text-[#475569] mt-3">
+              Event planners lose thousands of hours and critical revenue to outdated spreadsheets, fake tickets, and disjointed tools. Here is how EventoraX transforms the experience:
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {problems.map((p, i) => {
               const Icon = p.icon;
               return (
-                <div key={i} className="scroll-reveal bg-white rounded-2xl p-8 border border-[#e9e4ff] shadow-sm hover:shadow-md hover:-translate-y-1 transition-all duration-300" style={{ transitionDelay: `${i * 100}ms` }}>
-                  <div className="w-12 h-12 rounded-xl flex items-center justify-center mb-5 bg-[#f5f3ff] text-[#7c3aed]">
-                    <Icon size={24} />
+                <div
+                  key={i}
+                  className="scroll-reveal bg-white rounded-3xl p-8 border border-[#e9e4ff] shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col justify-between"
+                >
+                  <div>
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-6 bg-[#f5f3ff] text-[#7c3aed] shadow-sm">
+                      <Icon size={24} />
+                    </div>
+                    <h4 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">{p.title}</h4>
+                    
+                    <div className="mb-4">
+                      <p className="text-xs font-bold uppercase tracking-wider text-rose-600 mb-1">The Problem</p>
+                      <p className="font-body text-sm text-[#475569] leading-relaxed">{p.problem}</p>
+                    </div>
                   </div>
-                  <h4 className="font-heading text-xl font-bold mb-2 text-[#0f172a]">{p.title}</h4>
-                  <p className="font-body text-sm text-[#475569] leading-relaxed">{p.desc}</p>
+
+                  <div className="pt-4 mt-2 border-t border-purple-100">
+                    <p className="text-xs font-bold uppercase tracking-wider text-purple-700 mb-1 flex items-center gap-1.5">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> EventoraX Solution
+                    </p>
+                    <p className="font-body text-sm font-medium text-slate-800 leading-relaxed">{p.solution}</p>
+                  </div>
                 </div>
               );
             })}
@@ -153,37 +368,57 @@ export default function About() {
         </div>
       </section>
 
-      {/* Timeline */}
-      <section className="bg-white section-padding">
+      {/* Our Journey (July 2026 Onwards) */}
+      <section className="bg-white py-20 md:py-28 border-b border-[#e2e8f0]">
         <div className="content-max">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold text-center mb-12 tracking-[-0.02em] text-[#0f172a]">
-            Our Journey
-          </h2>
-          <div className="max-w-3xl mx-auto">
-            {milestones.map((m, i) => (
-              <div key={i} className="scroll-reveal flex gap-6 md:gap-10 mb-8 last:mb-0">
-                <div className="flex flex-col items-center">
-                  <div className="w-3 h-3 rounded-full flex-shrink-0 bg-[#7c3aed] ring-4 ring-[#f5f3ff]" />
-                  {i < milestones.length - 1 && (
-                    <div className="w-px flex-grow mt-2 bg-[#e9e4ff]" />
-                  )}
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#7c3aed] bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
+              Milestones & Roadmap
+            </span>
+            <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-[-0.02em] text-[#0f172a] mt-3">
+              Our Journey
+            </h2>
+            <p className="font-body text-base md:text-lg text-[#475569] mt-3">
+              Launched in July 2026 by ORBIT-I Private Limited, EventoraX is rapidly scaling as the primary backbone for premier summits and conferences.
+            </p>
+          </div>
+
+          <div className="max-w-4xl mx-auto relative pl-4 md:pl-0">
+            <div className="space-y-8">
+              {milestones.map((m, i) => (
+                <div key={i} className="scroll-reveal flex gap-6 md:gap-10 items-start group">
+                  <div className="flex flex-col items-center">
+                    <div className="w-5 h-5 rounded-full flex-shrink-0 bg-[#7c3aed] ring-8 ring-[#f5f3ff] group-hover:scale-110 transition-transform" />
+                    {i < milestones.length - 1 && (
+                      <div className="w-0.5 h-24 sm:h-20 bg-purple-100 mt-2" />
+                    )}
+                  </div>
+                  <div className="bg-[#fbfaff] p-6 sm:p-7 rounded-2xl border border-purple-100 shadow-sm flex-1 hover:shadow-md transition-shadow">
+                    <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
+                      <span className="px-3 py-1 rounded-lg bg-purple-100 text-purple-700 font-heading text-sm font-bold">
+                        {m.year}
+                      </span>
+                      <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">
+                        {m.title}
+                      </span>
+                    </div>
+                    <p className="font-body text-sm sm:text-base text-[#1e293b] font-medium leading-relaxed">
+                      {m.event}
+                    </p>
+                  </div>
                 </div>
-                <div className="pb-8">
-                  <span className="font-heading text-2xl font-bold text-[#7c3aed]">{m.year}</span>
-                  <p className="font-body text-base mt-1 text-[#0f172a] font-medium">{m.event}</p>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Team */}
-      <section className="bg-[#f5f3ff] section-padding">
+      {/* Leadership & Core Platform Team */}
+      <section className="bg-[#f5f3ff] py-20 md:py-28 border-b border-[#e9e4ff]">
         <div className="content-max">
-          <div className="text-center max-w-3xl mx-auto mb-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1 bg-purple-100 text-purple-700 rounded-full text-xs font-semibold mb-3">
-              ORBIT-I Core Platform Team
+          <div className="text-center max-w-3xl mx-auto mb-16">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 bg-purple-100 text-purple-700 rounded-full text-xs font-bold uppercase tracking-wider mb-3 border border-purple-200">
+              <Building2 className="w-3.5 h-3.5" /> ORBIT-I Core Platform Team
             </div>
             <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-[-0.02em] text-[#0f172a]">
               Meet the Leadership & Core Team
@@ -193,26 +428,25 @@ export default function About() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto justify-center items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto items-stretch">
             {teamMembers.map((member, i) => (
-              <div 
-                key={member.id || i} 
-                className="scroll-reveal bg-white rounded-2xl p-6 border border-[#e9e4ff] shadow-sm hover:shadow-xl hover:-translate-y-1.5 transition-all duration-300 flex flex-col items-center text-center group"
-                style={{ transitionDelay: `${i * 100}ms` }}
+              <div
+                key={member.id || i}
+                className="scroll-reveal bg-white rounded-3xl p-7 border border-[#e9e4ff] shadow-sm hover:shadow-2xl hover:-translate-y-2 transition-all duration-300 flex flex-col items-center text-center group"
               >
                 <div className="relative mb-5">
                   {member.avatar_url ? (
-                    <img 
-                      src={member.avatar_url} 
-                      alt={member.name} 
-                      className="w-24 h-24 rounded-2xl object-cover shadow-md group-hover:scale-105 transition-transform" 
+                    <img
+                      src={member.avatar_url}
+                      alt={member.name}
+                      className="w-24 h-24 rounded-2xl object-cover shadow-md group-hover:scale-105 transition-transform"
                     />
                   ) : (
                     <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-[#7c3aed] to-[#3b82f6] text-white flex items-center justify-center font-bold text-2xl shadow-md group-hover:scale-105 transition-transform">
                       {member.name.split(' ').map((n: string) => n[0]).filter(Boolean).slice(0, 2).join('')}
                     </div>
                   )}
-                  <span className="absolute -bottom-2 -right-2 px-2 py-0.5 bg-slate-900 text-purple-300 text-[10px] font-bold rounded-md uppercase tracking-wider border border-purple-500/30">
+                  <span className="absolute -bottom-2 -right-2 px-2.5 py-0.5 bg-slate-900 text-purple-300 text-[10px] font-bold rounded-md uppercase tracking-wider border border-purple-500/30">
                     ORBIT-I
                   </span>
                 </div>
@@ -221,18 +455,18 @@ export default function About() {
                   {member.name}
                 </h4>
 
-                <div className="text-xs font-semibold text-purple-600 mb-2">
+                <div className="text-xs font-semibold text-purple-600 mb-2 leading-snug">
                   {member.role}
                 </div>
 
                 {member.department && (
-                  <div className="text-[11px] font-medium text-slate-500 uppercase tracking-wider mb-3">
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-wider mb-4 px-2.5 py-0.5 rounded-full bg-slate-100">
                     {member.department}
                   </div>
                 )}
 
                 {member.bio && (
-                  <p className="font-body text-xs text-slate-600 leading-relaxed mt-auto pt-3 border-t border-slate-100">
+                  <p className="font-body text-xs text-slate-600 leading-relaxed mt-auto pt-4 border-t border-slate-100">
                     {member.bio}
                   </p>
                 )}
@@ -242,19 +476,33 @@ export default function About() {
         </div>
       </section>
 
-      {/* CTA */}
+      {/* CTA: Host & List Event */}
       <section className="bg-white py-20 md:py-28 text-center">
         <div className="content-max">
           <div className="w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6 bg-[#f5f3ff] text-[#7c3aed]">
             <Lightbulb size={32} />
           </div>
-          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4 tracking-[-0.02em] text-[#0f172a]">
-            Join us on our journey
+          <h2 className="font-heading text-3xl md:text-5xl font-bold mb-4 tracking-[-0.02em] text-[#0f172a]">
+            Ready to Host or List Your Next Event?
           </h2>
-          <p className="font-body text-base mb-8 text-[#475569]">
-            Be part of the future of event management.
+          <p className="font-body text-base md:text-lg max-w-2xl mx-auto mb-8 text-[#475569] leading-relaxed">
+            Get your event published on our marketplace with VIP showcase perks, direct multi-gateway ticket payments, and automatic commission payouts.
           </p>
-          <Link to="/register" className="btn-primary">Try it free</Link>
+          <div className="flex flex-wrap items-center justify-center gap-4">
+            <Link
+              to="/list-event"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-heading font-bold text-white bg-[#7c3aed] hover:bg-[#6d28d9] shadow-lg shadow-[#7c3aed]/30 transition-all duration-200 hover:-translate-y-0.5"
+            >
+              <Calendar className="w-5 h-5" />
+              List Your Event Now (+ VIP Showcase)
+            </Link>
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-heading font-bold text-[#0f172a] bg-slate-100 hover:bg-slate-200 transition-all duration-200"
+            >
+              Create Free Organizer Account
+            </Link>
+          </div>
         </div>
       </section>
     </main>

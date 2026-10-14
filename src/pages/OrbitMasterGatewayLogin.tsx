@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Lock, Key, ArrowRight, Eye, EyeOff, AlertCircle, ShieldAlert, UserPlus, LogIn, CheckCircle2 } from 'lucide-react';
+import { ShieldCheck, Lock, ArrowRight, Eye, EyeOff, AlertCircle, ShieldAlert, UserPlus, LogIn, CheckCircle2, KeyRound } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { api } from '@/services/api';
 import BrandLogo from '@/components/BrandLogo';
@@ -8,19 +8,27 @@ import BrandLogo from '@/components/BrandLogo';
 export default function OrbitMasterGatewayLogin() {
   const [mode, setMode] = useState<'login' | 'setup'>('login');
   
-  // Login states
-  const [email, setEmail] = useState('admin@eventorax.com');
-  const [password, setPassword] = useState('admin123');
-  const [masterKey, setMasterKey] = useState('ORBIT-I-HQ-2026');
+  // Login states - no hardcoded loophole credentials
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [masterKey, setMasterKey] = useState('');
+  
+  // Visibility toggles for login
+  const [showPassword, setShowPassword] = useState(false);
+  const [showMasterKey, setShowMasterKey] = useState(false);
   
   // Setup states (for creating custom SuperAdmin credentials)
   const [setupName, setSetupName] = useState('');
   const [setupEmail, setSetupEmail] = useState('');
   const [setupPassword, setSetupPassword] = useState('');
   const [setupConfirmPassword, setSetupConfirmPassword] = useState('');
-  const [setupMasterKey, setSetupMasterKey] = useState('ORBIT-I-HQ-2026');
+  const [setupMasterKey, setSetupMasterKey] = useState('');
   
-  const [showPassword, setShowPassword] = useState(false);
+  // Visibility toggles for setup
+  const [showSetupPassword, setShowSetupPassword] = useState(false);
+  const [showSetupConfirmPassword, setShowSetupConfirmPassword] = useState(false);
+  const [showSetupMasterKey, setShowSetupMasterKey] = useState(false);
+  
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
@@ -29,6 +37,12 @@ export default function OrbitMasterGatewayLogin() {
     e.preventDefault();
     setError(null);
     setSuccessMsg(null);
+
+    if (!email.trim() || !password || !masterKey.trim()) {
+      setError('Please provide your Email, Password, and Master Security Passcode.');
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -60,13 +74,23 @@ export default function OrbitMasterGatewayLogin() {
     setError(null);
     setSuccessMsg(null);
 
+    if (!setupEmail.trim()) {
+      setError('Please provide a valid SuperAdmin email.');
+      return;
+    }
+
     if (setupPassword !== setupConfirmPassword) {
       setError('Passwords do not match. Please verify both password fields.');
       return;
     }
 
     if (setupPassword.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError('Password must be at least 6 characters long.');
+      return;
+    }
+
+    if (!setupMasterKey.trim() || setupMasterKey.trim().length < 4) {
+      setError('Please create a Master Security Passcode with at least 4 characters.');
       return;
     }
 
@@ -74,7 +98,7 @@ export default function OrbitMasterGatewayLogin() {
 
     try {
       const res = await api.platformAdmin.gatewaySetup({
-        fullName: setupName.trim() || 'Platform SuperAdmin',
+        fullName: setupName.trim() || 'ORBIT-I Platform SuperAdmin',
         email: setupEmail.trim().toLowerCase(),
         password: setupPassword,
         masterKey: setupMasterKey.trim()
@@ -82,6 +106,12 @@ export default function OrbitMasterGatewayLogin() {
 
       if (res.success && res.token) {
         setSuccessMsg('SuperAdmin credentials configured successfully! Logging in...');
+        
+        // Synchronize login states
+        setEmail(setupEmail.trim().toLowerCase());
+        setPassword(setupPassword);
+        setMasterKey(setupMasterKey.trim());
+
         localStorage.setItem('token', res.token);
         localStorage.setItem('user', JSON.stringify(res.user));
         localStorage.setItem('activeTenant', JSON.stringify(res.tenant));
@@ -89,12 +119,12 @@ export default function OrbitMasterGatewayLogin() {
 
         setTimeout(() => {
           window.location.href = '/orbit-i-master-gateway/console';
-        }, 1000);
+        }, 1200);
       } else {
         setError(res.message || 'Failed to configure SuperAdmin credentials.');
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to configure SuperAdmin credentials. Check Master Key.');
+      setError(err.message || 'Failed to configure SuperAdmin credentials.');
     } finally {
       setLoading(false);
     }
@@ -152,22 +182,22 @@ export default function OrbitMasterGatewayLogin() {
           </div>
 
           {error && (
-            <div className="p-3 rounded-2xl bg-rose-950/60 border border-rose-800 text-rose-300 text-xs flex items-start gap-2 animate-in fade-in">
+            <div className="p-3.5 rounded-2xl bg-rose-950/70 border border-rose-800 text-rose-300 text-xs flex items-start gap-2.5 animate-in fade-in">
               <AlertCircle className="w-4 h-4 shrink-0 mt-0.5 text-rose-400" />
-              <span>{error}</span>
+              <span className="leading-relaxed">{error}</span>
             </div>
           )}
 
           {successMsg && (
-            <div className="p-3 rounded-2xl bg-emerald-950/60 border border-emerald-800 text-emerald-300 text-xs flex items-start gap-2 animate-in fade-in">
+            <div className="p-3.5 rounded-2xl bg-emerald-950/70 border border-emerald-800 text-emerald-300 text-xs flex items-start gap-2.5 animate-in fade-in">
               <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5 text-emerald-400" />
-              <span>{successMsg}</span>
+              <span className="leading-relaxed">{successMsg}</span>
             </div>
           )}
 
           {/* TAB 1: LOGIN FORM */}
           {mode === 'login' && (
-            <form onSubmit={handleMasterLogin} className="space-y-3.5">
+            <form onSubmit={handleMasterLogin} className="space-y-4">
               <div>
                 <label className="text-xs font-bold text-slate-300 block mb-1">
                   Master Administrator Email
@@ -178,7 +208,7 @@ export default function OrbitMasterGatewayLogin() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="admin@eventorax.com"
+                  placeholder="e.g. ab.samad@orbit-i.tech"
                 />
               </div>
 
@@ -192,13 +222,14 @@ export default function OrbitMasterGatewayLogin() {
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="Master password"
+                    className="w-full px-3.5 py-2.5 pr-11 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter Master password"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 rounded transition-colors"
+                    title={showPassword ? 'Hide password' : 'Show password'}
                   >
                     {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                   </button>
@@ -208,17 +239,25 @@ export default function OrbitMasterGatewayLogin() {
               <div>
                 <label className="text-xs font-bold text-slate-300 block mb-1 flex items-center justify-between">
                   <span>Master Security Passcode</span>
-                  <span className="text-[10px] text-slate-400 font-mono">ORBIT-I 2FA Protocol</span>
+                  <span className="text-[10px] text-blue-400 font-mono">2FA Security Protocol</span>
                 </label>
                 <div className="relative">
                   <input
-                    type="password"
+                    type={showMasterKey ? 'text' : 'password'}
+                    required
                     value={masterKey}
                     onChange={(e) => setMasterKey(e.target.value)}
-                    className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    placeholder="ORBIT-I-HQ-2026"
+                    className="w-full px-3.5 py-2.5 pr-11 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter your private Master Passcode"
                   />
-                  <Key className="w-4 h-4 text-slate-500 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+                  <button
+                    type="button"
+                    onClick={() => setShowMasterKey(!showMasterKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 rounded transition-colors"
+                    title={showMasterKey ? 'Hide passcode' : 'Show passcode'}
+                  >
+                    {showMasterKey ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
                 </div>
               </div>
 
@@ -246,9 +285,9 @@ export default function OrbitMasterGatewayLogin() {
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3 text-[11px] text-blue-200 space-y-1">
                 <span className="font-bold block text-white flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-blue-400" />
-                  Create Your Own SuperAdmin Account
+                  Define Your Private SuperAdmin &amp; Master Key
                 </span>
-                Enter your preferred email and password below with the Master Security Key (<code>ORBIT-I-HQ-2026</code>) to configure your private credentials.
+                Create your custom administrator credentials and master passcode. Your chosen passcode is strictly required for 2FA login with zero default loopholes.
               </div>
 
               <div>
@@ -256,7 +295,7 @@ export default function OrbitMasterGatewayLogin() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Platform Owner"
+                  placeholder="e.g. Abdul Samad Rind"
                   value={setupName}
                   onChange={(e) => setSetupName(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -268,7 +307,7 @@ export default function OrbitMasterGatewayLogin() {
                 <input
                   type="email"
                   required
-                  placeholder="e.g. owner@orbit-i.tech"
+                  placeholder="e.g. ab.samad@orbit-i.tech"
                   value={setupEmail}
                   onChange={(e) => setSetupEmail(e.target.value)}
                   className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -278,43 +317,80 @@ export default function OrbitMasterGatewayLogin() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs font-bold text-slate-300 block mb-1">Password (6+ chars) *</label>
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    placeholder="Enter password"
-                    value={setupPassword}
-                    onChange={(e) => setSetupPassword(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showSetupPassword ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      placeholder="Enter password"
+                      value={setupPassword}
+                      onChange={(e) => setSetupPassword(e.target.value)}
+                      className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSetupPassword(!showSetupPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 rounded transition-colors"
+                      title={showSetupPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showSetupPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
                 </div>
+
                 <div>
                   <label className="text-xs font-bold text-slate-300 block mb-1">Confirm Password *</label>
-                  <input
-                    type="password"
-                    required
-                    minLength={6}
-                    placeholder="Re-type password"
-                    value={setupConfirmPassword}
-                    onChange={(e) => setSetupConfirmPassword(e.target.value)}
-                    className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  />
+                  <div className="relative">
+                    <input
+                      type={showSetupConfirmPassword ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      placeholder="Re-type password"
+                      value={setupConfirmPassword}
+                      onChange={(e) => setSetupConfirmPassword(e.target.value)}
+                      className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowSetupConfirmPassword(!showSetupConfirmPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 rounded transition-colors"
+                      title={showSetupConfirmPassword ? 'Hide password' : 'Show password'}
+                    >
+                      {showSetupConfirmPassword ? <EyeOff size={15} /> : <Eye size={15} />}
+                    </button>
+                  </div>
                 </div>
               </div>
 
               <div>
                 <label className="text-xs font-bold text-slate-300 block mb-1 flex items-center justify-between">
-                  <span>Master Security Passcode *</span>
-                  <span className="text-[10px] text-blue-400 font-mono">Default: ORBIT-I-HQ-2026</span>
+                  <span>Create Your Master Security Passcode *</span>
+                  <span className="text-[10px] text-amber-400 font-mono flex items-center gap-1">
+                    <KeyRound className="w-3 h-3" /> Private 2FA Key
+                  </span>
                 </label>
-                <input
-                  type="password"
-                  required
-                  value={setupMasterKey}
-                  onChange={(e) => setSetupMasterKey(e.target.value)}
-                  className="w-full px-3.5 py-2.5 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="ORBIT-I-HQ-2026"
-                />
+                <div className="relative">
+                  <input
+                    type={showSetupMasterKey ? 'text' : 'password'}
+                    required
+                    minLength={4}
+                    value={setupMasterKey}
+                    onChange={(e) => setSetupMasterKey(e.target.value)}
+                    className="w-full px-3.5 py-2.5 pr-10 rounded-xl bg-slate-800/90 border border-slate-700 text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g. MySecretMasterKey2026"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSetupMasterKey(!showSetupMasterKey)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white p-1 rounded transition-colors"
+                    title={showSetupMasterKey ? 'Hide passcode' : 'Show passcode'}
+                  >
+                    {showSetupMasterKey ? <EyeOff size={15} /> : <Eye size={15} />}
+                  </button>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  You can set any custom passcode you want. Only this exact passcode will authorize your login.
+                </p>
               </div>
 
               <Button

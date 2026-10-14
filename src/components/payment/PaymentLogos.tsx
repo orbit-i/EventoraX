@@ -25,61 +25,47 @@ export function SafepayBadge({ className = "w-6 h-6" }: { className?: string }) 
   );
 }
 
-export function JazzCashLogo({ className = "w-6 h-6" }: { className?: string }) {
+export function JazzCashLogo({ className = "h-7 w-auto" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 100 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      {/* Red circle with yellow accent */}
-      <rect x="1" y="2" width="28" height="28" rx="7" fill="#E60000" />
-      <circle cx="15" cy="16" r="7" fill="#FFC800" />
-      <path d="M12 12L18 20M12 20L18 12" stroke="#E60000" strokeWidth="2" strokeLinecap="round" />
-      {/* JazzCash typography */}
-      <text x="34" y="16" fill="#D30000" fontFamily="system-ui, sans-serif" fontWeight="900" fontSize="13">
-        Jazz
-      </text>
-      <text x="34" y="26" fill="#1E293B" fontFamily="system-ui, sans-serif" fontWeight="800" fontSize="10">
-        Cash
-      </text>
-    </svg>
+    <img
+      src="/images/payments/jazzcash.png"
+      alt="JazzCash Official"
+      className={`object-contain inline-block ${className}`}
+      loading="lazy"
+    />
   );
 }
 
-export function JazzCashBadge({ className = "w-6 h-6" }: { className?: string }) {
+export function JazzCashBadge({ className = "w-7 h-7" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <rect width="32" height="32" rx="8" fill="#E50914" />
-      <circle cx="16" cy="16" r="9" fill="#FFCC00" />
-      <circle cx="16" cy="16" r="5" fill="#E50914" />
-      <path d="M14 13L18 19" stroke="#FFCC00" strokeWidth="2" strokeLinecap="round" />
-    </svg>
+    <img
+      src="/images/payments/jazzcash.png"
+      alt="JazzCash"
+      className={`object-contain rounded-md inline-block ${className}`}
+      loading="lazy"
+    />
   );
 }
 
-export function EasypaisaLogo({ className = "w-6 h-6" }: { className?: string }) {
+export function EasypaisaLogo({ className = "h-7 w-auto" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 110 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      {/* Green rounded emblem with handset/arc */}
-      <rect x="1" y="2" width="28" height="28" rx="8" fill="#00AA4F" />
-      <circle cx="15" cy="16" r="7" stroke="#FFFFFF" strokeWidth="2.5" />
-      <path d="M15 11V16H19" stroke="#FFFFFF" strokeWidth="2" strokeLinecap="round" />
-      {/* Easypaisa text */}
-      <text x="34" y="16" fill="#00AA4F" fontFamily="system-ui, sans-serif" fontWeight="800" fontSize="12" letterSpacing="-0.2">
-        easy
-      </text>
-      <text x="34" y="26" fill="#0F172A" fontFamily="system-ui, sans-serif" fontWeight="800" fontSize="11">
-        paisa
-      </text>
-    </svg>
+    <img
+      src="/images/payments/easypaisa.png"
+      alt="Easypaisa Official"
+      className={`object-contain inline-block ${className}`}
+      loading="lazy"
+    />
   );
 }
 
-export function EasypaisaBadge({ className = "w-6 h-6" }: { className?: string }) {
+export function EasypaisaBadge({ className = "w-7 h-7" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <rect width="32" height="32" rx="8" fill="#00AA4F" />
-      <circle cx="16" cy="16" r="8" stroke="#FFFFFF" strokeWidth="3" />
-      <path d="M16 11V16H20" stroke="#FFFFFF" strokeWidth="2.5" strokeLinecap="round" />
-      <circle cx="16" cy="16" r="2" fill="#FFFFFF" />
-    </svg>
+    <img
+      src="/images/payments/easypaisa.png"
+      alt="Easypaisa"
+      className={`object-contain rounded-md inline-block ${className}`}
+      loading="lazy"
+    />
   );
 }
 
@@ -183,14 +169,33 @@ export function CardNetworksBadge({ className = "w-12 h-6" }: { className?: stri
 
 export function BankTransferBadge({ className = "w-6 h-6" }: { className?: string }) {
   return (
-    <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
-      <rect width="32" height="32" rx="8" fill="#1E3A8A" />
-      <path d="M16 7L7 12V14H25V12L16 7Z" fill="#93C5FD" />
-      <rect x="9" y="15" width="2.5" height="7" fill="#FFFFFF" />
-      <rect x="13" y="15" width="2.5" height="7" fill="#FFFFFF" />
-      <rect x="17" y="15" width="2.5" height="7" fill="#FFFFFF" />
-      <rect x="21" y="15" width="2.5" height="7" fill="#FFFFFF" />
-      <rect x="7" y="23" width="18" height="2.5" rx="0.5" fill="#93C5FD" />
-    </svg>
+    <img
+      src="/images/payments/meezan.png"
+      alt="Meezan Bank"
+      className={`object-contain inline-block rounded-full ${className}`}
+      loading="lazy"
+    />
+  );
+}
+
+export function MeezanBankLogo({ className = "h-8 w-auto" }: { className?: string }) {
+  return (
+    <img
+      src="/images/payments/meezan.png"
+      alt="Meezan Bank Limited"
+      className={`object-contain inline-block ${className}`}
+      loading="lazy"
+    />
+  );
+}
+
+export function MeezanBankBadge({ className = "w-7 h-7" }: { className?: string }) {
+  return (
+    <img
+      src="/images/payments/meezan.png"
+      alt="Meezan Bank"
+      className={`object-contain inline-block rounded-full ${className}`}
+      loading="lazy"
+    />
   );
 }

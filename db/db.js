@@ -1,8 +1,15 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
 import bcrypt from 'bcryptjs';
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
 dotenv.config();
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const LOCAL_STORE_PATH = path.join(__dirname, 'local_store.json');
 
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
@@ -21,8 +28,8 @@ let pool = null;
 let isConnected = false;
 
 // =====================================================
-// High-Fidelity In-Memory Fallback Multi-Tenant Store
-// Provides 100% feature parity when MySQL is offline
+// High-Fidelity Multi-Tenant Store with Disk Persistence
+// Provides 100% feature parity and durability across restarts
 // =====================================================
 export const memoryStore = {
   users: [
@@ -78,13 +85,14 @@ export const memoryStore = {
   events: [],
   event_attendees: [],
   team_members: [],
+  event_listing_requests: [],
   platform_team_members: [
     {
       id: 1,
       name: 'Abdul Samad Rind',
-      role: 'Founder & Platform Architect',
-      department: 'Leadership & Architecture',
-      bio: 'Platform Architect & Executive Director at ORBIT-I Private Limited. Pioneer of multi-tenant event management and tamper-evident credential verification.',
+      role: 'Full Stack Web Developer & Platform Architect',
+      department: 'Leadership & Engineering',
+      bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading EventoraX core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
       avatar_url: '',
       display_order: 1,
       is_active: 1,
@@ -94,9 +102,9 @@ export const memoryStore = {
     {
       id: 2,
       name: 'Maria Almani',
-      role: 'Co-Founder & Head of Operations',
-      department: 'Product & Operational Excellence',
-      bio: 'Co-Founder leading global organizer operations, institutional partnerships, and platform user experience strategy.',
+      role: 'Full Stack Web Developer, SEO & Content Specialist',
+      department: 'Product & Web Growth',
+      bio: 'Full Stack Web Developer, SEO Strategist and Technical Content Specialist at ORBIT-I Private Limited. Leading fast-loading frontend architecture, organic search visibility, platform content strategy, and intuitive organizer UX.',
       avatar_url: '',
       display_order: 2,
       is_active: 1,
@@ -105,10 +113,10 @@ export const memoryStore = {
     },
     {
       id: 3,
-      name: 'Muneeb Ur Rehman',
-      role: 'Lead Core Systems Engineer',
-      department: 'Full-Stack & Systems Engineering',
-      bio: 'Core systems architect driving high-throughput registration switches, canvas graphics rendering pipeline, and platform scalability.',
+      name: 'Muhammad Muneeb Ur Rahman Shahzad',
+      role: 'DevOps Engineer',
+      department: 'DevOps & Systems Infrastructure',
+      bio: 'DevOps & Systems Infrastructure Engineer at ORBIT-I Private Limited. Spearheading zero-downtime CI/CD deployment pipelines, Dockerized microservices, high-availability database clustering, and SBP-compliant server hardening.',
       avatar_url: '',
       display_order: 3,
       is_active: 1,
@@ -120,7 +128,7 @@ export const memoryStore = {
       name: 'Shahzad Hassan Ansar',
       role: 'Security & Cloud Infrastructure Lead',
       department: 'Cybersecurity & Infrastructure',
-      bio: 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels.',
+      bio: 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels at ORBIT-I Private Limited.',
       avatar_url: '',
       display_order: 4,
       is_active: 1,
@@ -307,6 +315,10 @@ export const memoryStore = {
       name: 'Professional',
       monthly_price: 99,
       yearly_price: 79,
+      price_pkr_monthly: 13800.00,
+      price_pkr_yearly: 11040.00,
+      description: 'Best for frequent event organizers, bootcamps & training centers',
+      badge: 'Most Popular',
       tag: 'Most Popular for Organizers',
       attendees_limit: 5000,
       max_events: 25,
@@ -332,6 +344,10 @@ export const memoryStore = {
       name: 'Enterprise',
       monthly_price: 299,
       yearly_price: 239,
+      price_pkr_monthly: 83000.00,
+      price_pkr_yearly: 66400.00,
+      description: 'For universities, government, agencies & global conferences',
+      badge: 'Enterprise White-Label',
       tag: 'Large Summits & Universities',
       attendees_limit: 50000,
       max_events: 500,
@@ -396,6 +412,38 @@ export const memoryStore = {
     }
   ]
 };
+
+// =====================================================
+// Local Disk Persistence System
+// =====================================================
+export function saveMemoryStoreToDisk() {
+  try {
+    fs.writeFileSync(LOCAL_STORE_PATH, JSON.stringify(memoryStore, null, 2), 'utf-8');
+  } catch (err) {
+    console.warn('[DB Local Store] Notice saving store to disk:', err.message);
+  }
+}
+
+export function loadMemoryStoreFromDisk() {
+  try {
+    if (fs.existsSync(LOCAL_STORE_PATH)) {
+      const content = fs.readFileSync(LOCAL_STORE_PATH, 'utf-8');
+      if (content && content.trim()) {
+        const loaded = JSON.parse(content);
+        for (const key of Object.keys(loaded)) {
+          memoryStore[key] = loaded[key];
+        }
+        return true;
+      }
+    }
+  } catch (err) {
+    console.warn('[DB Local Store] Notice loading disk store:', err.message);
+  }
+  return false;
+}
+
+// Hydrate store from disk upon startup if existing
+loadMemoryStoreFromDisk();
 
 export function getPool() {
   if (!pool) {
@@ -686,11 +734,8 @@ function handleMemoryQuery(sql, params = []) {
   // USERS
   if (s.includes('from `users`') || s.includes('from users')) {
     if (s.includes('where `email` =') || s.includes('where email =')) {
-      const email = String(params[0]).toLowerCase();
-      let user = memoryStore.users.find(u => u.email.toLowerCase() === email);
-      if (!user && (email === 'superadmin@eventorax.com' || email === 'admin@eventorax.com')) {
-        user = memoryStore.users.find(u => u.id === 1);
-      }
+      const email = String(params[0] || '').toLowerCase().trim();
+      const user = memoryStore.users.find(u => (u.email || '').toLowerCase() === email);
       return [user ? [user] : []];
     }
     if (s.includes('where `id` =') || s.includes('where id =')) {
@@ -705,15 +750,51 @@ function handleMemoryQuery(sql, params = []) {
   }
 
   if (s.includes('insert into `users`') || s.includes('insert into users')) {
+    let fullName = params[0] || 'User';
+    let orgName = '';
+    let email = '';
+    let password = '';
+    let masterKey = null;
+    let phone = '';
+
+    if (s.includes('`master_key`') || s.includes('master_key')) {
+      // [adminName, 'EventoraX (ORBIT-I)', cleanEmail, hashedPassword, cleanMasterKey]
+      fullName = params[0];
+      orgName = params[1] || 'EventoraX (ORBIT-I)';
+      email = params[2];
+      password = params[3];
+      masterKey = params[4];
+    } else if (params.length === 3) {
+      // [adminName, cleanEmail, hashedPassword]
+      fullName = params[0];
+      orgName = 'EventoraX (ORBIT-I)';
+      email = params[1];
+      password = params[2];
+    } else if (params.length === 4) {
+      // [fullName, orgName, email, password]
+      fullName = params[0];
+      orgName = params[1] || '';
+      email = params[2];
+      password = params[3];
+    } else {
+      // [fullName, orgName, email, password, phone]
+      fullName = params[0];
+      orgName = params[1] || '';
+      email = params[2];
+      password = params[3];
+      phone = params[4] || '';
+    }
+
     const newUser = {
       id: memoryStore.users.length + 1,
-      full_name: params[0],
-      org_name: params[1] || '',
-      email: params[2],
-      password: params[3],
-      phone: params[4] || '',
-      role: 'organizer',
-      plan: 'Starter',
+      full_name: fullName,
+      org_name: orgName,
+      email: email,
+      password: password,
+      master_key: masterKey,
+      phone: phone,
+      role: (s.includes('"admin"') || s.includes("'admin'")) ? 'admin' : 'organizer',
+      plan: s.includes('Platform Authority') ? 'Platform Authority' : 'Starter',
       created_at: new Date().toISOString()
     };
     memoryStore.users.push(newUser);
@@ -724,9 +805,20 @@ function handleMemoryQuery(sql, params = []) {
     const userId = parseInt(params[params.length - 1], 10);
     const user = memoryStore.users.find(u => u.id === userId) || memoryStore.users[0];
     if (user) {
-      if (s.includes('set `password` =')) {
+      if (s.includes('`full_name` = ?') && s.includes('`password` = ?')) {
+        // [adminName, hashedPassword, cleanMasterKey, id] or [adminName, hashedPassword, id]
+        user.full_name = params[0];
+        user.password = params[1];
+        if (s.includes('`master_key` = ?')) {
+          user.master_key = params[2];
+        }
+        if (s.includes('"admin"') || s.includes("'admin'")) user.role = 'admin';
+        if (s.includes('Platform Authority')) user.plan = 'Platform Authority';
+      } else if (s.includes('set `password` =') || s.includes('`password` = ?')) {
         user.password = params[0];
-      } else if (s.includes('set `plan` =')) {
+      } else if (s.includes('set `master_key` =') || s.includes('`master_key` = ?')) {
+        user.master_key = params[0];
+      } else if (s.includes('set `plan` =') || s.includes('`plan` = ?')) {
         user.plan = params[0];
       } else {
         // [fullName, orgName, phone, bio, avatarUrl, timezone, language, notificationsEnabled, marketingEmailsEnabled, twoFactorEnabled, id]
@@ -1469,10 +1561,20 @@ export async function query(sql, params = []) {
       return await pool.execute(sql, params);
     } catch (err) {
       console.warn('[Database] Query failed on MySQL pool, falling back to memory store:', err.message);
-      return handleMemoryQuery(sql, params);
+      const res = handleMemoryQuery(sql, params);
+      const s = (sql || '').toLowerCase().trim();
+      if (s.startsWith('insert') || s.startsWith('update') || s.startsWith('delete')) {
+        saveMemoryStoreToDisk();
+      }
+      return res;
     }
   }
-  return handleMemoryQuery(sql, params);
+  const res = handleMemoryQuery(sql, params);
+  const s = (sql || '').toLowerCase().trim();
+  if (s.startsWith('insert') || s.startsWith('update') || s.startsWith('delete')) {
+    saveMemoryStoreToDisk();
+  }
+  return res;
 }
 
 export async function initDatabase() {
@@ -1530,6 +1632,12 @@ export async function initDatabase() {
 
     try {
       await pool.query('ALTER TABLE `users` MODIFY COLUMN `avatar_url` MEDIUMTEXT DEFAULT NULL;');
+    } catch {
+      // already up to date
+    }
+
+    try {
+      await pool.query('ALTER TABLE `users` ADD COLUMN `master_key` VARCHAR(255) DEFAULT NULL;');
     } catch {
       // already up to date
     }
@@ -1915,7 +2023,8 @@ export async function initDatabase() {
       { table: 'pricing_plans', col: 'price_pkr_yearly', def: 'DECIMAL(10, 2) DEFAULT 0.00' },
       { table: 'pricing_plans', col: 'trial_events', def: 'INT DEFAULT 2' },
       { table: 'pricing_plans', col: 'trial_attendees', def: 'INT DEFAULT 40' },
-      { table: 'pricing_plans', col: 'trial_certs', def: 'INT DEFAULT 50' }
+      { table: 'pricing_plans', col: 'trial_certs', def: 'INT DEFAULT 50' },
+      { table: 'users', col: 'master_key', def: 'VARCHAR(255) NULL' }
     ];
 
     for (const item of checkColumns) {
@@ -1941,21 +2050,59 @@ export async function initDatabase() {
       }
     } catch {}
 
-    // Seed default ORBIT-I platform team members into MySQL if empty
+    // Seed / Ensure official ORBIT-I platform team members exist in MySQL
     try {
-      const [teamRows] = await pool.query('SELECT COUNT(*) as count FROM `platform_team_members`');
-      if (teamRows[0].count === 0) {
-        console.log('[Database] Seeding official ORBIT-I platform team members into MySQL...');
+      const officialTeam = [
+        {
+          id: 1,
+          name: 'Abdul Samad Rind',
+          role: 'Full Stack Web Developer & Platform Architect',
+          department: 'Leadership & Engineering',
+          bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading EventoraX core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
+          display_order: 1
+        },
+        {
+          id: 2,
+          name: 'Maria Almani',
+          role: 'Full Stack Web Developer, SEO & Content Specialist',
+          department: 'Product & Web Growth',
+          bio: 'Full Stack Web Developer, SEO Strategist and Technical Content Specialist at ORBIT-I Private Limited. Leading fast-loading frontend architecture, organic search visibility, platform content strategy, and intuitive organizer UX.',
+          display_order: 2
+        },
+        {
+          id: 3,
+          name: 'Muhammad Muneeb Ur Rahman Shahzad',
+          role: 'DevOps Engineer',
+          department: 'DevOps & Systems Infrastructure',
+          bio: 'DevOps & Systems Infrastructure Engineer at ORBIT-I Private Limited. Spearheading zero-downtime CI/CD deployment pipelines, Dockerized microservices, high-availability database clustering, and SBP-compliant server hardening.',
+          display_order: 3
+        },
+        {
+          id: 4,
+          name: 'Shahzad Hassan Ansar',
+          role: 'Security & Cloud Infrastructure Lead',
+          department: 'Cybersecurity & Infrastructure',
+          bio: 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels at ORBIT-I Private Limited.',
+          display_order: 4
+        }
+      ];
+
+      for (const m of officialTeam) {
         await pool.query(`
           INSERT INTO \`platform_team_members\` (\`id\`, \`name\`, \`role\`, \`department\`, \`bio\`, \`avatar_url\`, \`display_order\`, \`is_active\`)
-          VALUES 
-          (1, 'Abdul Samad Rind', 'Founder & Platform Architect', 'Leadership & Architecture', 'Platform Architect & Executive Director at ORBIT-I Private Limited. Pioneer of multi-tenant event management and tamper-evident credential verification.', '', 1, 1),
-          (2, 'Maria Almani', 'Co-Founder & Head of Operations', 'Product & Operational Excellence', 'Co-Founder leading global organizer operations, institutional partnerships, and platform user experience strategy.', '', 2, 1),
-          (3, 'Muneeb Ur Rehman', 'Lead Core Systems Engineer', 'Full-Stack & Systems Engineering', 'Core systems architect driving high-throughput registration switches, canvas graphics rendering pipeline, and platform scalability.', '', 3, 1),
-          (4, 'Shahzad Hassan Ansar', 'Security & Cloud Infrastructure Lead', 'Cybersecurity & Infrastructure', 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels.', '', 4, 1);
-        `);
+          VALUES (?, ?, ?, ?, ?, '', ?, 1)
+          ON DUPLICATE KEY UPDATE 
+            \`name\` = VALUES(\`name\`),
+            \`role\` = VALUES(\`role\`),
+            \`department\` = VALUES(\`department\`),
+            \`bio\` = VALUES(\`bio\`),
+            \`display_order\` = VALUES(\`display_order\`),
+            \`is_active\` = 1
+        `, [m.id, m.name, m.role, m.department, m.bio, m.display_order]);
       }
-    } catch {}
+    } catch (teamErr) {
+      console.warn('[Database] Platform team sync notice:', teamErr?.message);
+    }
 
     // Seed default coupons into MySQL if empty
     try {

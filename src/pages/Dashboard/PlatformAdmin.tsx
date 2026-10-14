@@ -49,16 +49,29 @@ import {
 } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
+import {
+  EasypaisaBadge,
+  JazzCashBadge,
+  RaastBadge,
+  BankTransferBadge,
+  SafepayBadge,
+  CardNetworksBadge
+} from "@/components/payment/PaymentLogos";
 
-type AdminTab = 'overview' | 'licenses' | 'approvals' | 'tenants' | 'billing' | 'pricing' | 'testimonials' | 'cms' | 'security' | 'notifications' | 'backup' | 'team';
+type AdminTab = 'overview' | 'licenses' | 'approvals' | 'tenants' | 'billing' | 'pricing' | 'gateways' | 'casestudies' | 'directory' | 'team' | 'testimonials' | 'cms' | 'security' | 'notifications' | 'backup' | 'profile';
 
 export default function PlatformAdmin() {
-  const { isSuperAdmin } = useAuth();
+  const { isSuperAdmin, user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
 
   // Tab State synced with URL query param `?tab=...`
   const urlTab = (searchParams.get('tab') as AdminTab) || 'overview';
   const [activeTab, setActiveTab] = useState<AdminTab>(urlTab);
+
+  useEffect(() => {
+    const t = (searchParams.get('tab') as AdminTab) || 'overview';
+    setActiveTab(t);
+  }, [searchParams]);
 
   // Platform Metrics & Tenants
   const [metrics, setMetrics] = useState<any>(null);
@@ -222,6 +235,248 @@ export default function PlatformAdmin() {
     }
   });
   const [savingMember, setSavingMember] = useState(false);
+
+  // ==========================================
+  // PAYMENT GATEWAYS & MERCHANT ACCOUNTS STATE
+  // ==========================================
+  const [merchantGateways, setMerchantGateways] = useState<any>({
+    easypaisa: { enabled: true, title: 'Easypaisa Mobile Wallet & QR', account_title: 'ORBIT-I Private Limited', account_number: '03190375751', store_id: 'EP-ORBIT-2026', hash_key: '', api_mode: 'manual', instructions: 'Send subscription fee to Easypaisa Account 03190375751. Enter 11-digit TID below.' },
+    jazzcash: { enabled: true, title: 'JazzCash Mobile Wallet & Till', account_title: 'ORBIT-I Private Limited', account_number: '03001234567', till_id: 'JC-ORBIT-8899', merchant_id: '', password: '', salt: '', api_mode: 'manual', instructions: 'Send amount to JazzCash Till 03001234567. Enter TID below.' },
+    raast: { enabled: true, title: 'Raast Instant Pay (State Bank of Pakistan)', account_title: 'ORBIT-I Private Limited', iban: 'PK45MEZN0001234567890101', raast_id: '03190375751', instructions: 'Pay instantly via mobile banking app using Raast ID or IBAN.' },
+    bank_transfer: { enabled: true, title: 'Direct Corporate Bank Transfer', bank_name: 'Meezan Bank Limited', account_title: 'ORBIT-I Private Limited', account_number: '01020304050607', iban: 'PK45MEZN0001234567890101', branch: 'F-7 Markaz, Islamabad', instructions: 'Direct wire to our Meezan Bank corporate clearing account.' },
+    safepay: { enabled: true, title: 'Safepay Pakistan (Debit / Credit Cards & PayPak)', public_key: 'sec_sandbox_eventorax_2026', secret_key: '', environment: 'sandbox', instructions: 'Accept Visa, Mastercard and PayPak.' },
+    stripe: { enabled: true, title: 'Stripe International (Global USD Cards)', publishable_key: 'pk_test_eventorax_global_2026', secret_key: '', instructions: 'Accept all international cards and Apple Pay.' }
+  });
+  const [gatewaysLoading, setGatewaysLoading] = useState(false);
+  const [gatewaysSaving, setGatewaysSaving] = useState(false);
+  const [gatewaysMsg, setGatewaysMsg] = useState<string | null>(null);
+
+  const loadGateways = async () => {
+    setGatewaysLoading(true);
+    try {
+      const res = await api.merchantGateways.getAdmin();
+      if (res.success && res.gateways) setMerchantGateways(res.gateways);
+    } catch (err) {
+      console.error('Failed to load gateways:', err);
+    } finally {
+      setGatewaysLoading(false);
+    }
+  };
+
+  const handleSaveGateways = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setGatewaysSaving(true);
+    setGatewaysMsg(null);
+    try {
+      const res = await api.merchantGateways.update(merchantGateways);
+      if (res.success) {
+        setGatewaysMsg('Payment Gateways & Merchant Credentials updated live!');
+        setTimeout(() => setGatewaysMsg(null), 4000);
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to update gateways');
+    } finally {
+      setGatewaysSaving(false);
+    }
+  };
+
+  // ==========================================
+  // CASE STUDIES & PAST EVENTS STATE
+  // ==========================================
+  const [caseStudiesList, setCaseStudiesList] = useState<any[]>([]);
+  const [caseStudiesLoading, setCaseStudiesLoading] = useState(false);
+  const [caseStudyModal, setCaseStudyModal] = useState<{ open: boolean; isNew: boolean; study: any }>({
+    open: false,
+    isNew: true,
+    study: {
+      title: '',
+      client_name: '',
+      category: 'Technology & AI',
+      event_date: 'July 2026',
+      attendees_count: 1000,
+      certs_count: 1000,
+      banner_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
+      summary: '',
+      problem: '',
+      solution: '',
+      resultsText: '100% automated check-ins\nZero gate delays\nInstant tamper-evident verification',
+      quote: '',
+      author: '',
+      author_role: '',
+      is_featured: 1
+    }
+  });
+  const [savingCaseStudy, setSavingCaseStudy] = useState(false);
+
+  const loadCaseStudies = async () => {
+    setCaseStudiesLoading(true);
+    try {
+      const res = await api.caseStudies.list();
+      if (res.success && res.studies) setCaseStudiesList(res.studies);
+    } catch (err) {
+      console.error('Failed to load case studies:', err);
+    } finally {
+      setCaseStudiesLoading(false);
+    }
+  };
+
+  const handleSaveCaseStudy = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingCaseStudy(true);
+    try {
+      const studyPayload = {
+        ...caseStudyModal.study,
+        results: caseStudyModal.study.resultsText
+          ? caseStudyModal.study.resultsText.split('\n').map((s: string) => s.trim()).filter(Boolean)
+          : (Array.isArray(caseStudyModal.study.results) ? caseStudyModal.study.results : [])
+      };
+      if (caseStudyModal.isNew) {
+        const res = await api.caseStudies.create(studyPayload);
+        if (res.success) {
+          setCaseStudyModal({ open: false, isNew: true, study: {} });
+          await loadCaseStudies();
+        }
+      } else {
+        const res = await api.caseStudies.update(caseStudyModal.study.id, studyPayload);
+        if (res.success) {
+          setCaseStudyModal({ open: false, isNew: false, study: {} });
+          await loadCaseStudies();
+        }
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to save case study');
+    } finally {
+      setSavingCaseStudy(false);
+    }
+  };
+
+  const handleDeleteCaseStudy = async (id: number) => {
+    if (!confirm('Are you sure you want to delete this case study?')) return;
+    try {
+      const res = await api.caseStudies.delete(id);
+      if (res.success) await loadCaseStudies();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete case study');
+    }
+  };
+
+  // ==========================================
+  // 3RD-PARTY EVENTS DIRECTORY & BOOKINGS STATE
+  // ==========================================
+  const [directoryEventsList, setDirectoryEventsList] = useState<any[]>([]);
+  const [directoryLoading, setDirectoryLoading] = useState(false);
+  const [directoryBookingsList, setDirectoryBookingsList] = useState<any[]>([]);
+  const [directorySubTab, setDirectorySubTab] = useState<'events' | 'bookings'>('events');
+  const [directoryModal, setDirectoryModal] = useState<{ open: boolean; isNew: boolean; event: any }>({
+    open: false,
+    isNew: true,
+    event: {
+      title: '',
+      organizer_name: '',
+      category: 'Technology',
+      event_type: 'Conference',
+      start_date: '2026-11-20T09:00',
+      end_date: '2026-11-21T18:00',
+      location: 'Pak-China Friendship Centre, Islamabad',
+      city: 'Islamabad',
+      banner_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
+      description: '',
+      ticket_tiers: [
+        { id: 'standard', name: 'General Delegate', price_pkr: 3500, price_usd: 12, perks: ['Full Hall Access', 'Digital Certificate'], available: 200, sold: 0 }
+      ],
+      is_approved: 1,
+      is_featured: 1
+    }
+  });
+  const [savingDirectoryEvent, setSavingDirectoryEvent] = useState(false);
+
+  const loadDirectoryEvents = async () => {
+    setDirectoryLoading(true);
+    try {
+      const [evRes, bkRes] = await Promise.allSettled([
+        api.directoryEvents.list(true),
+        api.directoryEvents.getBookings()
+      ]);
+      if (evRes.status === 'fulfilled' && evRes.value.success) setDirectoryEventsList(evRes.value.events);
+      if (bkRes.status === 'fulfilled' && bkRes.value.success) setDirectoryBookingsList(bkRes.value.bookings);
+    } catch (err) {
+      console.error('Failed to load directory events:', err);
+    } finally {
+      setDirectoryLoading(false);
+    }
+  };
+
+  const handleSaveDirectoryEvent = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSavingDirectoryEvent(true);
+    try {
+      if (directoryModal.isNew) {
+        const res = await api.directoryEvents.create(directoryModal.event);
+        if (res.success) {
+          setDirectoryModal({ open: false, isNew: true, event: {} });
+          await loadDirectoryEvents();
+        }
+      } else {
+        const res = await api.directoryEvents.update(directoryModal.event.id, directoryModal.event);
+        if (res.success) {
+          setDirectoryModal({ open: false, isNew: false, event: {} });
+          await loadDirectoryEvents();
+        }
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to save directory event');
+    } finally {
+      setSavingDirectoryEvent(false);
+    }
+  };
+
+  const handleDeleteDirectoryEvent = async (id: number) => {
+    if (!confirm('Are you sure you want to remove this event from the directory?')) return;
+    try {
+      const res = await api.directoryEvents.delete(id);
+      if (res.success) await loadDirectoryEvents();
+    } catch (err: any) {
+      alert(err.message || 'Failed to delete directory event');
+    }
+  };
+
+  // ==========================================
+  // SUPERADMIN PROFILE & CREDENTIALS STATE
+  // ==========================================
+  const [adminProfileName, setAdminProfileName] = useState(user?.fullName || 'Platform SuperAdmin');
+  const [adminProfileEmail, setAdminProfileEmail] = useState(user?.email || 'admin@eventorax.com');
+  const [adminCurrentPassword, setAdminCurrentPassword] = useState('');
+  const [adminNewPassword, setAdminNewPassword] = useState('');
+  const [adminConfirmPassword, setAdminConfirmPassword] = useState('');
+  const [adminMasterKey, setAdminMasterKey] = useState('ORBIT-I-HQ-2026');
+  const [profileSaving, setProfileSaving] = useState(false);
+  const [profileMsg, setProfileMsg] = useState<string | null>(null);
+
+  const handleSaveAdminProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileSaving(true);
+    setProfileMsg(null);
+    try {
+      await api.auth.updateProfile({ fullName: adminProfileName });
+      if (adminNewPassword) {
+        if (adminNewPassword !== adminConfirmPassword) {
+          alert('New password and confirm password do not match.');
+          setProfileSaving(false);
+          return;
+        }
+        await api.auth.changePassword({ currentPassword: adminCurrentPassword, newPassword: adminNewPassword });
+        setAdminCurrentPassword('');
+        setAdminNewPassword('');
+        setAdminConfirmPassword('');
+      }
+      setProfileMsg('SuperAdmin profile and credentials updated successfully!');
+      setTimeout(() => setProfileMsg(null), 4000);
+    } catch (err: any) {
+      alert(err.message || 'Failed to update credentials.');
+    } finally {
+      setProfileSaving(false);
+    }
+  };
 
   const loadPlatformTeam = async () => {
     setTeamLoading(true);
@@ -571,6 +826,15 @@ export default function PlatformAdmin() {
     }
     if (activeTab === 'backup') {
       loadBackupSnapshots();
+    }
+    if (activeTab === 'gateways') {
+      loadGateways();
+    }
+    if (activeTab === 'casestudies') {
+      loadCaseStudies();
+    }
+    if (activeTab === 'directory') {
+      loadDirectoryEvents();
     }
   }, [activeTab]);
 
@@ -1409,54 +1673,67 @@ export default function PlatformAdmin() {
                   <tbody className="divide-y divide-slate-100">
                     {licenses
                       .filter(lic => {
-                        if (licensePlanFilter !== 'All' && lic.plan?.toLowerCase() !== licensePlanFilter.toLowerCase()) return false;
-                        if (licenseStatusFilter !== 'All' && (lic.license_status || lic.status) !== licenseStatusFilter) return false;
+                        const licPlan = (lic.plan || '').toLowerCase();
+                        const licStat = lic.license_status || lic.licenseStatus || lic.status;
+                        if (licensePlanFilter !== 'All' && licPlan !== licensePlanFilter.toLowerCase()) return false;
+                        if (licenseStatusFilter !== 'All' && licStat !== licenseStatusFilter) return false;
                         if (licenseSearch) {
                           const q = licenseSearch.toLowerCase();
-                          const matchKey = (lic.license_key || '').toLowerCase().includes(q);
-                          const matchName = (lic.name || '').toLowerCase().includes(q);
-                          const matchEmail = (lic.owner_email || '').toLowerCase().includes(q);
+                          const matchKey = (lic.license_key || lic.licenseKey || '').toLowerCase().includes(q);
+                          const matchName = String(lic.name || lic.tenantName || '').toLowerCase().includes(q);
+                          const matchEmail = (lic.owner_email || lic.ownerEmail || '').toLowerCase().includes(q);
                           return matchKey || matchName || matchEmail;
                         }
                         return true;
                       })
                       .map((lic) => {
-                        const eventPercent = Math.min(100, Math.round(((lic.events_count || 0) / (lic.max_events || 25)) * 100));
-                        const attendeePercent = Math.min(100, Math.round(((lic.attendees_count || 0) / (lic.max_attendees || 5000)) * 100));
-                        const certPercent = Math.min(100, Math.round(((lic.certs_count || 0) / (lic.max_certs || 5000)) * 100));
+                        const eventsUsed = lic.events_count ?? lic.eventsUsed ?? 0;
+                        const eventsLimit = lic.max_events ?? lic.eventsLimit ?? 25;
+                        const attendeesUsed = lic.attendees_count ?? lic.attendeesUsed ?? 0;
+                        const attendeesLimit = lic.max_attendees ?? lic.attendeesLimit ?? 5000;
+                        const certsUsed = lic.certs_count ?? lic.certsUsed ?? 0;
+                        const certsLimit = lic.max_certs ?? lic.certsLimit ?? 5000;
 
-                        const isActive = lic.license_status === 'active' || lic.status === 'active';
-                        const isPending = lic.status === 'pending_approval';
+                        const eventPercent = Math.min(100, Math.round((eventsUsed / (eventsLimit || 1)) * 100));
+                        const attendeePercent = Math.min(100, Math.round((attendeesUsed / (attendeesLimit || 1)) * 100));
+                        const certPercent = Math.min(100, Math.round((certsUsed / (certsLimit || 1)) * 100));
+
+                        const isActive = lic.license_status === 'active' || lic.licenseStatus === 'active' || lic.status === 'active';
+                        const isPending = lic.status === 'pending_approval' || lic.license_status === 'pending';
+                        const licKey = lic.license_key || lic.licenseKey;
+                        const licId = lic.id || lic.tenantId || lic.tenant_id;
+                        const licName = String(lic.name || lic.tenantName || 'Organization');
+                        const licEmail = lic.owner_email || lic.ownerEmail || lic.slug;
 
                         return (
-                          <tr key={lic.id} className="hover:bg-slate-50/80 transition-colors">
+                          <tr key={licId} className="hover:bg-slate-50/80 transition-colors">
                             {/* Client Org */}
                             <td className="p-3.5 pl-4">
                               <div className="flex items-center gap-2.5">
                                 <div className="w-8 h-8 rounded-lg bg-blue-100 text-[#1d4ed8] font-bold flex items-center justify-center text-xs">
-                                  {(lic.name || 'EX').slice(0, 2).toUpperCase()}
+                                  {licName.slice(0, 2).toUpperCase()}
                                 </div>
                                 <div>
-                                  <p className="font-bold text-slate-900 text-xs">{lic.name}</p>
-                                  <p className="text-[11px] text-slate-500">{lic.owner_email || lic.slug}</p>
+                                  <p className="font-bold text-slate-900 text-xs">{licName}</p>
+                                  <p className="text-[11px] text-slate-500">{licEmail}</p>
                                 </div>
                               </div>
                             </td>
 
                             {/* License Key */}
                             <td className="p-3.5">
-                              {lic.license_key ? (
+                              {licKey ? (
                                 <div className="inline-flex items-center gap-1.5 bg-slate-100 border border-slate-300 px-2.5 py-1 rounded-lg">
                                   <span className="font-mono font-bold text-slate-900 text-xs tracking-wider">
-                                    {lic.license_key}
+                                    {licKey}
                                   </span>
                                   <button
                                     type="button"
-                                    onClick={() => copyToClipboard(lic.license_key)}
+                                    onClick={() => copyToClipboard(licKey)}
                                     className="p-1 rounded hover:bg-slate-200 text-slate-500 hover:text-slate-800 transition-colors"
                                     title="Copy Key"
                                   >
-                                    {copiedTid === lic.license_key ? (
+                                    {copiedTid === licKey ? (
                                       <Check className="w-3.5 h-3.5 text-emerald-600" />
                                     ) : (
                                       <Copy className="w-3.5 h-3.5" />
@@ -1551,7 +1828,7 @@ export default function PlatformAdmin() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleRenewLicense(lic.id, 365)}
+                                  onClick={() => handleRenewLicense(licId, 365)}
                                   className="h-7 px-2 text-[11px] rounded-lg text-emerald-700 hover:bg-emerald-50 border-emerald-300"
                                   title="Renew License for 365 days"
                                 >
@@ -1561,7 +1838,7 @@ export default function PlatformAdmin() {
                                 <Button
                                   size="sm"
                                   variant="outline"
-                                  onClick={() => handleRegenerateKey(lic.id)}
+                                  onClick={() => handleRegenerateKey(licId)}
                                   className="h-7 px-2 text-[11px] rounded-lg text-blue-700 hover:bg-blue-50 border-blue-300"
                                   title="Regenerate Activation Key"
                                 >
@@ -1572,7 +1849,7 @@ export default function PlatformAdmin() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    onClick={() => handleRevokeLicense(lic.id)}
+                                    onClick={() => handleRevokeLicense(licId)}
                                     className="h-7 px-2 text-[11px] rounded-lg text-rose-700 hover:bg-rose-50 border-rose-300"
                                     title="Suspend Organization License"
                                   >
@@ -1581,7 +1858,7 @@ export default function PlatformAdmin() {
                                 ) : (
                                   <Button
                                     size="sm"
-                                    onClick={() => handleRenewLicense(lic.id, 365)}
+                                    onClick={() => handleRenewLicense(licId, 365)}
                                     className="h-7 px-2 text-[11px] rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white"
                                   >
                                     Activate
@@ -2611,7 +2888,7 @@ export default function PlatformAdmin() {
         )}
 
         {/* ============================================================== */}
-        {/* TAB 6: WEBSITE & PORTAL CMS */}
+        {/* TAB 6: WEBSITE & PORTAL CMS (COMPREHENSIVE MULTI-PAGE CMS) */}
         {/* ============================================================== */}
         {activeTab === 'cms' && (
           <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6">
@@ -2622,7 +2899,7 @@ export default function PlatformAdmin() {
                   Official Website Content Management System (CMS)
                 </h2>
                 <p className="text-xs text-[#64748b]">
-                  Manage headlines, hero messages, branding statements, and disclosures displayed on EventoraX public pages.
+                  Full granular control over hero headlines, value propositions, stats counters, contact details, and institutional statements.
                 </p>
               </div>
 
@@ -2679,26 +2956,201 @@ export default function PlatformAdmin() {
                 />
               </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Hero Main Headline</label>
-                <Input
-                  value={cmsContent.headline || ""}
-                  onChange={(e) => setCmsContent({ ...cmsContent, headline: e.target.value })}
-                  placeholder="e.g. Effortless Events, Instant Passes & Tamper-Evident Credentials"
-                  className="rounded-xl border-slate-200 text-xs h-10 font-bold"
-                />
-              </div>
+              {/* Page-Specific Rich CMS Fields */}
+              {selectedCmsPageKey === 'home' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Hero Main Headline</label>
+                    <Input
+                      value={cmsContent.headline || ""}
+                      onChange={(e) => setCmsContent({ ...cmsContent, headline: e.target.value })}
+                      placeholder="e.g. Effortless Events, Instant Passes & Tamper-Evident Credentials"
+                      className="rounded-xl border-slate-200 text-xs h-10 font-bold"
+                    />
+                  </div>
 
-              <div>
-                <label className="text-xs font-bold text-slate-700 block mb-1">Hero Subheadline / Mission Statement</label>
-                <textarea
-                  rows={3}
-                  value={cmsContent.subheadline || ""}
-                  onChange={(e) => setCmsContent({ ...cmsContent, subheadline: e.target.value })}
-                  placeholder="Enter the primary descriptive text..."
-                  className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
-                />
-              </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Hero Subheadline / Mission Statement</label>
+                    <textarea
+                      rows={3}
+                      value={cmsContent.subheadline || ""}
+                      onChange={(e) => setCmsContent({ ...cmsContent, subheadline: e.target.value })}
+                      placeholder="Enter the primary descriptive text..."
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Primary CTA Button Label</label>
+                      <Input
+                        value={cmsContent.cta_primary || "Get Started Free"}
+                        onChange={(e) => setCmsContent({ ...cmsContent, cta_primary: e.target.value })}
+                        className="rounded-xl border-slate-200 text-xs h-9 font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Secondary Action Label</label>
+                      <Input
+                        value={cmsContent.cta_secondary || "Verify Credential"}
+                        onChange={(e) => setCmsContent({ ...cmsContent, cta_secondary: e.target.value })}
+                        className="rounded-xl border-slate-200 text-xs h-9 font-medium"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Live Stat: Passes Issued</label>
+                      <Input
+                        value={cmsContent.stat_passes || "11,750+ Issued"}
+                        onChange={(e) => setCmsContent({ ...cmsContent, stat_passes: e.target.value })}
+                        className="rounded-xl border-slate-200 text-xs h-9 font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Live Stat: Scan Speed</label>
+                      <Input
+                        value={cmsContent.stat_speed || "0.8s Gate Latency"}
+                        onChange={(e) => setCmsContent({ ...cmsContent, stat_speed: e.target.value })}
+                        className="rounded-xl border-slate-200 text-xs h-9 font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Live Stat: Tamper Protection</label>
+                      <Input
+                        value={cmsContent.stat_security || "100% Cryptographic"}
+                        onChange={(e) => setCmsContent({ ...cmsContent, stat_security: e.target.value })}
+                        className="rounded-xl border-slate-200 text-xs h-9 font-medium"
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {selectedCmsPageKey === 'about' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Founding Story &amp; Year</label>
+                    <Input
+                      value={cmsContent.founding || "Founded in July 2026 by ORBIT-I Private Limited"}
+                      onChange={(e) => setCmsContent({ ...cmsContent, founding: e.target.value })}
+                      className="rounded-xl border-slate-200 text-xs h-10 font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Core Mission Statement</label>
+                    <textarea
+                      rows={3}
+                      value={cmsContent.mission || "To empower every event organizer — from universities to NGOs to corporations — with automated tools that make event management simple, professional, and delightful."}
+                      onChange={(e) => setCmsContent({ ...cmsContent, mission: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Core Vision Statement</label>
+                    <textarea
+                      rows={3}
+                      value={cmsContent.vision || "To become Pakistan's most trusted event management & credential issuance platform."}
+                      onChange={(e) => setCmsContent({ ...cmsContent, vision: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedCmsPageKey === 'pricing' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Pricing Guarantee Statement</label>
+                    <Input
+                      value={cmsContent.pricing_guarantee || "100% Transparent Pricing in USD and PKR • SBP Raast, Easypaisa & JazzCash Supported"}
+                      onChange={(e) => setCmsContent({ ...cmsContent, pricing_guarantee: e.target.value })}
+                      className="rounded-xl border-slate-200 text-xs h-10 font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Starter Free Trial Policy Notice</label>
+                    <textarea
+                      rows={2}
+                      value={cmsContent.trial_notice || "Starter plan includes a 14-day risk-free trial covering up to 2 events and 40 attendees with full Canva design studio access."}
+                      onChange={(e) => setCmsContent({ ...cmsContent, trial_notice: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Enterprise White-Label SLA Guarantee</label>
+                    <textarea
+                      rows={2}
+                      value={cmsContent.enterprise_sla || "Enterprise plans include dedicated technical account managers, 99.9% uptime SLA, and custom domain white-labeling."}
+                      onChange={(e) => setCmsContent({ ...cmsContent, enterprise_sla: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedCmsPageKey === 'contact' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Official WhatsApp / Phone Helpline</label>
+                      <Input
+                        value={cmsContent.contact_phone || "+92 3190375751"}
+                        onChange={(e) => setCmsContent({ ...cmsContent, contact_phone: e.target.value })}
+                        className="rounded-xl border-slate-200 text-xs h-10 font-mono font-bold"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Corporate Support Email</label>
+                      <Input
+                        value={cmsContent.contact_email || "eventorax@orbit-i.tech"}
+                        onChange={(e) => setCmsContent({ ...cmsContent, contact_email: e.target.value })}
+                        className="rounded-xl border-slate-200 text-xs h-10 font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Headquarters &amp; Office Address</label>
+                    <Input
+                      value={cmsContent.contact_address || "ORBIT-I Private Limited, F-7 Markaz, Islamabad, Pakistan"}
+                      onChange={(e) => setCmsContent({ ...cmsContent, contact_address: e.target.value })}
+                      className="rounded-xl border-slate-200 text-xs h-10 font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Support Operating Hours</label>
+                    <Input
+                      value={cmsContent.contact_hours || "Monday - Saturday: 9:00 AM - 6:00 PM PKT • 24/7 Security Hotline"}
+                      onChange={(e) => setCmsContent({ ...cmsContent, contact_hours: e.target.value })}
+                      className="rounded-xl border-slate-200 text-xs h-10 font-medium"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {selectedCmsPageKey === 'legal' && (
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Regulatory &amp; Data Protection Statement</label>
+                    <textarea
+                      rows={3}
+                      value={cmsContent.legal_compliance || "EventoraX adheres to State Bank of Pakistan (SBP) cybersecurity guidelines and international data isolation protocols."}
+                      onChange={(e) => setCmsContent({ ...cmsContent, legal_compliance: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-slate-700 block mb-1">Tamper-Evident Verification Terms</label>
+                    <textarea
+                      rows={3}
+                      value={cmsContent.legal_verify || "All digital certificates and attendee passes issued by EventoraX contain SHA-256 cryptographic watermarks verifiable permanently at /verify."}
+                      onChange={(e) => setCmsContent({ ...cmsContent, legal_verify: e.target.value })}
+                      className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
+                    />
+                  </div>
+                </div>
+              )}
 
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">Official Endorsement Statement</label>
@@ -2717,6 +3169,917 @@ export default function PlatformAdmin() {
                 >
                   <Save className="w-4 h-4" />
                   {cmsSaving ? "Saving to Production..." : "Save & Publish Changes"}
+                </Button>
+              </div>
+            </form>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB: PAYMENT GATEWAYS & MERCHANT ACCOUNTS */}
+        {/* ============================================================== */}
+        {activeTab === 'gateways' && (
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#0f172a] flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-emerald-600" />
+                  Official Merchant Gateways &amp; Payment Accounts
+                </h2>
+                <p className="text-xs text-[#64748b]">
+                  SuperAdmin control center for real Pakistani wallets, State Bank Raast rails, corporate bank clearing, and international cards. All accounts are 100% configurable and live.
+                </p>
+              </div>
+
+              <Button
+                onClick={handleSaveGateways}
+                disabled={gatewaysSaving}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold h-10 px-5 flex items-center gap-1.5 shadow-md shadow-emerald-600/20"
+              >
+                <Save className="w-4 h-4" />
+                {gatewaysSaving ? 'Saving...' : 'Save & Deploy Live Credentials'}
+              </Button>
+            </div>
+
+            {gatewaysMsg && (
+              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                {gatewaysMsg}
+              </div>
+            )}
+
+            {/* Gateways Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* 1. Easypaisa */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <EasypaisaBadge className="w-7 h-7" />
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">Easypaisa Mobile Wallet &amp; QR</h4>
+                      <span className="text-[10px] text-emerald-700 font-semibold">Telenor Microfinance Bank</span>
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(merchantGateways.easypaisa?.enabled)}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        easypaisa: { ...merchantGateways.easypaisa, enabled: e.target.checked }
+                      })}
+                      className="rounded text-emerald-600 w-4 h-4"
+                    />
+                    Enabled
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Account Title</label>
+                    <Input
+                      value={merchantGateways.easypaisa?.account_title || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        easypaisa: { ...merchantGateways.easypaisa, account_title: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Account Number / Mobile</label>
+                    <Input
+                      value={merchantGateways.easypaisa?.account_number || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        easypaisa: { ...merchantGateways.easypaisa, account_number: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-mono font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Store ID (Open API)</label>
+                    <Input
+                      value={merchantGateways.easypaisa?.store_id || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        easypaisa: { ...merchantGateways.easypaisa, store_id: e.target.value }
+                      })}
+                      placeholder="e.g. EP-ORBIT-2026"
+                      className="rounded-xl h-9 text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Hash Key / Secret (Optional)</label>
+                    <Input
+                      type="password"
+                      value={merchantGateways.easypaisa?.hash_key || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        easypaisa: { ...merchantGateways.easypaisa, hash_key: e.target.value }
+                      })}
+                      placeholder="••••••••••••"
+                      className="rounded-xl h-9 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1 text-xs">Checkout Instructions for Attendees</label>
+                  <textarea
+                    rows={2}
+                    value={merchantGateways.easypaisa?.instructions || ''}
+                    onChange={(e) => setMerchantGateways({
+                      ...merchantGateways,
+                      easypaisa: { ...merchantGateways.easypaisa, instructions: e.target.value }
+                    })}
+                    className="w-full p-2 rounded-xl border border-slate-200 text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* 2. JazzCash */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <JazzCashBadge className="w-7 h-7" />
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">JazzCash Mobile Wallet &amp; Till</h4>
+                      <span className="text-[10px] text-red-700 font-semibold">Mobilink Microfinance Bank</span>
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(merchantGateways.jazzcash?.enabled)}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        jazzcash: { ...merchantGateways.jazzcash, enabled: e.target.checked }
+                      })}
+                      className="rounded text-red-600 w-4 h-4"
+                    />
+                    Enabled
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Account Title</label>
+                    <Input
+                      value={merchantGateways.jazzcash?.account_title || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        jazzcash: { ...merchantGateways.jazzcash, account_title: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Wallet / Till Number</label>
+                    <Input
+                      value={merchantGateways.jazzcash?.account_number || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        jazzcash: { ...merchantGateways.jazzcash, account_number: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-mono font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Merchant ID</label>
+                    <Input
+                      value={merchantGateways.jazzcash?.merchant_id || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        jazzcash: { ...merchantGateways.jazzcash, merchant_id: e.target.value }
+                      })}
+                      placeholder="MC12345"
+                      className="rounded-xl h-9 text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Password / Salt</label>
+                    <Input
+                      type="password"
+                      value={merchantGateways.jazzcash?.password || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        jazzcash: { ...merchantGateways.jazzcash, password: e.target.value }
+                      })}
+                      placeholder="••••••••••••"
+                      className="rounded-xl h-9 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1 text-xs">Checkout Instructions for Attendees</label>
+                  <textarea
+                    rows={2}
+                    value={merchantGateways.jazzcash?.instructions || ''}
+                    onChange={(e) => setMerchantGateways({
+                      ...merchantGateways,
+                      jazzcash: { ...merchantGateways.jazzcash, instructions: e.target.value }
+                    })}
+                    className="w-full p-2 rounded-xl border border-slate-200 text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* 3. Raast */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <RaastBadge className="w-7 h-7" />
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">Raast Instant Direct (State Bank of Pakistan)</h4>
+                      <span className="text-[10px] text-emerald-800 font-semibold">Zero Transaction Fee Rail</span>
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(merchantGateways.raast?.enabled)}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        raast: { ...merchantGateways.raast, enabled: e.target.checked }
+                      })}
+                      className="rounded text-emerald-700 w-4 h-4"
+                    />
+                    Enabled
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Account Title</label>
+                    <Input
+                      value={merchantGateways.raast?.account_title || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        raast: { ...merchantGateways.raast, account_title: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Raast ID / Registered Mobile</label>
+                    <Input
+                      value={merchantGateways.raast?.raast_id || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        raast: { ...merchantGateways.raast, raast_id: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-mono font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1 text-xs">Raast Official IBAN</label>
+                  <Input
+                    value={merchantGateways.raast?.iban || ''}
+                    onChange={(e) => setMerchantGateways({
+                      ...merchantGateways,
+                      raast: { ...merchantGateways.raast, iban: e.target.value }
+                    })}
+                    className="rounded-xl h-9 text-xs font-mono font-bold"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1 text-xs">Checkout Instructions</label>
+                  <textarea
+                    rows={2}
+                    value={merchantGateways.raast?.instructions || ''}
+                    onChange={(e) => setMerchantGateways({
+                      ...merchantGateways,
+                      raast: { ...merchantGateways.raast, instructions: e.target.value }
+                    })}
+                    className="w-full p-2 rounded-xl border border-slate-200 text-xs"
+                  />
+                </div>
+              </div>
+
+              {/* 4. Meezan Bank */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <BankTransferBadge className="w-7 h-7" />
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">Direct Corporate Bank Transfer</h4>
+                      <span className="text-[10px] text-blue-800 font-semibold">Institutional Wire Clearing</span>
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(merchantGateways.bank_transfer?.enabled)}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        bank_transfer: { ...merchantGateways.bank_transfer, enabled: e.target.checked }
+                      })}
+                      className="rounded text-blue-700 w-4 h-4"
+                    />
+                    Enabled
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Bank Name</label>
+                    <Input
+                      value={merchantGateways.bank_transfer?.bank_name || 'Meezan Bank Limited'}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        bank_transfer: { ...merchantGateways.bank_transfer, bank_name: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Account Title</label>
+                    <Input
+                      value={merchantGateways.bank_transfer?.account_title || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        bank_transfer: { ...merchantGateways.bank_transfer, account_title: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Account Number</label>
+                    <Input
+                      value={merchantGateways.bank_transfer?.account_number || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        bank_transfer: { ...merchantGateways.bank_transfer, account_number: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-mono font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Branch Name</label>
+                    <Input
+                      value={merchantGateways.bank_transfer?.branch || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        bank_transfer: { ...merchantGateways.bank_transfer, branch: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1 text-xs">IBAN (24 Characters)</label>
+                  <Input
+                    value={merchantGateways.bank_transfer?.iban || ''}
+                    onChange={(e) => setMerchantGateways({
+                      ...merchantGateways,
+                      bank_transfer: { ...merchantGateways.bank_transfer, iban: e.target.value }
+                    })}
+                    className="rounded-xl h-9 text-xs font-mono font-bold"
+                  />
+                </div>
+              </div>
+
+              {/* 5. Safepay */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <SafepayBadge className="w-7 h-7" />
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">Safepay Pakistan (Debit / Credit Cards)</h4>
+                      <span className="text-[10px] text-slate-500 font-semibold">Visa, Mastercard &amp; PayPak</span>
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(merchantGateways.safepay?.enabled)}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        safepay: { ...merchantGateways.safepay, enabled: e.target.checked }
+                      })}
+                      className="rounded text-blue-600 w-4 h-4"
+                    />
+                    Enabled
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Environment</label>
+                    <select
+                      value={merchantGateways.safepay?.environment || 'sandbox'}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        safepay: { ...merchantGateways.safepay, environment: e.target.value }
+                      })}
+                      className="w-full h-9 rounded-xl border border-slate-200 px-3 text-xs font-semibold"
+                    >
+                      <option value="sandbox">Sandbox / Testing</option>
+                      <option value="production">Production Live</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Public Key</label>
+                    <Input
+                      value={merchantGateways.safepay?.public_key || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        safepay: { ...merchantGateways.safepay, public_key: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1 text-xs">Secret Key</label>
+                  <Input
+                    type="password"
+                    value={merchantGateways.safepay?.secret_key || ''}
+                    onChange={(e) => setMerchantGateways({
+                      ...merchantGateways,
+                      safepay: { ...merchantGateways.safepay, secret_key: e.target.value }
+                    })}
+                    placeholder="sec_..."
+                    className="rounded-xl h-9 text-xs font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* 6. Stripe */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
+                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                  <div className="flex items-center gap-2.5">
+                    <CardNetworksBadge className="w-12 h-6" />
+                    <div>
+                      <h4 className="text-sm font-bold text-slate-900">Stripe International (Global USD Cards)</h4>
+                      <span className="text-[10px] text-indigo-700 font-semibold">Global Visa, Mastercard &amp; Apple Pay</span>
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(merchantGateways.stripe?.enabled)}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        stripe: { ...merchantGateways.stripe, enabled: e.target.checked }
+                      })}
+                      className="rounded text-indigo-600 w-4 h-4"
+                    />
+                    Enabled
+                  </label>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Publishable Key</label>
+                    <Input
+                      value={merchantGateways.stripe?.publishable_key || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        stripe: { ...merchantGateways.stripe, publishable_key: e.target.value }
+                      })}
+                      placeholder="pk_live_..."
+                      className="rounded-xl h-9 text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Secret Key</label>
+                    <Input
+                      type="password"
+                      value={merchantGateways.stripe?.secret_key || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        stripe: { ...merchantGateways.stripe, secret_key: e.target.value }
+                      })}
+                      placeholder="sk_live_..."
+                      className="rounded-xl h-9 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1 text-xs">Checkout Instructions</label>
+                  <textarea
+                    rows={2}
+                    value={merchantGateways.stripe?.instructions || ''}
+                    onChange={(e) => setMerchantGateways({
+                      ...merchantGateways,
+                      stripe: { ...merchantGateways.stripe, instructions: e.target.value }
+                    })}
+                    className="w-full p-2 rounded-xl border border-slate-200 text-xs"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB: CASE STUDIES & PAST EVENTS MANAGEMENT */}
+        {/* ============================================================== */}
+        {activeTab === 'casestudies' && (
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#0f172a] flex items-center gap-2">
+                  <Sparkles className="w-5 h-5 text-purple-600" />
+                  Case Studies &amp; Previous Events Showcase
+                </h2>
+                <p className="text-xs text-[#64748b]">
+                  Highlight past successful conferences, summits, attendee numbers, and tamper-evident credential issuances on the public /case-studies page.
+                </p>
+              </div>
+
+              <Button
+                onClick={() => setCaseStudyModal({
+                  open: true,
+                  isNew: true,
+                  study: {
+                    title: '',
+                    client_name: '',
+                    category: 'Technology & AI',
+                    event_date: 'July 2026',
+                    attendees_count: 1000,
+                    certs_count: 1000,
+                    banner_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
+                    summary: '',
+                    problem: '',
+                    solution: '',
+                    resultsText: '100% automated check-ins\nZero gate delays\nInstant verification',
+                    quote: '',
+                    author: '',
+                    author_role: '',
+                    is_featured: 1
+                  }
+                })}
+                className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs font-bold h-10 px-5 flex items-center gap-1.5 shadow-md shadow-purple-600/20"
+              >
+                <Plus className="w-4 h-4" />
+                Add New Case Study
+              </Button>
+            </div>
+
+            <div className="overflow-x-auto w-full">
+              <table className="w-full text-left text-xs min-w-[700px]">
+                <thead>
+                  <tr className="border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
+                    <th className="pb-3">Event &amp; Client</th>
+                    <th className="pb-3">Category &amp; Date</th>
+                    <th className="pb-3">Attendees</th>
+                    <th className="pb-3">Certs Issued</th>
+                    <th className="pb-3">Status</th>
+                    <th className="pb-3 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {caseStudiesList.map((cs) => (
+                    <tr key={cs.id} className="hover:bg-slate-50/50">
+                      <td className="py-3.5 flex items-center gap-3">
+                        <img
+                          src={cs.banner_url}
+                          alt={cs.title}
+                          className="w-12 h-10 rounded-lg object-cover"
+                        />
+                        <div>
+                          <div className="font-bold text-slate-900">{cs.title}</div>
+                          <div className="text-[11px] text-slate-500">{cs.client_name}</div>
+                        </div>
+                      </td>
+                      <td className="py-3.5">
+                        <div className="font-semibold text-purple-700">{cs.category}</div>
+                        <div className="text-[11px] text-slate-500">{cs.event_date}</div>
+                      </td>
+                      <td className="py-3.5 font-bold text-slate-800">
+                        {Number(cs.attendees_count).toLocaleString()}
+                      </td>
+                      <td className="py-3.5 font-bold text-emerald-600">
+                        {Number(cs.certs_count).toLocaleString()}
+                      </td>
+                      <td className="py-3.5">
+                        <Badge className={`text-[10px] ${cs.is_featured ? 'bg-purple-100 text-purple-800' : 'bg-slate-100 text-slate-600'}`}>
+                          {cs.is_featured ? 'Featured' : 'Standard'}
+                        </Badge>
+                      </td>
+                      <td className="py-3.5 text-right space-x-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => setCaseStudyModal({
+                            open: true,
+                            isNew: false,
+                            study: {
+                              ...cs,
+                              resultsText: Array.isArray(cs.results) ? cs.results.join('\n') : (typeof cs.results === 'string' && cs.results.startsWith('[') ? JSON.parse(cs.results).join('\n') : cs.results)
+                            }
+                          })}
+                          className="h-8 px-2.5 text-xs rounded-xl"
+                        >
+                          <Edit className="w-3.5 h-3.5 mr-1" />
+                          Edit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDeleteCaseStudy(cs.id)}
+                          className="h-8 px-2 text-xs rounded-xl text-rose-600 hover:bg-rose-50"
+                        >
+                          <Trash2 className="w-3.5 h-3.5" />
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB: 3RD-PARTY EVENTS DIRECTORY & BOOKINGS */}
+        {/* ============================================================== */}
+        {activeTab === 'directory' && (
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-bold text-[#0f172a] flex items-center gap-2">
+                  <Calendar className="w-5 h-5 text-blue-600" />
+                  3rd-Party Events, Summits &amp; Seminars Marketplace
+                </h2>
+                <p className="text-xs text-[#64748b]">
+                  Review, approve, and manage public listings and attendee ticket bookings with real payment references.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <Button
+                  onClick={() => setDirectoryModal({
+                    open: true,
+                    isNew: true,
+                    event: {
+                      title: '',
+                      organizer_name: '',
+                      category: 'Technology',
+                      event_type: 'Conference',
+                      start_date: '2026-11-20T09:00',
+                      end_date: '2026-11-21T18:00',
+                      location: 'Pak-China Friendship Centre, Islamabad',
+                      city: 'Islamabad',
+                      banner_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
+                      description: '',
+                      ticket_tiers: [
+                        { id: 'standard', name: 'General Delegate', price_pkr: 3500, price_usd: 12, perks: ['Full Hall Access', 'Digital Certificate'], available: 200, sold: 0 }
+                      ],
+                      is_approved: 1,
+                      is_featured: 1
+                    }
+                  })}
+                  className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold h-10 px-4 flex items-center gap-1.5 shadow-md shadow-blue-600/20"
+                >
+                  <Plus className="w-4 h-4" />
+                  Add 3rd-Party Event
+                </Button>
+              </div>
+            </div>
+
+            {/* Subtabs */}
+            <div className="flex gap-2 border-b border-slate-200 pb-3">
+              <button
+                type="button"
+                onClick={() => setDirectorySubTab('events')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  directorySubTab === 'events' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'
+                }`}
+              >
+                Directory Events ({directoryEventsList.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setDirectorySubTab('bookings')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all ${
+                  directorySubTab === 'bookings' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'
+                }`}
+              >
+                Attendee Bookings &amp; Payment Proofs ({directoryBookingsList.length})
+              </button>
+            </div>
+
+            {directorySubTab === 'events' ? (
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-left text-xs min-w-[700px]">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
+                      <th className="pb-3">Event &amp; Organizer</th>
+                      <th className="pb-3">Category &amp; City</th>
+                      <th className="pb-3">Dates</th>
+                      <th className="pb-3">Approval</th>
+                      <th className="pb-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {directoryEventsList.map((evt) => (
+                      <tr key={evt.id} className="hover:bg-slate-50/50">
+                        <td className="py-3.5 flex items-center gap-3">
+                          <img
+                            src={evt.banner_url}
+                            alt={evt.title}
+                            className="w-12 h-10 rounded-lg object-cover"
+                          />
+                          <div>
+                            <div className="font-bold text-slate-900">{evt.title}</div>
+                            <div className="text-[11px] text-slate-500">{evt.organizer_name}</div>
+                          </div>
+                        </td>
+                        <td className="py-3.5">
+                          <div className="font-semibold text-blue-700">{evt.category}</div>
+                          <div className="text-[11px] text-slate-500">{evt.city}</div>
+                        </td>
+                        <td className="py-3.5 text-slate-600 text-[11px]">
+                          {new Date(evt.start_date).toLocaleDateString()}
+                        </td>
+                        <td className="py-3.5">
+                          <Badge className={`text-[10px] ${evt.is_approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
+                            {evt.is_approved ? 'Approved' : 'Pending'}
+                          </Badge>
+                        </td>
+                        <td className="py-3.5 text-right space-x-2">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => setDirectoryModal({ open: true, isNew: false, event: evt })}
+                            className="h-8 px-2.5 text-xs rounded-xl"
+                          >
+                            <Edit className="w-3.5 h-3.5 mr-1" />
+                            Edit
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => handleDeleteDirectoryEvent(evt.id)}
+                            className="h-8 px-2 text-xs rounded-xl text-rose-600 hover:bg-rose-50"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : (
+              /* Bookings Table */
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-left text-xs min-w-[700px]">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
+                      <th className="pb-3">Booking Ref</th>
+                      <th className="pb-3">Event &amp; Tier</th>
+                      <th className="pb-3">Attendee</th>
+                      <th className="pb-3">Payment Method</th>
+                      <th className="pb-3">Transaction ID (TID)</th>
+                      <th className="pb-3">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {directoryBookingsList.map((bk) => (
+                      <tr key={bk.id} className="hover:bg-slate-50/50">
+                        <td className="py-3.5 font-mono font-bold text-purple-700">
+                          {bk.booking_ref}
+                        </td>
+                        <td className="py-3.5">
+                          <div className="font-bold text-slate-900">{bk.event_title}</div>
+                          <div className="text-[11px] text-slate-500">{bk.tier_name}</div>
+                        </td>
+                        <td className="py-3.5">
+                          <div className="font-bold text-slate-800">{bk.attendee_name}</div>
+                          <div className="text-[11px] text-slate-500">{bk.attendee_phone} • {bk.attendee_email}</div>
+                        </td>
+                        <td className="py-3.5 font-bold uppercase text-[11px] text-slate-700">
+                          {bk.payment_method}
+                        </td>
+                        <td className="py-3.5 font-mono font-bold text-blue-700">
+                          {bk.transaction_id}
+                        </td>
+                        <td className="py-3.5">
+                          <Badge className="bg-emerald-100 text-emerald-800 text-[10px]">
+                            {bk.payment_status}
+                          </Badge>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB: SUPERADMIN PROFILE & SECURITY */}
+        {/* ============================================================== */}
+        {activeTab === 'profile' && (
+          <div className="bg-white rounded-3xl border border-[#e2e8f0] shadow-xs p-6 space-y-6 max-w-2xl">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+              <div className="w-10 h-10 rounded-2xl bg-blue-100 text-[#1d4ed8] flex items-center justify-center font-bold">
+                <KeyRound className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-lg font-bold text-[#0f172a]">SuperAdmin Profile &amp; Master Credentials</h2>
+                <p className="text-xs text-[#64748b]">Update your master administrator name, email, credentials, and password.</p>
+              </div>
+            </div>
+
+            {profileMsg && (
+              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                {profileMsg}
+              </div>
+            )}
+
+            <form onSubmit={handleSaveAdminProfile} className="space-y-4 text-xs">
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">SuperAdmin Display Name *</label>
+                <Input
+                  required
+                  value={adminProfileName}
+                  onChange={(e) => setAdminProfileName(e.target.value)}
+                  className="rounded-xl h-10 text-xs font-bold"
+                />
+              </div>
+
+              <div>
+                <label className="font-bold text-slate-700 block mb-1">Master Email Address</label>
+                <Input
+                  value={adminProfileEmail}
+                  onChange={(e) => setAdminProfileEmail(e.target.value)}
+                  className="rounded-xl h-10 text-xs font-mono"
+                />
+              </div>
+
+              <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                <h4 className="font-bold text-slate-800 text-xs flex items-center gap-1.5">
+                  <Lock className="w-4 h-4 text-blue-600" />
+                  Change Password (Leave blank to keep current)
+                </h4>
+
+                <div>
+                  <label className="font-bold text-slate-600 block mb-1">Current Password</label>
+                  <Input
+                    type="password"
+                    value={adminCurrentPassword}
+                    onChange={(e) => setAdminCurrentPassword(e.target.value)}
+                    placeholder="Enter current password"
+                    className="rounded-xl h-9 text-xs"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">New Password</label>
+                    <Input
+                      type="password"
+                      value={adminNewPassword}
+                      onChange={(e) => setAdminNewPassword(e.target.value)}
+                      placeholder="At least 6 characters"
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-600 block mb-1">Confirm New Password</label>
+                    <Input
+                      type="password"
+                      value={adminConfirmPassword}
+                      onChange={(e) => setAdminConfirmPassword(e.target.value)}
+                      placeholder="Repeat new password"
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <Button
+                  type="submit"
+                  disabled={profileSaving}
+                  className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs font-bold h-10 px-6 shadow-md shadow-blue-600/20"
+                >
+                  <Save className="w-4 h-4 mr-1.5" />
+                  {profileSaving ? 'Saving...' : 'Save Profile & Credentials'}
                 </Button>
               </div>
             </form>
@@ -4119,6 +5482,432 @@ export default function PlatformAdmin() {
                     className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs font-bold h-9 px-5"
                   >
                     {savingMember ? 'Saving Member...' : 'Save Team Member'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Add / Edit Case Study Modal */}
+        {caseStudyModal.open && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-purple-100 text-[#7c3aed] flex items-center justify-center font-bold">
+                    <Sparkles className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    {caseStudyModal.isNew ? 'Create New Case Study' : 'Edit Case Study'}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCaseStudyModal({ ...caseStudyModal, open: false })}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveCaseStudy} className="space-y-3.5 text-xs">
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Event Title *</label>
+                    <Input
+                      required
+                      placeholder="e.g. National AI Summit 2026"
+                      value={caseStudyModal.study.title || ''}
+                      onChange={(e) => setCaseStudyModal({
+                        ...caseStudyModal,
+                        study: { ...caseStudyModal.study, title: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Client / Institution Name *</label>
+                    <Input
+                      required
+                      placeholder="e.g. FAST-NUCES"
+                      value={caseStudyModal.study.client_name || ''}
+                      onChange={(e) => setCaseStudyModal({
+                        ...caseStudyModal,
+                        study: { ...caseStudyModal.study, client_name: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-3 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Category</label>
+                    <Input
+                      placeholder="e.g. Technology & AI"
+                      value={caseStudyModal.study.category || 'Technology & AI'}
+                      onChange={(e) => setCaseStudyModal({
+                        ...caseStudyModal,
+                        study: { ...caseStudyModal.study, category: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Event Month/Year</label>
+                    <Input
+                      placeholder="e.g. July 2026"
+                      value={caseStudyModal.study.event_date || 'July 2026'}
+                      onChange={(e) => setCaseStudyModal({
+                        ...caseStudyModal,
+                        study: { ...caseStudyModal.study, event_date: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Attendees Count</label>
+                    <Input
+                      type="number"
+                      value={caseStudyModal.study.attendees_count || 1000}
+                      onChange={(e) => setCaseStudyModal({
+                        ...caseStudyModal,
+                        study: { ...caseStudyModal.study, attendees_count: parseInt(e.target.value, 10) || 0 }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Banner Image URL</label>
+                  <Input
+                    placeholder="https://..."
+                    value={caseStudyModal.study.banner_url || ''}
+                    onChange={(e) => setCaseStudyModal({
+                      ...caseStudyModal,
+                      study: { ...caseStudyModal.study, banner_url: e.target.value }
+                    })}
+                    className="rounded-xl h-9 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Executive Summary</label>
+                  <textarea
+                    rows={2}
+                    placeholder="Brief 1-2 sentence overview of the event..."
+                    value={caseStudyModal.study.summary || ''}
+                    onChange={(e) => setCaseStudyModal({
+                      ...caseStudyModal,
+                      study: { ...caseStudyModal.study, summary: e.target.value }
+                    })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">The Operational Challenge</label>
+                    <textarea
+                      rows={2}
+                      placeholder="Hours of manual registration, certificate delays..."
+                      value={caseStudyModal.study.problem || ''}
+                      onChange={(e) => setCaseStudyModal({
+                        ...caseStudyModal,
+                        study: { ...caseStudyModal.study, problem: e.target.value }
+                      })}
+                      className="w-full p-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">EventoraX Solution</label>
+                    <textarea
+                      rows={2}
+                      placeholder="Multi-gate QR check-ins, automatic certificate generation..."
+                      value={caseStudyModal.study.solution || ''}
+                      onChange={(e) => setCaseStudyModal({
+                        ...caseStudyModal,
+                        study: { ...caseStudyModal.study, solution: e.target.value }
+                      })}
+                      className="w-full p-2.5 rounded-xl border border-slate-200 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Quantified Results (One bullet per line)</label>
+                  <textarea
+                    rows={3}
+                    placeholder="4,200 QR scans with zero duplicates&#10;0.8s average check-in latency&#10;100% automated verifiable certificates"
+                    value={caseStudyModal.study.resultsText || ''}
+                    onChange={(e) => setCaseStudyModal({
+                      ...caseStudyModal,
+                      study: { ...caseStudyModal.study, resultsText: e.target.value }
+                    })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs font-mono"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Author Name &amp; Title</label>
+                    <Input
+                      placeholder="e.g. Dr. Zulfiqar Memon, CS Dept Head"
+                      value={caseStudyModal.study.author || ''}
+                      onChange={(e) => setCaseStudyModal({
+                        ...caseStudyModal,
+                        study: { ...caseStudyModal.study, author: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Quote Snippet</label>
+                    <Input
+                      placeholder="e.g. EventoraX completely eradicated our registration chaos..."
+                      value={caseStudyModal.study.quote || ''}
+                      onChange={(e) => setCaseStudyModal({
+                        ...caseStudyModal,
+                        study: { ...caseStudyModal.study, quote: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs italic"
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-2 pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(caseStudyModal.study.is_featured)}
+                      onChange={(e) => setCaseStudyModal({
+                        ...caseStudyModal,
+                        study: { ...caseStudyModal.study, is_featured: e.target.checked ? 1 : 0 }
+                      })}
+                      className="rounded text-purple-600 w-4 h-4"
+                    />
+                    Feature prominently on /case-studies landing page
+                  </label>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setCaseStudyModal({ ...caseStudyModal, open: false })}
+                    className="rounded-xl text-xs h-9"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={savingCaseStudy}
+                    className="bg-[#7c3aed] hover:bg-[#6d28d9] text-white rounded-xl text-xs font-bold h-9 px-5"
+                  >
+                    {savingCaseStudy ? 'Saving...' : 'Save Case Study'}
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* Add / Edit 3rd-Party Directory Event Modal */}
+        {directoryModal.open && (
+          <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto animate-in fade-in zoom-in-95">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-xl bg-blue-100 text-blue-700 flex items-center justify-center font-bold">
+                    <Calendar className="w-4 h-4" />
+                  </div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    {directoryModal.isNew ? 'Add 3rd-Party Event to Directory' : 'Edit Directory Event'}
+                  </h3>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setDirectoryModal({ ...directoryModal, open: false })}
+                  className="p-1 rounded-lg text-slate-400 hover:text-slate-600"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <form onSubmit={handleSaveDirectoryEvent} className="space-y-3.5 text-xs">
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Event Title *</label>
+                  <Input
+                    required
+                    placeholder="e.g. NextGen Tech & AI Summit 2026"
+                    value={directoryModal.event.title || ''}
+                    onChange={(e) => setDirectoryModal({
+                      ...directoryModal,
+                      event: { ...directoryModal.event, title: e.target.value }
+                    })}
+                    className="rounded-xl h-9 text-xs font-bold"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Organizer Company / Institution *</label>
+                    <Input
+                      required
+                      placeholder="e.g. CodePakistan"
+                      value={directoryModal.event.organizer_name || ''}
+                      onChange={(e) => setDirectoryModal({
+                        ...directoryModal,
+                        event: { ...directoryModal.event, organizer_name: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Event Category</label>
+                    <select
+                      value={directoryModal.event.category || 'Technology'}
+                      onChange={(e) => setDirectoryModal({
+                        ...directoryModal,
+                        event: { ...directoryModal.event, category: e.target.value }
+                      })}
+                      className="w-full h-9 rounded-xl border border-slate-200 px-3 text-xs"
+                    >
+                      <option value="Technology">Technology & AI</option>
+                      <option value="Medical">Medical & Healthcare</option>
+                      <option value="FinTech">FinTech & Banking</option>
+                      <option value="CyberSecurity">CyberSecurity</option>
+                      <option value="Leadership">Leadership & Business</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">City</label>
+                    <Input
+                      placeholder="e.g. Islamabad"
+                      value={directoryModal.event.city || 'Islamabad'}
+                      onChange={(e) => setDirectoryModal({
+                        ...directoryModal,
+                        event: { ...directoryModal.event, city: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Venue Location</label>
+                    <Input
+                      placeholder="e.g. Pak-China Friendship Centre"
+                      value={directoryModal.event.location || ''}
+                      onChange={(e) => setDirectoryModal({
+                        ...directoryModal,
+                        event: { ...directoryModal.event, location: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Start Date</label>
+                    <Input
+                      type="datetime-local"
+                      value={directoryModal.event.start_date ? directoryModal.event.start_date.slice(0, 16) : '2026-11-20T09:00'}
+                      onChange={(e) => setDirectoryModal({
+                        ...directoryModal,
+                        event: { ...directoryModal.event, start_date: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-mono"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">End Date</label>
+                    <Input
+                      type="datetime-local"
+                      value={directoryModal.event.end_date ? directoryModal.event.end_date.slice(0, 16) : '2026-11-21T18:00'}
+                      onChange={(e) => setDirectoryModal({
+                        ...directoryModal,
+                        event: { ...directoryModal.event, end_date: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-mono"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Banner Image URL</label>
+                  <Input
+                    placeholder="https://..."
+                    value={directoryModal.event.banner_url || ''}
+                    onChange={(e) => setDirectoryModal({
+                      ...directoryModal,
+                      event: { ...directoryModal.event, banner_url: e.target.value }
+                    })}
+                    className="rounded-xl h-9 text-xs"
+                  />
+                </div>
+
+                <div>
+                  <label className="font-bold text-slate-700 block mb-1">Description</label>
+                  <textarea
+                    rows={3}
+                    placeholder="Overview of speakers, topics and activities..."
+                    value={directoryModal.event.description || ''}
+                    onChange={(e) => setDirectoryModal({
+                      ...directoryModal,
+                      event: { ...directoryModal.event, description: e.target.value }
+                    })}
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs"
+                  />
+                </div>
+
+                <div className="flex items-center gap-4 pt-1">
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(directoryModal.event.is_approved)}
+                      onChange={(e) => setDirectoryModal({
+                        ...directoryModal,
+                        event: { ...directoryModal.event, is_approved: e.target.checked ? 1 : 0 }
+                      })}
+                      className="rounded text-blue-600 w-4 h-4"
+                    />
+                    Approved &amp; Live on Directory
+                  </label>
+
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-700">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(directoryModal.event.is_featured)}
+                      onChange={(e) => setDirectoryModal({
+                        ...directoryModal,
+                        event: { ...directoryModal.event, is_featured: e.target.checked ? 1 : 0 }
+                      })}
+                      className="rounded text-purple-600 w-4 h-4"
+                    />
+                    Featured on Top
+                  </label>
+                </div>
+
+                <div className="pt-3 border-t border-slate-100 flex items-center justify-end gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setDirectoryModal({ ...directoryModal, open: false })}
+                    className="rounded-xl text-xs h-9"
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    disabled={savingDirectoryEvent}
+                    className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold h-9 px-5"
+                  >
+                    {savingDirectoryEvent ? 'Saving...' : 'Save Event'}
                   </Button>
                 </div>
               </form>

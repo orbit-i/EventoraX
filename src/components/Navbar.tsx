@@ -1,11 +1,14 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, LayoutDashboard, LogOut, User as UserIcon, ShieldCheck } from 'lucide-react';
+import { Menu, X, LayoutDashboard, LogOut, User as UserIcon, ShieldCheck, Sparkles } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import BrandLogo from '@/components/BrandLogo';
 
 const navLinks = [
   { label: 'Home', href: '/' },
+  { label: 'Events & Seminars', href: '/events-directory' },
+  { label: 'List Event (+ VIP)', href: '/list-event', isVipBadge: true },
+  { label: 'Case Studies', href: '/case-studies' },
   { label: 'Features', href: '/features' },
   { label: 'Verify Credential', href: '/verify' },
   { label: 'Pricing', href: '/pricing' },
@@ -50,14 +53,19 @@ export default function Navbar() {
         </Link>
 
         {/* Desktop Nav */}
-        <div className="hidden md:flex items-center gap-7">
+        <div className="hidden md:flex items-center gap-6">
           {navLinks.map((link) => (
             <Link
               key={link.href}
               to={link.href}
-              className="font-body text-sm font-semibold text-[#475569] hover:text-[#1d4ed8] transition-colors duration-200 flex items-center gap-1.5"
+              className={`font-body text-sm font-semibold transition-all duration-200 flex items-center gap-1.5 ${
+                link.isVipBadge
+                  ? 'text-purple-700 bg-purple-50 hover:bg-purple-100 hover:text-purple-900 px-3 py-1.5 rounded-xl border border-purple-200 shadow-sm'
+                  : 'text-[#475569] hover:text-[#1d4ed8]'
+              }`}
             >
               {link.label === 'Verify Credential' && <ShieldCheck className="w-4 h-4 text-[#2563eb]" />}
+              {link.isVipBadge && <Sparkles className="w-3.5 h-3.5 text-amber-500 animate-pulse" />}
               {link.label}
             </Link>
           ))}
@@ -120,9 +128,14 @@ export default function Navbar() {
               <Link
                 key={link.href}
                 to={link.href}
-                className="font-body text-base font-medium text-[#475569] hover:text-[#7c3aed] hover:bg-[#f5f3ff] px-3 py-2.5 rounded-xl transition-all duration-200"
+                className={`font-body text-base font-medium px-3 py-2.5 rounded-xl transition-all duration-200 flex items-center justify-between ${
+                  link.isVipBadge
+                    ? 'text-purple-700 bg-purple-50 font-bold border border-purple-200'
+                    : 'text-[#475569] hover:text-[#7c3aed] hover:bg-[#f5f3ff]'
+                }`}
               >
-                {link.label}
+                <span>{link.label}</span>
+                {link.isVipBadge && <span className="text-[10px] uppercase font-extrabold bg-purple-600 text-white px-2 py-0.5 rounded-md">VIP</span>}
               </Link>
             ))}
             <div className="flex flex-col gap-2 pt-3 border-t border-[#e9e4ff] mt-2">

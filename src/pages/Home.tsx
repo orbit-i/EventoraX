@@ -20,20 +20,33 @@ export default function Home() {
 
     const reveals = document.querySelectorAll('.scroll-reveal');
     reveals.forEach((el, index) => {
-      gsap.from(el, {
-        scrollTrigger: {
-          trigger: el,
-          start: 'top 85%',
-        },
-        opacity: 0,
-        y: 40,
-        duration: 0.6,
-        ease: 'power2.out',
-        delay: (index % 3) * 0.1,
-      });
+      gsap.fromTo(
+        el,
+        { opacity: 0.1, y: 25 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: 'power2.out',
+          delay: (index % 3) * 0.08,
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 90%',
+            once: true,
+          },
+        }
+      );
     });
 
+    const fallbackTimer = setTimeout(() => {
+      document.querySelectorAll('.scroll-reveal').forEach((el) => {
+        (el as HTMLElement).style.opacity = '1';
+        (el as HTMLElement).style.transform = 'none';
+      });
+    }, 800);
+
     return () => {
+      clearTimeout(fallbackTimer);
       ScrollTrigger.getAll().forEach((st) => st.kill());
     };
   }, []);

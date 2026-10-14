@@ -3,13 +3,19 @@ import BrandLogo from '@/components/BrandLogo';
 
 const productLinks = [
   { label: 'Home', href: '/' },
+  { label: 'Events & Seminars', href: '/events-directory' },
+  { label: 'List Your Event (+ VIP)', href: '/list-event' },
+  { label: 'Case Studies', href: '/case-studies' },
   { label: 'Features', href: '/features' },
   { label: 'Verify Credential', href: '/verify' },
   { label: 'Pricing', href: '/pricing' },
 ];
 
 const companyLinks = [
-  { label: 'About EventoraX', href: '/about' },
+  { label: 'About EventoraX & ORBIT-I', href: '/about' },
+  { label: 'List Your Event (+ VIP)', href: '/list-event' },
+  { label: 'Events Directory', href: '/events-directory' },
+  { label: 'Success Case Studies', href: '/case-studies' },
   { label: 'Contact Support', href: '/contact' },
 ];
 

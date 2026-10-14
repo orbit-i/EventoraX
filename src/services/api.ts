@@ -480,6 +480,88 @@ export const api = {
         body: JSON.stringify(data),
       }),
   },
+
+  // Merchant Gateways & Live Accounts
+  merchantGateways: {
+    getPublic: () =>
+      request<{ success: boolean; gateways: any }>('/public/merchant-gateways'),
+
+    getAdmin: () =>
+      request<{ success: boolean; gateways: any }>('/merchant-gateways'),
+
+    update: (gateways: any) =>
+      request<{ success: boolean; message: string; gateways: any }>('/merchant-gateways', {
+        method: 'PUT',
+        body: JSON.stringify({ gateways }),
+      }),
+  },
+
+  // Case Studies & Previous Events
+  caseStudies: {
+    list: () =>
+      request<{ success: boolean; studies: any[] }>('/case-studies'),
+
+    create: (data: any) =>
+      request<{ success: boolean; message: string; study: any }>('/case-studies', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    update: (id: number, data: any) =>
+      request<{ success: boolean; message: string; study: any }>(`/case-studies/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+
+    delete: (id: number) =>
+      request<{ success: boolean; message: string }>(`/case-studies/${id}`, {
+        method: 'DELETE',
+      }),
+  },
+
+  // 3rd-Party Events Directory
+  directoryEvents: {
+    list: (all: boolean = false) =>
+      request<{ success: boolean; events: any[]; total: number }>(`/directory-events${all ? '?all=true' : ''}`),
+
+    get: (id: number) =>
+      request<{ success: boolean; event: any }>(`/directory-events/${id}`),
+
+    create: (data: any) =>
+      request<{ success: boolean; message: string; event: any }>('/directory-events', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    update: (id: number, data: any) =>
+      request<{ success: boolean; message: string; event: any }>(`/directory-events/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify(data),
+      }),
+
+    delete: (id: number) =>
+      request<{ success: boolean; message: string }>(`/directory-events/${id}`, {
+        method: 'DELETE',
+      }),
+
+    getBookings: () =>
+      request<{ success: boolean; bookings: any[] }>('/directory-events/admin/bookings'),
+
+    getPlans: () =>
+      request<{ success: boolean; plans: any[]; accounts: any }>('/directory-events/plans'),
+
+    submitListing: (data: any) =>
+      request<{ success: boolean; message: string; reference_code: string; request: any; event?: any }>(
+        '/directory-events/submit-listing',
+        {
+          method: 'POST',
+          body: JSON.stringify(data),
+        }
+      ),
+
+    getListingRequests: () =>
+      request<{ success: boolean; requests: any[] }>('/directory-events/admin/listing-requests'),
+  },
 };
 
 export default api;

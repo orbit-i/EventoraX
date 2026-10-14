@@ -75,18 +75,32 @@ export default function Pricing() {
 
   useEffect(() => {
     api.billing.getPlans().then((res) => {
-      if (res.success && res.plans && res.plans.length > 0) {
-        const mapped: PlanData[] = res.plans.map((p: any) => ({
-          name: p.name,
-          priceUsdMonthly: Number(p.price_usd_monthly),
-          pricePkrMonthly: Number(p.price_pkr_monthly),
-          description: p.description,
-          badge: p.badge,
-          features: typeof p.features === 'string'
-            ? (p.features.startsWith('[') ? JSON.parse(p.features) : p.features.split('\n'))
-            : (p.features || [])
-        }));
-        setPlans(mapped);
+      if (res && res.plans && Array.isArray(res.plans)) {
+        const mapped: PlanData[] = res.plans.map((p: any) => {
+          const fallback = plansData.find(f => f.name.toLowerCase() === (p.name || '').toLowerCase()) || plansData[0];
+          let features: string[] = [];
+          if (Array.isArray(p.features) && p.features.length > 0) {
+            features = p.features;
+          } else if (typeof p.features === 'string' && p.features.trim().startsWith('[')) {
+            try { features = JSON.parse(p.features); } catch { features = fallback.features; }
+          } else if (typeof p.features === 'string' && p.features.trim().length > 0) {
+            features = p.features.split('\n').filter(Boolean);
+          } else {
+            features = fallback.features;
+          }
+
+          return {
+            name: p.name || fallback.name,
+            priceUsdMonthly: Number(p.price_usd_monthly || p.monthly_price || fallback.priceUsdMonthly),
+            pricePkrMonthly: Number(p.price_pkr_monthly || fallback.pricePkrMonthly),
+            description: p.description || fallback.description,
+            badge: p.badge || p.tag || fallback.badge,
+            features: features.length > 0 ? features : fallback.features
+          };
+        });
+        if (mapped.length > 0) {
+          setPlans(mapped);
+        }
       }
     }).catch(() => {});
   }, []);
@@ -97,13 +111,35 @@ export default function Pricing() {
 
     const reveals = document.querySelectorAll('.scroll-reveal');
     reveals.forEach((el) => {
-      gsap.from(el, {
-        scrollTrigger: { trigger: el, start: 'top 85%' },
-        opacity: 0, y: 30, duration: 0.5, ease: 'power1.out',
-      });
+      gsap.fromTo(
+        el,
+        { opacity: 0.1, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 92%',
+            once: true,
+          },
+        }
+      );
     });
-    return () => { ScrollTrigger.getAll().forEach((st) => st.kill()); };
-  }, [plans]);
+
+    const fallbackTimer = setTimeout(() => {
+      document.querySelectorAll('.scroll-reveal').forEach((el) => {
+        (el as HTMLElement).style.opacity = '1';
+        (el as HTMLElement).style.transform = 'none';
+      });
+    }, 800);
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      ScrollTrigger.getAll().forEach((st) => st.kill());
+    };
+  }, []);
 
   return (
     <main className="pt-14 bg-[#f8fafc]">
@@ -261,34 +297,25 @@ export default function Pricing() {
             Supported Global & Local Pakistani Payment Methods
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-xs font-bold text-slate-700">
-            <span className="px-3.5 py-1.5 rounded-xl bg-slate-900 text-white border border-slate-800 flex items-center gap-2 shadow-2xs">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />
-              Safepay (Direct Gateway)
-            </span>
-            <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-blue-600" />
-              Visa &amp; MasterCard (3DS 2.0)
-            </span>
-            <span className="px-3.5 py-1.5 rounded-xl bg-red-50 text-red-900 border border-red-200 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-600" />
-              JazzCash (03190375751)
-            </span>
-            <span className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600" />
-              Easypaisa (03190375751)
-            </span>
-            <span className="px-3.5 py-1.5 rounded-xl bg-teal-50 text-teal-900 border border-teal-200 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-teal-500" />
-              SadaPay &amp; NayaPay
-            </span>
-            <span className="px-3.5 py-1.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-300 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-700" />
-              Raast SBP Instant Pay
-            </span>
-            <span className="px-3.5 py-1.5 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2">
-              <span className="w-2.5 h-2.5 rounded-full bg-indigo-600" />
-              Direct Bank IBFT (Meezan Bank)
-            </span>
+            <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
+              <img src="/images/payments/jazzcash.png" alt="JazzCash" className="h-5 w-auto object-contain" />
+              <span className="font-bold text-slate-800">JazzCash</span>
+            </div>
+            <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
+              <img src="/images/payments/easypaisa.png" alt="Easypaisa" className="h-5 w-auto object-contain" />
+              <span className="font-bold text-slate-800">Easypaisa</span>
+            </div>
+            <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
+              <img src="/images/payments/meezan.png" alt="Meezan Bank" className="h-5.5 w-auto object-contain" />
+              <span className="font-bold text-slate-800">Meezan IBFT</span>
+            </div>
+            <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
+              <span className="font-bold text-[#0B5D34]">Raast SBP Instant</span>
+            </div>
+            <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
+              <span className="font-bold text-slate-800">PayFast / Visa / MasterCard</span>
+            </div>
           </div>
         </div>
       </section>

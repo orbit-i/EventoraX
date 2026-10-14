@@ -68,17 +68,29 @@ export default function PricingSection() {
 
   useEffect(() => {
     api.billing.getPlans().then((res) => {
-      if (res.success && res.plans && res.plans.length > 0) {
-        const mapped: PlanData[] = res.plans.map((p: any) => ({
-          name: p.name,
-          priceUsdMonthly: Number(p.price_usd_monthly),
-          pricePkrMonthly: Number(p.price_pkr_monthly),
-          description: p.description,
-          badge: p.badge,
-          features: typeof p.features === 'string'
-            ? (p.features.startsWith('[') ? JSON.parse(p.features) : p.features.split('\n'))
-            : (p.features || [])
-        }));
+      if (res && res.plans && Array.isArray(res.plans) && res.plans.length > 0) {
+        const mapped: PlanData[] = res.plans.map((p: any) => {
+          const fallback = plansData.find(f => f.name.toLowerCase() === (p.name || '').toLowerCase()) || plansData[0];
+          let features: string[] = [];
+          if (Array.isArray(p.features) && p.features.length > 0) {
+            features = p.features;
+          } else if (typeof p.features === 'string' && p.features.trim().startsWith('[')) {
+            try { features = JSON.parse(p.features); } catch { features = fallback.features; }
+          } else if (typeof p.features === 'string' && p.features.trim().length > 0) {
+            features = p.features.split('\n').filter(Boolean);
+          } else {
+            features = fallback.features;
+          }
+
+          return {
+            name: p.name || fallback.name,
+            priceUsdMonthly: Number(p.price_usd_monthly || p.monthly_price || fallback.priceUsdMonthly),
+            pricePkrMonthly: Number(p.price_pkr_monthly || fallback.pricePkrMonthly),
+            description: p.description || fallback.description,
+            badge: p.badge || p.tag || fallback.badge,
+            features: features.length > 0 ? features : fallback.features
+          };
+        });
         setPlans(mapped);
       }
     }).catch(() => {});
@@ -87,20 +99,10 @@ export default function PricingSection() {
   useEffect(() => {
     const el = sectionRef.current;
     if (!el) return;
-
-    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (prefersReducedMotion) return;
-
     const cards = el.querySelectorAll('.plan-card');
-    cards.forEach((card, i) => {
-      gsap.from(card, {
-        scrollTrigger: { trigger: card, start: 'top 85%' },
-        opacity: 0,
-        y: 40,
-        duration: 0.5,
-        delay: i * 0.1,
-        ease: 'power1.out',
-      });
+    cards.forEach((card) => {
+      (card as HTMLElement).style.opacity = '1';
+      (card as HTMLElement).style.transform = 'none';
     });
   }, [plans]);
 
@@ -223,20 +225,29 @@ export default function PricingSection() {
 
         {/* Payment Methods Footer Strip */}
         <div className="mt-12 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs font-semibold text-slate-600">
-          <span className="flex items-center gap-1 text-slate-800 font-bold">
+          <span className="flex items-center gap-1.5 text-slate-800 font-bold mr-1">
             <CreditCard className="w-4 h-4 text-[#1d4ed8]" />
-            2026 Real-Time Gateways:
+            Official Real-Time Gateways:
           </span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-slate-900 font-bold flex items-center gap-1 shadow-2xs">
-            <span className="w-2 h-2 rounded-full bg-emerald-500"></span>
-            Safepay (Cards &amp; Wallets)
-          </span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-slate-800 font-bold shadow-2xs">Visa / MasterCard</span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-red-600 font-bold shadow-2xs">JazzCash (03190375751)</span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-emerald-600 font-bold shadow-2xs">Easypaisa (03190375751)</span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-[#00A389] font-bold shadow-2xs">SadaPay &amp; NayaPay</span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-[#0B5D34] font-bold shadow-2xs">Raast Instant (SBP)</span>
-          <span className="bg-white px-2.5 py-1 rounded-lg border border-slate-200 text-blue-800 font-bold shadow-2xs">Meezan IBFT</span>
+          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
+            <img src="/images/payments/jazzcash.png" alt="JazzCash" className="h-4.5 w-auto object-contain" />
+            <span className="font-bold text-slate-800 text-[11px]">JazzCash</span>
+          </div>
+          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
+            <img src="/images/payments/easypaisa.png" alt="Easypaisa" className="h-4.5 w-auto object-contain" />
+            <span className="font-bold text-slate-800 text-[11px]">Easypaisa</span>
+          </div>
+          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
+            <img src="/images/payments/meezan.png" alt="Meezan Bank" className="h-5 w-auto object-contain" />
+            <span className="font-bold text-slate-800 text-[11px]">Meezan IBFT</span>
+          </div>
+          <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="font-bold text-[#0B5D34] text-[11px]">Raast Instant</span>
+          </div>
+          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
+            <span className="font-bold text-slate-800 text-[11px]">PayFast / Visa / Mastercard</span>
+          </div>
         </div>
       </div>
 

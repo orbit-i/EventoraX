@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useSearchParams } from 'react-router-dom';
 import { 
   ShieldCheck, 
   ShieldAlert, 
@@ -13,7 +13,9 @@ import {
   Copy, 
   Check, 
   ArrowLeft,
-  Sparkles
+  Sparkles,
+  CreditCard,
+  FileText
 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
 import { printElement } from '@/lib/printUtils';
@@ -35,21 +37,51 @@ interface CertificateData {
   templateConfig?: any;
 }
 
+interface InvoiceData {
+  invoiceNumber: string;
+  transactionRef: string;
+  clientOrg: string;
+  plan: string;
+  amount: number;
+  originalPrice: number;
+  discountAmount?: number;
+  couponCode?: string | null;
+  currency: string;
+  billingCycle: string;
+  paymentMethod: string;
+  createdAt: string;
+  statusBadge: string;
+  receivingAccount: string;
+  receivingTitle: string;
+  governance: {
+    ntn: string;
+    strn: string;
+    sbpReg: string;
+    sha256Hash: string;
+  };
+}
+
 export default function PublicVerifyPage() {
   const { certNumber } = useParams<{ certNumber?: string }>();
-  const [searchQuery, setSearchQuery] = useState(certNumber || 'EVX-CERT-2026-001');
+  const [searchParams] = useSearchParams();
+  const queryParam = searchParams.get('id') || searchParams.get('ref') || searchParams.get('invoice');
+  const initialQuery = certNumber || queryParam || 'EVX-CERT-2026-001';
+
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
   const [isLoading, setIsLoading] = useState(false);
   const [certificate, setCertificate] = useState<CertificateData | null>(null);
+  const [invoice, setInvoice] = useState<InvoiceData | null>(null);
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [copied, setCopied] = useState(false);
 
   useEffect(() => {
-    if (certNumber) {
-      setSearchQuery(certNumber);
-      handleVerify(certNumber);
+    const q = certNumber || queryParam;
+    if (q) {
+      setSearchQuery(q);
+      handleVerify(q);
     }
-  }, [certNumber]);
+  }, [certNumber, queryParam]);
 
   const handleVerify = async (queryToSearch: string) => {
     const q = queryToSearch.trim();
@@ -63,17 +95,26 @@ export default function PublicVerifyPage() {
       const data = await res.json();
 
       if (res.ok && data.success) {
-        setCertificate(data.certificate);
-        setIsValid(data.valid);
+        if (data.type === 'invoice' || data.invoice) {
+          setInvoice(data.invoice);
+          setCertificate(null);
+          setIsValid(true);
+        } else {
+          setCertificate(data.certificate);
+          setInvoice(null);
+          setIsValid(data.valid);
+        }
       } else {
         setCertificate(null);
+        setInvoice(null);
         setIsValid(false);
-        setErrorMessage(data.message || 'No valid credential found with this identifier.');
+        setErrorMessage(data.message || 'No valid credential or invoice found with this identifier.');
       }
     } catch {
       setCertificate(null);
+      setInvoice(null);
       setIsValid(false);
-      setErrorMessage('Unable to reach credential verification server. Please verify connection.');
+      setErrorMessage('Unable to reach verification server. Please verify connection.');
     } finally {
       setIsLoading(false);
     }
@@ -385,6 +426,188 @@ export default function PublicVerifyPage() {
                   <div className="text-right">
                     <span className="text-[10px] text-[#94a3b8] uppercase font-bold block">Authorized By</span>
                     <span className="font-semibold text-[#0f172a]">{certificate.organization.name}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* VIP Verified Tax Invoice View */}
+        {isValid === true && invoice && (
+          <div className="bg-white rounded-3xl border border-[#cbd5e1] shadow-xl shadow-[#1d4ed8]/5 overflow-hidden transition-all duration-300">
+            {/* VIP Status Banner */}
+            <div className="p-6 border-b flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-gradient-to-r from-emerald-50 via-teal-50 to-blue-50 border-emerald-200">
+              <div className="flex items-center gap-3.5">
+                <div className="w-12 h-12 rounded-2xl flex items-center justify-center shadow-md bg-emerald-600 text-white shadow-emerald-600/25">
+                  <ShieldCheck className="w-7 h-7" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs uppercase font-extrabold tracking-wider px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      ★ {invoice.statusBadge}
+                    </span>
+                    <span className="text-xs text-slate-500 hidden sm:inline">• SBP PSO/PSP PK-2026</span>
+                  </div>
+                  <h2 className="text-xl font-extrabold text-[#0f172a] mt-0.5">
+                    Official VIP Verified Tax &amp; Sales Invoice
+                  </h2>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={() => {
+                    navigator.clipboard.writeText(invoice.invoiceNumber);
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-white border border-[#cbd5e1] hover:border-[#1d4ed8] text-xs font-bold text-[#334155] flex items-center gap-1.5 shadow-xs transition-colors"
+                >
+                  {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#64748b]" />}
+                  {copied ? 'Copied' : 'Copy ID'}
+                </button>
+                <button 
+                  onClick={() => printElement('official-invoice-document', `EventoraX Official Tax Invoice - ${invoice.invoiceNumber}`)}
+                  className="px-4 py-2 rounded-xl bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#1d4ed8]/20 transition-all cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Print / Save PDF
+                </button>
+              </div>
+            </div>
+
+            {/* Official Printable Tax Invoice Container */}
+            <div className="p-6 sm:p-10 bg-slate-50 border-b border-slate-200">
+              <div
+                id="official-invoice-document"
+                className="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-2xl border-2 border-slate-300 shadow-sm relative overflow-hidden font-sans text-xs text-slate-800 space-y-4"
+              >
+                {/* Watermark */}
+                <div className="absolute right-4 bottom-14 opacity-5 pointer-events-none select-none text-slate-900 font-black text-6xl rotate-[-20deg]">
+                  EVENTORAX
+                </div>
+
+                {/* Company Header */}
+                <div className="flex justify-between items-start pb-3 border-b border-slate-200">
+                  <div>
+                    <h4 className="font-extrabold text-sm text-slate-900 tracking-tight">EVENTORAX TECHNOLOGIES (PVT) LTD</h4>
+                    <p className="text-[10px] text-slate-500 font-medium">ORBIT-I Cloud Digital Systems • SBP Digital Reg: PK-2026-PSO/PSP</p>
+                    <p className="text-[10px] text-slate-400 font-mono">NTN: {invoice.governance.ntn} • STRN: {invoice.governance.strn}</p>
+                  </div>
+                  <div className="text-right">
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 border border-emerald-300 block mb-1">
+                      ★ VIP VERIFIED &amp; ACTIVE
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-mono block">2026 Fiscal Year</span>
+                  </div>
+                </div>
+
+                {/* Meta Grid */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200">
+                  <div className="break-all">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Official Tax Invoice ID</span>
+                    <span className="font-mono font-bold text-slate-900">{invoice.invoiceNumber}</span>
+                  </div>
+                  <div className="break-all">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Transaction Reference (TID)</span>
+                    <span className="font-mono font-bold text-[#1d4ed8]">{invoice.transactionRef}</span>
+                  </div>
+                  <div className="break-all">
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Client Organization</span>
+                    <span className="font-bold text-slate-900">{invoice.clientOrg}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-slate-400 uppercase font-bold block">Verified Date</span>
+                    <span className="font-medium text-slate-800">{new Date(invoice.createdAt || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+                  </div>
+                </div>
+
+                {/* Receiving Merchant Info */}
+                <div className="bg-blue-50/60 p-3.5 rounded-xl border border-blue-200 text-[11px] space-y-1.5">
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
+                    <span className="text-slate-500">Merchant Recipient:</span>
+                    <span className="font-bold text-slate-900">{invoice.receivingTitle || 'ORBIT-I / EventoraX Technologies'}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
+                    <span className="text-slate-500">Merchant Account / IBFT:</span>
+                    <span className="font-mono font-bold text-blue-700">{invoice.receivingAccount || '03190375751'}</span>
+                  </div>
+                  <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
+                    <span className="text-slate-500">Payment Gateway:</span>
+                    <span className="font-bold text-slate-900">{invoice.paymentMethod}</span>
+                  </div>
+                </div>
+
+                {/* Line Items Table */}
+                <div className="border border-slate-200 rounded-xl overflow-hidden">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-100 text-slate-600 font-bold text-[11px]">
+                      <tr>
+                        <th className="p-2.5">Description</th>
+                        <th className="p-2.5 text-center">Cycle</th>
+                        <th className="p-2.5 text-right">Amount</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      <tr>
+                        <td className="p-2.5">
+                          <strong className="block text-slate-900">EventoraX {invoice.plan} Tier</strong>
+                          <span className="text-[10px] text-slate-500">Enterprise Cloud Event Management &amp; Pass Infrastructure (2026 Release)</span>
+                        </td>
+                        <td className="p-2.5 text-center text-slate-700 font-medium">{invoice.billingCycle}</td>
+                        <td className="p-2.5 text-right font-bold text-slate-900">{invoice.currency} {Number(invoice.originalPrice || invoice.amount).toLocaleString()}</td>
+                      </tr>
+                      {invoice.couponCode && (
+                        <tr className="bg-emerald-50/60">
+                          <td colSpan={2} className="p-2 text-right text-emerald-700 text-[11px] font-bold">
+                            Promo Coupon Applied ({invoice.couponCode}):
+                          </td>
+                          <td className="p-2 text-right font-mono font-bold text-emerald-700">
+                            -{invoice.currency} {Number(invoice.discountAmount || 0).toLocaleString()}
+                          </td>
+                        </tr>
+                      )}
+                      <tr>
+                        <td colSpan={2} className="p-2 text-right text-slate-500 text-[11px]">Sales Tax / GST (0% Section 65F IT Exemption):</td>
+                        <td className="p-2 text-right font-mono text-slate-700">PKR 0.00</td>
+                      </tr>
+                      <tr className="bg-slate-50 font-bold text-sm text-[#1d4ed8]">
+                        <td colSpan={2} className="p-2.5 text-right">Total Paid (Inclusive of all dues):</td>
+                        <td className="p-2.5 text-right">{invoice.currency} {Number(invoice.amount).toLocaleString()}</td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* QR Code & Digital Signature */}
+                <div className="flex items-center justify-between pt-2 border-t border-slate-200">
+                  <div className="flex items-center gap-3">
+                    <img
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`https://eventorax.orbit-i.tech/verify/${invoice.invoiceNumber}`)}`}
+                      alt="Official Invoice QR Verification"
+                      className="w-14 h-14 rounded-lg border border-slate-200 p-0.5"
+                    />
+                    <div>
+                      <span className="text-[10px] font-bold text-slate-700 block">Digital QR Verification</span>
+                      <p className="text-[9px] text-slate-400 max-w-[170px]">
+                        Scan with mobile camera to authenticate digital invoice on the EventoraX public verification ledger.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <svg viewBox="0 0 48 48" className="w-10 h-10 text-[#1d4ed8]" fill="none">
+                      <circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="2" strokeDasharray="3 2" />
+                      <circle cx="24" cy="24" r="18" stroke="#059669" strokeWidth="1.5" />
+                      <path d="M16 24L21 29L32 18" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                    </svg>
+                    <div className="text-right">
+                      <span className="text-[9px] text-slate-400 uppercase font-bold block">ORBIT-I Cloud Platform</span>
+                      <span className="font-serif italic text-xs text-slate-800 font-bold block">Authorized Digital Sign</span>
+                      <span className="text-[9px] text-emerald-600 font-mono font-bold block">SHA-256 Verified 2026</span>
+                    </div>
                   </div>
                 </div>
               </div>

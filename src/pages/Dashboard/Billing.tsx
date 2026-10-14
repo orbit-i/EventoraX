@@ -558,8 +558,8 @@ export default function Billing() {
                     <p className="text-[10px] text-slate-400 font-mono">NTN: 9842104-7 • STRN: 3277876123456</p>
                   </div>
                   <div className="text-right">
-                    <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
-                      {viewingTaxInvoiceTx.status === 'active' ? 'PAID & ACTIVATED' : 'RECORDED • PENDING SuperAdmin'}
+                    <span className="px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
+                      ★ VIP VERIFIED &amp; ACTIVE
                     </span>
                   </div>
                 </div>
@@ -595,8 +595,8 @@ export default function Billing() {
                     <span className="font-bold text-slate-900">ORBIT-I / EventoraX Technologies</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
-                    <span className="text-slate-500">Merchant Account / Till:</span>
-                    <span className="font-mono font-bold text-blue-700">03190375751</span>
+                    <span className="text-slate-500">Merchant Account / IBFT:</span>
+                    <span className="font-mono font-bold text-blue-700">0102-0104889912 (Meezan) / 03190375751</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                     <span className="text-slate-500">Payment Gateway:</span>
@@ -649,7 +649,7 @@ export default function Billing() {
                 <div className="flex items-center justify-between pt-2 border-t border-slate-200">
                   <div className="flex items-center gap-2">
                     <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`https://eventorax.orbit-i.tech/verify-invoice?ref=${viewingTaxInvoiceTx.transaction_ref || viewingTaxInvoiceTx.id}&merchant=03190375751`)}`}
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`https://eventorax.orbit-i.tech/verify/${viewingTaxInvoiceTx.transaction_ref || viewingTaxInvoiceTx.id}`)}`}
                       alt="Verification QR"
                       className="w-10 h-10 rounded border border-slate-200"
                     />

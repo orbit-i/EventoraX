@@ -15,6 +15,9 @@ import billingRoutes from './routes/billing.js';
 import tenantsRoutes from './routes/tenants.js';
 import platformAdminRoutes from './routes/platformAdmin.js';
 import certificatesRoutes from './routes/certificates.js';
+import caseStudiesRoutes from './routes/caseStudies.js';
+import merchantGatewaysRoutes from './routes/merchantGateways.js';
+import directoryEventsRoutes from './routes/directoryEvents.js';
 
 dotenv.config();
 
@@ -127,6 +130,10 @@ app.use('/api/billing', billingRoutes);
 // Multi-Tenant SaaS Platform APIs
 app.use('/api/tenants', tenantsRoutes);
 app.use('/api/admin', platformAdminRoutes);
+app.use('/api/case-studies', caseStudiesRoutes);
+app.use('/api/merchant-gateways', merchantGatewaysRoutes);
+app.use('/api/public/merchant-gateways', merchantGatewaysRoutes);
+app.use('/api/directory-events', directoryEventsRoutes);
 // Public CMS endpoint for official website content (Fast, free, cached)
 app.get('/api/public/cms/:pageKey', async (req, res) => {
   try {
@@ -163,7 +170,57 @@ app.get('/api/public/platform-team', async (req, res) => {
   try {
     const { query: dbQuery } = await import('./db/db.js');
     const [rows] = await dbQuery('SELECT * FROM `platform_team_members` WHERE `is_active` = 1 ORDER BY `display_order` ASC, `id` ASC');
-    return res.json({ success: true, team: rows || [] });
+    
+    const officialBaseTeam = [
+      {
+        id: 1,
+        name: 'Abdul Samad Rind',
+        role: 'Full Stack Web Developer & Platform Architect',
+        department: 'Leadership & Engineering',
+        bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading EventoraX core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
+        display_order: 1,
+        is_active: 1
+      },
+      {
+        id: 2,
+        name: 'Maria Almani',
+        role: 'Full Stack Web Developer, SEO & Content Specialist',
+        department: 'Product & Web Growth',
+        bio: 'Full Stack Web Developer, SEO Strategist and Technical Content Specialist at ORBIT-I Private Limited. Leading fast-loading frontend architecture, organic search visibility, platform content strategy, and intuitive organizer UX.',
+        display_order: 2,
+        is_active: 1
+      },
+      {
+        id: 3,
+        name: 'Muhammad Muneeb Ur Rahman Shahzad',
+        role: 'DevOps Engineer',
+        department: 'DevOps & Systems Infrastructure',
+        bio: 'DevOps & Systems Infrastructure Engineer at ORBIT-I Private Limited. Spearheading zero-downtime CI/CD deployment pipelines, Dockerized microservices, high-availability database clustering, and SBP-compliant server hardening.',
+        display_order: 3,
+        is_active: 1
+      },
+      {
+        id: 4,
+        name: 'Shahzad Hassan Ansar',
+        role: 'Security & Cloud Infrastructure Lead',
+        department: 'Cybersecurity & Infrastructure',
+        bio: 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels at ORBIT-I Private Limited.',
+        display_order: 4,
+        is_active: 1
+      }
+    ];
+
+    let finalTeam = Array.isArray(rows) && rows.length >= 4 ? rows : [...officialBaseTeam];
+    
+    // If rows has some members, merge them
+    if (Array.isArray(rows) && rows.length > 0 && rows.length < 4) {
+      const existingNames = new Set(rows.map(r => r.name.toLowerCase()));
+      const missing = officialBaseTeam.filter(m => !existingNames.has(m.name.toLowerCase()));
+      finalTeam = [...rows, ...missing];
+      finalTeam.sort((a, b) => (a.display_order || 0) - (b.display_order || 0));
+    }
+
+    return res.json({ success: true, team: finalTeam });
   } catch (err) {
     console.error('[Public Platform Team Error]:', err);
     return res.status(500).json({ success: false, message: 'Failed to fetch platform team' });

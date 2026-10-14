@@ -136,12 +136,34 @@ export default function Features() {
 
     const reveals = document.querySelectorAll('.scroll-reveal');
     reveals.forEach((el) => {
-      gsap.from(el, {
-        scrollTrigger: { trigger: el, start: 'top 85%' },
-        opacity: 0, y: 30, duration: 0.5, ease: 'power1.out',
-      });
+      gsap.fromTo(
+        el,
+        { opacity: 0.1, y: 20 },
+        {
+          opacity: 1,
+          y: 0,
+          duration: 0.5,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: el,
+            start: 'top 92%',
+            once: true,
+          },
+        }
+      );
     });
-    return () => { ScrollTrigger.getAll().forEach((st) => st.kill()); };
+
+    const fallbackTimer = setTimeout(() => {
+      document.querySelectorAll('.scroll-reveal').forEach((el) => {
+        (el as HTMLElement).style.opacity = '1';
+        (el as HTMLElement).style.transform = 'none';
+      });
+    }, 800);
+
+    return () => {
+      clearTimeout(fallbackTimer);
+      ScrollTrigger.getAll().forEach((st) => st.kill());
+    };
   }, []);
 
   return (

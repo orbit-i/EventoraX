@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS `users` (
   `notifications_enabled` BOOLEAN DEFAULT TRUE,
   `marketing_emails_enabled` BOOLEAN DEFAULT FALSE,
   `two_factor_enabled` BOOLEAN DEFAULT FALSE,
+  `master_key` VARCHAR(255) DEFAULT NULL,
   `plan` VARCHAR(50) DEFAULT 'Starter',
   `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   `updated_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
@@ -614,11 +615,17 @@ ON DUPLICATE KEY UPDATE `id` = `id`;
 
 INSERT INTO `platform_team_members` (`id`, `name`, `role`, `department`, `bio`, `avatar_url`, `display_order`, `is_active`)
 VALUES 
-(1, 'Abdul Samad Rind', 'Founder & Platform Architect', 'Leadership & Architecture', 'Platform Architect & Executive Director at ORBIT-I Private Limited. Pioneer of multi-tenant event management and tamper-evident credential verification.', '', 1, 1),
-(2, 'Maria Almani', 'Co-Founder & Head of Operations', 'Product & Operational Excellence', 'Co-Founder leading global organizer operations, institutional partnerships, and platform user experience strategy.', '', 2, 1),
-(3, 'Muneeb Ur Rehman', 'Lead Core Systems Engineer', 'Full-Stack & Systems Engineering', 'Core systems architect driving high-throughput registration switches, canvas graphics rendering pipeline, and platform scalability.', '', 3, 1),
-(4, 'Shahzad Hassan Ansar', 'Security & Cloud Infrastructure Lead', 'Cybersecurity & Infrastructure', 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels.', '', 4, 1)
-ON DUPLICATE KEY UPDATE `id` = `id`;
+(1, 'Abdul Samad Rind', 'Full Stack Web Developer & Platform Architect', 'Leadership & Engineering', 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading EventoraX core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.', '', 1, 1),
+(2, 'Maria Almani', 'Full Stack Web Developer, SEO & Content Specialist', 'Product & Web Growth', 'Full Stack Web Developer, SEO Strategist and Technical Content Specialist at ORBIT-I Private Limited. Leading fast-loading frontend architecture, organic search visibility, platform content strategy, and intuitive organizer UX.', '', 2, 1),
+(3, 'Muhammad Muneeb Ur Rahman Shahzad', 'DevOps Engineer', 'DevOps & Systems Infrastructure', 'DevOps & Systems Infrastructure Engineer at ORBIT-I Private Limited. Spearheading zero-downtime CI/CD deployment pipelines, Dockerized microservices, high-availability database clustering, and SBP-compliant server hardening.', '', 3, 1),
+(4, 'Shahzad Hassan Ansar', 'Security & Cloud Infrastructure Lead', 'Cybersecurity & Infrastructure', 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels at ORBIT-I Private Limited.', '', 4, 1)
+ON DUPLICATE KEY UPDATE 
+  `name` = VALUES(`name`),
+  `role` = VALUES(`role`),
+  `department` = VALUES(`department`),
+  `bio` = VALUES(`bio`),
+  `display_order` = VALUES(`display_order`),
+  `is_active` = 1;
 
 SET FOREIGN_KEY_CHECKS = 1;
 

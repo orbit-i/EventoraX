@@ -18,6 +18,9 @@ import Forbidden from './pages/Forbidden';
 import PublicTenantPortal from './pages/PublicTenantPortal';
 import PublicVerifyPage from './pages/PublicVerifyPage';
 import PublicEventPage from './pages/PublicEventPage';
+import CaseStudies from './pages/CaseStudies';
+import EventsDirectory from './pages/EventsDirectory';
+import ListYourEvent from './pages/ListYourEvent';
 
 // Dashboard imports
 import DashboardLayout from './pages/Dashboard/DashboardLayout';
@@ -122,6 +125,13 @@ function AppRoutes() {
           <Route path="/about" element={<About />} />
           <Route path="/features" element={<Features />} />
           <Route path="/pricing" element={<Pricing />} />
+          <Route path="/case-studies" element={<CaseStudies />} />
+          <Route path="/past-events" element={<CaseStudies />} />
+          <Route path="/events-directory" element={<EventsDirectory />} />
+          <Route path="/directory" element={<EventsDirectory />} />
+          <Route path="/list-event" element={<ListYourEvent />} />
+          <Route path="/host-event" element={<ListYourEvent />} />
+          <Route path="/submit-event" element={<ListYourEvent />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
@@ -131,9 +141,10 @@ function AppRoutes() {
           <Route path="/service-usage" element={<ServiceUsage />} />
           <Route path="/maintenance" element={<Maintenance />} />
 
-          {/* Public Tamper-Evident Credential Verification (PRD 3.7 & 8) */}
+          {/* Public Tamper-Evident Credential & Invoice Verification (PRD 3.7 & 8) */}
           <Route path="/verify" element={<PublicVerifyPage />} />
           <Route path="/verify/:certNumber" element={<PublicVerifyPage />} />
+          <Route path="/verify-invoice" element={<PublicVerifyPage />} />
 
           {/* Dedicated Public Event Detail & Registration Page */}
           <Route path="/e/:slug" element={<PublicEventPage />} />

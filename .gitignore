@@ -11,6 +11,7 @@ node_modules
 # dist (Included for instant Hostinger 1-click Git deployment)
 dist-ssr
 *.local
+db/local_store.json
 
 # Environment variables
 .env
