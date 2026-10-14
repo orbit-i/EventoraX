@@ -230,19 +230,37 @@ export default function PricingSection() {
             Official Real-Time Gateways:
           </span>
           <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
-            <img src="/images/payments/jazzcash.png" alt="JazzCash" className="h-4.5 w-auto object-contain" />
+            <img
+              src="/images/payments/jazzcash.png"
+              alt="JazzCash"
+              className="h-5 w-auto max-w-[65px] object-contain shrink-0"
+              style={{ height: '20px', maxHeight: '20px', maxWidth: '65px', objectFit: 'contain' }}
+              loading="lazy"
+            />
             <span className="font-bold text-slate-800 text-[11px]">JazzCash</span>
           </div>
           <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
-            <img src="/images/payments/easypaisa.png" alt="Easypaisa" className="h-4.5 w-auto object-contain" />
+            <img
+              src="/images/payments/easypaisa.png"
+              alt="Easypaisa"
+              className="h-5 w-auto max-w-[65px] object-contain shrink-0"
+              style={{ height: '20px', maxHeight: '20px', maxWidth: '65px', objectFit: 'contain' }}
+              loading="lazy"
+            />
             <span className="font-bold text-slate-800 text-[11px]">Easypaisa</span>
           </div>
           <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
-            <img src="/images/payments/meezan.png" alt="Meezan Bank" className="h-5 w-auto object-contain" />
+            <img
+              src="/images/payments/meezan.png"
+              alt="Meezan Bank"
+              className="h-5 w-auto max-w-[65px] object-contain shrink-0"
+              style={{ height: '20px', maxHeight: '20px', maxWidth: '65px', objectFit: 'contain' }}
+              loading="lazy"
+            />
             <span className="font-bold text-slate-800 text-[11px]">Meezan IBFT</span>
           </div>
           <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
             <span className="font-bold text-[#0B5D34] text-[11px]">Raast Instant</span>
           </div>
           <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">

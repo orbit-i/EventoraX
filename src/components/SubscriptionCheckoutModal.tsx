@@ -9,7 +9,8 @@ import {
   Clock,
   CheckCircle2,
   Sparkles,
-  Tag
+  Tag,
+  ShieldAlert
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { api } from '@/services/api';

@@ -1283,7 +1283,7 @@ router.delete('/coupons/:id', verifyToken, requireSuperAdmin, async (req, res) =
 
 // =====================================================
 // DYNAMIC PLATFORM TEAM (ORBIT-I LEADERSHIP) MANAGEMENT
-// Dynamic CRUD for Abdul Samad Rind, Maria Almani, Muneeb Ur Rehman, Shahzad Hassan Ansar & future team members
+// Dynamic CRUD for Abdul Samad Rind, Maria Almani, Muneeb Ur Rehman, Hassan Ansar & future team members
 // =====================================================
 
 // GET /api/admin/platform-team - List all platform team members
@@ -1321,10 +1321,10 @@ router.get('/platform-team', verifyToken, requireSuperAdmin, async (req, res) =>
       },
       {
         id: 4,
-        name: 'Shahzad Hassan Ansar',
-        role: 'Security & Cloud Infrastructure Lead',
-        department: 'Cybersecurity & Infrastructure',
-        bio: 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels at ORBIT-I Private Limited.',
+        name: 'Hassan Ansar',
+        role: 'Web Developer',
+        department: 'Web Development & Engineering',
+        bio: 'Web Developer at ORBIT-I Private Limited. Specializing in modern web applications, performant user interfaces, responsive frontends, and dynamic event management workflows.',
         display_order: 4,
         is_active: 1
       }

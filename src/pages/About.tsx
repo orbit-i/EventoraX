@@ -120,10 +120,10 @@ const fallbackOrbitTeam = [
   },
   {
     id: 4,
-    name: 'Shahzad Hassan Ansar',
-    role: 'Security & Cloud Infrastructure Lead',
-    department: 'Cybersecurity & Infrastructure',
-    bio: 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels at ORBIT-I Private Limited.',
+    name: 'Hassan Ansar',
+    role: 'Web Developer',
+    department: 'Web Development & Engineering',
+    bio: 'Web Developer at ORBIT-I Private Limited. Specializing in modern web applications, performant user interfaces, responsive frontends, and dynamic event management workflows.',
     avatar_url: '',
     display_order: 4
   }

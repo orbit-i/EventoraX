@@ -298,19 +298,37 @@ export default function Pricing() {
           </div>
           <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-xs font-bold text-slate-700">
             <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
-              <img src="/images/payments/jazzcash.png" alt="JazzCash" className="h-5 w-auto object-contain" />
+              <img
+                src="/images/payments/jazzcash.png"
+                alt="JazzCash"
+                className="h-5 w-auto max-w-[65px] object-contain shrink-0"
+                style={{ height: '20px', maxHeight: '20px', maxWidth: '65px', objectFit: 'contain' }}
+                loading="lazy"
+              />
               <span className="font-bold text-slate-800">JazzCash</span>
             </div>
             <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
-              <img src="/images/payments/easypaisa.png" alt="Easypaisa" className="h-5 w-auto object-contain" />
+              <img
+                src="/images/payments/easypaisa.png"
+                alt="Easypaisa"
+                className="h-5 w-auto max-w-[65px] object-contain shrink-0"
+                style={{ height: '20px', maxHeight: '20px', maxWidth: '65px', objectFit: 'contain' }}
+                loading="lazy"
+              />
               <span className="font-bold text-slate-800">Easypaisa</span>
             </div>
             <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
-              <img src="/images/payments/meezan.png" alt="Meezan Bank" className="h-5.5 w-auto object-contain" />
+              <img
+                src="/images/payments/meezan.png"
+                alt="Meezan Bank"
+                className="h-5 w-auto max-w-[65px] object-contain shrink-0"
+                style={{ height: '20px', maxHeight: '20px', maxWidth: '65px', objectFit: 'contain' }}
+                loading="lazy"
+              />
               <span className="font-bold text-slate-800">Meezan IBFT</span>
             </div>
             <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse" />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse shrink-0" />
               <span className="font-bold text-[#0B5D34]">Raast SBP Instant</span>
             </div>
             <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">

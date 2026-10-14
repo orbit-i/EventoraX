@@ -618,7 +618,7 @@ VALUES
 (1, 'Abdul Samad Rind', 'Full Stack Web Developer & Platform Architect', 'Leadership & Engineering', 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading EventoraX core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.', '', 1, 1),
 (2, 'Maria Almani', 'Full Stack Web Developer, SEO & Content Specialist', 'Product & Web Growth', 'Full Stack Web Developer, SEO Strategist and Technical Content Specialist at ORBIT-I Private Limited. Leading fast-loading frontend architecture, organic search visibility, platform content strategy, and intuitive organizer UX.', '', 2, 1),
 (3, 'Muhammad Muneeb Ur Rahman Shahzad', 'DevOps Engineer', 'DevOps & Systems Infrastructure', 'DevOps & Systems Infrastructure Engineer at ORBIT-I Private Limited. Spearheading zero-downtime CI/CD deployment pipelines, Dockerized microservices, high-availability database clustering, and SBP-compliant server hardening.', '', 3, 1),
-(4, 'Shahzad Hassan Ansar', 'Security & Cloud Infrastructure Lead', 'Cybersecurity & Infrastructure', 'Leading SBP Level-1 security compliance, cryptographic verification infrastructure, and zero-trust cloud network sentinels at ORBIT-I Private Limited.', '', 4, 1)
+(4, 'Hassan Ansar', 'Web Developer', 'Web Development & Engineering', 'Web Developer at ORBIT-I Private Limited. Specializing in modern web applications, performant user interfaces, responsive frontends, and dynamic event management workflows.', '', 4, 1)
 ON DUPLICATE KEY UPDATE 
   `name` = VALUES(`name`),
   `role` = VALUES(`role`),

@@ -244,93 +244,99 @@ export default function ListYourEvent() {
   return (
     <main className="min-h-screen bg-[#f8fafc] pt-14 pb-24">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#f5f3ff] via-[#ede9fe]/30 to-white py-16 md:py-24 border-b border-[#e2e8f0]">
-        <div className="content-max text-center relative z-10">
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100 text-purple-700 text-xs font-bold uppercase tracking-wider mb-6 border border-purple-200">
-            <Crown className="w-4 h-4 text-amber-500" /> Host & Monetize on EventoraX Marketplace
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#f8fafc] via-[#eff6ff]/40 to-white py-16 md:py-20 border-b border-[#e2e8f0]">
+        <div className="content-max text-center relative z-10 px-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-[#1d4ed8] text-xs font-bold uppercase tracking-wider mb-5 border border-blue-200/80 shadow-xs">
+            <Sparkles className="w-4 h-4 text-amber-500" />
+            <span>EventoraX Public Marketplace &bull; VIP Showcase Available</span>
           </div>
-          <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-[-0.03em] mb-6 text-[#0f172a] max-w-4xl mx-auto leading-tight">
-            List Your Event. Fill Every Seat. <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7c3aed] to-[#2563eb]">Collect Direct Payments.</span>
+
+          <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-5 text-[#0f172a] max-w-4xl mx-auto leading-tight">
+            Publish Your Event &amp;{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#1d4ed8] via-[#4338ca] to-[#7c3aed]">
+              Maximize Attendee Turnout
+            </span>
           </h1>
-          <p className="font-body text-base md:text-lg max-w-3xl mx-auto text-[#475569] leading-relaxed mb-8">
-            Whether you are hosting a national tech conference, medical seminar, university hackathon, musical concert, or corporate expo — EventoraX gives you bank-grade ticketing, instant local checkout (Raast, JazzCash, Easypaisa, Cards), dynamic QR check-ins, and direct automated bank payouts with low platform commissions.
+
+          <p className="font-body text-sm sm:text-base md:text-lg max-w-3xl mx-auto text-[#475569] leading-relaxed mb-8">
+            Host national tech summits, medical conferences, hackathons, and corporate seminars. Enjoy bank-grade dynamic QR ticketing, instant Pakistani payment gateways (Raast, JazzCash, Easypaisa &amp; Cards), and direct automated bank payouts with low platform commissions.
           </p>
 
           {/* Quick Metrics */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mt-8">
-            <div className="p-4 rounded-xl bg-white border border-[#e2e8f0] shadow-sm">
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Platform Commission</div>
-              <div className="font-heading text-2xl font-bold text-[#7c3aed] mt-1">As low as 2.5%</div>
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 max-w-4xl mx-auto mt-6">
+            <div className="p-4 rounded-2xl bg-white border border-[#e2e8f0] shadow-xs hover:border-slate-300 transition-all">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Platform Commission</div>
+              <div className="font-heading text-xl sm:text-2xl font-black text-[#1d4ed8] mt-1">From 2.5%</div>
             </div>
-            <div className="p-4 rounded-xl bg-white border border-[#e2e8f0] shadow-sm">
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Payment Rails</div>
-              <div className="font-heading text-2xl font-bold text-[#2563eb] mt-1">Raast & All Cards</div>
+            <div className="p-4 rounded-2xl bg-white border border-[#e2e8f0] shadow-xs hover:border-slate-300 transition-all">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Payment Rails</div>
+              <div className="font-heading text-xl sm:text-2xl font-black text-[#4338ca] mt-1">Raast &amp; Cards</div>
             </div>
-            <div className="p-4 rounded-xl bg-white border border-[#e2e8f0] shadow-sm">
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Ticket Passes</div>
-              <div className="font-heading text-2xl font-bold text-[#059669] mt-1">Fraud-Proof QR</div>
+            <div className="p-4 rounded-2xl bg-white border border-[#e2e8f0] shadow-xs hover:border-slate-300 transition-all">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Tamper-Evident Passes</div>
+              <div className="font-heading text-xl sm:text-2xl font-black text-emerald-600 mt-1">Fraud-Proof QR</div>
             </div>
-            <div className="p-4 rounded-xl bg-white border border-[#e2e8f0] shadow-sm">
-              <div className="text-xs font-semibold text-slate-500 uppercase tracking-wider">Settlements</div>
-              <div className="font-heading text-2xl font-bold text-[#d97706] mt-1">Same-Day / 24h</div>
+            <div className="p-4 rounded-2xl bg-white border border-[#e2e8f0] shadow-xs hover:border-slate-300 transition-all">
+              <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Direct Settlement</div>
+              <div className="font-heading text-xl sm:text-2xl font-black text-amber-600 mt-1">Same-Day / 24h</div>
             </div>
           </div>
         </div>
       </section>
 
       {/* How Financial Flow & Commission Works */}
-      <section className="py-16 bg-white border-b border-[#e2e8f0]">
-        <div className="content-max">
-          <div className="text-center max-w-3xl mx-auto mb-12">
-            <span className="text-xs font-bold uppercase tracking-wider text-[#7c3aed] bg-purple-50 px-3 py-1 rounded-full border border-purple-200">
-              Clear & Transparent Economics
+      <section className="py-14 sm:py-16 bg-white border-b border-[#e2e8f0]">
+        <div className="content-max px-4">
+          <div className="text-center max-w-3xl mx-auto mb-10">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#1d4ed8] bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+              Clear &amp; Transparent Economics
             </span>
-            <h2 className="font-heading text-2xl md:text-4xl font-bold text-slate-900 mt-3">
-              How EventoraX Event Listing & Payouts Work
+            <h2 className="font-heading text-2xl sm:text-3xl md:text-4xl font-bold text-slate-900 mt-3">
+              How Listing &amp; Ticket Payouts Work
             </h2>
-            <p className="text-sm md:text-base text-slate-600 mt-2">
-              We manage the payment infrastructure, fraud protection, and ticketing logistics so you get 100% peace of mind.
+            <p className="text-xs sm:text-sm text-slate-500 mt-2">
+              We manage the payment gateways, fraud prevention, and credential dispatch so your team can focus on running a great event.
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            <div className="p-6 rounded-2xl bg-[#faf5ff] border border-purple-100 flex flex-col">
-              <div className="w-10 h-10 rounded-xl bg-[#7c3aed] text-white flex items-center justify-center font-bold text-base mb-4 shadow-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            <div className="p-5 rounded-2xl bg-[#f8fafc] border border-slate-200 flex flex-col hover:border-blue-300 hover:shadow-xs transition-all">
+              <div className="w-8 h-8 rounded-xl bg-[#1d4ed8] text-white flex items-center justify-center font-bold text-sm mb-3 shadow-xs">
                 1
               </div>
-              <h3 className="font-heading font-bold text-base text-slate-900 mb-2">Submit & Choose Plan</h3>
+              <h3 className="font-heading font-bold text-sm sm:text-base text-slate-900 mb-1.5">Choose Listing Plan</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Choose Standard (Free), Featured (Rs 4,999), or VIP Showcase (Rs 14,999). Fill in your event details and your bank account for receiving ticket proceeds.
+                Select Standard (Free), Featured (Rs 4,999), or VIP Showcase (Rs 14,999). Fill in your event specifications and your bank/Raast details.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#faf5ff] border border-purple-100 flex flex-col">
-              <div className="w-10 h-10 rounded-xl bg-[#2563eb] text-white flex items-center justify-center font-bold text-base mb-4 shadow-sm">
+            <div className="p-5 rounded-2xl bg-[#f8fafc] border border-slate-200 flex flex-col hover:border-blue-300 hover:shadow-xs transition-all">
+              <div className="w-8 h-8 rounded-xl bg-[#4338ca] text-white flex items-center justify-center font-bold text-sm mb-3 shadow-xs">
                 2
               </div>
-              <h3 className="font-heading font-bold text-base text-slate-900 mb-2">Listing Fee to EventoraX</h3>
+              <h3 className="font-heading font-bold text-sm sm:text-base text-slate-900 mb-1.5">Listing Fee (If Applicable)</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                For Featured or VIP plans, pay the one-time listing fee directly to EventoraX official accounts (ORBIT-I Private Limited via Raast, Meezan Bank, or Wallets).
+                For Featured or VIP plans, pay the one-time listing fee to ORBIT-I via Raast, Meezan Bank, or Wallets and enter your reference ID.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#faf5ff] border border-purple-100 flex flex-col">
-              <div className="w-10 h-10 rounded-xl bg-[#059669] text-white flex items-center justify-center font-bold text-base mb-4 shadow-sm">
+            <div className="p-5 rounded-2xl bg-[#f8fafc] border border-slate-200 flex flex-col hover:border-blue-300 hover:shadow-xs transition-all">
+              <div className="w-8 h-8 rounded-xl bg-emerald-600 text-white flex items-center justify-center font-bold text-sm mb-3 shadow-xs">
                 3
               </div>
-              <h3 className="font-heading font-bold text-base text-slate-900 mb-2">Go Live & Collect Sales</h3>
+              <h3 className="font-heading font-bold text-sm sm:text-base text-slate-900 mb-1.5">Go Live &amp; Sell Tickets</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Your event goes live in the EventoraX Marketplace. Attendees purchase tickets seamlessly. Payments are securely collected by EventoraX.
+                Your event goes live in the EventoraX Directory. Attendees buy passes instantly with verified local Pakistani payment rails.
               </p>
             </div>
 
-            <div className="p-6 rounded-2xl bg-[#faf5ff] border border-purple-100 flex flex-col">
-              <div className="w-10 h-10 rounded-xl bg-[#d97706] text-white flex items-center justify-center font-bold text-base mb-4 shadow-sm">
+            <div className="p-5 rounded-2xl bg-[#f8fafc] border border-slate-200 flex flex-col hover:border-blue-300 hover:shadow-xs transition-all">
+              <div className="w-8 h-8 rounded-xl bg-amber-600 text-white flex items-center justify-center font-bold text-sm mb-3 shadow-xs">
                 4
               </div>
-              <h3 className="font-heading font-bold text-base text-slate-900 mb-2">Commission & Direct Payout</h3>
+              <h3 className="font-heading font-bold text-sm sm:text-base text-slate-900 mb-1.5">Automated Bank Payout</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                EventoraX automatically deducts the platform listing commission (e.g. 2.5%, 3.5%, or 5%) and transfers your net ticket sales directly into your registered Bank / Raast account!
+                We deduct the low platform commission (from 2.5%) and deposit your net ticket proceeds directly into your registered bank account.
               </p>
             </div>
           </div>
@@ -338,62 +344,73 @@ export default function ListYourEvent() {
       </section>
 
       {/* Plan Selection Cards */}
-      <section className="py-16 md:py-20 content-max">
-        <div className="text-center max-w-3xl mx-auto mb-14">
-          <span className="text-xs font-bold uppercase tracking-wider text-[#7c3aed] bg-purple-100 px-3 py-1 rounded-full border border-purple-200">
-            Select Your Package
+      <section className="py-14 sm:py-18 content-max px-4">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <span className="text-xs font-bold uppercase tracking-wider text-[#1d4ed8] bg-blue-50 px-3 py-1 rounded-full border border-blue-200">
+            Select Your Listing Tier
           </span>
-          <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-[-0.02em] text-[#0f172a] mt-3">
-            Listing Plans & Commission Tiers
+          <h2 className="font-heading text-2xl sm:text-4xl md:text-5xl font-bold tracking-tight text-[#0f172a] mt-3">
+            Choose Visibility &amp; Commission Level
           </h2>
-          <p className="font-body text-base md:text-lg text-[#475569] mt-3">
-            Choose the visibility and commission tier that matches your event’s ambition.
+          <p className="font-body text-xs sm:text-sm md:text-base text-[#475569] mt-2">
+            Select the package that matches your event size, audience reach, and VIP promotion goals.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch max-w-6xl mx-auto mb-16">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 items-stretch max-w-6xl mx-auto mb-14">
           {plans.map((p) => {
             const isSelected = selectedPlanId === p.id;
+            const isVipTier = p.is_vip || p.id === 'vip';
+
             return (
               <div
                 key={p.id}
                 onClick={() => setSelectedPlanId(p.id)}
-                className={`cursor-pointer rounded-3xl p-8 transition-all duration-300 flex flex-col justify-between relative ${
+                className={`cursor-pointer rounded-3xl p-6 sm:p-8 transition-all duration-300 flex flex-col justify-between relative ${
                   isSelected
-                    ? 'bg-white border-2 border-[#7c3aed] shadow-2xl ring-4 ring-purple-500/10 -translate-y-1'
-                    : 'bg-white/80 border border-[#e2e8f0] shadow-sm hover:border-[#cbd5e1] hover:shadow-md'
+                    ? isVipTier
+                      ? 'bg-white border-2 border-amber-500 shadow-xl ring-4 ring-amber-500/10 -translate-y-1'
+                      : 'bg-white border-2 border-[#1d4ed8] shadow-xl ring-4 ring-blue-500/10 -translate-y-1'
+                    : isVipTier
+                    ? 'bg-gradient-to-b from-amber-50/30 to-white border border-amber-200/80 shadow-xs hover:border-amber-400 hover:shadow-md'
+                    : 'bg-white border border-[#e2e8f0] shadow-xs hover:border-slate-300 hover:shadow-md'
                 }`}
               >
-                {p.popular && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-[#7c3aed] to-[#3b82f6] text-white text-xs font-bold uppercase tracking-wider shadow-md">
+                {p.popular && !isVipTier && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3.5 py-1 rounded-full bg-[#1d4ed8] text-white text-[11px] font-bold uppercase tracking-wider shadow-sm">
                     {p.badge}
                   </div>
                 )}
-                {p.is_vip && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-bold uppercase tracking-wider shadow-md flex items-center gap-1">
-                    <Crown className="w-3.5 h-3.5" /> {p.badge}
+                {isVipTier && (
+                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-4 py-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white text-xs font-black uppercase tracking-wider shadow-md flex items-center gap-1.5">
+                    <Crown className="w-3.5 h-3.5" />
+                    <span>VIP Spotlight Showcase</span>
                   </div>
                 )}
 
                 <div>
-                  <div className="flex items-center justify-between mb-4 mt-2">
-                    <h3 className="font-heading text-xl font-bold text-slate-900">{p.name}</h3>
-                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center ${isSelected ? 'border-[#7c3aed] bg-[#7c3aed]' : 'border-slate-300'}`}>
+                  <div className="flex items-center justify-between mb-3 mt-1">
+                    <h3 className="font-heading text-lg sm:text-xl font-bold text-slate-900">{p.name}</h3>
+                    <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 ${
+                      isSelected
+                        ? isVipTier ? 'border-amber-500 bg-amber-500' : 'border-[#1d4ed8] bg-[#1d4ed8]'
+                        : 'border-slate-300'
+                    }`}>
                       {isSelected && <div className="w-2 h-2 rounded-full bg-white" />}
                     </div>
                   </div>
 
-                  <p className="text-xs text-slate-500 leading-relaxed mb-6">{p.tagline}</p>
+                  <p className="text-xs text-slate-500 leading-relaxed mb-5">{p.tagline}</p>
 
-                  <div className="p-4 rounded-2xl bg-[#f8fafc] border border-slate-100 mb-6">
-                    <div className="text-xs font-medium text-slate-500 uppercase tracking-wider">Upfront Listing Fee</div>
-                    <div className="font-heading text-3xl font-extrabold text-slate-900 mt-1">
+                  <div className={`p-4 rounded-2xl mb-6 border ${isVipTier ? 'bg-amber-50/50 border-amber-200/70' : 'bg-slate-50 border-slate-100'}`}>
+                    <div className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">Upfront Listing Fee</div>
+                    <div className="font-heading text-2xl sm:text-3xl font-black text-slate-900 mt-1">
                       {p.listing_fee_pkr === 0 ? 'Rs. 0 Free' : `Rs. ${p.listing_fee_pkr.toLocaleString()}`}
-                      {p.listing_fee_usd > 0 && <span className="text-sm font-medium text-slate-400 ml-1.5">/ ${p.listing_fee_usd}</span>}
+                      {p.listing_fee_usd > 0 && <span className="text-xs font-semibold text-slate-400 ml-1.5">/ ${p.listing_fee_usd}</span>}
                     </div>
                     <div className="mt-3 pt-3 border-t border-slate-200/60 flex items-center justify-between">
-                      <span className="text-xs font-semibold text-purple-700">Ticket Commission:</span>
-                      <span className="font-heading text-base font-bold text-purple-900">
+                      <span className="text-xs font-semibold text-slate-600">Ticket Commission:</span>
+                      <span className="font-heading text-sm font-bold text-slate-900">
                         {p.commission_rate_percent}%
                         {p.commission_fixed_pkr > 0 && ` + Rs. ${p.commission_fixed_pkr}`}
                       </span>
@@ -404,11 +421,11 @@ export default function ListYourEvent() {
                     </div>
                   </div>
 
-                  <div className="space-y-3 mb-8">
-                    <p className="text-xs font-bold text-slate-900 uppercase tracking-wider">What&apos;s Included:</p>
+                  <div className="space-y-2.5 mb-8">
+                    <p className="text-[11px] font-bold text-slate-900 uppercase tracking-wider">What&apos;s Included:</p>
                     {p.features.map((feat, idx) => (
                       <div key={idx} className="flex items-start gap-2.5 text-xs text-slate-700">
-                        <CheckCircle2 className="w-4 h-4 text-[#7c3aed] flex-shrink-0 mt-0.5" />
+                        <CheckCircle2 className={`w-3.5 h-3.5 flex-shrink-0 mt-0.5 ${isVipTier ? 'text-amber-500' : 'text-[#1d4ed8]'}`} />
                         <span>{feat}</span>
                       </div>
                     ))}
@@ -418,13 +435,15 @@ export default function ListYourEvent() {
                 <button
                   type="button"
                   onClick={() => setSelectedPlanId(p.id)}
-                  className={`w-full py-3 rounded-xl font-heading font-bold text-sm transition-all ${
+                  className={`w-full py-2.5 sm:py-3 rounded-xl font-heading font-bold text-xs sm:text-sm transition-all ${
                     isSelected
-                      ? 'bg-[#7c3aed] text-white shadow-lg shadow-[#7c3aed]/25 hover:bg-[#6d28d9]'
+                      ? isVipTier
+                        ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-lg shadow-amber-500/25'
+                        : 'bg-[#1d4ed8] text-white shadow-lg shadow-blue-600/25'
                       : 'bg-slate-100 text-slate-800 hover:bg-slate-200'
                   }`}
                 >
-                  {isSelected ? '✓ Selected Plan' : 'Select Plan'}
+                  {isSelected ? '✓ Selected Tier' : 'Select Tier'}
                 </button>
               </div>
             );
@@ -433,33 +452,42 @@ export default function ListYourEvent() {
 
         {/* Official Receiving Accounts Card */}
         {selectedPlan.listing_fee_pkr > 0 && (
-          <div className="max-w-4xl mx-auto mb-16 p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-[#0f172a] to-[#1e1b4b] text-white shadow-xl border border-purple-500/20">
-            <div className="flex flex-wrap items-center justify-between gap-4 mb-6">
+          <div className="max-w-4xl mx-auto mb-14 p-6 sm:p-8 rounded-3xl bg-slate-900 text-white shadow-xl border border-slate-700">
+            <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
               <div>
-                <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold uppercase tracking-wider border border-purple-500/30">
+                <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
                   Official EventoraX Receiving Accounts
                 </span>
-                <h3 className="font-heading text-xl sm:text-2xl font-bold mt-2">
+                <h3 className="font-heading text-lg sm:text-2xl font-bold mt-2 text-white">
                   Pay Listing Fee: Rs. {selectedPlan.listing_fee_pkr.toLocaleString()} ({selectedPlan.name})
                 </h3>
               </div>
-              <div className="text-xs text-purple-200 bg-white/10 px-4 py-2 rounded-xl backdrop-blur-sm">
-                Direct to ORBIT-I Private Limited
+              <div className="text-xs text-slate-300 bg-white/10 px-3.5 py-1.5 rounded-xl border border-white/10">
+                ORBIT-I Private Limited
               </div>
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
               {/* Bank Account */}
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10 relative">
-                <div className="font-semibold text-purple-300 mb-1">Meezan Bank Direct Deposit</div>
-                <div className="text-sm font-bold text-white">{accounts.bank_name}</div>
-                <div className="text-slate-300 mt-1">Title: <span className="text-white font-medium">{accounts.account_title}</span></div>
-                <div className="text-slate-300">Account: <span className="text-white font-mono">{accounts.account_number}</span></div>
-                <div className="text-slate-300">IBAN: <span className="text-white font-mono">{accounts.iban}</span></div>
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <img
+                      src="/images/payments/meezan.png"
+                      alt="Meezan Bank"
+                      className="h-5 w-auto object-contain"
+                      style={{ maxHeight: '20px', maxWidth: '60px' }}
+                    />
+                    <span className="font-bold text-blue-300">Meezan Bank Direct Deposit</span>
+                  </div>
+                  <div className="text-slate-300 mt-2">Title: <span className="text-white font-medium">{accounts.account_title}</span></div>
+                  <div className="text-slate-300">Account #: <span className="text-white font-mono">{accounts.account_number}</span></div>
+                  <div className="text-slate-300">IBAN: <span className="text-white font-mono break-all">{accounts.iban}</span></div>
+                </div>
                 <button
                   type="button"
                   onClick={() => handleCopy(accounts.iban, 'iban')}
-                  className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-purple-300 hover:text-white"
+                  className="mt-4 self-start inline-flex items-center gap-1.5 text-xs font-bold text-blue-300 hover:text-white bg-white/10 px-3 py-1 rounded-lg border border-white/10 transition-colors"
                 >
                   {copiedField === 'iban' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   {copiedField === 'iban' ? 'IBAN Copied!' : 'Copy IBAN'}
@@ -467,16 +495,21 @@ export default function ListYourEvent() {
               </div>
 
               {/* SBP Raast & Mobile Wallets */}
-              <div className="p-4 rounded-xl bg-white/5 border border-white/10 relative">
-                <div className="font-semibold text-purple-300 mb-1">Instant Raast & Mobile Wallets</div>
-                <div className="text-sm font-bold text-white">SBP Raast ID: {accounts.raast_id}</div>
-                <div className="text-slate-300 mt-1">Raast Phone / Till: <span className="text-white font-mono">{accounts.raast_phone}</span></div>
-                <div className="text-slate-300">JazzCash / Easypaisa: <span className="text-white font-mono">{accounts.jazzcash_till}</span></div>
-                <div className="text-slate-300">WhatsApp Proof Line: <span className="text-emerald-400 font-mono">{accounts.support_whatsapp}</span></div>
+              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 flex flex-col justify-between">
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="font-bold text-emerald-400">Instant Raast &amp; Mobile Wallets</span>
+                  </div>
+                  <div className="text-slate-300 mt-2">SBP Raast ID: <span className="text-white font-medium">{accounts.raast_id}</span></div>
+                  <div className="text-slate-300">Raast Phone: <span className="text-white font-mono">{accounts.raast_phone}</span></div>
+                  <div className="text-slate-300">JazzCash / Easypaisa: <span className="text-white font-mono">{accounts.jazzcash_till}</span></div>
+                  <div className="text-slate-300">WhatsApp Proof: <span className="text-emerald-400 font-mono">{accounts.support_whatsapp}</span></div>
+                </div>
                 <button
                   type="button"
                   onClick={() => handleCopy(accounts.raast_phone, 'raast')}
-                  className="mt-3 inline-flex items-center gap-1.5 text-[11px] font-semibold text-purple-300 hover:text-white"
+                  className="mt-4 self-start inline-flex items-center gap-1.5 text-xs font-bold text-emerald-300 hover:text-white bg-white/10 px-3 py-1 rounded-lg border border-white/10 transition-colors"
                 >
                   {copiedField === 'raast' ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                   {copiedField === 'raast' ? 'Raast Number Copied!' : 'Copy Raast Number'}
@@ -484,8 +517,8 @@ export default function ListYourEvent() {
               </div>
             </div>
 
-            <p className="text-[11px] text-slate-400 mt-4 italic">
-              * Note: After sending the listing fee payment, please paste your Transaction ID / Reference Number into the form below so our automated finance sentinel can verify and publish your event immediately.
+            <p className="text-[11px] text-slate-400 mt-4 leading-relaxed">
+              * Note: After transferring the fee, please enter your Transaction ID (TID) or banking reference into the form below for automatic verification.
             </p>
           </div>
         )}

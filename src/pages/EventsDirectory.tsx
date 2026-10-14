@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { 
   Calendar, 
   MapPin, 
@@ -79,7 +80,7 @@ const fallbackEvents: DirectoryEvent[] = [
     ],
     speakers: [
       { name: 'Dr. Tariq Hassan', role: 'Head of Applied AI, TechPakistan', image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80' },
-      { name: 'Hassan Ansar', role: 'Cloud Infrastructure Architect, ORBIT-I', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80' },
+      { name: 'Hassan Ansar', role: 'Web Developer, ORBIT-I', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80' },
       { name: 'Sara Kamran', role: 'Partner, Indus Valley Seed Ventures', image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80' }
     ],
     ticket_tiers: [
@@ -356,8 +357,37 @@ export default function EventsDirectory() {
         </div>
       </section>
 
+      {/* VIP Organizer Showcase Banner */}
+      <div className="content-max px-4 mt-8">
+        <div className="bg-gradient-to-r from-[#1e1b4b] via-[#2e1065] to-[#0f172a] rounded-2xl p-4 sm:p-5 text-white flex flex-col sm:flex-row items-center justify-between gap-4 shadow-lg shadow-purple-950/20 border border-purple-500/25">
+          <div className="flex items-center gap-3.5">
+            <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center shrink-0 border border-amber-400/30">
+              <Sparkles className="w-5 h-5 text-amber-400" />
+            </div>
+            <div>
+              <div className="font-heading text-sm sm:text-base font-bold flex items-center gap-2">
+                <span>Organizing an upcoming conference or seminar?</span>
+                <span className="hidden sm:inline-block text-[10px] uppercase font-black px-2 py-0.5 rounded-full bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950">
+                  VIP Showcase
+                </span>
+              </div>
+              <p className="text-xs text-purple-200/80 mt-0.5">
+                Feature your event to thousands of attendees, sell passes via verified Pakistani payment rails &amp; get instant payouts.
+              </p>
+            </div>
+          </div>
+          <Link
+            to="/list-event"
+            className="shrink-0 px-4 py-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-xs shadow-md transition-all flex items-center gap-1.5"
+          >
+            <span>List Your Event (+ VIP)</span>
+            <ChevronRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </div>
+
       {/* Events Listing */}
-      <div className="content-max px-4 mt-12">
+      <div className="content-max px-4 mt-10">
         <div className="flex items-center justify-between mb-6">
           <div className="text-sm font-bold text-[#334155]">
             Showing <span className="text-[#7c3aed]">{filteredEvents.length}</span> Upcoming Events
@@ -372,11 +402,16 @@ export default function EventsDirectory() {
           {filteredEvents.map((evt) => {
             const tiers = parseTiers(evt.ticket_tiers);
             const minPrice = tiers.length > 0 ? Math.min(...tiers.map(t => t.price_pkr)) : 0;
+            const isVip = evt.is_featured === 1;
 
             return (
               <div
                 key={evt.id}
-                className="bg-white rounded-3xl border border-[#e9e4ff] shadow-sm hover:shadow-xl hover:shadow-[#7c3aed]/10 transition-all duration-300 overflow-hidden flex flex-col group"
+                className={`bg-white rounded-3xl transition-all duration-300 overflow-hidden flex flex-col group ${
+                  isVip
+                    ? 'border-2 border-amber-400/80 shadow-lg shadow-amber-500/10 ring-2 ring-amber-400/20'
+                    : 'border border-[#e9e4ff] shadow-sm hover:shadow-xl hover:shadow-[#7c3aed]/10'
+                }`}
               >
                 {/* Banner */}
                 <div className="relative h-48 overflow-hidden bg-slate-100">
@@ -388,7 +423,13 @@ export default function EventsDirectory() {
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
                   
-                  <div className="absolute top-3 left-3 flex gap-2">
+                  <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
+                    {isVip && (
+                      <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-md">
+                        <Sparkles className="w-3 h-3 text-amber-200 animate-pulse" />
+                        VIP Spotlight
+                      </span>
+                    )}
                     <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-white text-[11px] font-bold">
                       {evt.category}
                     </span>

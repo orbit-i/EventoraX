@@ -30,7 +30,8 @@ export function JazzCashLogo({ className = "h-7 w-auto" }: { className?: string 
     <img
       src="/images/payments/jazzcash.png"
       alt="JazzCash Official"
-      className={`object-contain inline-block ${className}`}
+      className={`object-contain inline-block max-h-7 max-w-[85px] ${className}`}
+      style={{ maxHeight: '28px', maxWidth: '85px', objectFit: 'contain' }}
       loading="lazy"
     />
   );
@@ -41,7 +42,8 @@ export function JazzCashBadge({ className = "w-7 h-7" }: { className?: string })
     <img
       src="/images/payments/jazzcash.png"
       alt="JazzCash"
-      className={`object-contain rounded-md inline-block ${className}`}
+      className={`object-contain rounded-md inline-block max-h-7 max-w-7 ${className}`}
+      style={{ maxHeight: '28px', maxWidth: '28px', objectFit: 'contain' }}
       loading="lazy"
     />
   );
@@ -52,7 +54,8 @@ export function EasypaisaLogo({ className = "h-7 w-auto" }: { className?: string
     <img
       src="/images/payments/easypaisa.png"
       alt="Easypaisa Official"
-      className={`object-contain inline-block ${className}`}
+      className={`object-contain inline-block max-h-7 max-w-[85px] ${className}`}
+      style={{ maxHeight: '28px', maxWidth: '85px', objectFit: 'contain' }}
       loading="lazy"
     />
   );
@@ -63,7 +66,8 @@ export function EasypaisaBadge({ className = "w-7 h-7" }: { className?: string }
     <img
       src="/images/payments/easypaisa.png"
       alt="Easypaisa"
-      className={`object-contain rounded-md inline-block ${className}`}
+      className={`object-contain rounded-md inline-block max-h-7 max-w-7 ${className}`}
+      style={{ maxHeight: '28px', maxWidth: '28px', objectFit: 'contain' }}
       loading="lazy"
     />
   );
@@ -183,7 +187,8 @@ export function MeezanBankLogo({ className = "h-8 w-auto" }: { className?: strin
     <img
       src="/images/payments/meezan.png"
       alt="Meezan Bank Limited"
-      className={`object-contain inline-block ${className}`}
+      className={`object-contain inline-block max-h-8 max-w-[85px] ${className}`}
+      style={{ maxHeight: '32px', maxWidth: '85px', objectFit: 'contain' }}
       loading="lazy"
     />
   );
@@ -194,7 +199,8 @@ export function MeezanBankBadge({ className = "w-7 h-7" }: { className?: string 
     <img
       src="/images/payments/meezan.png"
       alt="Meezan Bank"
-      className={`object-contain inline-block rounded-full ${className}`}
+      className={`object-contain inline-block rounded-full max-h-7 max-w-7 ${className}`}
+      style={{ maxHeight: '28px', maxWidth: '28px', objectFit: 'contain' }}
       loading="lazy"
     />
   );

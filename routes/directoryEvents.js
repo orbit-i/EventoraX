@@ -33,7 +33,7 @@ export const initialDirectoryEvents = [
     ]),
     speakers: JSON.stringify([
       { name: 'Dr. Tariq Hassan', role: 'Head of Applied AI, TechPakistan', image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80' },
-      { name: 'Hassan Ansar', role: 'Cloud Infrastructure Architect, ORBIT-I', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80' },
+      { name: 'Hassan Ansar', role: 'Web Developer, ORBIT-I', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80' },
       { name: 'Sara Kamran', role: 'Partner, Indus Valley Seed Ventures', image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80' }
     ]),
     ticket_tiers: JSON.stringify([
