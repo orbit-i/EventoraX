@@ -167,9 +167,9 @@ export default function Features() {
   }, []);
 
   return (
-    <main className="pt-14">
+    <main className="font-body">
       {/* Hero */}
-      <section className="bg-[#f3f0ff] py-20 md:py-32 text-center">
+      <section className="bg-[#f3f0ff] py-16 md:py-24 text-center">
         <div className="content-max">
           <p className="font-body text-sm uppercase tracking-[0.1em] mb-4 text-[#a78bfa] font-semibold">Features</p>
           <h1 className="font-heading text-4xl md:text-6xl font-bold tracking-[-0.02em] mb-6 text-[#0f172a]">

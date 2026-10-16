@@ -233,7 +233,7 @@ export default function ListYourEvent() {
   };
 
   return (
-    <main className="min-h-screen bg-[#f8fafc] pt-14 pb-24">
+    <main className="min-h-screen bg-[#f8fafc] pb-24 font-body">
       {/* Hero Section */}
       <section className="relative overflow-hidden bg-gradient-to-b from-[#f8fafc] via-[#eff6ff]/40 to-white py-16 md:py-20 border-b border-[#e2e8f0]">
         <div className="content-max text-center relative z-10 px-4">

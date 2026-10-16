@@ -2,6 +2,13 @@ import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
+import ScrollProgressBar from './components/ScrollProgressBar';
+import BackToTop from './components/BackToTop';
+import FloatingContactButton from './components/FloatingContactButton';
+import { Toaster } from './components/ui/sonner';
+import { usePageSEO } from './hooks/usePageSEO';
+import { initUtmTracking } from './lib/utm';
+
 import Home from './pages/Home';
 import About from './pages/About';
 import Features from './pages/Features';
@@ -100,21 +107,39 @@ function Layout({ children }: { children: React.ReactNode }) {
 
   // Dashboard, Tenant portal, Event Landing Page, Verification portal, Secret Master Gateway, and Status/Error pages have their own standalone layouts
   if (isDashboard || isMasterGateway || isTenantPortal || isVerifyPage || isPublicEvent || isStandalonePage) {
-    return <>{children}</>;
+    return (
+      <>
+        <ScrollProgressBar />
+        {children}
+        <Toaster position="top-right" richColors />
+      </>
+    );
   }
 
   return (
-    <div className="min-h-screen antialiased bg-[#f8fafc]">
+    <div className="min-h-screen antialiased bg-[#f8fafc] flex flex-col justify-between overflow-x-hidden">
+      <ScrollProgressBar />
       {!isAuthPage && <Navbar />}
-      <main className={isAuthPage ? '' : 'pt-16'}>
+      <main id="main-content" className="w-full flex-1">
         {children}
       </main>
       {!isAuthPage && <Footer />}
+      {!isAuthPage && <BackToTop />}
+      {!isAuthPage && <FloatingContactButton />}
+      <Toaster position="top-right" richColors />
     </div>
   );
 }
 
 function AppRoutes() {
+  // Dynamic SEO metadata title & description updates
+  usePageSEO();
+
+  // Marketing campaign UTM parameters tracking
+  useEffect(() => {
+    initUtmTracking();
+  }, []);
+
   return (
     <>
       <ScrollToTop />

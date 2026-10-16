@@ -1,75 +1,106 @@
 import { Link } from 'react-router-dom';
+import { Calendar, ShieldCheck, Mail, Phone, MessageCircle } from 'lucide-react';
 
 export default function Privacy() {
   return (
-    <main className="pt-14">
-      <section className="bg-[#f3f0ff] py-20 md:py-28">
-        <div className="content-max max-w-4xl mx-auto">
-          <p className="font-body text-sm uppercase tracking-[0.1em] mb-4 text-[#a78bfa] font-semibold">Legal</p>
-          <h1 className="font-heading text-4xl md:text-5xl font-bold tracking-[-0.02em] mb-8 text-[#0f172a]">
+    <main className="font-body">
+      <section className="bg-gradient-to-b from-blue-50/60 to-white py-14 md:py-20">
+        <div className="content-max max-w-4xl mx-auto px-4">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 mb-3">
+            <ShieldCheck className="w-3.5 h-3.5 text-blue-600" />
             Privacy Policy
+          </div>
+          <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight mb-4 text-[#0f172a]">
+            Privacy &amp; Data Protection Policy
           </h1>
-          <div className="bg-white rounded-2xl p-8 md:p-10 border border-[#e9e4ff] shadow-sm">
-            <div className="prose max-w-none">
-              <p className="font-body text-sm mb-6 text-[#94a3b8]">Last updated: October 2026</p>
 
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">1. Information We Collect</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We collect information you provide directly to us, including your name, email address, organization name, and phone number. We also collect data about your events, attendees, and usage of the Service.
-              </p>
+          {/* Last updated badge */}
+          <div className="flex items-center gap-2 text-xs text-slate-500 mb-8">
+            <Calendar className="w-4 h-4 text-blue-600" />
+            <span>Last updated &amp; effective: <strong>October 2026</strong></span>
+          </div>
 
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">2. How We Use Your Information</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We use your information to provide, maintain, and improve the Service; to process transactions; to send you technical notices and support messages; and to respond to your inquiries.
-              </p>
+          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-xl shadow-slate-900/5">
+            <div className="space-y-6 text-slate-600 leading-relaxed text-sm sm:text-base">
+              <div>
+                <h2 className="font-heading text-lg sm:text-xl font-bold mb-2 text-[#0f172a]">1. Information We Collect</h2>
+                <p>
+                  We collect information you provide directly to us when creating an organization workspace, including your name, email address, organization name, and phone number. We also process event registration data, attendee credentials, and analytics strictly to provide event operations.
+                </p>
+              </div>
 
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">3. Data Storage and Security</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We implement industry-standard security measures to protect your data. All data is encrypted in transit and at rest. We use secure cloud infrastructure with regular backups and monitoring.
-              </p>
+              <div>
+                <h2 className="font-heading text-lg sm:text-xl font-bold mb-2 text-[#0f172a]">2. How We Use Your Information</h2>
+                <p>
+                  We use your information to operate and maintain the Service, generate dynamic QR ticketing passes, verify SHA-256 certificate authenticity, process subscription payments, send automated email receipts, and respond to support inquiries.
+                </p>
+              </div>
 
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">4. Data Sharing</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We do not sell, trade, or rent your personal information to third parties. We may share data with trusted service providers who assist us in operating the Service, subject to confidentiality agreements.
-              </p>
+              <div>
+                <h2 className="font-heading text-lg sm:text-xl font-bold mb-2 text-[#0f172a]">3. Data Storage &amp; Encryption Standards</h2>
+                <p>
+                  We implement industry-standard cryptographic measures. All attendee records and credential templates are encrypted in transit via TLS 1.3 and at rest with AES-256 encryption. We operate secure partitioned database clusters with continuous automated backups.
+                </p>
+              </div>
 
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">5. Your Rights</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                You have the right to access, correct, or delete your personal information. You may also request a copy of your data or object to certain processing activities. Contact us to exercise these rights.
-              </p>
+              <div>
+                <h2 className="font-heading text-lg sm:text-xl font-bold mb-2 text-[#0f172a]">4. Data Sharing &amp; Third Parties</h2>
+                <p>
+                  We do not sell, trade, or rent personal data to third parties. Data is only exchanged with authorized payment processors (SBP Raast, JazzCash, Easypaisa, Meezan Bank) solely for payment settlement, subject to confidentiality agreements.
+                </p>
+              </div>
 
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">6. Cookies and Google AdSense Disclosures</h2>
-              <p className="font-body text-base mb-4 text-[#475569] leading-relaxed">
-                We use cookies and similar technologies to enhance your experience, maintain session state, and understand platform usage. 
-              </p>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                <strong>Third-Party Vendors & Google AdSense:</strong> Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to our website or other websites. Google's use of advertising cookies enables it and its partners to serve ads to users based on their visits to our site and/or other sites on the Internet. Users may opt out of personalized advertising by visiting <a href="https://adssettings.google.com" target="_blank" rel="noreferrer" className="text-blue-600 underline">Google Ads Settings</a>. Alternatively, you can opt out of third-party vendor cookies for personalized advertising by visiting <a href="https://www.aboutads.info" target="_blank" rel="noreferrer" className="text-blue-600 underline">www.aboutads.info</a>.
-              </p>
+              <div>
+                <h2 className="font-heading text-lg sm:text-xl font-bold mb-2 text-[#0f172a]">5. Your Data Rights</h2>
+                <p>
+                  You have the right to inspect, correct, export, or permanently delete your organization and attendee data. Upon account cancellation, your data is retained for 30 days for data retrieval and then permanently purged.
+                </p>
+              </div>
 
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">7. Acceptable Use and Security Sentinel</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                EventoraX employs 24/7 automated security and compliance monitoring to safeguard our ecosystem against fraudulent credentials, phishing, illegal gambling, counterfeit certificates, and unauthorized access attempts. Prohibited activity is automatically terminated and flagged to compliance officers.
-              </p>
+              <div>
+                <h2 className="font-heading text-lg sm:text-xl font-bold mb-2 text-[#0f172a]">6. Cookies and Google AdSense Disclosures</h2>
+                <p className="mb-3">
+                  We use cookies and similar technologies to enhance session management, remember user preferences, and analyze platform traffic.
+                </p>
+                <p>
+                  <strong>Third-Party Vendors &amp; Google AdSense:</strong> Third-party vendors, including Google, use cookies to serve ads based on user visits. Google's use of advertising cookies enables it and its partners to serve ads based on visits to our site and/or other sites on the Internet. Users may opt out of personalized advertising by visiting{' '}
+                  <a href="https://adssettings.google.com" target="_blank" rel="noreferrer" className="text-blue-600 underline font-medium">Google Ads Settings</a>.
+                </p>
+              </div>
 
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">8. Changes to This Policy</h2>
-              <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                We may update this Privacy Policy periodically. We will post all revisions directly on this page with an updated timestamp.
-              </p>
+              <div>
+                <h2 className="font-heading text-lg sm:text-xl font-bold mb-2 text-[#0f172a]">7. Automated Compliance &amp; Security Sentinel</h2>
+                <p>
+                  EventoraX operates 24/7 automated security and compliance monitoring to safeguard our ecosystem against fraudulent credentials, phishing, illegal gambling, counterfeit certificates, and unauthorized access attempts.
+                </p>
+              </div>
 
-              <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">9. Official Contact Details</h2>
-              <p className="font-body text-base text-[#475569] leading-relaxed">
-                For privacy inquiries or compliance requests, reach our Data Protection Officer at:{' '}
-                <a href="mailto:eventorax@orbit-i.tech" className="text-[#7c3aed] hover:underline font-semibold">eventorax@orbit-i.tech</a>
-                {' '}or via WhatsApp at{' '}
-                <a href="https://wa.me/923190375751" target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline font-semibold">+92 3190375751</a>.
-                Operated by ORBIT-I Private Limited, Nawabshah, Sindh, Pakistan.
-              </p>
+              <div className="pt-4 border-t border-slate-100">
+                <h2 className="font-heading text-lg sm:text-xl font-bold mb-3 text-[#0f172a]">8. Data Protection Officer Contact</h2>
+                <p className="mb-4">
+                  For privacy inquiries, GDPR requests, or data deletion requests, reach our Data Protection Officer at:
+                </p>
+                <div className="flex flex-wrap gap-4 text-sm font-semibold">
+                  <a href="mailto:eventorax@orbit-i.tech" className="inline-flex items-center gap-1.5 text-blue-600 hover:underline">
+                    <Mail className="w-4 h-4" />
+                    <span>eventorax@orbit-i.tech</span>
+                  </a>
+                  <a href="tel:+923190375751" className="inline-flex items-center gap-1.5 text-emerald-600 hover:underline">
+                    <Phone className="w-4 h-4" />
+                    <span>+92 3190375751</span>
+                  </a>
+                  <a href="https://wa.me/923190375751" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-emerald-600 hover:underline">
+                    <MessageCircle className="w-4 h-4" />
+                    <span>WhatsApp Privacy Desk</span>
+                  </a>
+                </div>
+              </div>
             </div>
           </div>
 
           <div className="mt-8 text-center">
-            <Link to="/" className="font-body text-sm font-medium text-[#7c3aed] hover:text-[#6d28d9] hover:underline transition-colors duration-200">
-              Back to Home
+            <Link to="/" className="font-body text-sm font-semibold text-blue-600 hover:underline">
+              &larr; Back to Home
             </Link>
           </div>
         </div>

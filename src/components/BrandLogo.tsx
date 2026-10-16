@@ -35,6 +35,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     <img 
       src="/images/eventorax-app-icon.png" 
       alt="EventoraX Official Icon" 
+      loading="eager"
+      decoding="async"
       className={cn(
         "object-cover shrink-0 shadow-md shadow-blue-600/20 transition-transform duration-200 group-hover:scale-105",
         sizeClasses[size]

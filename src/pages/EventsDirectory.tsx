@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { 
   Calendar, 
   MapPin, 
@@ -52,10 +52,14 @@ interface TicketTier {
 }
 
 export default function EventsDirectory() {
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const initialQuery = searchParams.get('search') || '';
+
   const [events, setEvents] = useState<DirectoryEvent[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedCity, setSelectedCity] = useState<string>('All');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  const [searchQuery, setSearchQuery] = useState<string>(initialQuery);
 
   // Booking Modal State
   const [bookingEvent, setBookingEvent] = useState<DirectoryEvent | null>(null);

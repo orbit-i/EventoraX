@@ -43,17 +43,46 @@
     --color-sea-glass: #2A8B6F;
   }
 
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  html {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+  }
+
   body {
     font-family: 'Inter', sans-serif;
     background-color: var(--color-ice);
     color: var(--color-slate);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    width: 100%;
+    max-width: 100vw;
     overflow-x: hidden;
+    position: relative;
+    margin: 0;
+    padding: 0;
+  }
+
+  #root {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    position: relative;
   }
 
   h1, h2, h3, h4, h5, h6 {
     font-family: 'Playfair Display', serif;
+  }
+
+  img, video, canvas, svg {
+    max-width: 100%;
+    height: auto;
   }
 }
 
@@ -97,11 +126,11 @@
   }
 
   .section-padding {
-    @apply py-20 md:py-32 lg:py-40;
+    @apply py-16 md:py-24 lg:py-28;
   }
 
   .content-max {
-    @apply max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12;
+    @apply max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 w-full;
   }
 
   .scroll-reveal {
@@ -134,6 +163,25 @@
   .bg-slate { background-color: var(--color-slate); }
   .border-lavender { border-color: var(--color-lavender-border); }
   .border-purple { border-color: var(--color-purple); }
+
+  /* Mobile scroll & overflow fix */
+  .no-horizontal-overflow {
+    overflow-x: hidden !important;
+    max-width: 100vw !important;
+  }
+
+  /* Accessible hide */
+  .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+  }
 }
 
 /* Ticker Grid Marquee */
@@ -190,12 +238,14 @@
 }
 
 /* ==========================================================================
-   Precision Print Isolation: ID Cards, Badges & Certificates ONLY
-   Eliminates all web UI chrome, headers, footers, modals, and sidebars
+   Complete Print Stylesheet:
+   1. Universal clean printing for documents, legal pages, and invoices
+   2. Precision Print Isolation: ID Cards, Badges & Certificates ONLY
+   3. Strips all web navigation chrome, floating widgets, and footers
    ========================================================================== */
 @media print {
   @page {
-    margin: 8mm;
+    margin: 10mm;
     size: auto;
   }
 
@@ -208,22 +258,46 @@
     width: 100% !important;
     height: auto !important;
     overflow: visible !important;
+    font-size: 11pt !important;
+    line-height: 1.4 !important;
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
   }
 
-  /* Hide entire page chrome by default when printing */
+  /* Hide interactive web chrome by default when printing */
   nav,
   aside,
   header,
   footer,
   button,
   .no-print,
-  [data-no-print="true"] {
+  [data-no-print="true"],
+  [role="progressbar"],
+  .fixed,
+  .shadow-xl,
+  .shadow-2xl {
     display: none !important;
   }
 
-  /* When printing an isolated target */
+  a {
+    text-decoration: underline !important;
+    color: #000000 !important;
+  }
+
+  /* In print, expand containers cleanly */
+  .content-max,
+  main,
+  #root,
+  .max-w-4xl,
+  .max-w-5xl,
+  .max-w-6xl {
+    max-width: 100% !important;
+    width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* When printing an isolated target (Certificates, ID Badges) */
   body:has(.printable-isolated-target) * {
     visibility: hidden !important;
   }
@@ -248,7 +322,6 @@
   }
 
   /* Remove modal backdrop and scroll restrictions */
-  .fixed,
   .overflow-hidden,
   .overflow-y-auto {
     position: static !important;

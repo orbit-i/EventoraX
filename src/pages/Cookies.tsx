@@ -1,31 +1,31 @@
 import { Link } from 'react-router-dom';
-import { Cookie, ShieldCheck } from 'lucide-react';
+import { Cookie, ShieldCheck, Calendar, Mail, Phone, MessageCircle } from 'lucide-react';
 
 export default function Cookies() {
+  const currentYear = new Date().getFullYear();
+
   return (
-    <main className="pt-14">
-      <section className="bg-[#f3f0ff] py-20 md:py-28">
-        <div className="content-max max-w-4xl mx-auto">
-          <div className="flex items-center gap-2 mb-4">
-            <span className="font-body text-xs uppercase tracking-[0.1em] px-2.5 py-1 rounded-full bg-[#7c3aed]/10 text-[#7c3aed] font-bold">
-              Compliance & Privacy
-            </span>
+    <main className="font-body">
+      <section className="bg-gradient-to-b from-blue-50/60 to-white py-14 md:py-20">
+        <div className="content-max max-w-4xl mx-auto px-4">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-bold border border-blue-200 mb-3">
+            <Cookie className="w-3.5 h-3.5 text-blue-600" />
+            Compliance &amp; Cookies
           </div>
-          <h1 className="font-heading text-4xl md:text-5xl font-black tracking-[-0.02em] mb-4 text-[#0f172a]">
-            Cookie Policy
+          <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl font-black tracking-tight mb-4 text-[#0f172a]">
+            Cookie &amp; Local Storage Policy
           </h1>
-          <p className="text-sm text-[#64748b] mb-8">
-            Transparent disclosure of how EventoraX uses cookies and browser storage to deliver multi-tenant event management services.
-          </p>
+          
+          {/* Last updated badge */}
+          <div className="flex items-center gap-2 text-xs text-slate-500 mb-8">
+            <Calendar className="w-4 h-4 text-blue-600" />
+            <span>Last updated &amp; effective: <strong>October 2026</strong> • Governed by ORBIT-I Private Limited</span>
+          </div>
 
-          <div className="bg-white rounded-3xl p-8 md:p-12 border border-[#e9e4ff] shadow-xl shadow-[#7c3aed]/5 space-y-8">
-            <div className="text-xs text-[#94a3b8] font-medium border-b border-[#f1f5f9] pb-4">
-              Effective Date: January 1, 2026 • Governed by ORBIT-I Private Limited
-            </div>
-
+          <div className="bg-white rounded-3xl p-6 sm:p-10 border border-slate-200 shadow-xl shadow-slate-900/5 space-y-8">
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-[#0f172a] flex items-center gap-2">
-                <Cookie className="w-5 h-5 text-[#7c3aed]" />
+                <Cookie className="w-5 h-5 text-blue-600" />
                 1. What Are Cookies and Local Storage?
               </h2>
               <p className="text-sm text-[#475569] leading-relaxed">
@@ -36,31 +36,31 @@ export default function Cookies() {
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-[#0f172a]">2. Categories of Cookies We Use</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
-                <div className="p-4 rounded-2xl bg-[#faf8ff] border border-[#e9e4ff] space-y-1.5">
-                  <span className="text-xs font-bold text-[#7c3aed] uppercase tracking-wider">Strictly Essential</span>
-                  <h3 className="text-sm font-bold text-[#0f172a]">Authentication & Tenant Session</h3>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Strictly Essential</span>
+                  <h3 className="text-sm font-bold text-[#0f172a]">Authentication &amp; Tenant Session</h3>
                   <p className="text-xs text-[#64748b]">
                     JWT tokens and isolated tenant identifiers required to authorize dashboard access and prevent cross-tenant privilege leaks.
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#faf8ff] border border-[#e9e4ff] space-y-1.5">
-                  <span className="text-xs font-bold text-blue-600 uppercase tracking-wider">Functional</span>
-                  <h3 className="text-sm font-bold text-[#0f172a]">User Preferences & UI State</h3>
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
+                  <span className="text-xs font-bold text-indigo-600 uppercase tracking-wider">Functional</span>
+                  <h3 className="text-sm font-bold text-[#0f172a]">User Preferences &amp; UI State</h3>
                   <p className="text-xs text-[#64748b]">
                     Remembers sidebar collapsed state, active canvas zoom in Design Studio, and active event filters.
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#faf8ff] border border-[#e9e4ff] space-y-1.5">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
                   <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider">Security</span>
-                  <h3 className="text-sm font-bold text-[#0f172a]">CSRF & Rate Limiting Protection</h3>
+                  <h3 className="text-sm font-bold text-[#0f172a]">CSRF &amp; Rate Limiting Protection</h3>
                   <p className="text-xs text-[#64748b]">
                     Tokens that detect bot bursts, DDoS spikes, and replay attacks across public event registration endpoints.
                   </p>
                 </div>
 
-                <div className="p-4 rounded-2xl bg-[#faf8ff] border border-[#e9e4ff] space-y-1.5">
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-1.5">
                   <span className="text-xs font-bold text-amber-600 uppercase tracking-wider">Verification</span>
                   <h3 className="text-sm font-bold text-[#0f172a]">Cryptographic Cache</h3>
                   <p className="text-xs text-[#64748b]">
@@ -71,9 +71,9 @@ export default function Cookies() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-lg font-bold text-[#0f172a]">3. Third-Party Trackers & Advertising</h2>
+              <h2 className="text-lg font-bold text-[#0f172a]">3. Third-Party Trackers &amp; Advertising</h2>
               <p className="text-sm text-[#475569] leading-relaxed">
-                EventoraX does NOT sell your data, nor do we run third-party cross-site advertising trackers (e.g. ad networks or brokers). All telemetry is strictly operational, anonymous, and maintained solely to uphold system reliability and 99.9% uptime.
+                EventoraX does NOT sell your data, nor do we run predatory cross-site tracking scripts. Telemetry is strictly operational, anonymous, and maintained solely to uphold system reliability and 99.9% uptime.
               </p>
             </section>
 
@@ -85,28 +85,41 @@ export default function Cookies() {
             </section>
 
             <section className="space-y-3">
-              <h2 className="text-lg font-bold text-[#0f172a]">5. Questions & Data Protection Officer</h2>
+              <h2 className="text-lg font-bold text-[#0f172a]">5. Questions &amp; Data Protection Desk</h2>
               <p className="text-sm text-[#475569] leading-relaxed">
-                If you have inquiries regarding our cookie architecture or data processing practices, please contact our compliance desk at{' '}
-                <a href="mailto:eventorax@orbit-i.tech" className="text-[#7c3aed] font-semibold underline">
-                  eventorax@orbit-i.tech
-                </a>{' '}
-                or reach our WhatsApp helpline at{' '}
-                <a href="https://wa.me/923190375751" target="_blank" rel="noreferrer" className="text-emerald-600 font-semibold underline">
-                  +92 3190375751
-                </a>.
+                If you have inquiries regarding our cookie architecture or data processing practices, please contact our compliance desk:
               </p>
+              <div className="flex flex-wrap gap-4 text-sm font-semibold pt-2">
+                <a href="mailto:eventorax@orbit-i.tech" className="inline-flex items-center gap-1.5 text-blue-600 hover:underline">
+                  <Mail className="w-4 h-4" />
+                  <span>eventorax@orbit-i.tech</span>
+                </a>
+                <a href="tel:+923190375751" className="inline-flex items-center gap-1.5 text-emerald-600 hover:underline">
+                  <Phone className="w-4 h-4" />
+                  <span>+92 3190375751</span>
+                </a>
+                <a href="https://wa.me/923190375751" target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-emerald-600 hover:underline">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>WhatsApp Support</span>
+                </a>
+              </div>
             </section>
 
-            <div className="pt-6 border-t border-[#f1f5f9] flex items-center justify-between">
-              <span className="text-xs text-[#94a3b8]">
-                &copy; 2026 EventoraX • Powered by ORBIT-I Private Limited
+            <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
+              <span className="text-xs text-slate-500">
+                &copy; {currentYear} EventoraX • Powered by ORBIT-I Private Limited
               </span>
-              <Link to="/privacy" className="text-xs text-[#7c3aed] font-bold hover:underline flex items-center gap-1">
+              <Link to="/privacy" className="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5" />
                 Read Full Privacy Policy
               </Link>
             </div>
+          </div>
+
+          <div className="mt-8 text-center">
+            <Link to="/" className="font-body text-sm font-semibold text-blue-600 hover:underline">
+              &larr; Back to Home
+            </Link>
           </div>
         </div>
       </section>

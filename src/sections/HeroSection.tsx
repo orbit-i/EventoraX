@@ -5,8 +5,7 @@ import OceanCanvas from '../components/OceanCanvas';
 export default function HeroSection() {
   return (
     <section
-      className="relative w-full overflow-hidden"
-      style={{ height: '100vh' }}
+      className="relative w-full overflow-hidden min-h-[calc(100vh-70px)] py-12 sm:py-16 flex items-center justify-center"
     >
       {/* Ocean Canvas Background */}
       <OceanCanvas />
@@ -23,7 +22,7 @@ export default function HeroSection() {
 
       {/* Hero Content */}
       <div
-        className="absolute inset-0 flex flex-col items-center justify-center text-center px-4"
+        className="relative flex flex-col items-center justify-center text-center px-4 w-full my-auto"
         style={{ zIndex: 2 }}
       >
         {/* Badge */}
@@ -33,9 +32,12 @@ export default function HeroSection() {
           <img
             src="/images/logo-orbit.png"
             alt="ORBIT-I"
-            className="h-4 w-auto"
+            className="h-4 w-auto object-contain"
+            width="60"
+            height="16"
+            loading="eager"
           />
-          Proudly made by ORBIT-I
+          <span>Proudly made by ORBIT-I</span>
         </div>
 
         {/* Headline */}

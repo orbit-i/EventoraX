@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
-import { Check, X, Sparkles, CreditCard } from 'lucide-react';
+import { Check, X, Sparkles, CreditCard, ChevronDown } from 'lucide-react';
 import SubscriptionCheckoutModal, { type PlanData } from '@/components/SubscriptionCheckoutModal';
 import { api } from '@/services/api';
 
@@ -72,6 +72,7 @@ export default function Pricing() {
   const [isAnnual, setIsAnnual] = useState(false);
   const [selectedPlanModal, setSelectedPlanModal] = useState<PlanData | null>(null);
   const [plans, setPlans] = useState<PlanData[]>(plansData);
+  const [openFaqIndex, setOpenFaqIndex] = useState<number | null>(null);
 
   useEffect(() => {
     api.billing.getPlans().then((res) => {
@@ -142,7 +143,7 @@ export default function Pricing() {
   }, []);
 
   return (
-    <main className="pt-14 bg-[#f8fafc]">
+    <main className="bg-[#f8fafc] font-body">
       {/* Hero */}
       <section className="bg-gradient-to-b from-[#eff6ff] to-[#f8fafc] py-16 md:py-24 text-center px-4">
         <div className="max-w-4xl mx-auto">
@@ -346,13 +347,46 @@ export default function Pricing() {
             <p className="text-sm text-slate-600 mt-2">Everything you need to know about EventoraX Event Platform</p>
           </div>
 
-          <div className="space-y-4">
-            {faqs.map((faq, i) => (
-              <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-xs">
-                <h4 className="text-base font-bold text-slate-900 mb-2">{faq.q}</h4>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">{faq.a}</p>
-              </div>
-            ))}
+          <div className="space-y-3">
+            {faqs.map((faq, i) => {
+              const isOpen = openFaqIndex === i;
+              return (
+                <div 
+                  key={i} 
+                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:border-blue-200 transition-all duration-200 overflow-hidden"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setOpenFaqIndex(isOpen ? null : i)}
+                    className="w-full flex items-center justify-between p-5 sm:p-6 text-left group cursor-pointer"
+                    aria-expanded={isOpen}
+                  >
+                    <span className="font-heading text-base sm:text-lg font-bold pr-4 text-slate-900 group-hover:text-blue-600 transition-colors">
+                      {faq.q}
+                    </span>
+                    <div className="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center shrink-0 group-hover:bg-blue-50 transition-colors">
+                      <ChevronDown
+                        size={18}
+                        className={`text-slate-600 group-hover:text-blue-600 transition-transform duration-300 ${
+                          isOpen ? 'rotate-180 text-blue-600' : ''
+                        }`}
+                      />
+                    </div>
+                  </button>
+                  <div
+                    className="overflow-hidden transition-all duration-300 ease-out"
+                    style={{
+                      maxHeight: isOpen ? 250 : 0,
+                      opacity: isOpen ? 1 : 0,
+                    }}
+                  >
+                    <p className="font-body text-xs sm:text-sm pb-5 sm:pb-6 px-5 sm:px-6 text-slate-600 leading-relaxed border-t border-slate-100 pt-3">
+                      {faq.a}
+                    </p>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
