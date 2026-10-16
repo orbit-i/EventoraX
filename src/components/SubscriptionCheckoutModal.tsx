@@ -1,12 +1,10 @@
 import { useState, useId, useEffect } from 'react';
 import { 
   X, 
-  Check, 
   ShieldCheck, 
   Download, 
   ArrowRight,
   Lock,
-  Clock,
   CheckCircle2,
   Sparkles,
   Tag,
@@ -88,14 +86,6 @@ export default function SubscriptionCheckoutModal({
   const [cardExpiry, setCardExpiry] = useState('');
   const [cardCvv, setCardCvv] = useState('');
   const [cardHolder, setCardHolder] = useState('');
-  
-  // JazzCash & Easypaisa Mode: 'push' (real-time mobile prompt) vs 'transfer' (send to merchant 03190375751)
-  const [walletFlow, setWalletFlow] = useState<'push' | 'transfer'>('push');
-
-  // Real-Time Authorization Simulation State
-  const [authCode, setAuthCode] = useState('');
-  const [authStage, setAuthStage] = useState<'prompt' | 'authorizing' | 'success'>('prompt');
-  const [activeRefCode, setActiveRefCode] = useState('');
 
   // Dynamic Coupon State
   const [couponInput, setCouponInput] = useState('');

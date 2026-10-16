@@ -3,29 +3,20 @@ import { Link } from 'react-router-dom';
 import { 
   Calendar, 
   MapPin, 
-  Tag, 
   Ticket, 
   Search, 
   Sparkles, 
-  Clock, 
   Building, 
-  User, 
   CheckCircle2, 
-  CreditCard,
-  Check,
   ChevronRight,
-  ShieldCheck,
-  Download,
-  AlertCircle
+  ShieldCheck
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
   EasypaisaBadge, 
   JazzCashBadge, 
   RaastBadge, 
-  BankTransferBadge,
-  CardNetworksBadge,
-  SafepayBadge
+  BankTransferBadge
 } from '@/components/payment/PaymentLogos';
 
 export interface DirectoryEvent {
@@ -60,110 +51,11 @@ interface TicketTier {
   sold: number;
 }
 
-const fallbackEvents: DirectoryEvent[] = [
-  {
-    id: 1,
-    title: 'Pakistan NextGen Tech & AI Summit 2026',
-    organizer_name: 'CodePakistan & NextWave Labs',
-    category: 'Technology',
-    event_type: 'Summit & Expo',
-    start_date: '2026-11-20T09:30:00.000Z',
-    end_date: '2026-11-21T18:00:00.000Z',
-    location: 'Pak-China Friendship Centre, Islamabad',
-    city: 'Islamabad',
-    banner_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
-    description: 'The premier national summit for artificial intelligence developers, enterprise cloud engineers, and startup founders. Featuring 40+ keynotes, live tech labs, and hiring pavilions.',
-    agenda: [
-      { time: '09:30 AM', title: 'Opening Keynote: AI Sovereignty in Emerging Markets', speaker: 'Dr. Tariq Hassan' },
-      { time: '11:30 AM', title: 'Hands-on Cloud Infrastructure & Security Workshop', speaker: 'Hassan Ansar' },
-      { time: '02:00 PM', title: 'Venture Capital & Seed Funding Panel', speaker: 'Tech Leaders' }
-    ],
-    speakers: [
-      { name: 'Dr. Tariq Hassan', role: 'Head of Applied AI, TechPakistan', image: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=200&auto=format&fit=crop&q=80' },
-      { name: 'Hassan Ansar', role: 'Web Developer, ORBIT-I', image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&auto=format&fit=crop&q=80' },
-      { name: 'Sara Kamran', role: 'Partner, Indus Valley Seed Ventures', image: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=200&auto=format&fit=crop&q=80' }
-    ],
-    ticket_tiers: [
-      { id: 'student', name: 'Student Pass', price_pkr: 1500, price_usd: 6, perks: ['Access to Hall B & C', 'Digital EventoraX Verified Certificate', 'Lunch Box included'], available: 200, sold: 140 },
-      { id: 'standard', name: 'Professional Delegate', price_pkr: 4500, price_usd: 16, perks: ['All-Hall Access', 'Tamper-Evident ID Badge', 'Networking Lunch', 'Canva Verified Certificate'], available: 350, sold: 285 },
-      { id: 'vip', name: 'VIP & Executive Pass', price_pkr: 12000, price_usd: 44, perks: ['VIP Lounge Access', 'Private Speaker Dinner', 'Priority Registration Gate', 'Full Conference Kit'], available: 50, sold: 42 }
-    ],
-    contact_email: 'summit2026@codepakistan.org',
-    contact_phone: '+92 300 9876543',
-    is_featured: 1,
-    views_count: 3410
-  },
-  {
-    id: 2,
-    title: 'National Medical Oncology & Genomics Seminar 2026',
-    organizer_name: 'Pakistan Society of Clinical Oncology (PSCO)',
-    category: 'Medical & Healthcare',
-    event_type: 'Accredited Seminar',
-    start_date: '2026-11-28T09:00:00.000Z',
-    end_date: '2026-11-28T17:30:00.000Z',
-    location: 'Marriott Hotel Grand Ballroom, Karachi',
-    city: 'Karachi',
-    banner_url: 'https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?w=1200&auto=format&fit=crop&q=80',
-    description: 'Continuing Medical Education (CME) accredited scientific seminar focusing on precision genomics, targeted therapy trials, and ethical clinical standards.',
-    ticket_tiers: [
-      { id: 'resident', name: 'Post-Graduate Trainee / Resident', price_pkr: 2500, price_usd: 9, perks: ['6 CME Credit Hours', 'EventoraX Digital Credential', 'Scientific Abstract Book'], available: 150, sold: 110 },
-      { id: 'consultant', name: 'Consultant Oncologist', price_pkr: 8000, price_usd: 29, perks: ['10 CME Credit Hours', 'Executive Banquet', 'Tamper-Evident Framed Certificate'], available: 100, sold: 88 }
-    ],
-    contact_email: 'oncology2026@psco.org.pk',
-    contact_phone: '+92 321 4567890',
-    is_featured: 1,
-    views_count: 1980
-  },
-  {
-    id: 3,
-    title: 'FinTech Growth, Payment Rails & Raast Workshop 2026',
-    organizer_name: 'Digital Financial Services Forum',
-    category: 'FinTech & Banking',
-    event_type: 'Hands-on Workshop',
-    start_date: '2026-12-05T10:00:00.000Z',
-    end_date: '2026-12-05T16:00:00.000Z',
-    location: 'Lahore Chamber of Commerce & Industry (LCCI)',
-    city: 'Lahore',
-    banner_url: 'https://images.unsplash.com/photo-1559526324-4b87b5e36e44?w=1200&auto=format&fit=crop&q=80',
-    description: 'An executive masterclass on integrating SBP Raast P2M, Easypaisa Open Merchant APIs, JazzCash Tills, and international merchant payment orchestration.',
-    ticket_tiers: [
-      { id: 'standard', name: 'General Participant', price_pkr: 3500, price_usd: 13, perks: ['Workshop Materials & API Code Starter', 'Digital Certificate of Completion', 'High-Tea'], available: 80, sold: 65 },
-      { id: 'corporate', name: 'Corporate Pass (Team of 3)', price_pkr: 9500, price_usd: 35, perks: ['3 Delegate Seats', 'Technical Consultation Slot', '3 Verified Certificates'], available: 20, sold: 18 }
-    ],
-    contact_email: 'workshops@dfsforum.pk',
-    contact_phone: '+92 333 7654321',
-    is_featured: 1,
-    views_count: 1420
-  },
-  {
-    id: 4,
-    title: 'CyberSecurity & Red Team Defense Con 2026',
-    organizer_name: 'Pakistan Cyber Alliance',
-    category: 'CyberSecurity',
-    event_type: 'Conference & CTF',
-    start_date: '2026-12-12T09:00:00.000Z',
-    end_date: '2026-12-13T18:00:00.000Z',
-    location: 'NUST H-12 Auditorium, Islamabad',
-    city: 'Islamabad',
-    banner_url: 'https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?w=1200&auto=format&fit=crop&q=80',
-    description: 'National gathering of ethical hackers, security researchers, and SOC analysts. 24-hour CTF competition and technical deep dives into zero-day threat prevention.',
-    ticket_tiers: [
-      { id: 'ctf_player', name: 'CTF Competitor Pass', price_pkr: 2000, price_usd: 8, perks: ['CTF Portal Access', 'Hacker Swag Bag', 'Verified Skill Certificate'], available: 300, sold: 240 },
-      { id: 'observer', name: 'Observer / General Attendee', price_pkr: 3000, price_usd: 11, perks: ['Full Conference Access', 'Lunch & Refreshments', 'Attendance Certificate'], available: 200, sold: 160 }
-    ],
-    contact_email: 'defensecon@cyberalliance.pk',
-    contact_phone: '+92 312 9988776',
-    is_featured: 1,
-    views_count: 2850
-  }
-];
-
 export default function EventsDirectory() {
-  const [events, setEvents] = useState<DirectoryEvent[]>(fallbackEvents);
+  const [events, setEvents] = useState<DirectoryEvent[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [selectedCity, setSelectedCity] = useState<string>('All');
   const [searchQuery, setSearchQuery] = useState<string>('');
-  const [activeEvent, setActiveEvent] = useState<DirectoryEvent | null>(null);
 
   // Booking Modal State
   const [bookingEvent, setBookingEvent] = useState<DirectoryEvent | null>(null);
@@ -195,12 +87,12 @@ export default function EventsDirectory() {
       const res = await fetch('/api/directory-events');
       if (res.ok) {
         const data = await res.json();
-        if (data.events && data.events.length > 0) {
-          setEvents(data.events);
-        }
+        setEvents(data.events || []);
+      } else {
+        setEvents([]);
       }
     } catch {
-      // Use fallback
+      setEvents([]);
     }
   };
 
@@ -398,7 +290,35 @@ export default function EventsDirectory() {
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {filteredEvents.length === 0 ? (
+          <div className="bg-white rounded-3xl p-10 md:p-14 text-center border border-slate-200/80 shadow-sm max-w-2xl mx-auto my-12">
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-purple-100 to-blue-100 text-purple-700 flex items-center justify-center mx-auto mb-5 shadow-xs">
+              <Calendar className="w-8 h-8 text-[#7c3aed]" />
+            </div>
+            <h3 className="font-heading text-2xl font-bold text-slate-900 mb-2">
+              No Public Events Listed Yet
+            </h3>
+            <p className="font-body text-sm text-slate-600 max-w-md mx-auto leading-relaxed mb-6">
+              All demo and placeholder events have been removed. Are you organizing a summit, conference, or workshop? Publish your event with instant attendee registration, dynamic QR passes, and verified local payment rails.
+            </p>
+            <div className="flex flex-wrap items-center justify-center gap-3">
+              <Link
+                to="/list-event"
+                className="px-6 py-3 rounded-xl bg-[#7c3aed] hover:bg-[#6d28d9] text-white font-bold text-sm shadow-md shadow-[#7c3aed]/25 flex items-center gap-2 transition-all hover:-translate-y-0.5"
+              >
+                <Sparkles className="w-4 h-4 text-amber-300" />
+                List Your Event (+ VIP Showcase)
+              </Link>
+              <Link
+                to="/"
+                className="px-6 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-sm transition-all"
+              >
+                Back to Home
+              </Link>
+            </div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filteredEvents.map((evt) => {
             const tiers = parseTiers(evt.ticket_tiers);
             const minPrice = tiers.length > 0 ? Math.min(...tiers.map(t => t.price_pkr)) : 0;
@@ -488,6 +408,7 @@ export default function EventsDirectory() {
             );
           })}
         </div>
+        )}
       </div>
 
       {/* Booking / Checkout Modal */}

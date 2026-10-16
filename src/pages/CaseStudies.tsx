@@ -3,7 +3,6 @@ import { Link } from 'react-router-dom';
 import { 
   Award, 
   Users, 
-  ShieldCheck, 
   ArrowRight, 
   Sparkles, 
   CheckCircle2, 
@@ -11,10 +10,8 @@ import {
   Calendar,
   Building,
   TrendingUp,
-  ExternalLink,
   ChevronRight
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 
 export interface CaseStudy {
   id: number;
@@ -232,7 +229,10 @@ export default function CaseStudies() {
 
       {/* Case Studies Grid */}
       <div className="content-max px-4 mt-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        {loading ? (
+          <div className="text-center py-16 text-slate-500 font-medium">Loading case studies...</div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {filteredStudies.map((study) => {
             const resultsList = parseResults(study.results);
             return (
@@ -327,6 +327,7 @@ export default function CaseStudies() {
             );
           })}
         </div>
+        )}
       </div>
 
       {/* Case Study Detail Modal */}

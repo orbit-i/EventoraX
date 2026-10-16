@@ -291,9 +291,9 @@ ON DUPLICATE KEY UPDATE `id` = `id`;
 INSERT INTO `website_cms` (`page_key`, `title`, `data`)
 VALUES
 ('home', 'Home Page CMS', '{"heroTitle":"Automated Event Operations & Cryptographic Credential Cloud","heroSubtitle":"The enterprise multi-tenant platform for seminars, summits, and conferences. Live attendee ID badge passes, tamper-evident certificate issuance, and real-time RFID/QR check-in.","announcement":"Official Release v1.0.0 is live! Verified by ORBIT-I Private Limited.","ctaPrimaryText":"Get Started Free","ctaPrimaryLink":"/register","ctaSecondaryText":"Verify Credential","ctaSecondaryLink":"/verify"}'),
-('about', 'About Us CMS', '{"headline":"Pioneering Intelligent Event Management & Digital Verification","mission":"To empower educational institutes, tech communities, and corporate enterprises with automated, secure, and seamless event ticketing and certification infrastructure.","parentCompany":"ORBIT-I Private Limited","foundedYear":"2023","headquarters":"Islamabad, Pakistan"}'),
-('contact', 'Contact & Helpdesk CMS', '{"email":"eventorax@orbit-i.tech","phone":"+92 3190375751","address":"ORBIT-I Private Limited, Sector F-7, Islamabad, Pakistan","supportHours":"24/7 Dedicated Support"}'),
-('legal', 'Legal & Compliance CMS', '{"companyName":"ORBIT-I Private Limited","platformName":"EventoraX","jurisdiction":"Islamabad, Pakistan","dpoContact":"privacy@orbit-i.tech"}')
+('about', 'About Us CMS', '{"headline":"Pioneering Intelligent Event Management & Digital Verification","mission":"To empower educational institutes, tech communities, and corporate enterprises with automated, secure, and seamless event ticketing and certification infrastructure.","parentCompany":"ORBIT-I Private Limited","foundedYear":"2023","headquarters":"Nawabshah, Pakistan"}'),
+('contact', 'Contact & Helpdesk CMS', '{"email":"eventorax@orbit-i.tech","phone":"+92 3190375751","address":"ORBIT-I Private Limited, Nawabshah, Sindh, Pakistan","supportHours":"24/7 Dedicated Support"}'),
+('legal', 'Legal & Compliance CMS', '{"companyName":"ORBIT-I Private Limited","platformName":"EventoraX","jurisdiction":"Nawabshah, Sindh, Pakistan","dpoContact":"privacy@orbit-i.tech"}')
 ON DUPLICATE KEY UPDATE `title` = VALUES(`title`);
 
 -- -----------------------------------------------------

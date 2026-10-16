@@ -55,7 +55,7 @@ export default function Terms() {
 
               <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">9. Governing Law</h2>
               <p className="font-body text-base mb-6 text-[#475569] leading-relaxed">
-                These Terms shall be governed by and construed in accordance with the laws of Pakistan. Any disputes shall be resolved in the courts of Islamabad.
+                These Terms shall be governed by and construed in accordance with the laws of Pakistan. Any disputes shall be resolved in the courts of Nawabshah, Sindh.
               </p>
 
               <h2 className="font-heading text-xl font-bold mb-3 text-[#0f172a]">10. Official Contact</h2>

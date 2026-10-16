@@ -247,7 +247,7 @@ export default function PlatformAdmin() {
     safepay: { enabled: true, title: 'Safepay Pakistan (Debit / Credit Cards & PayPak)', public_key: 'sec_sandbox_eventorax_2026', secret_key: '', environment: 'sandbox', instructions: 'Accept Visa, Mastercard and PayPak.' },
     stripe: { enabled: true, title: 'Stripe International (Global USD Cards)', publishable_key: 'pk_test_eventorax_global_2026', secret_key: '', instructions: 'Accept all international cards and Apple Pay.' }
   });
-  const [gatewaysLoading, setGatewaysLoading] = useState(false);
+  const [, setGatewaysLoading] = useState(false);
   const [gatewaysSaving, setGatewaysSaving] = useState(false);
   const [gatewaysMsg, setGatewaysMsg] = useState<string | null>(null);
 
@@ -282,9 +282,8 @@ export default function PlatformAdmin() {
 
   // ==========================================
   // CASE STUDIES & PAST EVENTS STATE
-  // ==========================================
   const [caseStudiesList, setCaseStudiesList] = useState<any[]>([]);
-  const [caseStudiesLoading, setCaseStudiesLoading] = useState(false);
+  const [, setCaseStudiesLoading] = useState(false);
   const [caseStudyModal, setCaseStudyModal] = useState<{ open: boolean; isNew: boolean; study: any }>({
     open: false,
     isNew: true,
@@ -362,9 +361,8 @@ export default function PlatformAdmin() {
 
   // ==========================================
   // 3RD-PARTY EVENTS DIRECTORY & BOOKINGS STATE
-  // ==========================================
   const [directoryEventsList, setDirectoryEventsList] = useState<any[]>([]);
-  const [directoryLoading, setDirectoryLoading] = useState(false);
+  const [, setDirectoryLoading] = useState(false);
   const [directoryBookingsList, setDirectoryBookingsList] = useState<any[]>([]);
   const [directorySubTab, setDirectorySubTab] = useState<'events' | 'bookings'>('events');
   const [directoryModal, setDirectoryModal] = useState<{ open: boolean; isNew: boolean; event: any }>({
@@ -375,11 +373,11 @@ export default function PlatformAdmin() {
       organizer_name: '',
       category: 'Technology',
       event_type: 'Conference',
-      start_date: '2026-11-20T09:00',
-      end_date: '2026-11-21T18:00',
-      location: 'Pak-China Friendship Centre, Islamabad',
-      city: 'Islamabad',
-      banner_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
+      start_date: '',
+      end_date: '',
+      location: '',
+      city: 'Nawabshah',
+      banner_url: '',
       description: '',
       ticket_tiers: [
         { id: 'standard', name: 'General Delegate', price_pkr: 3500, price_usd: 12, perks: ['Full Hall Access', 'Digital Certificate'], available: 200, sold: 0 }
@@ -448,7 +446,6 @@ export default function PlatformAdmin() {
   const [adminCurrentPassword, setAdminCurrentPassword] = useState('');
   const [adminNewPassword, setAdminNewPassword] = useState('');
   const [adminConfirmPassword, setAdminConfirmPassword] = useState('');
-  const [adminMasterKey, setAdminMasterKey] = useState('ORBIT-I-HQ-2026');
   const [profileSaving, setProfileSaving] = useState(false);
   const [profileMsg, setProfileMsg] = useState<string | null>(null);
 
@@ -3113,7 +3110,7 @@ export default function PlatformAdmin() {
                   <div>
                     <label className="text-xs font-bold text-slate-700 block mb-1">Headquarters &amp; Office Address</label>
                     <Input
-                      value={cmsContent.contact_address || "ORBIT-I Private Limited, F-7 Markaz, Islamabad, Pakistan"}
+                      value={cmsContent.contact_address || "ORBIT-I Private Limited, Nawabshah, Sindh, Pakistan"}
                       onChange={(e) => setCmsContent({ ...cmsContent, contact_address: e.target.value })}
                       className="rounded-xl border-slate-200 text-xs h-10 font-medium"
                     />
@@ -3836,11 +3833,11 @@ export default function PlatformAdmin() {
                       organizer_name: '',
                       category: 'Technology',
                       event_type: 'Conference',
-                      start_date: '2026-11-20T09:00',
-                      end_date: '2026-11-21T18:00',
-                      location: 'Pak-China Friendship Centre, Islamabad',
-                      city: 'Islamabad',
-                      banner_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
+                      start_date: '',
+                      end_date: '',
+                      location: '',
+                      city: 'Nawabshah',
+                      banner_url: '',
                       description: '',
                       ticket_tiers: [
                         { id: 'standard', name: 'General Delegate', price_pkr: 3500, price_usd: 12, perks: ['Full Hall Access', 'Digital Certificate'], available: 200, sold: 0 }

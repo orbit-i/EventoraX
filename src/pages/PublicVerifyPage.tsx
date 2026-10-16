@@ -13,9 +13,7 @@ import {
   Copy, 
   Check, 
   ArrowLeft,
-  Sparkles,
-  CreditCard,
-  FileText
+  Sparkles
 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
 import { printElement } from '@/lib/printUtils';

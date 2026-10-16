@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { MapPin } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
 
 const productLinks = [
@@ -40,7 +41,11 @@ export default function Footer() {
             <p className="mt-3 text-sm text-[#94a3b8] leading-relaxed">
               Automated event management, Canva-style visual credential design, and cryptographic certificate verification. Developed by ORBIT-I.
             </p>
-            <div className="mt-3 space-y-1 text-xs text-[#94a3b8]">
+            <div className="mt-3 space-y-1.5 text-xs text-[#94a3b8]">
+              <p className="flex items-center gap-1.5 text-slate-300">
+                <MapPin className="w-3.5 h-3.5 text-rose-400 shrink-0" />
+                <span>Nawabshah, Pakistan</span>
+              </p>
               <p>
                 Email:{' '}
                 <a href="mailto:eventorax@orbit-i.tech" className="text-blue-400 hover:underline">
@@ -123,7 +128,7 @@ export default function Footer() {
         {/* Bottom bar */}
         <div className="mt-10 pt-6 border-t border-[#1e293b] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-[#64748b]">
-            &copy; 2026 EventoraX • Developed &amp; Maintained by ORBIT-I Private Limited. All rights reserved.
+            &copy; 2026 EventoraX • Developed &amp; Maintained by ORBIT-I Private Limited, Nawabshah, Pakistan. All rights reserved.
           </p>
           <div className="flex items-center gap-4">
           </div>

@@ -6,23 +6,14 @@ import {
   CheckCircle2,
   Calendar,
   Building2,
-  Mail,
   Phone,
-  MapPin,
-  Clock,
   DollarSign,
   CreditCard,
   Send,
   AlertCircle,
   Copy,
   Check,
-  ShieldCheck,
-  Zap,
-  ArrowRight,
-  TrendingUp,
-  Award,
-  Wallet,
-  Users
+  Wallet
 } from 'lucide-react';
 import api from '../services/api';
 

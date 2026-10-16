@@ -175,7 +175,7 @@ export const memoryStore = {
         mission: 'To empower educational institutes, tech communities, and corporate enterprises with automated, secure, and seamless event ticketing and certification infrastructure.',
         parentCompany: 'ORBIT-I Private Limited',
         foundedYear: '2023',
-        headquarters: 'Islamabad, Pakistan'
+        headquarters: 'Nawabshah, Pakistan'
       }),
       updated_at: new Date().toISOString()
     },
@@ -186,7 +186,7 @@ export const memoryStore = {
       data: JSON.stringify({
         email: 'eventorax@orbit-i.tech',
         phone: '+92 3190375751',
-        address: 'ORBIT-I Private Limited, Sector F-7, Islamabad, Pakistan',
+        address: 'ORBIT-I Private Limited, Nawabshah, Sindh, Pakistan',
         supportHours: '24/7 Dedicated Support'
       }),
       updated_at: new Date().toISOString()
@@ -198,7 +198,7 @@ export const memoryStore = {
       data: JSON.stringify({
         companyName: 'ORBIT-I Private Limited',
         platformName: 'EventoraX',
-        jurisdiction: 'Islamabad, Pakistan',
+        jurisdiction: 'Nawabshah, Sindh, Pakistan',
         dpoContact: 'privacy@orbit-i.tech'
       }),
       updated_at: new Date().toISOString()

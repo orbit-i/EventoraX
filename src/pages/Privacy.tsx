@@ -62,7 +62,7 @@ export default function Privacy() {
                 <a href="mailto:eventorax@orbit-i.tech" className="text-[#7c3aed] hover:underline font-semibold">eventorax@orbit-i.tech</a>
                 {' '}or via WhatsApp at{' '}
                 <a href="https://wa.me/923190375751" target="_blank" rel="noreferrer" className="text-emerald-600 hover:underline font-semibold">+92 3190375751</a>.
-                Operated by ORBIT-I Private Limited, Islamabad, Pakistan.
+                Operated by ORBIT-I Private Limited, Nawabshah, Sindh, Pakistan.
               </p>
             </div>
           </div>

@@ -50,7 +50,7 @@ export default function Contact() {
               {[
                 { icon: Mail, label: 'Email', value: 'eventorax@orbit-i.tech' },
                 { icon: Phone, label: 'Phone & WhatsApp', value: '+92 3190375751' },
-                { icon: MapPin, label: 'Headquarters', value: 'ORBIT-I, Islamabad, Pakistan' },
+                { icon: MapPin, label: 'Headquarters', value: 'ORBIT-I, Nawabshah, Sindh, Pakistan' },
                 { icon: Clock, label: 'Support Response', value: 'Within 2-4 hours (Active 24/7)' },
               ].map((item, i) => (
                 <div key={i} className="flex items-start gap-4">

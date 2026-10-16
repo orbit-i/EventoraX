@@ -16,8 +16,7 @@ import {
   ArrowRight,
   CheckCircle2,
   Calendar,
-  Building2,
-  Users
+  Building2
 } from 'lucide-react';
 import api from '../services/api';
 
@@ -194,7 +193,7 @@ export default function About() {
       <section className="relative overflow-hidden bg-gradient-to-b from-[#f5f3ff] via-[#ede9fe]/40 to-white py-20 md:py-32 text-center border-b border-[#e2e8f0]">
         <div className="content-max relative z-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-purple-100 text-purple-700 text-xs font-bold uppercase tracking-wider mb-6 border border-purple-200">
-            <Building2 className="w-4 h-4" /> Built & Engineered by ORBIT-I Private Limited
+            <Building2 className="w-4 h-4" /> Built &amp; Engineered by ORBIT-I • Nawabshah, Pakistan
           </div>
           <h1 className="font-heading text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-[-0.03em] mb-6 text-[#0f172a] max-w-4xl mx-auto leading-tight">
             The Modern Operating System for <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7c3aed] to-[#3b82f6]">Unforgettable Events</span>
