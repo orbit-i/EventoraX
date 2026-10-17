@@ -33,7 +33,7 @@ export default function Login() {
       }, 700);
     } catch (err: any) {
       if (err.message?.includes('SUPERADMIN_PORTAL_REQUIRED') || err.message?.includes('Master Gateway')) {
-        setError('This portal is reserved for Client Organizations. EventoraX Platform SuperAdmin must authenticate exclusively via the private Master Gateway URL.');
+        setError('This portal is reserved for Client Organizations. Eventrye Platform SuperAdmin must authenticate exclusively via the private Master Gateway URL.');
       } else {
         setError(err.message || 'Invalid email or password. Please verify your credentials.');
       }
@@ -47,7 +47,7 @@ export default function Login() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8 flex flex-col items-center">
-          <Link to="/" className="inline-block mb-2" title="Return to EventoraX Homepage">
+          <Link to="/" className="inline-block mb-2" title="Return to Eventrye Homepage">
             <BrandLogo variant="compact" size="lg" showTagline={true} />
           </Link>
           <div className="inline-block px-3 py-1 rounded-full bg-blue-50 text-[#1d4ed8] border border-blue-200 text-xs font-bold mt-1 shadow-xs">

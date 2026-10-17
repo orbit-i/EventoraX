@@ -117,7 +117,7 @@ export default function Sidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[11px] font-bold text-[#0f172a] truncate">
-              {isMaster ? "EventoraX Master HQ" : (currentTenant?.name || "EventoraX Workspace")}
+              {isMaster ? "Eventrye Master HQ" : (currentTenant?.name || "Eventrye Workspace")}
             </p>
           </div>
           <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${isMaster ? 'bg-blue-100 text-blue-700 font-extrabold' : 'bg-[#f5f3ff] text-[#7c3aed]'}`}>
@@ -189,7 +189,7 @@ export default function Sidebar() {
               {user?.fullName || "Event Organizer"}
             </p>
             <p className="text-[10px] text-[#94a3b8] truncate">
-              {user?.role === 'admin' ? 'EventoraX Administrator' : (user?.orgName || 'Organizer')}
+              {user?.role === 'admin' ? 'Eventrye Administrator' : (user?.orgName || 'Organizer')}
             </p>
           </div>
           <button 

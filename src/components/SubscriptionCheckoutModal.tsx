@@ -365,7 +365,7 @@ export default function SubscriptionCheckoutModal({
             </span>
             <span className="text-[11px] text-blue-200 flex items-center gap-1 font-medium">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              EventoraX Real-Time Gateway • SBP 2026 Certified
+              Eventrye Real-Time Gateway • SBP 2026 Certified
             </span>
           </div>
 
@@ -546,7 +546,7 @@ export default function SubscriptionCheckoutModal({
                   <div className="flex gap-2">
                     <input
                       type="text"
-                      placeholder="e.g. ORBIT2026, EVENTORAX50"
+                      placeholder="e.g. ORBIT2026, EVENTRYE50"
                       value={couponInput}
                       onChange={(e) => {
                         setCouponInput(e.target.value.toUpperCase());
@@ -1115,7 +1115,7 @@ export default function SubscriptionCheckoutModal({
                     <div className="bg-white p-3 rounded-xl border border-teal-200 space-y-2 font-mono">
                       <div className="flex justify-between items-center font-sans">
                         <span className="text-slate-500">Account Title:</span>
-                        <span className="font-bold text-slate-900">ORBIT-I / EventoraX</span>
+                        <span className="font-bold text-slate-900">ORBIT-I / Eventrye</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="font-sans text-slate-500">SadaPay Mobile:</span>
@@ -1174,7 +1174,7 @@ export default function SubscriptionCheckoutModal({
                     <div className="bg-white p-3 rounded-xl border border-orange-200 space-y-2 font-mono">
                       <div className="flex justify-between items-center font-sans">
                         <span className="text-slate-500">Account Title:</span>
-                        <span className="font-bold text-slate-900">ORBIT-I / EventoraX</span>
+                        <span className="font-bold text-slate-900">ORBIT-I / Eventrye</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="font-sans text-slate-500">NayaPay ID / Mobile:</span>
@@ -1233,7 +1233,7 @@ export default function SubscriptionCheckoutModal({
                     <div className="bg-white p-3 rounded-xl border border-emerald-200 space-y-2 font-mono">
                       <div className="flex justify-between items-center font-sans">
                         <span className="text-slate-500">Beneficiary Title:</span>
-                        <span className="font-bold text-slate-900">ORBIT-I / EventoraX</span>
+                        <span className="font-bold text-slate-900">ORBIT-I / Eventrye</span>
                       </div>
                       <div className="flex justify-between items-center">
                         <span className="font-sans text-slate-500">Official Raast ID:</span>
@@ -1363,10 +1363,10 @@ export default function SubscriptionCheckoutModal({
                       <div className="flex justify-between items-center font-sans">
                         <span className="text-slate-500 font-medium">Account Title:</span>
                         <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                          <span>EventoraX Technologies (ORBIT-I)</span>
+                          <span>Eventrye Technologies (ORBIT-I)</span>
                           <button
                             type="button"
-                            onClick={() => copyToClipboard('EventoraX Technologies (ORBIT-I)', 'meezan_title')}
+                            onClick={() => copyToClipboard('Eventrye Technologies (ORBIT-I)', 'meezan_title')}
                             className="px-2 py-0.5 rounded bg-slate-100 text-[10px] text-slate-700 font-sans font-bold"
                           >
                             {copiedField === 'meezan_title' ? 'Copied' : 'Copy'}
@@ -1427,7 +1427,7 @@ export default function SubscriptionCheckoutModal({
                   Free Starter Plan • Platform Authority Approval Required
                 </div>
                 <p>
-                  To preserve platform resources, all organizations require <strong>EventoraX SuperAdmin</strong> verification before access is unlocked.
+                  To preserve platform resources, all organizations require <strong>Eventrye SuperAdmin</strong> verification before access is unlocked.
                 </p>
                 <p className="text-[11px] text-amber-700">
                   After completing registration below, your request will be queued for SuperAdmin approval. You will receive an official Activation License Key (`EVX-...`) to unlock your dashboard.
@@ -1486,7 +1486,7 @@ export default function SubscriptionCheckoutModal({
                 Payment Proof Recorded &amp; VIP Invoice Issued
               </h3>
               <p className="text-xs text-slate-600 mt-1.5 max-w-md mx-auto leading-relaxed">
-                Your transaction has been securely authenticated and registered on the EventoraX verification ledger. You can print or download your verified corporate tax invoice below.
+                Your transaction has been securely authenticated and registered on the Eventrye verification ledger. You can print or download your verified corporate tax invoice below.
               </p>
             </div>
 
@@ -1497,13 +1497,13 @@ export default function SubscriptionCheckoutModal({
             >
               {/* Watermark */}
               <div className="absolute right-4 bottom-14 opacity-5 pointer-events-none select-none text-slate-900 font-black text-6xl rotate-[-20deg]">
-                EVENTORAX
+                EVENTRYE
               </div>
 
               {/* Official Header */}
               <div className="flex justify-between items-start pb-3 border-b border-slate-200">
                 <div>
-                  <h4 className="font-extrabold text-sm text-slate-900 tracking-tight">EVENTORAX TECHNOLOGIES (PVT) LTD</h4>
+                  <h4 className="font-extrabold text-sm text-slate-900 tracking-tight">EVENTRYE TECHNOLOGIES (PVT) LTD</h4>
                   <p className="text-[10px] text-slate-500 font-medium">ORBIT-I Cloud Digital Systems • SBP Digital Reg: PK-2026-PSO/PSP</p>
                   <p className="text-[10px] text-slate-400 font-mono">NTN: 9842104-7 • STRN: 3277876123456</p>
                 </div>
@@ -1539,7 +1539,7 @@ export default function SubscriptionCheckoutModal({
               <div className="bg-blue-50/60 p-3.5 rounded-xl border border-blue-200 text-[11px] space-y-1.5">
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                   <span className="text-slate-500">Merchant Recipient:</span>
-                  <span className="font-bold text-slate-900">ORBIT-I / EventoraX Technologies</span>
+                  <span className="font-bold text-slate-900">ORBIT-I / Eventrye Technologies</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                   <span className="text-slate-500">Merchant Account / Till:</span>
@@ -1564,7 +1564,7 @@ export default function SubscriptionCheckoutModal({
                   <tbody className="divide-y divide-slate-100">
                     <tr>
                       <td className="p-2.5">
-                        <strong className="block text-slate-900">EventoraX {successData.plan} Tier</strong>
+                        <strong className="block text-slate-900">Eventrye {successData.plan} Tier</strong>
                         <span className="text-[10px] text-slate-500">Enterprise Cloud Event Management &amp; Pass Infrastructure (2026 Release)</span>
                       </td>
                       <td className="p-2.5 text-center text-slate-700 font-medium">{successData.billingCycle}</td>
@@ -1596,14 +1596,14 @@ export default function SubscriptionCheckoutModal({
               <div className="flex items-center justify-between pt-2 border-t border-slate-200">
                 <div className="flex items-center gap-3">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`https://eventorax.orbit-i.tech/verify/${successData.invoiceNumber}`)}`}
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`https://eventrye.orbit-i.tech/verify/${successData.invoiceNumber}`)}`}
                     alt="Official Invoice QR Verification"
                     className="w-14 h-14 rounded-lg border border-slate-200 p-0.5"
                   />
                   <div>
                     <span className="text-[10px] font-bold text-slate-700 block">Digital QR Verification</span>
                     <p className="text-[9px] text-slate-400 max-w-[170px]">
-                      Scan to authenticate digital invoice on the EventoraX public verification ledger.
+                      Scan to authenticate digital invoice on the Eventrye public verification ledger.
                     </p>
                   </div>
                 </div>
@@ -1627,7 +1627,7 @@ export default function SubscriptionCheckoutModal({
             <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-xs text-blue-900 max-w-lg mx-auto text-left space-y-1.5">
               <strong className="block font-bold">What happens next?</strong>
               <p className="text-[11px] text-blue-800">
-                1. Your payment reference has been authenticated on the official EventoraX ledger and your organization license key (`EVX-ACT-...`) has been queued for immediate activation.
+                1. Your payment reference has been authenticated on the official Eventrye ledger and your organization license key (`EVX-ACT-...`) has been queued for immediate activation.
               </p>
               <p className="text-[11px] text-blue-800">
                 2. Your workspace quotas will be automatically unlocked. You can download and reprint this official tax invoice at any time from your Billing tab.
@@ -1637,7 +1637,7 @@ export default function SubscriptionCheckoutModal({
             {/* Actions Bar */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 max-w-lg mx-auto">
               <Button
-                onClick={() => printElement(`subscription-receipt-${invoiceUniqueId}`, `EventoraX Official Tax Invoice - ${successData.invoiceNumber}`)}
+                onClick={() => printElement(`subscription-receipt-${invoiceUniqueId}`, `Eventrye Official Tax Invoice - ${successData.invoiceNumber}`)}
                 variant="outline"
                 className="rounded-xl flex items-center justify-center gap-2 w-full sm:w-auto text-xs h-11 px-5"
               >

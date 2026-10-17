@@ -288,7 +288,7 @@ export default function Certificates() {
       `*Official Certificate Issuance Notice*\n\n` +
       `We are pleased to announce that official tamper-evident certificates for *${singleEvent}* have been issued.\n\n` +
       `🔗 Verify & Download your authenticated certificate here: ${window.location.origin}/verify\n\n` +
-      `Verified by EventoraX Cryptographic Engine.`
+      `Verified by Eventrye Cryptographic Engine.`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };

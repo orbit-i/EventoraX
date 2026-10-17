@@ -55,7 +55,7 @@ export const defaultMerchantGateways = {
   safepay: {
     enabled: true,
     title: 'Safepay Pakistan (Debit / Credit Cards & PayPak)',
-    public_key: 'sec_sandbox_eventorax_2026',
+    public_key: 'sec_sandbox_eventrye_2026',
     secret_key: '',
     environment: 'sandbox',
     instructions: 'Secure Visa, Mastercard and PayPak processing via Safepay Pakistan.'
@@ -63,7 +63,7 @@ export const defaultMerchantGateways = {
   stripe: {
     enabled: true,
     title: 'Stripe International (Global USD Cards)',
-    publishable_key: 'pk_test_eventorax_global_2026',
+    publishable_key: 'pk_test_eventrye_global_2026',
     secret_key: '',
     instructions: 'Accept all international Visa, Mastercard, AMEX and Apple Pay.'
   }

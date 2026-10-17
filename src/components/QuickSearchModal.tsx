@@ -26,7 +26,7 @@ const quickNavigationItems = [
   { label: 'Platform Features & Tech Specs', href: '/features', category: 'Platform', icon: Award, desc: 'QR ticketing, ID badges & certificate engine' },
   { label: 'Pricing & Subscription Plans', href: '/pricing', category: 'Platform', icon: CreditCard, desc: 'Starter, Professional & Enterprise tiers' },
   { label: 'Case Studies & Institutional Deployments', href: '/case-studies', category: 'About', icon: FileText, desc: 'University and conference success stories' },
-  { label: 'About EventoraX & ORBIT-I', href: '/about', category: 'About', icon: HelpCircle, desc: 'Our mission, team, and company history' },
+  { label: 'About Eventrye & ORBIT-I', href: '/about', category: 'About', icon: HelpCircle, desc: 'Our mission, team, and company history' },
   { label: 'Contact Support & Inquiries', href: '/contact', category: 'Support', icon: Mail, desc: '24/7 technical team & custom quotes' },
   { label: 'Terms of Service', href: '/terms', category: 'Legal', icon: FileText, desc: 'Platform rules and compliance policies' },
   { label: 'Privacy Policy', href: '/privacy', category: 'Legal', icon: FileText, desc: 'Data protection and cookie policies' },
@@ -201,7 +201,7 @@ export default function QuickSearchModal({ isOpen, onClose }: QuickSearchModalPr
             <kbd className="px-1.5 py-0.5 rounded bg-white border border-slate-200 font-mono text-[10px]">Enter</kbd>
             <span>to open</span>
           </span>
-          <span className="text-slate-400">EventoraX Search</span>
+          <span className="text-slate-400">Eventrye Search</span>
         </div>
       </div>
     </div>

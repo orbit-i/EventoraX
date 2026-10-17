@@ -8,68 +8,68 @@ interface RouteMetadata {
 
 const routeMetadataMap: Record<string, RouteMetadata> = {
   '/': {
-    title: 'EventoraX — Enterprise Event Management & Automated Certificate SaaS',
+    title: 'Eventrye — Enterprise Event Management & Automated Certificate SaaS',
     description: 'Create world-class events, manage registrations, issue tamper-evident verified certificates, and track analytics. Multi-tenant event platform by ORBIT-I.'
   },
   '/events-directory': {
-    title: 'Browse Events & Seminars — Upcoming Summits, Expos & Meetups | EventoraX',
+    title: 'Browse Events & Seminars — Upcoming Summits, Expos & Meetups | Eventrye',
     description: 'Discover upcoming tech hackathons, academic conferences, business symposiums and cultural expos. Book dynamic QR tickets with instant local and international payments.'
   },
   '/list-event': {
-    title: 'List Your Event — VIP Showcase & Community Event Hosting | EventoraX',
+    title: 'List Your Event — VIP Showcase & Community Event Hosting | Eventrye',
     description: 'Publish and promote your conference, summit or workshop to thousands of verified attendees. Access real-time QR check-in, automated certificates, and lowest ticket commissions.'
   },
   '/features': {
-    title: 'Platform Features — Dynamic QR Ticketing, ID Badges & Certificates | EventoraX',
-    description: 'Explore the full EventoraX operating system: Canva design studio, SHA-256 certificate verification, multi-gate check-in, real-time analytics, and automated email delivery.'
+    title: 'Platform Features — Dynamic QR Ticketing, ID Badges & Certificates | Eventrye',
+    description: 'Explore the full Eventrye operating system: Canva design studio, SHA-256 certificate verification, multi-gate check-in, real-time analytics, and automated email delivery.'
   },
   '/pricing': {
-    title: 'Simple & Predictable Pricing — Multi-Tenant Workspaces | EventoraX',
+    title: 'Simple & Predictable Pricing — Multi-Tenant Workspaces | Eventrye',
     description: 'Transparent pricing for organizers, universities and enterprise summits. Supported payment options include Raast, JazzCash, Easypaisa, Meezan Bank, and Credit Cards.'
   },
   '/case-studies': {
-    title: 'Case Studies & Institutional Deployments — Success Stories | EventoraX',
-    description: 'See how premier universities, technology conferences, and non-profits streamline large-scale events and credentialing with EventoraX.'
+    title: 'Case Studies & Institutional Deployments — Success Stories | Eventrye',
+    description: 'See how premier universities, technology conferences, and non-profits streamline large-scale events and credentialing with Eventrye.'
   },
   '/about': {
-    title: 'About EventoraX & ORBIT-I — Next-Gen Multi-Tenant Event Infrastructure',
+    title: 'About Eventrye & ORBIT-I — Next-Gen Multi-Tenant Event Infrastructure',
     description: 'Learn about ORBIT-I Private Limited, our engineering team in Nawabshah, and our mission to modernize event management, ticketing, and digital credentialing across Pakistan and beyond.'
   },
   '/contact': {
-    title: 'Contact Us — 24/7 Technical Support & Organizer Partnerships | EventoraX',
-    description: 'Get in touch with the EventoraX engineering and customer success team for enterprise deployments, white-labeling, custom SLAs, or immediate assistance.'
+    title: 'Contact Us — 24/7 Technical Support & Organizer Partnerships | Eventrye',
+    description: 'Get in touch with the Eventrye engineering and customer success team for enterprise deployments, white-labeling, custom SLAs, or immediate assistance.'
   },
   '/verify': {
-    title: 'Public Credential Verification — Cryptographic Certificate Validator | EventoraX',
-    description: 'Verify the authenticity and integrity of certificates and attendee passes issued by EventoraX. Real-time tamper-proof validation powered by SHA-256 cryptographic signatures.'
+    title: 'Public Credential Verification — Cryptographic Certificate Validator | Eventrye',
+    description: 'Verify the authenticity and integrity of certificates and attendee passes issued by Eventrye. Real-time tamper-proof validation powered by SHA-256 cryptographic signatures.'
   },
   '/terms': {
-    title: 'Terms of Service — Legal Policies & 24/7 Security Sentinel | EventoraX',
-    description: 'Terms and conditions governing the use of the EventoraX platform, tenant isolation, acceptable usage, and compliance standards enforced by ORBIT-I.'
+    title: 'Terms of Service — Legal Policies & 24/7 Security Sentinel | Eventrye',
+    description: 'Terms and conditions governing the use of the Eventrye platform, tenant isolation, acceptable usage, and compliance standards enforced by ORBIT-I.'
   },
   '/privacy': {
-    title: 'Privacy Policy & Data Protection — Transparency & AdSense Compliance | EventoraX',
+    title: 'Privacy Policy & Data Protection — Transparency & AdSense Compliance | Eventrye',
     description: 'Comprehensive privacy policy detailing data collection, GDPR & local compliance, encryption standards, cookies, and Google advertising partner disclosures.'
   },
   '/cookies': {
-    title: 'Cookie Policy & Session Management | EventoraX',
-    description: 'Information regarding how EventoraX uses essential, analytical, and marketing cookies to optimize your platform experience.'
+    title: 'Cookie Policy & Session Management | Eventrye',
+    description: 'Information regarding how Eventrye uses essential, analytical, and marketing cookies to optimize your platform experience.'
   },
   '/service-usage': {
-    title: 'Service Usage & SLA Policy — Enterprise Guarantees | EventoraX',
-    description: '99.9% uptime SLA commitments, rate limits, infrastructure specifications, and incident response times for EventoraX multi-tenant cloud operations.'
+    title: 'Service Usage & SLA Policy — Enterprise Guarantees | Eventrye',
+    description: '99.9% uptime SLA commitments, rate limits, infrastructure specifications, and incident response times for Eventrye multi-tenant cloud operations.'
   },
   '/login': {
-    title: 'Sign In — Dedicated Client Organization Portal | EventoraX',
+    title: 'Sign In — Dedicated Client Organization Portal | Eventrye',
     description: 'Access your organization dashboard, manage active events, design certificates, review attendance analytics, and download reports.'
   },
   '/register': {
-    title: 'Create Your Account — 14-Day Free Organizer Trial | EventoraX',
+    title: 'Create Your Account — 14-Day Free Organizer Trial | Eventrye',
     description: 'Start managing your events and generating certificates today with no credit card required. Instant organization workspace setup.'
   },
   '/orbit-i-master-gateway/login': {
     title: 'ORBIT-I Master Authority Gateway — Restricted Platform Access',
-    description: 'EventoraX platform governance, multi-tenant monitoring and SuperAdmin administrative authority console.'
+    description: 'Eventrye platform governance, multi-tenant monitoring and SuperAdmin administrative authority console.'
   }
 };
 
@@ -88,22 +88,22 @@ export function usePageSEO() {
     if (!meta) {
       if (pathname.startsWith('/verify/')) {
         meta = {
-          title: 'Verify Credential — EventoraX Authenticator',
-          description: 'Validating official cryptographic certificate authenticity via EventoraX SHA-256 public verification registry.'
+          title: 'Verify Credential — Eventrye Authenticator',
+          description: 'Validating official cryptographic certificate authenticity via Eventrye SHA-256 public verification registry.'
         };
       } else if (pathname.startsWith('/events/') || pathname.startsWith('/e/')) {
         meta = {
-          title: 'Event Details & Registration | EventoraX Directory',
+          title: 'Event Details & Registration | Eventrye Directory',
           description: 'View full event details, agenda, keynote speakers, and register for official entry passes.'
         };
       } else if (pathname.startsWith('/dashboard')) {
         meta = {
-          title: 'Organization Workspace — EventoraX Dashboard',
+          title: 'Organization Workspace — Eventrye Dashboard',
           description: 'Manage events, attendees, certificates, ID cards, and organization settings.'
         };
       } else {
         meta = {
-          title: 'EventoraX — Enterprise Event Management & Automated Certificate SaaS',
+          title: 'Eventrye — Enterprise Event Management & Automated Certificate SaaS',
           description: 'The complete event management platform for universities, companies, and NGOs. Create events, manage registrations, issue certificates, and track analytics.'
         };
       }

@@ -1,5 +1,5 @@
 /**
- * EventoraX Real-Time Live Notification Engine
+ * Eventrye Real-Time Live Notification Engine
  * Tracks all platform mutations, tenant creations, attendee registrations,
  * security alerts, and system changes for the Superadmin Console.
  */
@@ -11,7 +11,7 @@ export const liveNotifications = [
   {
     id: 1,
     title: 'Platform Launched v1.0.0',
-    message: 'EventoraX production kernel initialized. Real-time sentinel & monitoring online.',
+    message: 'Eventrye production kernel initialized. Real-time sentinel & monitoring online.',
     category: 'system',
     severity: 'info',
     read: false,

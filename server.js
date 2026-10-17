@@ -177,7 +177,7 @@ app.get('/api/public/platform-team', async (req, res) => {
         name: 'Abdul Samad Rind',
         role: 'Full Stack Web Developer & Platform Architect',
         department: 'Leadership & Engineering',
-        bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading EventoraX core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
+        bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading Eventrye core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
         display_order: 1,
         is_active: 1
       },
@@ -207,13 +207,31 @@ app.get('/api/public/platform-team', async (req, res) => {
         bio: 'Web Developer at ORBIT-I Private Limited. Specializing in modern web applications, performant user interfaces, responsive frontends, and dynamic event management workflows.',
         display_order: 4,
         is_active: 1
+      },
+      {
+        id: 5,
+        name: 'Chander Parakash',
+        role: 'Backend Developer',
+        department: 'Backend Engineering & Distributed Systems',
+        bio: 'Backend Developer at ORBIT-I Private Limited. Specializing in high-concurrency Node.js microservices, database query optimization, Redis caching layers, and secure payment webhook pipelines for Eventrye.',
+        display_order: 5,
+        is_active: 1
+      },
+      {
+        id: 6,
+        name: 'Laiba',
+        role: 'Backend Developer',
+        department: 'Backend Engineering & Cloud Architecture',
+        bio: 'Backend Developer at ORBIT-I Private Limited. Expert in RESTful API architecture, cryptographic ticket verification algorithms, automated batch processing, and scalable cloud database structures for Eventrye.',
+        display_order: 6,
+        is_active: 1
       }
     ];
 
-    let finalTeam = Array.isArray(rows) && rows.length >= 4 ? rows : [...officialBaseTeam];
+    let finalTeam = Array.isArray(rows) && rows.length >= 6 ? rows : [...officialBaseTeam];
     
     // If rows has some members, merge them
-    if (Array.isArray(rows) && rows.length > 0 && rows.length < 4) {
+    if (Array.isArray(rows) && rows.length > 0 && rows.length < 6) {
       const existingNames = new Set(rows.map(r => r.name.toLowerCase()));
       const missing = officialBaseTeam.filter(m => !existingNames.has(m.name.toLowerCase()));
       finalTeam = [...rows, ...missing];
@@ -231,7 +249,7 @@ app.get('/api/public/platform-team', async (req, res) => {
 app.get('/api/health', (req, res) => {
   res.json({
     status: 'ok',
-    app: 'EventoraX Enterprise Multi-Tenant SaaS / PaaS',
+    app: 'Eventrye Enterprise Multi-Tenant SaaS / PaaS',
     version: '2.0.0-enterprise',
     uptime: Math.round(process.uptime()),
     timestamp: new Date().toISOString(),
@@ -261,7 +279,7 @@ app.use((req, res, next) => {
           <!DOCTYPE html>
           <html>
             <head>
-              <title>EventoraX Multi-Tenant Server</title>
+              <title>Eventrye Multi-Tenant Server</title>
               <style>
                 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; padding: 40px; background: #faf8ff; color: #0f172a; }
                 .card { background: white; border: 1px solid #e9e4ff; border-radius: 16px; padding: 32px; max-width: 520px; margin: 0 auto; box-shadow: 0 10px 25px -5px rgba(124, 58, 237, 0.1); }
@@ -274,7 +292,7 @@ app.use((req, res, next) => {
             <body>
               <div class="card">
                 <span class="badge">SaaS / PaaS Engine Ready</span>
-                <h1>EventoraX Enterprise Server Live</h1>
+                <h1>Eventrye Enterprise Server Live</h1>
                 <p>Node.js Multi-Tenant & Developer PaaS backend is active.</p>
                 <p>To compile the frontend client bundle: <code>npm run build</code></p>
                 <p>Database Engine: <strong>${isDbConnected() ? 'MySQL Connected' : 'In-Memory Resilient Engine'}</strong></p>
@@ -300,7 +318,7 @@ app.use((err, req, res, next) => {
 // Start Server
 app.listen(PORT, async () => {
   console.log(`=======================================================`);
-  console.log(`🚀 EventoraX Multi-Tenant SaaS Platform on port ${PORT}`);
+  console.log(`🚀 Eventrye Multi-Tenant SaaS Platform on port ${PORT}`);
   console.log(`🌐 Platform URL: http://localhost:${PORT}`);
   console.log(`📁 Static Frontend Directory: ${distPath}`);
   console.log(`=======================================================`);

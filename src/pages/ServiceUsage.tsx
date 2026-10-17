@@ -38,7 +38,7 @@ export default function ServiceUsage() {
                 1. High-Concurrency &amp; Multi-Million User Scaling
               </h2>
               <p className="text-sm text-[#475569] leading-relaxed">
-                EventoraX utilizes an asynchronous event-driven core designed to handle high-traffic surges during peak ticketing, live seminars, and viral registrations. Automated micro-batching, in-memory rate token limiters, and optimized database connection pooling ensure zero downtime during sudden viral attendance spikes.
+                Eventrye utilizes an asynchronous event-driven core designed to handle high-traffic surges during peak ticketing, live seminars, and viral registrations. Automated micro-batching, in-memory rate token limiters, and optimized database connection pooling ensure zero downtime during sudden viral attendance spikes.
               </p>
             </section>
 
@@ -88,7 +88,7 @@ export default function ServiceUsage() {
                 3. Cyber Security &amp; Attack Mitigation
               </h2>
               <p className="text-sm text-[#475569] leading-relaxed">
-                EventoraX includes built-in protection against the top OWASP vulnerabilities:
+                Eventrye includes built-in protection against the top OWASP vulnerabilities:
               </p>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-[#475569] pt-1">
                 <li className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200">
@@ -123,12 +123,12 @@ export default function ServiceUsage() {
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-[#0f172a]">5. Service Level Agreement (SLA) &amp; Contacts</h2>
               <p className="text-sm text-[#475569] leading-relaxed">
-                For paid Enterprise tiers, EventoraX commits to a 99.9% monthly uptime guarantee. For infrastructure questions or custom SLA agreements:
+                For paid Enterprise tiers, Eventrye commits to a 99.9% monthly uptime guarantee. For infrastructure questions or custom SLA agreements:
               </p>
               <div className="flex flex-wrap gap-4 text-sm font-semibold pt-2">
-                <a href="mailto:eventorax@orbit-i.tech" className="inline-flex items-center gap-1.5 text-blue-600 hover:underline">
+                <a href="mailto:eventrye@orbit-i.tech" className="inline-flex items-center gap-1.5 text-blue-600 hover:underline">
                   <Mail className="w-4 h-4" />
-                  <span>eventorax@orbit-i.tech</span>
+                  <span>eventrye@orbit-i.tech</span>
                 </a>
                 <a href="tel:+923190375751" className="inline-flex items-center gap-1.5 text-emerald-600 hover:underline">
                   <Phone className="w-4 h-4" />
@@ -143,7 +143,7 @@ export default function ServiceUsage() {
 
             <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
               <span className="text-xs text-slate-500">
-                &copy; {currentYear} EventoraX • Developed &amp; Maintained by ORBIT-I Private Limited
+                &copy; {currentYear} Eventrye • Developed &amp; Maintained by ORBIT-I Private Limited
               </span>
               <Link to="/terms" className="text-xs text-blue-600 font-bold hover:underline">
                 Terms of Service &rarr;

@@ -6,7 +6,7 @@
 
 export function printElement(
   target: HTMLElement | string | null,
-  title: string = 'EventoraX Document'
+  title: string = 'Eventrye Document'
 ): void {
   if (!target) return;
 
@@ -30,7 +30,7 @@ export function printElement(
 
   // Create an isolated hidden iframe
   const printIframe = document.createElement('iframe');
-  printIframe.id = 'eventorax-print-iframe';
+  printIframe.id = 'eventrye-print-iframe';
   printIframe.style.position = 'fixed';
   printIframe.style.right = '0';
   printIframe.style.bottom = '0';

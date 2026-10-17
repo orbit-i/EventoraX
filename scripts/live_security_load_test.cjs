@@ -1,5 +1,5 @@
 /**
- * EventoraX Live Security & High-Concurrency Benchmark Suite
+ * Eventrye Live Security & High-Concurrency Benchmark Suite
  * Tests:
  * 1. SQL Injection Resilience (Auth, Search, Multi-Tenant queries)
  * 2. Cross-Site Scripting (XSS) Sanitization

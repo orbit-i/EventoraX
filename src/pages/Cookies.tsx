@@ -29,7 +29,7 @@ export default function Cookies() {
                 1. What Are Cookies and Local Storage?
               </h2>
               <p className="text-sm text-[#475569] leading-relaxed">
-                Cookies and browser local storage are small data files placed on your device when you visit websites. They enable EventoraX to remember your session, workspace credentials, tenant preferences, and keep you securely logged into your organizer dashboard without asking for credentials on every page visit.
+                Cookies and browser local storage are small data files placed on your device when you visit websites. They enable Eventrye to remember your session, workspace credentials, tenant preferences, and keep you securely logged into your organizer dashboard without asking for credentials on every page visit.
               </p>
             </section>
 
@@ -73,7 +73,7 @@ export default function Cookies() {
             <section className="space-y-3">
               <h2 className="text-lg font-bold text-[#0f172a]">3. Third-Party Trackers &amp; Advertising</h2>
               <p className="text-sm text-[#475569] leading-relaxed">
-                EventoraX does NOT sell your data, nor do we run predatory cross-site tracking scripts. Telemetry is strictly operational, anonymous, and maintained solely to uphold system reliability and 99.9% uptime.
+                Eventrye does NOT sell your data, nor do we run predatory cross-site tracking scripts. Telemetry is strictly operational, anonymous, and maintained solely to uphold system reliability and 99.9% uptime.
               </p>
             </section>
 
@@ -90,9 +90,9 @@ export default function Cookies() {
                 If you have inquiries regarding our cookie architecture or data processing practices, please contact our compliance desk:
               </p>
               <div className="flex flex-wrap gap-4 text-sm font-semibold pt-2">
-                <a href="mailto:eventorax@orbit-i.tech" className="inline-flex items-center gap-1.5 text-blue-600 hover:underline">
+                <a href="mailto:eventrye@orbit-i.tech" className="inline-flex items-center gap-1.5 text-blue-600 hover:underline">
                   <Mail className="w-4 h-4" />
-                  <span>eventorax@orbit-i.tech</span>
+                  <span>eventrye@orbit-i.tech</span>
                 </a>
                 <a href="tel:+923190375751" className="inline-flex items-center gap-1.5 text-emerald-600 hover:underline">
                   <Phone className="w-4 h-4" />
@@ -107,7 +107,7 @@ export default function Cookies() {
 
             <div className="pt-6 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
               <span className="text-xs text-slate-500">
-                &copy; {currentYear} EventoraX • Powered by ORBIT-I Private Limited
+                &copy; {currentYear} Eventrye • Powered by ORBIT-I Private Limited
               </span>
               <Link to="/privacy" className="text-xs text-blue-600 font-bold hover:underline flex items-center gap-1">
                 <ShieldCheck className="w-3.5 h-3.5" />

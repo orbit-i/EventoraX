@@ -29,7 +29,7 @@ export default function RegisterPage() {
             <UserPlus className="w-6 h-6 text-white" />
           </div>
           <CardTitle className="text-2xl font-bold text-[#0f172a]">Create Account</CardTitle>
-          <CardDescription className="text-[#475569]">Join EventoraX to manage your events</CardDescription>
+          <CardDescription className="text-[#475569]">Join Eventrye to manage your events</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">

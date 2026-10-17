@@ -56,7 +56,7 @@ router.post('/gateway/login', async (req, res) => {
     if (userRow.role !== 'admin') {
       return res.status(403).json({
         success: false,
-        message: 'Access Denied: Only EventoraX (ORBIT-I) Platform Master Authority can enter this private gateway.'
+        message: 'Access Denied: Only Eventrye (ORBIT-I) Platform Master Authority can enter this private gateway.'
       });
     }
 
@@ -86,7 +86,7 @@ router.post('/gateway/login', async (req, res) => {
     }
 
     const [hq] = await query('SELECT * FROM `tenants` WHERE `id` = 1');
-    const masterTenant = hq[0] || { id: 1, name: 'EventoraX HQ', slug: 'eventorax-hq', plan: 'Platform Authority' };
+    const masterTenant = hq[0] || { id: 1, name: 'Eventrye HQ', slug: 'eventrye-hq', plan: 'Platform Authority' };
 
     const token = generateToken({
       id: userRow.id,
@@ -106,14 +106,14 @@ router.post('/gateway/login', async (req, res) => {
 
     return res.json({
       success: true,
-      message: 'Master Authority authenticated successfully. Welcome to EventoraX HQ.',
+      message: 'Master Authority authenticated successfully. Welcome to Eventrye HQ.',
       token,
       user: {
         id: userRow.id,
         fullName: userRow.full_name,
         email: userRow.email,
         role: 'admin',
-        orgName: 'EventoraX (ORBIT-I)'
+        orgName: 'Eventrye (ORBIT-I)'
       },
       tenant: masterTenant
     });
@@ -189,7 +189,7 @@ router.post('/gateway/setup', async (req, res) => {
       try {
         const [insertResult] = await query(
           'INSERT INTO `users` (`full_name`, `org_name`, `email`, `password`, `master_key`, `role`, `plan`) VALUES (?, ?, ?, ?, ?, "admin", "Platform Authority")',
-          [adminName, 'EventoraX (ORBIT-I)', cleanEmail, hashedPassword, cleanMasterKey]
+          [adminName, 'Eventrye (ORBIT-I)', cleanEmail, hashedPassword, cleanMasterKey]
         );
         adminUserId = insertResult.insertId;
       } catch (colErr) {
@@ -197,13 +197,13 @@ router.post('/gateway/setup', async (req, res) => {
           await query('ALTER TABLE `users` ADD COLUMN `master_key` VARCHAR(255) NULL');
           const [insertResult] = await query(
             'INSERT INTO `users` (`full_name`, `org_name`, `email`, `password`, `master_key`, `role`, `plan`) VALUES (?, ?, ?, ?, ?, "admin", "Platform Authority")',
-            [adminName, 'EventoraX (ORBIT-I)', cleanEmail, hashedPassword, cleanMasterKey]
+            [adminName, 'Eventrye (ORBIT-I)', cleanEmail, hashedPassword, cleanMasterKey]
           );
           adminUserId = insertResult.insertId;
         } catch {
           const [insertResult] = await query(
             'INSERT INTO `users` (`full_name`, `org_name`, `email`, `password`, `role`, `plan`) VALUES (?, ?, ?, ?, "admin", "Platform Authority")',
-            [adminName, 'EventoraX (ORBIT-I)', cleanEmail, hashedPassword]
+            [adminName, 'Eventrye (ORBIT-I)', cleanEmail, hashedPassword]
           );
           adminUserId = insertResult.insertId;
         }
@@ -225,7 +225,7 @@ router.post('/gateway/setup', async (req, res) => {
         memUser = {
           id: adminUserId || (memoryStore.users.length + 1),
           full_name: adminName,
-          org_name: 'EventoraX (ORBIT-I)',
+          org_name: 'Eventrye (ORBIT-I)',
           email: cleanEmail,
           password: hashedPassword,
           master_key: cleanMasterKey,
@@ -246,10 +246,10 @@ router.post('/gateway/setup', async (req, res) => {
     let masterTenant;
     if (hq.length === 0) {
       await query(
-        'INSERT INTO `tenants` (`id`, `name`, `slug`, `owner_id`, `plan`, `status`, `primary_color`, `secondary_color`, `white_label_enabled`, `license_status`) VALUES (1, "EventoraX HQ", "eventorax-hq", ?, "Platform Authority", "active", "#1d4ed8", "#1e40af", TRUE, "active")',
+        'INSERT INTO `tenants` (`id`, `name`, `slug`, `owner_id`, `plan`, `status`, `primary_color`, `secondary_color`, `white_label_enabled`, `license_status`) VALUES (1, "Eventrye HQ", "eventrye-hq", ?, "Platform Authority", "active", "#1d4ed8", "#1e40af", TRUE, "active")',
         [adminUserId]
       );
-      masterTenant = { id: 1, name: 'EventoraX HQ', slug: 'eventorax-hq', plan: 'Platform Authority' };
+      masterTenant = { id: 1, name: 'Eventrye HQ', slug: 'eventrye-hq', plan: 'Platform Authority' };
     } else {
       masterTenant = hq[0];
     }
@@ -279,7 +279,7 @@ router.post('/gateway/setup', async (req, res) => {
         fullName: adminName,
         email: cleanEmail,
         role: 'admin',
-        orgName: 'EventoraX (ORBIT-I)'
+        orgName: 'Eventrye (ORBIT-I)'
       },
       tenant: masterTenant
     });
@@ -306,7 +306,7 @@ function requireSuperAdmin(req, res, next) {
     return res.status(403).json({
       success: false,
       status: 'forbidden',
-      message: 'Access strictly denied. EventoraX Platform Superadmin privileges are required. Client organizations cannot access the platform admin panel.'
+      message: 'Access strictly denied. Eventrye Platform Superadmin privileges are required. Client organizations cannot access the platform admin panel.'
     });
   }
   next();
@@ -325,7 +325,7 @@ router.get('/overview', verifyToken, requireSuperAdmin, async (req, res) => {
     const [users] = await query('SELECT COUNT(*) as total_users FROM `users`');
     const [events] = await query('SELECT COUNT(*) as total_events, COALESCE(SUM(registered_count), 0) as total_attendees FROM `events`');
 
-    const clientTenants = tenants.filter(t => t.id !== 1 && t.slug !== 'eventorax-hq');
+    const clientTenants = tenants.filter(t => t.id !== 1 && t.slug !== 'eventrye-hq' && t.slug !== 'eventrye-hq');
     const totalTenants = clientTenants.length;
     const activeTenants = clientTenants.filter(t => t.status === 'active').length;
     const suspendedTenants = clientTenants.filter(t => t.status === 'suspended').length;
@@ -382,11 +382,11 @@ router.get('/tenants', verifyToken, requireSuperAdmin, async (req, res) => {
     eventCounts.forEach(e => { eventMap[e.tenant_id] = e; });
 
     let result = tenants.map(t => {
-      const isMaster = t.id === 1 || t.slug === 'eventorax-hq';
+      const isMaster = t.id === 1 || t.slug === 'eventrye-hq' || t.slug === 'eventrye-hq';
       const rawOwner = userMap[t.owner_id];
       const ownerEmail = (rawOwner?.email && !rawOwner.email.startsWith('$2b$')) 
         ? rawOwner.email 
-        : (isMaster ? 'admin@eventorax.com' : `${(rawOwner?.full_name || 'client').toLowerCase().replace(/\s+/g, '')}@orbit-i.tech`);
+        : (isMaster ? 'admin@eventrye.com' : `${(rawOwner?.full_name || 'client').toLowerCase().replace(/\s+/g, '')}@orbit-i.tech`);
 
       return {
         ...t,
@@ -1071,7 +1071,7 @@ router.post('/testimonials', verifyToken, requireSuperAdmin, async (req, res) =>
     dispatchNotification({
       category: 'SYSTEM',
       title: 'Institutional Testimonial Published',
-      message: `Verified review for ${organization.trim()} has been published to the EventoraX landing page.`,
+      message: `Verified review for ${organization.trim()} has been published to the Eventrye landing page.`,
       severity: 'LOW',
       tenantId: 1
     });
@@ -1283,7 +1283,7 @@ router.delete('/coupons/:id', verifyToken, requireSuperAdmin, async (req, res) =
 
 // =====================================================
 // DYNAMIC PLATFORM TEAM (ORBIT-I LEADERSHIP) MANAGEMENT
-// Dynamic CRUD for Abdul Samad Rind, Maria Almani, Muneeb Ur Rehman, Hassan Ansar & future team members
+// Dynamic CRUD for Abdul Samad Rind, Maria Almani, Muneeb Ur Rehman, Hassan Ansar, Chander Parakash, Laiba & future team members
 // =====================================================
 
 // GET /api/admin/platform-team - List all platform team members
@@ -1297,7 +1297,7 @@ router.get('/platform-team', verifyToken, requireSuperAdmin, async (req, res) =>
         name: 'Abdul Samad Rind',
         role: 'Full Stack Web Developer & Platform Architect',
         department: 'Leadership & Engineering',
-        bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading EventoraX core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
+        bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading Eventrye core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
         display_order: 1,
         is_active: 1
       },
@@ -1327,11 +1327,29 @@ router.get('/platform-team', verifyToken, requireSuperAdmin, async (req, res) =>
         bio: 'Web Developer at ORBIT-I Private Limited. Specializing in modern web applications, performant user interfaces, responsive frontends, and dynamic event management workflows.',
         display_order: 4,
         is_active: 1
+      },
+      {
+        id: 5,
+        name: 'Chander Parakash',
+        role: 'Backend Developer',
+        department: 'Backend Engineering & Distributed Systems',
+        bio: 'Backend Developer at ORBIT-I Private Limited. Specializing in high-concurrency Node.js microservices, database query optimization, Redis caching layers, and secure payment webhook pipelines for Eventrye.',
+        display_order: 5,
+        is_active: 1
+      },
+      {
+        id: 6,
+        name: 'Laiba',
+        role: 'Backend Developer',
+        department: 'Backend Engineering & Cloud Architecture',
+        bio: 'Backend Developer at ORBIT-I Private Limited. Expert in RESTful API architecture, cryptographic ticket verification algorithms, automated batch processing, and scalable cloud database structures for Eventrye.',
+        display_order: 6,
+        is_active: 1
       }
     ];
 
-    let finalTeam = Array.isArray(rows) && rows.length >= 4 ? rows : [...officialBaseTeam];
-    if (Array.isArray(rows) && rows.length > 0 && rows.length < 4) {
+    let finalTeam = Array.isArray(rows) && rows.length >= 6 ? rows : [...officialBaseTeam];
+    if (Array.isArray(rows) && rows.length > 0 && rows.length < 6) {
       const existingNames = new Set(rows.map(r => (r.name || '').toLowerCase()));
       const missing = officialBaseTeam.filter(m => !existingNames.has(m.name.toLowerCase()));
       finalTeam = [...rows, ...missing];
@@ -1465,7 +1483,7 @@ const BACKUP_TABLES = [
 async function generatePlatformBackup() {
   const backupData = {
     metadata: {
-      platform: 'EventoraX Enterprise Multi-Tenant Cloud',
+      platform: 'Eventrye Enterprise Multi-Tenant Cloud',
       authority: 'ORBIT-I Private Limited',
       year: 2026,
       generated_at: new Date().toISOString(),
@@ -1508,13 +1526,13 @@ router.get('/backup/export', async (req, res) => {
 
     if (format === 'json') {
       res.setHeader('Content-Type', 'application/json');
-      res.setHeader('Content-Disposition', `attachment; filename="eventorax_disaster_recovery_${dateStamp}.json"`);
+      res.setHeader('Content-Disposition', `attachment; filename="eventrye_disaster_recovery_${dateStamp}.json"`);
       return res.send(JSON.stringify(backup, null, 2));
     }
 
     // Format SQL Dump file
     let sqlDump = `-- =========================================================================\n`;
-    sqlDump += `-- EventoraX Enterprise Multi-Tenant Disaster Recovery & Master Backup\n`;
+    sqlDump += `-- Eventrye Enterprise Multi-Tenant Disaster Recovery & Master Backup\n`;
     sqlDump += `-- Authorized by Platform Authority: ORBIT-I Private Limited\n`;
     sqlDump += `-- Generated At: ${new Date().toISOString()}\n`;
     sqlDump += `-- Protection Status: 100% Zero-Data-Loss Safe for Software Updates\n`;
@@ -1544,10 +1562,10 @@ router.get('/backup/export', async (req, res) => {
     }
 
     sqlDump += `SET FOREIGN_KEY_CHECKS = 1;\n`;
-    sqlDump += `-- [End of EventoraX Master Backup. All tenant workspaces preserved.]\n`;
+    sqlDump += `-- [End of Eventrye Master Backup. All tenant workspaces preserved.]\n`;
 
     res.setHeader('Content-Type', 'application/sql');
-    res.setHeader('Content-Disposition', `attachment; filename="eventorax_backup_2026_${dateStamp}.sql"`);
+    res.setHeader('Content-Disposition', `attachment; filename="eventrye_backup_2026_${dateStamp}.sql"`);
     return res.send(sqlDump);
   } catch (error) {
     console.error('[Platform Admin Backup Export Error]:', error);

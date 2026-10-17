@@ -158,17 +158,17 @@ export default function Billing() {
                         Platform Authority
                       </Badge>
                       <span className="text-xs bg-indigo-100 text-indigo-800 font-bold px-2.5 py-0.5 rounded-full">
-                        EventoraX Master Administrator
+                        Eventrye Master Administrator
                       </span>
                     </div>
                     <h2 className="text-2xl sm:text-3xl font-extrabold text-[#0f172a] font-heading">
                       Unlimited Lifetime Platform Authority
                     </h2>
                     <p className="text-xs text-[#475569] mt-2 leading-relaxed">
-                      You are logged in as the <strong>EventoraX SuperAdmin (HQ)</strong>. As the master authority who owns and governs this platform, your workspace has unrestricted access to all capabilities, attendees, events, and client organizations.
+                      You are logged in as the <strong>Eventrye SuperAdmin (HQ)</strong>. As the master authority who owns and governs this platform, your workspace has unrestricted access to all capabilities, attendees, events, and client organizations.
                     </p>
                     <p className="text-xs font-semibold text-slate-700 mt-1">
-                      Subscription billing and pricing packages only apply to external client organizations that register for EventoraX.
+                      Subscription billing and pricing packages only apply to external client organizations that register for Eventrye.
                     </p>
                   </div>
 
@@ -286,7 +286,7 @@ export default function Billing() {
                 <div className="text-xs space-y-1">
                   <h4 className="font-bold text-sm">Subscription Upgrade Verification in Progress</h4>
                   <p>
-                    Your recent payment reference (<strong>{latestPendingTxn.transaction_ref || latestPendingTxn.invoice_number}</strong>) for <strong>{latestPendingTxn.plan}</strong> has been securely submitted to the EventoraX Platform SuperAdmin.
+                    Your recent payment reference (<strong>{latestPendingTxn.transaction_ref || latestPendingTxn.invoice_number}</strong>) for <strong>{latestPendingTxn.plan}</strong> has been securely submitted to the Eventrye Platform SuperAdmin.
                   </p>
                   <p className="text-amber-700">
                     Once verified, your organization limits and features (ID passes, 100+ certificate templates, Canva Studio) will be instantly unlocked.
@@ -553,7 +553,7 @@ export default function Billing() {
               >
                 <div className="flex justify-between items-start pb-2 border-b border-slate-200">
                   <div>
-                    <h4 className="font-black text-xs text-slate-900">EVENTORAX TECHNOLOGIES (PVT) LTD</h4>
+                    <h4 className="font-black text-xs text-slate-900">EVENTRYE TECHNOLOGIES (PVT) LTD</h4>
                     <p className="text-[10px] text-slate-500">ORBIT-I Cloud Digital Platform</p>
                     <p className="text-[10px] text-slate-400 font-mono">NTN: 9842104-7 • STRN: 3277876123456</p>
                   </div>
@@ -592,7 +592,7 @@ export default function Billing() {
                 <div className="bg-blue-50/70 p-3 rounded-xl border border-blue-200 text-[11px] space-y-1">
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                     <span className="text-slate-500">Receiving Merchant:</span>
-                    <span className="font-bold text-slate-900">ORBIT-I / EventoraX Technologies</span>
+                    <span className="font-bold text-slate-900">ORBIT-I / Eventrye Technologies</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                     <span className="text-slate-500">Merchant Account / IBFT:</span>
@@ -615,7 +615,7 @@ export default function Billing() {
                     <tbody className="divide-y divide-slate-100">
                       <tr>
                         <td className="p-2">
-                          <strong className="block text-slate-900">EventoraX {viewingTaxInvoiceTx.plan} Plan</strong>
+                          <strong className="block text-slate-900">Eventrye {viewingTaxInvoiceTx.plan} Plan</strong>
                           <span className="text-[10px] text-slate-500">Billing Cycle: {viewingTaxInvoiceTx.billing_cycle || 'Monthly'}</span>
                         </td>
                         <td className="p-2 text-right font-bold text-slate-900">
@@ -649,7 +649,7 @@ export default function Billing() {
                 <div className="flex items-center justify-between pt-2 border-t border-slate-200">
                   <div className="flex items-center gap-2">
                     <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`https://eventorax.orbit-i.tech/verify/${viewingTaxInvoiceTx.transaction_ref || viewingTaxInvoiceTx.id}`)}`}
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`https://eventrye.orbit-i.tech/verify/${viewingTaxInvoiceTx.transaction_ref || viewingTaxInvoiceTx.id}`)}`}
                       alt="Verification QR"
                       className="w-10 h-10 rounded border border-slate-200"
                     />
@@ -675,7 +675,7 @@ export default function Billing() {
                   Close
                 </Button>
                 <Button
-                  onClick={() => printElement('billing-official-tax-invoice', `EventoraX Tax Invoice - ${viewingTaxInvoiceTx.transaction_ref || viewingTaxInvoiceTx.id}`)}
+                  onClick={() => printElement('billing-official-tax-invoice', `Eventrye Tax Invoice - ${viewingTaxInvoiceTx.transaction_ref || viewingTaxInvoiceTx.id}`)}
                   className="rounded-xl text-xs font-bold bg-[#1d4ed8] hover:bg-[#1e40af] text-white h-9 px-4 flex items-center gap-1.5 shadow-md shadow-blue-500/20"
                 >
                   <Download className="w-3.5 h-3.5" />

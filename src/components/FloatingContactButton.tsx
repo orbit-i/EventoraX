@@ -25,7 +25,7 @@ export default function FloatingContactButton() {
         <div className="mb-3 w-72 sm:w-80 bg-white/98 backdrop-blur-2xl rounded-3xl border border-slate-200/90 shadow-2xl shadow-slate-900/15 p-4 animate-in slide-in-from-bottom-3 fade-in duration-200">
           <div className="flex items-center justify-between pb-3 border-b border-slate-100">
             <div>
-              <h4 className="text-sm font-bold text-slate-900 font-heading">EventoraX Support</h4>
+              <h4 className="text-sm font-bold text-slate-900 font-heading">Eventrye Support</h4>
               <p className="text-[11px] text-slate-500">Official assistance active 24/7</p>
             </div>
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold border border-emerald-200">
@@ -75,7 +75,7 @@ export default function FloatingContactButton() {
 
             {/* Email */}
             <a
-              href="mailto:eventorax@orbit-i.tech"
+              href="mailto:eventrye@orbit-i.tech"
               onClick={() => setOpen(false)}
               className="flex items-center justify-between p-2.5 rounded-2xl bg-slate-50 hover:bg-indigo-50/80 text-slate-800 border border-slate-200/80 hover:border-indigo-200 transition-all group"
             >
@@ -85,7 +85,7 @@ export default function FloatingContactButton() {
                 </div>
                 <div>
                   <div className="text-xs font-bold text-slate-900">Official Email</div>
-                  <div className="text-[11px] text-slate-500">eventorax@orbit-i.tech</div>
+                  <div className="text-[11px] text-slate-500">eventrye@orbit-i.tech</div>
                 </div>
               </div>
               <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-0.5 transition-transform" />

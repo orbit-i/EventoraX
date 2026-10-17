@@ -25,14 +25,14 @@ export default function Terms() {
               <div>
                 <h2 className="font-heading text-lg sm:text-xl font-bold mb-2 text-[#0f172a]">1. Acceptance of Terms</h2>
                 <p>
-                  By accessing or using EventoraX (&ldquo;the Service&rdquo;), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service. The Service is owned and operated by ORBIT-I Private Limited.
+                  By accessing or using Eventrye (&ldquo;the Service&rdquo;), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the Service. The Service is owned and operated by ORBIT-I Private Limited.
                 </p>
               </div>
 
               <div>
                 <h2 className="font-heading text-lg sm:text-xl font-bold mb-2 text-[#0f172a]">2. Description of Service</h2>
                 <p>
-                  EventoraX is a multi-tenant SaaS platform for managing events, including registration, ticketing, Canva-style visual credential generation, digital ID badges, and analytics. We reserve the right to modify, suspend, or discontinue parts of the Service with reasonable notice.
+                  Eventrye is a multi-tenant SaaS platform for managing events, including registration, ticketing, Canva-style visual credential generation, digital ID badges, and analytics. We reserve the right to modify, suspend, or discontinue parts of the Service with reasonable notice.
                 </p>
               </div>
 
@@ -60,7 +60,7 @@ export default function Terms() {
               <div>
                 <h2 className="font-heading text-lg sm:text-xl font-bold mb-2 text-[#0f172a]">6. Prohibited Activities &amp; 24/7 Security Sentinel</h2>
                 <p>
-                  EventoraX enforces a zero-tolerance policy against illegal, fraudulent, or deceptive practices. Users may NOT use the platform to generate counterfeit academic degrees, fraudulent governmental credentials, phishing campaigns, or illegal gambling activities. All platform activity is scanned 24/7 by automated compliance sentinels. Violating accounts are immediately terminated without refund and referred to relevant authorities.
+                  Eventrye enforces a zero-tolerance policy against illegal, fraudulent, or deceptive practices. Users may NOT use the platform to generate counterfeit academic degrees, fraudulent governmental credentials, phishing campaigns, or illegal gambling activities. All platform activity is scanned 24/7 by automated compliance sentinels. Violating accounts are immediately terminated without refund and referred to relevant authorities.
                 </p>
               </div>
 
@@ -91,9 +91,9 @@ export default function Terms() {
                   For legal inquiries or clarifications concerning these Terms, reach our legal desk:
                 </p>
                 <div className="flex flex-wrap gap-4 text-sm font-semibold">
-                  <a href="mailto:eventorax@orbit-i.tech" className="inline-flex items-center gap-1.5 text-blue-600 hover:underline">
+                  <a href="mailto:eventrye@orbit-i.tech" className="inline-flex items-center gap-1.5 text-blue-600 hover:underline">
                     <Mail className="w-4 h-4" />
-                    <span>eventorax@orbit-i.tech</span>
+                    <span>eventrye@orbit-i.tech</span>
                   </a>
                   <a href="tel:+923190375751" className="inline-flex items-center gap-1.5 text-emerald-600 hover:underline">
                     <Phone className="w-4 h-4" />

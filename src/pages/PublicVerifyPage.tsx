@@ -164,7 +164,7 @@ export default function PublicVerifyPage() {
           Verify Official Credentials
         </h1>
         <p className="text-sm sm:text-base text-[#64748b] max-w-xl mx-auto mb-8">
-          Enter any EventoraX certificate identification number to verify its authentic cryptographic signature, recipient records, and validity status.
+          Enter any Eventrye certificate identification number to verify its authentic cryptographic signature, recipient records, and validity status.
         </p>
 
         {/* Search Input Box */}
@@ -256,7 +256,7 @@ export default function PublicVerifyPage() {
                     <span className="text-xs text-[#64748b] hidden sm:inline">• 100% Genuine</span>
                   </div>
                   <h2 className="text-xl font-extrabold text-[#0f172a] mt-0.5">
-                    {certificate.status === 'issued' ? 'Authentic EventoraX Certificate' : 'Certificate Has Been Revoked'}
+                    {certificate.status === 'issued' ? 'Authentic Eventrye Certificate' : 'Certificate Has Been Revoked'}
                   </h2>
                 </div>
               </div>
@@ -340,7 +340,7 @@ export default function PublicVerifyPage() {
                   </div>
 
                   <p className="text-xs text-[#64748b] leading-relaxed mb-4">
-                    This credential was issued through the EventoraX Multi-Tenant Certificate Engine and validated against the distributed immutable ledger for ORBIT-I Private Limited.
+                    This credential was issued through the Eventrye Multi-Tenant Certificate Engine and validated against the distributed immutable ledger for ORBIT-I Private Limited.
                   </p>
 
                   <div className="p-3 bg-[#f8fafc] rounded-xl border border-[#e2e8f0] mb-3">
@@ -368,7 +368,7 @@ export default function PublicVerifyPage() {
                 </div>
 
                 <div className="mt-4 pt-4 border-t border-[#f1f5f9] flex items-center justify-between text-[11px] text-[#94a3b8]">
-                  <span>Engine: EventoraX v2.0 Enterprise</span>
+                  <span>Engine: Eventrye v2.0 Enterprise</span>
                   <span className="text-emerald-600 font-bold flex items-center gap-1">
                     <CheckCircle2 className="w-3.5 h-3.5" />
                     Zero Tampering Detected
@@ -467,7 +467,7 @@ export default function PublicVerifyPage() {
                   {copied ? 'Copied' : 'Copy ID'}
                 </button>
                 <button 
-                  onClick={() => printElement('official-invoice-document', `EventoraX Official Tax Invoice - ${invoice.invoiceNumber}`)}
+                  onClick={() => printElement('official-invoice-document', `Eventrye Official Tax Invoice - ${invoice.invoiceNumber}`)}
                   className="px-4 py-2 rounded-xl bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#1d4ed8]/20 transition-all cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
@@ -484,13 +484,13 @@ export default function PublicVerifyPage() {
               >
                 {/* Watermark */}
                 <div className="absolute right-4 bottom-14 opacity-5 pointer-events-none select-none text-slate-900 font-black text-6xl rotate-[-20deg]">
-                  EVENTORAX
+                  EVENTRYE
                 </div>
 
                 {/* Company Header */}
                 <div className="flex justify-between items-start pb-3 border-b border-slate-200">
                   <div>
-                    <h4 className="font-extrabold text-sm text-slate-900 tracking-tight">EVENTORAX TECHNOLOGIES (PVT) LTD</h4>
+                    <h4 className="font-extrabold text-sm text-slate-900 tracking-tight">EVENTRYE TECHNOLOGIES (PVT) LTD</h4>
                     <p className="text-[10px] text-slate-500 font-medium">ORBIT-I Cloud Digital Systems • SBP Digital Reg: PK-2026-PSO/PSP</p>
                     <p className="text-[10px] text-slate-400 font-mono">NTN: {invoice.governance.ntn} • STRN: {invoice.governance.strn}</p>
                   </div>
@@ -526,7 +526,7 @@ export default function PublicVerifyPage() {
                 <div className="bg-blue-50/60 p-3.5 rounded-xl border border-blue-200 text-[11px] space-y-1.5">
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                     <span className="text-slate-500">Merchant Recipient:</span>
-                    <span className="font-bold text-slate-900">{invoice.receivingTitle || 'ORBIT-I / EventoraX Technologies'}</span>
+                    <span className="font-bold text-slate-900">{invoice.receivingTitle || 'ORBIT-I / Eventrye Technologies'}</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                     <span className="text-slate-500">Merchant Account / IBFT:</span>
@@ -551,7 +551,7 @@ export default function PublicVerifyPage() {
                     <tbody className="divide-y divide-slate-100">
                       <tr>
                         <td className="p-2.5">
-                          <strong className="block text-slate-900">EventoraX {invoice.plan} Tier</strong>
+                          <strong className="block text-slate-900">Eventrye {invoice.plan} Tier</strong>
                           <span className="text-[10px] text-slate-500">Enterprise Cloud Event Management &amp; Pass Infrastructure (2026 Release)</span>
                         </td>
                         <td className="p-2.5 text-center text-slate-700 font-medium">{invoice.billingCycle}</td>
@@ -583,14 +583,14 @@ export default function PublicVerifyPage() {
                 <div className="flex items-center justify-between pt-2 border-t border-slate-200">
                   <div className="flex items-center gap-3">
                     <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`https://eventorax.orbit-i.tech/verify/${invoice.invoiceNumber}`)}`}
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`https://eventrye.orbit-i.tech/verify/${invoice.invoiceNumber}`)}`}
                       alt="Official Invoice QR Verification"
                       className="w-14 h-14 rounded-lg border border-slate-200 p-0.5"
                     />
                     <div>
                       <span className="text-[10px] font-bold text-slate-700 block">Digital QR Verification</span>
                       <p className="text-[9px] text-slate-400 max-w-[170px]">
-                        Scan with mobile camera to authenticate digital invoice on the EventoraX public verification ledger.
+                        Scan with mobile camera to authenticate digital invoice on the Eventrye public verification ledger.
                       </p>
                     </div>
                   </div>
@@ -623,7 +623,7 @@ export default function PublicVerifyPage() {
               Credential Not Verified
             </h3>
             <p className="text-sm text-[#64748b] max-w-md mx-auto mb-6">
-              {errorMessage || 'The specified certificate number does not match any authenticated record in the EventoraX registry.'}
+              {errorMessage || 'The specified certificate number does not match any authenticated record in the Eventrye registry.'}
             </p>
             <div className="flex items-center justify-center gap-3">
               <button 

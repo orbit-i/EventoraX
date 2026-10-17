@@ -3,36 +3,37 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0" />
-    <title>EventoraX — Enterprise Event Management & Automated Certificate SaaS</title>
-    <meta name="description" content="EventoraX is the enterprise event management and automated certificate issuance platform for universities, conferences, and organizations. Plan events, sell QR tickets with Raast and cards, and automate tamper-evident credentials." />
-    <meta name="keywords" content="event management, event platform, registration, certificates, QR tickets, ID card designer, event organizer, ORBIT-I, Pakistan event software, Raast event ticketing" />
+    <title>Eventrye — Enterprise Event Management & Automated Certificate SaaS</title>
+    <meta name="description" content="Eventrye is the premier enterprise event management and automated certificate issuance SaaS platform for conferences, summits, and universities. Plan events, sell QR tickets with Raast and cards, and automate tamper-evident credentials." />
+    <meta name="keywords" content="Eventrye, event management, event platform, registration, certificates, QR tickets, ID card designer, event organizer, ORBIT-I, Pakistan event software, Raast event ticketing" />
     <meta name="author" content="ORBIT-I Private Limited" />
     <meta name="robots" content="index, follow" />
     <meta name="theme-color" content="#1d4ed8" />
 
     <!-- Favicons & App Icons -->
     <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
     <link rel="apple-touch-icon" href="/favicon.png" />
-    <link rel="canonical" href="https://eventorax.com" />
+    <link rel="canonical" href="https://eventrye.com" />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://eventorax.com" />
-    <meta property="og:title" content="EventoraX — Plan • Manage • Experience" />
-    <meta property="og:description" content="Enterprise event management & automated certificate distribution SaaS platform. Built by ORBIT-I." />
-    <meta property="og:image" content="https://eventorax.com/favicon.png" />
+    <meta property="og:url" content="https://eventrye.com" />
+    <meta property="og:title" content="Eventrye — Plan • Manage • Experience" />
+    <meta property="og:description" content="Next-Gen Enterprise Event Management & Automated Certificate Distribution SaaS Platform. Built by ORBIT-I." />
+    <meta property="og:image" content="https://eventrye.com/favicon.png" />
 
     <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:url" content="https://eventorax.com" />
-    <meta name="twitter:title" content="EventoraX — Enterprise Event & Certificate Engine" />
+    <meta name="twitter:url" content="https://eventrye.com" />
+    <meta name="twitter:title" content="Eventrye — Enterprise Event & Certificate Engine" />
     <meta name="twitter:description" content="Create events, automate certificates, generate print PDFs/ZIPs, and track analytics." />
-    <meta name="twitter:image" content="https://eventorax.com/favicon.png" />
+    <meta name="twitter:image" content="https://eventrye.com/favicon.png" />
 
     <!-- Fast Font Preconnects -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;500;600;700;800&family=Montserrat:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700;900&family=Inter:wght@300;400;500;600;700;800;900&family=Montserrat:wght@400;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
 
     <!-- Schema.org Structured Data -->
     <script type="application/ld+json">
@@ -41,7 +42,7 @@
       "@graph": [
         {
           "@type": "SoftwareApplication",
-          "name": "EventoraX",
+          "name": "Eventrye",
           "applicationCategory": "BusinessApplication",
           "operatingSystem": "Web, All Devices & Browsers",
           "offers": {
@@ -61,23 +62,232 @@
         {
           "@type": "Organization",
           "name": "ORBIT-I Private Limited",
-          "url": "https://eventorax.com",
-          "logo": "https://eventorax.com/favicon.png",
+          "url": "https://eventrye.com",
+          "logo": "https://eventrye.com/favicon.png",
           "sameAs": [
-            "https://twitter.com/eventorax",
+            "https://twitter.com/eventrye",
             "https://linkedin.com/company/orbit-i-tech"
           ]
         }
       ]
     }
     </script>
-    <script type="module" crossorigin src="/assets/index-DWI-C-T3.js"></script>
+
+    <!-- VIP Preloader Critical Inline CSS -->
+    <style>
+      #vip-preloader {
+        position: fixed;
+        inset: 0;
+        z-index: 9999999;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: radial-gradient(circle at 50% 45%, #0d152b 0%, #060913 100%);
+        color: #ffffff;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        overflow: hidden;
+        transition: opacity 0.5s cubic-bezier(0.16, 1, 0.3, 1), transform 0.5s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.5s;
+        will-change: opacity, transform;
+      }
+      #vip-preloader.vip-loaded {
+        opacity: 0;
+        transform: scale(1.03);
+        pointer-events: none;
+        visibility: hidden;
+      }
+      .vip-backdrop-glow {
+        position: absolute;
+        width: 380px;
+        height: 380px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(37, 99, 235, 0.22) 0%, rgba(139, 92, 246, 0.12) 50%, transparent 70%);
+        filter: blur(50px);
+        animation: vipPulseGlow 3s ease-in-out infinite alternate;
+        pointer-events: none;
+      }
+      @keyframes vipPulseGlow {
+        0% { transform: scale(0.9); opacity: 0.6; }
+        100% { transform: scale(1.2); opacity: 0.95; }
+      }
+      .vip-logo-container {
+        position: relative;
+        width: 96px;
+        height: 96px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 24px;
+      }
+      .vip-logo-ring {
+        position: absolute;
+        inset: -6px;
+        border-radius: 28px;
+        background: conic-gradient(from 0deg, #2563eb, #38bdf8, #8b5cf6, #ec4899, #2563eb);
+        animation: vipRotateRing 4s linear infinite;
+        opacity: 0.85;
+        filter: blur(3px);
+      }
+      @keyframes vipRotateRing {
+        to { transform: rotate(360deg); }
+      }
+      .vip-logo-card {
+        position: relative;
+        width: 96px;
+        height: 96px;
+        border-radius: 24px;
+        background: #090e1a;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.7), 0 0 20px rgba(37, 99, 235, 0.35);
+        overflow: hidden;
+        animation: vipFloat 2.6s ease-in-out infinite;
+      }
+      @keyframes vipFloat {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-4px); }
+      }
+      .vip-logo-img {
+        width: 72px;
+        height: 72px;
+        -o-object-fit: contain;
+           object-fit: contain;
+        filter: drop-shadow(0 0 10px rgba(56, 189, 248, 0.4));
+      }
+      .vip-brand {
+        display: flex;
+        align-items: baseline;
+        gap: 2px;
+        font-size: 26px;
+        font-weight: 900;
+        letter-spacing: -0.02em;
+        margin-bottom: 6px;
+      }
+      .vip-brand-text {
+        color: #ffffff;
+      }
+      .vip-brand-accent {
+        background: linear-gradient(135deg, #38bdf8 0%, #818cf8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .vip-badge-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 22px;
+      }
+      .vip-badge {
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        padding: 3px 9px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(234, 179, 8, 0.15), rgba(168, 85, 247, 0.2));
+        border: 1px solid rgba(234, 179, 8, 0.4);
+        color: #fef08a;
+        box-shadow: 0 0 12px rgba(234, 179, 8, 0.2);
+      }
+      .vip-subtext {
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: #94a3b8;
+      }
+      .vip-progress-track {
+        width: 220px;
+        height: 4px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        overflow: hidden;
+        position: relative;
+        margin-bottom: 12px;
+      }
+      .vip-progress-fill {
+        height: 100%;
+        width: 30%;
+        border-radius: 999px;
+        background: linear-gradient(90deg, #2563eb, #38bdf8, #a855f7);
+        box-shadow: 0 0 10px rgba(56, 189, 248, 0.8);
+        transition: width 0.3s ease-out;
+        animation: vipProgress 1.4s ease-in-out infinite;
+      }
+      @keyframes vipProgress {
+        0% { width: 10%; transform: translateX(0%); }
+        50% { width: 70%; transform: translateX(25%); }
+        100% { width: 30%; transform: translateX(180%); }
+      }
+      .vip-status {
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        color: #64748b;
+        animation: vipFadeStatus 2s infinite alternate;
+      }
+      @keyframes vipFadeStatus {
+        0% { opacity: 0.5; }
+        100% { opacity: 1; }
+      }
+    </style>
+    <script type="module" crossorigin src="/assets/index-CXkPCcLZ.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/router-yIJicFTS.js">
     <link rel="modulepreload" crossorigin href="/assets/charts-Bzvtjf_8.js">
     <link rel="modulepreload" crossorigin href="/assets/three-Cu-NmlLO.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-CB2gIwXJ.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-DAb-5U_M.css">
   </head>
   <body>
+    <!-- VIP High-Performance Instant Preloader -->
+    <div id="vip-preloader" aria-hidden="true">
+      <div class="vip-backdrop-glow"></div>
+      <div class="vip-logo-container">
+        <div class="vip-logo-ring"></div>
+        <div class="vip-logo-card">
+          <img src="/logo.png" alt="Eventrye" class="vip-logo-img" />
+        </div>
+      </div>
+      <div class="vip-brand">
+        <span class="vip-brand-text">Event</span><span class="vip-brand-accent">rye</span>
+      </div>
+      <div class="vip-badge-row">
+        <span class="vip-badge">VIP PLATFORM</span>
+        <span class="vip-subtext">Enterprise Event Engine</span>
+      </div>
+      <div class="vip-progress-track">
+        <div class="vip-progress-fill" id="vip-progress-bar"></div>
+      </div>
+      <div class="vip-status" id="vip-status-label">Initializing Fast Cloud Mesh...</div>
+    </div>
+
+    <!-- Main React Root -->
     <div id="root"></div>
+
+    <script>
+      (function() {
+        var preloader = document.getElementById('vip-preloader');
+        var dismissed = false;
+        function dismissVIPPreloader() {
+          if (dismissed || !preloader) return;
+          dismissed = true;
+          preloader.classList.add('vip-loaded');
+          setTimeout(function() {
+            if (preloader && preloader.parentNode) {
+              preloader.parentNode.removeChild(preloader);
+            }
+          }, 600);
+        }
+        window.addEventListener('eventrye-ready', dismissVIPPreloader);
+        window.addEventListener('load', function() {
+          setTimeout(dismissVIPPreloader, 350);
+        });
+        // Safety fallback so user is never blocked
+        setTimeout(dismissVIPPreloader, 1500);
+      })();
+    </script>
+
   </body>
 </html>

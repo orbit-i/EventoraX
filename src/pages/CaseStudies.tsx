@@ -44,14 +44,14 @@ const fallbackStudies: CaseStudy[] = [
     banner_url: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
     summary: 'Automated 4,200 attendee check-ins and issued tamper-evident digital credentials with zero gate queuing.',
     problem: 'Previous summits experienced 3-hour check-in queues, registration chaos, and weeks of manual certificate printing.',
-    solution: 'EventoraX multi-terminal QR code scanning deployed across 8 gates with average 0.8s scan time. All certificates issued automatically via Canva Design Studio integration.',
+    solution: 'Eventrye multi-terminal QR code scanning deployed across 8 gates with average 0.8s scan time. All certificates issued automatically via Canva Design Studio integration.',
     results: [
       '4,200 real-time QR scans with zero duplicate admissions',
       '0.8 seconds average attendee check-in latency',
       '100% automated tamper-evident certificate issuance',
       'Sponsor satisfaction rating of 4.9/5.0'
     ],
-    quote: 'EventoraX completely eradicated our registration delays. The tamper-evident credentials gave our sponsors and university dean instant verification confidence.',
+    quote: 'Eventrye completely eradicated our registration delays. The tamper-evident credentials gave our sponsors and university dean instant verification confidence.',
     author: 'Dr. Zulfiqar Memon',
     author_role: 'Head of Computer Science, FAST-NUCES'
   },
@@ -66,14 +66,14 @@ const fallbackStudies: CaseStudy[] = [
     banner_url: 'https://images.unsplash.com/photo-1511578314322-379afb476865?w=1200&auto=format&fit=crop&q=80',
     summary: 'High-security executive summit with multi-tiered VIP ID pass credentials and instantaneous Raast payment settlement.',
     problem: 'Strict security requirements to prevent counterfeit attendee passes and manage VIP vs General access segregation across 4 parallel halls.',
-    solution: 'EventoraX custom high-security RFID & QR pass layout designer with dynamic cryptographic watermarking and tamper-proof verification portal.',
+    solution: 'Eventrye custom high-security RFID & QR pass layout designer with dynamic cryptographic watermarking and tamper-proof verification portal.',
     results: [
       '1,850 VIP and delegate passes issued seamlessly',
       '100% counterfeit pass prevention with encrypted QR hashes',
       'Zero security incidents across 4 parallel summit halls',
       'Over 98% attendee satisfaction score'
     ],
-    quote: 'The level of security and visual elegance delivered by EventoraX was state-of-the-art. Setting up delegate passes took minutes.',
+    quote: 'The level of security and visual elegance delivered by Eventrye was state-of-the-art. Setting up delegate passes took minutes.',
     author: 'Syed Arsalan Shah',
     author_role: 'Director of Policy, FinTech Alliance Pakistan'
   },
@@ -88,13 +88,13 @@ const fallbackStudies: CaseStudy[] = [
     banner_url: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=1200&auto=format&fit=crop&q=80',
     summary: 'Issued 2,600 dual-language verified diplomas and academic conference credentials for international university delegations.',
     problem: 'Accredited university conferences required bilingual English/Urdu certificate issuance and persistent tamper-evident QR verification.',
-    solution: 'EventoraX batch CSV auto-merge engine coupled with Canva Design Studio multi-template generator.',
+    solution: 'Eventrye batch CSV auto-merge engine coupled with Canva Design Studio multi-template generator.',
     results: [
       '2,600 dual-language certificates generated in under 3 minutes',
       '100% verifiable on public portal /verify with cryptographic validation',
       'Over 14,000 certificate verification hits from employers worldwide'
     ],
-    quote: 'EventoraX eliminated weeks of clerical printing work. The credentials look prestigious and can be validated by universities anywhere in the world.',
+    quote: 'Eventrye eliminated weeks of clerical printing work. The credentials look prestigious and can be validated by universities anywhere in the world.',
     author: 'Prof. Ayesha Siddiqui',
     author_role: 'Convener, Academic Board'
   },
@@ -183,7 +183,7 @@ export default function CaseStudies() {
           </h1>
 
           <p className="mt-6 text-base sm:text-lg text-[#64748b] leading-relaxed max-w-2xl mx-auto">
-            Explore how leading Pakistani universities, enterprise summits, and clinical forums transform their ticketing, security, and tamper-evident credential issuance with EventoraX.
+            Explore how leading Pakistani universities, enterprise summits, and clinical forums transform their ticketing, security, and tamper-evident credential issuance with Eventrye.
           </p>
 
           {/* Quick Metrics Bar */}
@@ -367,7 +367,7 @@ export default function CaseStudies() {
 
               {/* Solution */}
               <div>
-                <h4 className="text-xs font-bold uppercase tracking-wider text-[#7c3aed] mb-1">The EventoraX Solution</h4>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#7c3aed] mb-1">The Eventrye Solution</h4>
                 <p className="text-sm text-[#475569] leading-relaxed bg-[#f5f3ff] p-4 rounded-2xl border border-[#ede9fe]">
                   {activeStudy.solution}
                 </p>

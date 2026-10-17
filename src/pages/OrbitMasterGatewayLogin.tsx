@@ -153,7 +153,7 @@ export default function OrbitMasterGatewayLogin() {
               ORBIT-I Master Authority
             </h1>
             <p className="text-xs text-slate-400">
-              EventoraX platform governance, client activations &amp; SaaS management.
+              Eventrye platform governance, client activations &amp; SaaS management.
             </p>
           </div>
 

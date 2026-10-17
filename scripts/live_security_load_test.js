@@ -1,5 +1,5 @@
 /**
- * EventoraX Live Security & High-Concurrency Benchmark Suite
+ * Eventrye Live Security & High-Concurrency Benchmark Suite
  * Tests:
  * 1. SQL Injection Resilience (Auth, Search, Multi-Tenant queries)
  * 2. Cross-Site Scripting (XSS) Sanitization
@@ -87,7 +87,7 @@ function logInfo(msg) {
 }
 
 async function runTestSuite() {
-  console.log(`\n${colors.magenta}${colors.bright}🚀 Starting EventoraX Live Production Benchmark & Security Stress Test...${colors.reset}`);
+  console.log(`\n${colors.magenta}${colors.bright}🚀 Starting Eventrye Live Production Benchmark & Security Stress Test...${colors.reset}`);
   console.log(`Target: ${BASE_URL}\n`);
 
   let superadminToken = '';
@@ -104,7 +104,7 @@ async function runTestSuite() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' }
     }, {
-      email: 'admin@eventorax.com',
+      email: 'admin@eventrye.com',
       password: 'admin123'
     });
 

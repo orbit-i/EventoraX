@@ -126,7 +126,7 @@ export default function ActivationPendingGatekeeper({ onActivated }: ActivationP
               Why do I need SuperAdmin Approval &amp; a License Key?
             </div>
             <p className="leading-relaxed">
-              To prevent fraudulent registrations, safeguard computational resources, and track isolated quotas (attendees, ID passes, tamper-evident certificates), every client organization must be approved by EventoraX Platform Authority (ORBIT-I Private Limited).
+              To prevent fraudulent registrations, safeguard computational resources, and track isolated quotas (attendees, ID passes, tamper-evident certificates), every client organization must be approved by Eventrye Platform Authority (ORBIT-I Private Limited).
             </p>
             <p className="leading-relaxed text-slate-500">
               Once approved, SuperAdmin issues your dedicated <strong className="text-slate-800">Activation License Key</strong> for tracking and resource allocation.
@@ -176,7 +176,7 @@ export default function ActivationPendingGatekeeper({ onActivated }: ActivationP
             </Button>
 
             <a
-              href="mailto:support@eventorax.com?subject=Expedite%20Organization%20Activation"
+              href="mailto:support@eventrye.com?subject=Expedite%20Organization%20Activation"
               className="text-xs text-blue-600 hover:text-blue-800 font-semibold"
             >
               Contact ORBIT-I Support &rarr;
@@ -187,7 +187,7 @@ export default function ActivationPendingGatekeeper({ onActivated }: ActivationP
 
       {/* Footer */}
       <div className="max-w-5xl mx-auto w-full text-center text-xs text-slate-400 py-2">
-        EventoraX Platform Infrastructure • Powered by ORBIT-I Private Limited
+        Eventrye Platform Infrastructure • Powered by ORBIT-I Private Limited
       </div>
     </div>
   );

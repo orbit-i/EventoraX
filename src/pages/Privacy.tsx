@@ -71,7 +71,7 @@ export default function Privacy() {
               <div>
                 <h2 className="font-heading text-lg sm:text-xl font-bold mb-2 text-[#0f172a]">7. Automated Compliance &amp; Security Sentinel</h2>
                 <p>
-                  EventoraX operates 24/7 automated security and compliance monitoring to safeguard our ecosystem against fraudulent credentials, phishing, illegal gambling, counterfeit certificates, and unauthorized access attempts.
+                  Eventrye operates 24/7 automated security and compliance monitoring to safeguard our ecosystem against fraudulent credentials, phishing, illegal gambling, counterfeit certificates, and unauthorized access attempts.
                 </p>
               </div>
 
@@ -81,9 +81,9 @@ export default function Privacy() {
                   For privacy inquiries, GDPR requests, or data deletion requests, reach our Data Protection Officer at:
                 </p>
                 <div className="flex flex-wrap gap-4 text-sm font-semibold">
-                  <a href="mailto:eventorax@orbit-i.tech" className="inline-flex items-center gap-1.5 text-blue-600 hover:underline">
+                  <a href="mailto:eventrye@orbit-i.tech" className="inline-flex items-center gap-1.5 text-blue-600 hover:underline">
                     <Mail className="w-4 h-4" />
-                    <span>eventorax@orbit-i.tech</span>
+                    <span>eventrye@orbit-i.tech</span>
                   </a>
                   <a href="tel:+923190375751" className="inline-flex items-center gap-1.5 text-emerald-600 hover:underline">
                     <Phone className="w-4 h-4" />

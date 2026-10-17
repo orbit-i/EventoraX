@@ -1,5 +1,5 @@
 /**
- * EventoraX 24/7 Security & Content Policy Monitoring Engine
+ * Eventrye 24/7 Security & Content Policy Monitoring Engine
  * Provides automated real-time compliance scanning, fraud detection, 
  * anti-phishing defense, and role isolation audit logging.
  */
@@ -59,7 +59,7 @@ export function scanContentPolicy(content = '') {
         isAllowed: false,
         category: rule.category,
         severity: rule.severity,
-        reason: `Content violates EventoraX Acceptable Use Policy [${rule.category}].`
+        reason: `Content violates Eventrye Acceptable Use Policy [${rule.category}].`
       };
     }
   }
@@ -169,7 +169,7 @@ export function contentPolicyGuard(req, res, next) {
       return res.status(400).json({
         success: false,
         status: 'policy_violation',
-        message: `EventoraX 24/7 Security Guard Alert: Your request was declined due to violation of platform policy (${result.category}).`
+        message: `Eventrye 24/7 Security Guard Alert: Your request was declined due to violation of platform policy (${result.category}).`
       });
     }
   }

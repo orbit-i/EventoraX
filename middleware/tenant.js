@@ -3,7 +3,7 @@ import { query } from '../db/db.js';
 /**
  * Multi-Tenant Context Resolver Middleware
  * Resolves the tenant context using multiple discovery strategies:
- * 1. Subdomain: e.g. `acme.eventorax.com` -> slug: 'acme'
+ * 1. Subdomain: e.g. `acme.eventrye.com` -> slug: 'acme'
  * 2. Header: `x-tenant-id` or `x-tenant-slug`
  * 3. Query string / Route param: `tenantId` or `tenantSlug`
  * 4. User's primary/active tenant from authentication (JWT / user session)
@@ -29,7 +29,7 @@ export async function resolveTenant(req, res, next) {
       tenantSlug = String(req.query.tenantSlug).toLowerCase().trim();
     }
 
-    // Strategy 3: Host / Subdomain extraction (e.g. org1.eventorax.com or custom domain)
+    // Strategy 3: Host / Subdomain extraction (e.g. org1.eventrye.com or custom domain)
     if (!tenantId && !tenantSlug && req.headers.host) {
       const host = req.headers.host.split(':')[0].toLowerCase();
       // Ignore localhost, IP addresses, or apex domain
@@ -99,7 +99,7 @@ export async function resolveTenant(req, res, next) {
       const [defaultRows] = await query('SELECT * FROM `tenants` WHERE `id` = 1');
       tenantRow = defaultRows && defaultRows.length > 0 ? defaultRows[0] : {
         id: 1,
-        name: 'EventoraX Global',
+        name: 'Eventrye Global',
         slug: 'default',
         plan: 'Enterprise',
         status: 'active',
@@ -153,7 +153,7 @@ export async function resolveTenant(req, res, next) {
   } catch (error) {
     console.error('[Tenant Middleware Error]:', error);
     // Continue with default tenant to avoid breaking requests
-    req.tenant = { id: 1, name: 'EventoraX Global', slug: 'default', plan: 'Enterprise' };
+    req.tenant = { id: 1, name: 'Eventrye Global', slug: 'default', plan: 'Enterprise' };
     req.tenantId = 1;
     next();
   }

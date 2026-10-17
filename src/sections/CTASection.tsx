@@ -17,7 +17,7 @@ export default function CTASection() {
           Ready to create your next great event?
         </h2>
         <p className="font-body text-base md:text-lg mb-8 text-[#475569]">
-          Join thousands of organizers who trust EventoraX.
+          Join thousands of organizers who trust Eventrye.
         </p>
         <Link
           to="/register"

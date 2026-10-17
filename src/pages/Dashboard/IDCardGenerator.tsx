@@ -422,7 +422,7 @@ export default function IDCardGenerator() {
               </div>
 
               <div className="flex items-center justify-between text-xs text-slate-700 py-1">
-                <span className="font-medium">Include EventoraX Official Seal</span>
+                <span className="font-medium">Include Eventrye Official Seal</span>
                 <input
                   type="checkbox"
                   checked={includeOrgLogo}
@@ -513,7 +513,7 @@ export default function IDCardGenerator() {
                               <div className="flex items-center gap-1.5">
                                 <img src="/favicon.png" alt="Logo" className="w-5 h-5 rounded-md object-contain" />
                                 <span className="text-[10px] font-extrabold tracking-wider uppercase opacity-90">
-                                  EventoraX Pass
+                                  Eventrye Pass
                                 </span>
                               </div>
                             ) : (
@@ -603,7 +603,7 @@ export default function IDCardGenerator() {
                           <div className="pt-2 border-t border-white/10 flex items-center justify-between text-[8px] opacity-75 shrink-0">
                             <span>PASS ID #{att.id}</span>
                             <span className="font-semibold">
-                              Powered by EventoraX • Verified by ORBIT-I Private Limited
+                              Powered by Eventrye • Verified by ORBIT-I Private Limited
                             </span>
                           </div>
                         </div>
@@ -664,7 +664,7 @@ export default function IDCardGenerator() {
                             <div className="flex items-center justify-between text-[9px] text-slate-300">
                               <span className="flex items-center gap-1">
                                 <Mail className="w-2.5 h-2.5 text-blue-400" />
-                                support@eventorax.com
+                                support@eventrye.com
                               </span>
                               <span className="flex items-center gap-1">
                                 <Phone className="w-2.5 h-2.5 text-emerald-400" />
@@ -684,7 +684,7 @@ export default function IDCardGenerator() {
                             </div>
 
                             <p className="text-[8px] text-center text-slate-400 pt-1">
-                              Official Credential Issued under Authority of EventoraX &amp; ORBIT-I Private Limited.
+                              Official Credential Issued under Authority of Eventrye &amp; ORBIT-I Private Limited.
                             </p>
                           </div>
                         </div>

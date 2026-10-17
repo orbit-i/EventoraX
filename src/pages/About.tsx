@@ -27,7 +27,7 @@ const problems = [
     icon: CreditCard,
     title: 'Fragmented Local & Global Payments',
     problem: 'Traditional platforms in Pakistan lack native integrations for SBP Raast P2M, JazzCash, and Easypaisa alongside international cards, causing up to 40% attendee drop-offs.',
-    solution: 'EventoraX integrates instant local Raast, mobile wallets, and international credit/debit card gateways with automated fee splits and zero checkout drop-off.'
+    solution: 'Eventrye integrates instant local Raast, mobile wallets, and international credit/debit card gateways with automated fee splits and zero checkout drop-off.'
   },
   {
     icon: QrCode,
@@ -51,7 +51,7 @@ const problems = [
     icon: Sparkles,
     title: 'Zero Brand Identity & Lost Trust',
     problem: 'Generic ticketing directories swallow organizer branding, showing competitor ads and generic receipts instead of promoting the organizer’s true identity.',
-    solution: 'Complete multi-tenant isolation with custom organizer subdomains (yourbrand.eventorax.orbit-i.tech), custom logos, brand colors, and white-label receipts.'
+    solution: 'Complete multi-tenant isolation with custom organizer subdomains (yourbrand.eventrye.orbit-i.tech), custom logos, brand colors, and white-label receipts.'
   },
   {
     icon: Wallet,
@@ -65,7 +65,7 @@ const milestones = [
   {
     year: 'July 2026',
     title: 'Genesis & Platform Architecture',
-    event: 'EventoraX was conceived and architected by ORBIT-I Private Limited. The core multi-tenant microservices engine and cryptographic verification protocols were laid down.'
+    event: 'Eventrye was conceived and architected by ORBIT-I Private Limited. The core multi-tenant microservices engine and cryptographic verification protocols were laid down.'
   },
   {
     year: 'August 2026',
@@ -95,7 +95,7 @@ const fallbackOrbitTeam = [
     name: 'Abdul Samad Rind',
     role: 'Full Stack Web Developer & Platform Architect',
     department: 'Leadership & Engineering',
-    bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading EventoraX core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
+    bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading Eventrye core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
     avatar_url: '',
     display_order: 1
   },
@@ -125,6 +125,24 @@ const fallbackOrbitTeam = [
     bio: 'Web Developer at ORBIT-I Private Limited. Specializing in modern web applications, performant user interfaces, responsive frontends, and dynamic event management workflows.',
     avatar_url: '',
     display_order: 4
+  },
+  {
+    id: 5,
+    name: 'Chander Parakash',
+    role: 'Backend Developer',
+    department: 'Backend Engineering & Distributed Systems',
+    bio: 'Backend Developer at ORBIT-I Private Limited. Specializing in high-concurrency Node.js microservices, database query optimization, Redis caching layers, and secure payment webhook pipelines for Eventrye.',
+    avatar_url: '',
+    display_order: 5
+  },
+  {
+    id: 6,
+    name: 'Laiba',
+    role: 'Backend Developer',
+    department: 'Backend Engineering & Cloud Architecture',
+    bio: 'Backend Developer at ORBIT-I Private Limited. Expert in RESTful API architecture, cryptographic ticket verification algorithms, automated batch processing, and scalable cloud database structures for Eventrye.',
+    avatar_url: '',
+    display_order: 6
   }
 ];
 
@@ -205,7 +223,7 @@ export default function About() {
             The Modern Operating System for <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#7c3aed] to-[#3b82f6]">Unforgettable Events</span>
           </h1>
           <p className="font-body text-lg md:text-xl max-w-3xl mx-auto text-[#475569] leading-relaxed mb-10">
-            EventoraX was conceived to eliminate the friction, fraud, and chaos in event management. From instant local payments and dynamic QR check-ins to visual certificate design and tamper-evident credential verification — everything lives under one powerful platform.
+            Eventrye was conceived to eliminate the friction, fraud, and chaos in event management. From instant local payments and dynamic QR check-ins to visual certificate design and tamper-evident credential verification — everything lives under one powerful platform.
           </p>
 
           <div className="flex flex-wrap items-center justify-center gap-4">
@@ -278,7 +296,7 @@ export default function About() {
               </div>
               <h3 className="font-heading text-2xl md:text-3xl font-bold mb-4 text-[#0f172a]">Our Vision</h3>
               <p className="font-body text-base leading-relaxed text-[#475569]">
-                To establish EventoraX as the global benchmark for trust in physical and virtual events — where every ticket is fraud-proof, every certificate is cryptographically verifiable, and organizers have full sovereignty over their brand and ticket revenues.
+                To establish Eventrye as the global benchmark for trust in physical and virtual events — where every ticket is fraud-proof, every certificate is cryptographically verifiable, and organizers have full sovereignty over their brand and ticket revenues.
               </p>
             </div>
           </div>
@@ -336,7 +354,7 @@ export default function About() {
               The Problems We Solve
             </h2>
             <p className="font-body text-base md:text-lg text-[#475569] mt-3">
-              Event planners lose thousands of hours and critical revenue to outdated spreadsheets, fake tickets, and disjointed tools. Here is how EventoraX transforms the experience:
+              Event planners lose thousands of hours and critical revenue to outdated spreadsheets, fake tickets, and disjointed tools. Here is how Eventrye transforms the experience:
             </p>
           </div>
 
@@ -362,7 +380,7 @@ export default function About() {
 
                   <div className="pt-4 mt-2 border-t border-purple-100">
                     <p className="text-xs font-bold uppercase tracking-wider text-purple-700 mb-1 flex items-center gap-1.5">
-                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> EventoraX Solution
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" /> Eventrye Solution
                     </p>
                     <p className="font-body text-sm font-medium text-slate-800 leading-relaxed">{p.solution}</p>
                   </div>
@@ -384,7 +402,7 @@ export default function About() {
               Our Journey
             </h2>
             <p className="font-body text-base md:text-lg text-[#475569] mt-3">
-              Launched in July 2026 by ORBIT-I Private Limited, EventoraX is rapidly scaling as the primary backbone for premier summits and conferences.
+              Launched in July 2026 by ORBIT-I Private Limited, Eventrye is rapidly scaling as the primary backbone for premier summits and conferences.
             </p>
           </div>
 
@@ -433,7 +451,7 @@ export default function About() {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 max-w-6xl mx-auto items-stretch">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto items-stretch">
             {teamMembers.map((member, i) => (
               <div
                 key={member.id || i}

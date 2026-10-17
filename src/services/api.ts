@@ -1,4 +1,4 @@
-// API Client for EventoraX Multi-Tenant SaaS & PaaS
+// API Client for Eventrye Multi-Tenant SaaS & PaaS
 // Automatically manages JWT tokens, active tenant headers, and PaaS endpoints
 
 const API_BASE = '/api';

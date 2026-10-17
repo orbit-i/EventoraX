@@ -65,7 +65,7 @@ export default function Contact() {
             Get in touch with our team
           </h1>
           <p className="font-body text-base md:text-lg max-w-2xl mx-auto text-[#475569] leading-relaxed">
-            Have questions about EventoraX, multi-tenant setups, or need a customized enterprise deployment? Our engineers are active 24/7.
+            Have questions about Eventrye, multi-tenant setups, or need a customized enterprise deployment? Our engineers are active 24/7.
           </p>
         </div>
       </section>
@@ -78,16 +78,16 @@ export default function Contact() {
             <div className="lg:col-span-1 space-y-5">
               {/* Clickable Email */}
               <a 
-                href="mailto:eventorax@orbit-i.tech" 
+                href="mailto:eventrye@orbit-i.tech" 
                 className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 hover:bg-blue-50/80 border border-slate-200/80 hover:border-blue-200 transition-all group"
-                title="Send email to EventoraX"
+                title="Send email to Eventrye"
               >
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-blue-100 text-blue-600 group-hover:scale-105 transition-transform">
                   <Mail size={20} />
                 </div>
                 <div>
                   <h4 className="font-body text-xs font-bold uppercase tracking-wider text-slate-500 mb-0.5">Email Support</h4>
-                  <p className="font-body text-sm font-semibold text-blue-600 group-hover:underline">eventorax@orbit-i.tech</p>
+                  <p className="font-body text-sm font-semibold text-blue-600 group-hover:underline">eventrye@orbit-i.tech</p>
                 </div>
               </a>
 
@@ -95,7 +95,7 @@ export default function Contact() {
               <a 
                 href="tel:+923190375751" 
                 className="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 hover:bg-emerald-50/80 border border-slate-200/80 hover:border-emerald-200 transition-all group"
-                title="Call EventoraX directly"
+                title="Call Eventrye directly"
               >
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 bg-emerald-100 text-emerald-600 group-hover:scale-105 transition-transform">
                   <Phone size={20} />
@@ -159,7 +159,7 @@ export default function Contact() {
                     </div>
                     <h3 className="font-heading text-2xl font-bold mb-2 text-slate-900">Inquiry Received!</h3>
                     <p className="font-body text-sm text-slate-600 mb-6 max-w-md mx-auto leading-relaxed">
-                      Thank you for contacting EventoraX. Your message has been routed to our technical support team. We will respond to your email shortly.
+                      Thank you for contacting Eventrye. Your message has been routed to our technical support team. We will respond to your email shortly.
                     </p>
                     <button
                       type="button"

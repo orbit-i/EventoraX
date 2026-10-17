@@ -93,10 +93,10 @@ export default function DesignStudio() {
   const [hasLanyardHole, setHasLanyardHole] = useState(false);
 
   // Persistent Uploaded Custom Logos Library (Saved in portal localStorage)
-  const STORAGE_KEY_GRAPHICS = 'eventorax_studio_saved_graphics';
+  const STORAGE_KEY_GRAPHICS = 'eventrye_studio_saved_graphics';
   const [uploadedLogos, setUploadedLogos] = useState<{ id: string; name: string; url: string }[]>(() => {
     try {
-      const saved = localStorage.getItem('eventorax_studio_saved_graphics');
+      const saved = localStorage.getItem('eventrye_studio_saved_graphics');
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) return parsed;
@@ -105,7 +105,7 @@ export default function DesignStudio() {
       console.warn('Failed to parse saved graphics', e);
     }
     return [
-      { id: 'logo-official', name: 'EventoraX Ribbon Star', url: '/images/eventorax-app-icon.png' },
+      { id: 'logo-official', name: 'Eventrye Ribbon Star', url: '/images/eventrye-app-icon.png' },
       { id: 'logo-orbit', name: 'ORBIT-I Official Seal', url: '/images/logo-orbit.png' }
     ];
   });
@@ -196,7 +196,7 @@ export default function DesignStudio() {
     {
       id: 'el-sign',
       type: 'text',
-      text: 'Authorized Executive\nEventoraX Credentials',
+      text: 'Authorized Executive\nEventrye Credentials',
       x: 75,
       y: 74,
       fontSize: 12,
@@ -482,7 +482,7 @@ export default function DesignStudio() {
     const newEl: CanvasElement = {
       id: `el-seal-${Date.now()}`,
       type: 'image',
-      imageUrl: '/images/eventorax-app-icon.png',
+      imageUrl: '/images/eventrye-app-icon.png',
       imageAlt: 'Official Gold Verification Seal',
       x: 82,
       y: 78,

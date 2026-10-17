@@ -77,7 +77,7 @@ const DEFAULT_PLAN_LIMITS = {
     features: [
       '50,000+ attendees & 500 events',
       'Unlimited Certificate & ID Badge Generation',
-      'Full White-Labeling (Remove EventoraX)',
+      'Full White-Labeling (Remove Eventrye)',
       'Custom Domain (events.yourdomain.com)',
       'Multi-Tenant Workspaces Isolation',
       'Tamper-Proof Public Verification Portal',
@@ -228,7 +228,7 @@ router.post('/validate-coupon', async (req, res) => {
 router.get('/', verifyToken, resolveTenant, async (req, res) => {
   try {
     const tenant = req.tenant;
-    const isMasterAuthority = req.user?.role === 'admin' || tenant.id === 1 || tenant.slug === 'eventorax-hq';
+    const isMasterAuthority = req.user?.role === 'admin' || tenant.id === 1 || tenant.slug === 'eventrye-hq';
 
     // Get attendees used count for this tenant
     const [attendeeRows] = await query(
@@ -293,7 +293,7 @@ router.post('/upgrade', verifyToken, resolveTenant, requireTenantRole(['owner', 
     const { plan } = req.body;
     const tenant = req.tenant;
 
-    if (req.user?.role === 'admin' || tenant.id === 1 || tenant.slug === 'eventorax-hq') {
+    if (req.user?.role === 'admin' || tenant.id === 1 || tenant.slug === 'eventrye-hq') {
       return res.status(400).json({
         success: false,
         message: 'SuperAdmin has unlimited platform authority and cannot be assigned a paid client subscription.'
@@ -343,7 +343,7 @@ router.post('/purchase', verifyToken, resolveTenant, requireTenantRole(['owner',
       }
     }
 
-    if (req.user?.role === 'admin' || tenant.id === 1 || tenant.slug === 'eventorax-hq') {
+    if (req.user?.role === 'admin' || tenant.id === 1 || tenant.slug === 'eventrye-hq') {
       return res.status(400).json({
         success: false,
         message: 'SuperAdmin has unlimited platform authority and cannot purchase a paid client subscription.'

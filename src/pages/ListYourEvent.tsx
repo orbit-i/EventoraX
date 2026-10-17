@@ -44,7 +44,7 @@ const fallbackPlans: Plan[] = [
     tagline: 'Ideal for university societies, free meetups, and local workshops',
     payout_schedule: '48-72 hours post-event',
     features: [
-      'Public listing on EventoraX Directory & Marketplace',
+      'Public listing on Eventrye Directory & Marketplace',
       'Automated dynamic QR code passes & mobile check-in scanning',
       'Instant attendee payments via SBP Raast, JazzCash, Easypaisa & Cards',
       'Standard attendee analytics & downloadable CSV exports',
@@ -89,7 +89,7 @@ const fallbackPlans: Plan[] = [
       'VIP Gold Verified Organizer Shield on event page & tickets',
       'Dedicated on-ground hardware QR gate app & hardware scanner assistance',
       'Tamper-evident SHA-256 digital passport passes & ID cards',
-      'Custom branded portal URL (e.g. yourevent.eventorax.orbit-i.tech)',
+      'Custom branded portal URL (e.g. yourevent.eventrye.orbit-i.tech)',
       'Lowest 2.5% platform commission on all ticket sales',
       '24/7 VIP dedicated account director & on-call technician'
     ]
@@ -107,7 +107,7 @@ const fallbackAccounts = {
   easypaisa_account: '03190375751',
   currency: 'PKR',
   support_whatsapp: '+923190375751',
-  support_email: 'eventorax@orbit-i.tech'
+  support_email: 'eventrye@orbit-i.tech'
 };
 
 const presetBanners = [
@@ -239,7 +239,7 @@ export default function ListYourEvent() {
         <div className="content-max text-center relative z-10 px-4">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-50 text-[#1d4ed8] text-xs font-bold uppercase tracking-wider mb-5 border border-blue-200/80 shadow-xs">
             <Sparkles className="w-4 h-4 text-amber-500" />
-            <span>EventoraX Public Marketplace &bull; VIP Showcase Available</span>
+            <span>Eventrye Public Marketplace &bull; VIP Showcase Available</span>
           </div>
 
           <h1 className="font-heading text-3xl sm:text-5xl md:text-6xl font-extrabold tracking-tight mb-5 text-[#0f172a] max-w-4xl mx-auto leading-tight">
@@ -317,7 +317,7 @@ export default function ListYourEvent() {
               </div>
               <h3 className="font-heading font-bold text-sm sm:text-base text-slate-900 mb-1.5">Go Live &amp; Sell Tickets</h3>
               <p className="text-xs text-slate-600 leading-relaxed">
-                Your event goes live in the EventoraX Directory. Attendees buy passes instantly with verified local Pakistani payment rails.
+                Your event goes live in the Eventrye Directory. Attendees buy passes instantly with verified local Pakistani payment rails.
               </p>
             </div>
 
@@ -447,7 +447,7 @@ export default function ListYourEvent() {
             <div className="flex flex-wrap items-center justify-between gap-4 mb-6 pb-4 border-b border-slate-800">
               <div>
                 <span className="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold uppercase tracking-wider border border-blue-500/30">
-                  Official EventoraX Receiving Accounts
+                  Official Eventrye Receiving Accounts
                 </span>
                 <h3 className="font-heading text-lg sm:text-2xl font-bold mt-2 text-white">
                   Pay Listing Fee: Rs. {selectedPlan.listing_fee_pkr.toLocaleString()} ({selectedPlan.name})
@@ -595,7 +595,7 @@ export default function ListYourEvent() {
                 <Wallet className="w-4 h-4 text-purple-700" /> 2. Your Bank / Raast Account for Ticket Payouts
               </h4>
               <p className="text-xs text-slate-600 mb-4">
-                When attendees purchase tickets on EventoraX, we deduct our platform commission ({selectedPlan.commission_rate_percent}%) and disburse the remaining ticket revenue directly into this account.
+                When attendees purchase tickets on Eventrye, we deduct our platform commission ({selectedPlan.commission_rate_percent}%) and disburse the remaining ticket revenue directly into this account.
               </p>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div>
@@ -854,7 +854,7 @@ export default function ListYourEvent() {
             {/* Submission Action */}
             <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="text-xs text-slate-500">
-                By submitting, you agree to EventoraX Listing Terms & Commission Policy ({selectedPlan.commission_rate_percent}% on ticket sales).
+                By submitting, you agree to Eventrye Listing Terms & Commission Policy ({selectedPlan.commission_rate_percent}% on ticket sales).
               </div>
               <button
                 type="submit"
@@ -921,7 +921,7 @@ export default function ListYourEvent() {
                 View Events Directory
               </Link>
               <a
-                href={`https://wa.me/923190375751?text=Hi%20EventoraX,%20I%20have%20submitted%20my%20event%20listing%20with%20reference%20${submittedResult.reference_code}`}
+                href={`https://wa.me/923190375751?text=Hi%20Eventrye,%20I%20have%20submitted%20my%20event%20listing%20with%20reference%20${submittedResult.reference_code}`}
                 target="_blank"
                 rel="noreferrer"
                 className="w-full py-2.5 rounded-xl font-heading font-bold text-xs bg-emerald-50 text-emerald-700 hover:bg-emerald-100 transition-all flex items-center justify-center gap-1.5"

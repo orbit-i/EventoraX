@@ -3,7 +3,7 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'eventorax_jwt_production_secret_key_2025';
+const JWT_SECRET = process.env.JWT_SECRET || 'eventrye_jwt_production_secret_key_2025';
 
 export function verifyToken(req, res, next) {
   const authHeader = req.headers['authorization'];

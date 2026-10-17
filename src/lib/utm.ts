@@ -1,5 +1,5 @@
 /**
- * UTM Tracking Module for EventoraX
+ * UTM Tracking Module for Eventrye
  * Captures, stores and supplies UTM marketing campaign parameters
  */
 
@@ -14,7 +14,7 @@ export interface UtmData {
   landing_page?: string;
 }
 
-const STORAGE_KEY = 'eventorax_utm_params';
+const STORAGE_KEY = 'eventrye_utm_params';
 
 /**
  * Initializes UTM capture from current URL search parameters

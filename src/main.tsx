@@ -8,3 +8,12 @@ createRoot(document.getElementById('root')!).render(
     <App />
   </BrowserRouter>,
 );
+
+// Signal VIP preloader to smoothly fade out once React mounts
+if (typeof window !== 'undefined') {
+  requestAnimationFrame(() => {
+    setTimeout(() => {
+      window.dispatchEvent(new Event('eventrye-ready'));
+    }, 150);
+  });
+}

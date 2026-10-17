@@ -55,10 +55,10 @@ export default function NotFound() {
           </a>
           <span>•</span>
           <a
-            href="mailto:eventorax@orbit-i.tech"
+            href="mailto:eventrye@orbit-i.tech"
             className="text-blue-600 hover:underline font-bold"
           >
-            eventorax@orbit-i.tech
+            eventrye@orbit-i.tech
           </a>
         </div>
       </div>

@@ -180,7 +180,7 @@ router.post('/webhooks/:id/test', verifyToken, resolveTenant, async (req, res) =
         slug: req.tenant.slug
       },
       data: {
-        message: 'EventoraX PaaS Webhook ping successful!',
+        message: 'Eventrye PaaS Webhook ping successful!',
         sampleEventId: 1
       }
     };

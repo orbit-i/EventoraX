@@ -45,10 +45,10 @@ export default function Header({ title }: HeaderProps) {
   const dropdownRef = useRef<HTMLDivElement>(null);
   const notifRef = useRef<HTMLDivElement>(null);
 
-  // Strictly filter workspaces: Non-admin clients NEVER see or access Tenant 1 (EventoraX HQ)
+  // Strictly filter workspaces: Non-admin clients NEVER see or access Tenant 1 (Eventrye HQ)
   const accessibleTenants = isSuperAdmin
     ? userTenants
-    : userTenants.filter(t => t.id !== 1 && !t.name.toLowerCase().includes('eventorax hq'));
+    : userTenants.filter(t => t.id !== 1 && !t.name.toLowerCase().includes('eventrye hq') && !t.name.toLowerCase().includes('eventrye hq'));
 
   const loadNotifications = async () => {
     try {
@@ -142,8 +142,8 @@ export default function Header({ title }: HeaderProps) {
     }
   };
 
-  const activeTenantName = currentTenant?.name || "EventoraX Workspace";
-  const isMaster = isSuperAdmin || currentTenant?.id === 1 || currentTenant?.slug === 'eventorax-hq';
+  const activeTenantName = currentTenant?.name || "Eventrye Workspace";
+  const isMaster = isSuperAdmin || currentTenant?.id === 1 || currentTenant?.slug === 'eventrye-hq' || currentTenant?.slug === 'eventrye-hq';
   const displayPlan = isMaster ? "Platform Master" : (currentTenant?.plan || "Starter");
 
   return (
@@ -204,7 +204,7 @@ export default function Header({ title }: HeaderProps) {
                 <div className="absolute left-0 mt-2 w-72 rounded-2xl bg-white border border-[#e9e4ff] shadow-2xl p-2 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
                   <div className="px-3 py-2 border-b border-[#f3f0ff] mb-1">
                     <p className="text-[11px] font-bold uppercase tracking-wider text-[#94a3b8]">
-                      EventoraX Workspaces
+                      Eventrye Workspaces
                     </p>
                   </div>
 

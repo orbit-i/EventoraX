@@ -1,5 +1,5 @@
 # ========================================================
-# EventoraX Enterprise Multi-Tenant SaaS & PaaS Dockerfile
+# Eventrye Enterprise Multi-Tenant SaaS & PaaS Dockerfile
 # Optimized Multi-Stage Production Build
 # ========================================================
 

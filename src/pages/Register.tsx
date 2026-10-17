@@ -86,7 +86,7 @@ export default function Register() {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="text-center mb-8 flex flex-col items-center">
-          <Link to="/" className="inline-block mb-2" title="Return to EventoraX Homepage">
+          <Link to="/" className="inline-block mb-2" title="Return to Eventrye Homepage">
             <BrandLogo variant="compact" size="lg" showTagline={true} />
           </Link>
           <p className="font-body text-sm mt-2 text-[#64748b]">

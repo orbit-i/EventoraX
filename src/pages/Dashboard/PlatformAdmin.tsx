@@ -244,8 +244,8 @@ export default function PlatformAdmin() {
     jazzcash: { enabled: true, title: 'JazzCash Mobile Wallet & Till', account_title: 'ORBIT-I Private Limited', account_number: '03001234567', till_id: 'JC-ORBIT-8899', merchant_id: '', password: '', salt: '', api_mode: 'manual', instructions: 'Send amount to JazzCash Till 03001234567. Enter TID below.' },
     raast: { enabled: true, title: 'Raast Instant Pay (State Bank of Pakistan)', account_title: 'ORBIT-I Private Limited', iban: 'PK45MEZN0001234567890101', raast_id: '03190375751', instructions: 'Pay instantly via mobile banking app using Raast ID or IBAN.' },
     bank_transfer: { enabled: true, title: 'Direct Corporate Bank Transfer', bank_name: 'Meezan Bank Limited', account_title: 'ORBIT-I Private Limited', account_number: '01020304050607', iban: 'PK45MEZN0001234567890101', branch: 'F-7 Markaz, Islamabad', instructions: 'Direct wire to our Meezan Bank corporate clearing account.' },
-    safepay: { enabled: true, title: 'Safepay Pakistan (Debit / Credit Cards & PayPak)', public_key: 'sec_sandbox_eventorax_2026', secret_key: '', environment: 'sandbox', instructions: 'Accept Visa, Mastercard and PayPak.' },
-    stripe: { enabled: true, title: 'Stripe International (Global USD Cards)', publishable_key: 'pk_test_eventorax_global_2026', secret_key: '', instructions: 'Accept all international cards and Apple Pay.' }
+    safepay: { enabled: true, title: 'Safepay Pakistan (Debit / Credit Cards & PayPak)', public_key: 'sec_sandbox_eventrye_2026', secret_key: '', environment: 'sandbox', instructions: 'Accept Visa, Mastercard and PayPak.' },
+    stripe: { enabled: true, title: 'Stripe International (Global USD Cards)', publishable_key: 'pk_test_eventrye_global_2026', secret_key: '', instructions: 'Accept all international cards and Apple Pay.' }
   });
   const [, setGatewaysLoading] = useState(false);
   const [gatewaysSaving, setGatewaysSaving] = useState(false);
@@ -442,7 +442,7 @@ export default function PlatformAdmin() {
   // SUPERADMIN PROFILE & CREDENTIALS STATE
   // ==========================================
   const [adminProfileName, setAdminProfileName] = useState(user?.fullName || 'Platform SuperAdmin');
-  const [adminProfileEmail, setAdminProfileEmail] = useState(user?.email || 'admin@eventorax.com');
+  const [adminProfileEmail, setAdminProfileEmail] = useState(user?.email || 'admin@eventrye.com');
   const [adminCurrentPassword, setAdminCurrentPassword] = useState('');
   const [adminNewPassword, setAdminNewPassword] = useState('');
   const [adminConfirmPassword, setAdminConfirmPassword] = useState('');
@@ -1159,10 +1159,10 @@ export default function PlatformAdmin() {
           <div className="relative z-10 max-w-3xl space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold text-emerald-300">
               <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              EventoraX Master SuperAdmin • Platform Authority
+              Eventrye Master SuperAdmin • Platform Authority
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight font-heading">
-              EventoraX Platform Governance &amp; Approvals HQ
+              Eventrye Platform Governance &amp; Approvals HQ
             </h1>
             <p className="text-sm text-slate-300 leading-relaxed">
               Master control center for client subscriptions, payment approvals, financial revenues, isolated tenant quotas, and security enforcement. SuperAdmin oversees the platform — client organizations manage their events.
@@ -1535,7 +1535,7 @@ export default function PlatformAdmin() {
                     Platform Security &amp; Role Separation Architecture
                   </h4>
                   <p className="text-xs text-slate-600 leading-relaxed">
-                    <strong>SuperAdmin (EventoraX HQ):</strong> Governs the SaaS platform, approves client plan payments, manages market pricing, monitors security &amp; 24/7 compliance, and configures the public website CMS. SuperAdmin does NOT create event badges or certificates for personal use.
+                    <strong>SuperAdmin (Eventrye HQ):</strong> Governs the SaaS platform, approves client plan payments, manages market pricing, monitors security &amp; 24/7 compliance, and configures the public website CMS. SuperAdmin does NOT create event badges or certificates for personal use.
                   </p>
                   <p className="text-xs text-slate-600 leading-relaxed pt-1">
                     <strong>Client Organizations:</strong> Event managers, seminar hosts, universities, and companies pay subscription fees to host events, print ID cards, issue verifiable certificates, and use the Canva design studio within their isolated workspaces.
@@ -2173,7 +2173,7 @@ export default function PlatformAdmin() {
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {tenants.map((t) => {
-                    const isMaster = t.id === 1 || t.slug === 'eventorax-hq';
+                    const isMaster = t.id === 1 || t.slug === 'eventrye-hq';
 
                     return (
                       <tr key={t.id} className="hover:bg-slate-50/80 transition-colors">
@@ -2600,7 +2600,7 @@ export default function PlatformAdmin() {
                       <tbody className="divide-y divide-slate-100">
                         {(adminCoupons.length > 0 ? adminCoupons : [
                           { id: 1, code: 'ORBIT2026', description: '2026 Platform Launch Promo', discount_type: 'percentage', discount_value: 20, min_purchase: 0, times_used: 14, max_uses: 1000, expires_at: '2027-01-01', is_active: 1 },
-                          { id: 2, code: 'EVENTORAX50', description: 'Exclusive 50% Off Early Bird Campaign', discount_type: 'percentage', discount_value: 50, min_purchase: 50, times_used: 8, max_uses: 500, expires_at: '2027-01-01', is_active: 1 },
+                          { id: 2, code: 'EVENTRYE50', description: 'Exclusive 50% Off Early Bird Campaign', discount_type: 'percentage', discount_value: 50, min_purchase: 50, times_used: 8, max_uses: 500, expires_at: '2027-01-01', is_active: 1 },
                           { id: 3, code: 'WELCOME10', description: '$10 Flat Discount for New Organizations', discount_type: 'fixed', discount_value: 10, min_purchase: 20, times_used: 25, max_uses: 2000, expires_at: '2027-01-01', is_active: 1 }
                         ]).map((c: any) => (
                           <tr key={c.id || c.code} className="hover:bg-slate-50/80">
@@ -2948,7 +2948,7 @@ export default function PlatformAdmin() {
                 <Input
                   value={cmsTitle}
                   onChange={(e) => setCmsTitle(e.target.value)}
-                  placeholder="e.g. EventoraX — Next-Gen Automated Event Management"
+                  placeholder="e.g. Eventrye — Next-Gen Automated Event Management"
                   className="rounded-xl border-slate-200 text-xs h-10 font-medium"
                 />
               </div>
@@ -3101,7 +3101,7 @@ export default function PlatformAdmin() {
                     <div>
                       <label className="text-xs font-bold text-slate-700 block mb-1">Corporate Support Email</label>
                       <Input
-                        value={cmsContent.contact_email || "eventorax@orbit-i.tech"}
+                        value={cmsContent.contact_email || "eventrye@orbit-i.tech"}
                         onChange={(e) => setCmsContent({ ...cmsContent, contact_email: e.target.value })}
                         className="rounded-xl border-slate-200 text-xs h-10 font-mono"
                       />
@@ -3132,7 +3132,7 @@ export default function PlatformAdmin() {
                     <label className="text-xs font-bold text-slate-700 block mb-1">Regulatory &amp; Data Protection Statement</label>
                     <textarea
                       rows={3}
-                      value={cmsContent.legal_compliance || "EventoraX adheres to State Bank of Pakistan (SBP) cybersecurity guidelines and international data isolation protocols."}
+                      value={cmsContent.legal_compliance || "Eventrye adheres to State Bank of Pakistan (SBP) cybersecurity guidelines and international data isolation protocols."}
                       onChange={(e) => setCmsContent({ ...cmsContent, legal_compliance: e.target.value })}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
                     />
@@ -3141,7 +3141,7 @@ export default function PlatformAdmin() {
                     <label className="text-xs font-bold text-slate-700 block mb-1">Tamper-Evident Verification Terms</label>
                     <textarea
                       rows={3}
-                      value={cmsContent.legal_verify || "All digital certificates and attendee passes issued by EventoraX contain SHA-256 cryptographic watermarks verifiable permanently at /verify."}
+                      value={cmsContent.legal_verify || "All digital certificates and attendee passes issued by Eventrye contain SHA-256 cryptographic watermarks verifiable permanently at /verify."}
                       onChange={(e) => setCmsContent({ ...cmsContent, legal_verify: e.target.value })}
                       className="w-full px-3.5 py-2.5 rounded-xl border border-slate-200 text-xs font-medium"
                     />
@@ -3152,7 +3152,7 @@ export default function PlatformAdmin() {
               <div>
                 <label className="text-xs font-bold text-slate-700 block mb-1">Official Endorsement Statement</label>
                 <Input
-                  value={cmsContent.endorsement || "Powered by EventoraX • Developed & Maintained by ORBIT-I Private Limited"}
+                  value={cmsContent.endorsement || "Powered by Eventrye • Developed & Maintained by ORBIT-I Private Limited"}
                   onChange={(e) => setCmsContent({ ...cmsContent, endorsement: e.target.value })}
                   className="rounded-xl border-slate-200 text-xs h-10 font-medium"
                 />
@@ -4256,7 +4256,7 @@ export default function PlatformAdmin() {
                   Authentic Institutional Testimonials &amp; Client Feedback
                 </h3>
                 <p className="text-xs text-slate-500 mt-1 max-w-2xl leading-relaxed">
-                  Manage real reviews from universities, academic societies, and corporate clients using EventoraX. Placeholders and fake reviews are forbidden. All approved entries display live on the official landing page.
+                  Manage real reviews from universities, academic societies, and corporate clients using Eventrye. Placeholders and fake reviews are forbidden. All approved entries display live on the official landing page.
                 </p>
               </div>
 
@@ -4608,7 +4608,7 @@ export default function PlatformAdmin() {
                     rows={4}
                     value={newTestimonial.feedback}
                     onChange={(e) => setNewTestimonial({ ...newTestimonial, feedback: e.target.value })}
-                    placeholder="Write the authentic institutional feedback regarding EventoraX's certificate issuance, badge generation, or attendance..."
+                    placeholder="Write the authentic institutional feedback regarding Eventrye's certificate issuance, badge generation, or attendance..."
                     className="w-full rounded-xl border border-slate-200 p-3 text-xs text-slate-900 focus:outline-none focus:ring-2 focus:ring-[#7c3aed]"
                   />
                 </div>
@@ -4691,11 +4691,11 @@ export default function PlatformAdmin() {
                 </div>
               </div>
 
-              {inspectingTenant.id === 1 || inspectingTenant.slug === 'eventorax-hq' ? (
+              {inspectingTenant.id === 1 || inspectingTenant.slug === 'eventrye-hq' ? (
                 <div className="p-3 rounded-xl bg-blue-50/70 border border-blue-100 text-xs text-blue-900 space-y-1">
                   <span className="font-bold block">Platform Master SuperAdmin Authority</span>
                   <p className="text-[11px] text-slate-500">
-                    EventoraX HQ governs the entire multi-tenant SaaS platform. Public event portals only exist for registered client organizations.
+                    Eventrye HQ governs the entire multi-tenant SaaS platform. Public event portals only exist for registered client organizations.
                   </p>
                 </div>
               ) : (
@@ -4715,7 +4715,7 @@ export default function PlatformAdmin() {
                 >
                   Close
                 </Button>
-                {inspectingTenant.id !== 1 && inspectingTenant.slug !== 'eventorax-hq' && (
+                {inspectingTenant.id !== 1 && inspectingTenant.slug !== 'eventrye-hq' && (
                   <a
                     href={`/c/${inspectingTenant.slug}`}
                     target="_blank"
@@ -5619,7 +5619,7 @@ export default function PlatformAdmin() {
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">EventoraX Solution</label>
+                    <label className="font-bold text-slate-700 block mb-1">Eventrye Solution</label>
                     <textarea
                       rows={2}
                       placeholder="Multi-gate QR check-ins, automatic certificate generation..."
@@ -5663,7 +5663,7 @@ export default function PlatformAdmin() {
                   <div>
                     <label className="font-bold text-slate-700 block mb-1">Quote Snippet</label>
                     <Input
-                      placeholder="e.g. EventoraX completely eradicated our registration chaos..."
+                      placeholder="e.g. Eventrye completely eradicated our registration chaos..."
                       value={caseStudyModal.study.quote || ''}
                       onChange={(e) => setCaseStudyModal({
                         ...caseStudyModal,

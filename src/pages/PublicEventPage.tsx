@@ -123,7 +123,7 @@ export default function PublicEventPage() {
       `📅 Date: ${new Date(event.start_date).toLocaleDateString()} at ${event.start_time}\n` +
       `📍 Venue: ${event.venue_name || 'Online'}\n` +
       `🎟️ Register your official pass here: ${window.location.href}\n\n` +
-      `Powered by EventoraX`
+      `Powered by Eventrye`
     );
     window.open(`https://wa.me/?text=${text}`, '_blank');
   };
@@ -151,7 +151,7 @@ export default function PublicEventPage() {
         // Real-Time Event Sync: Broadcast new attendee to dashboard
         try {
           if (typeof BroadcastChannel !== 'undefined') {
-            const bc = new BroadcastChannel('eventorax_realtime_events');
+            const bc = new BroadcastChannel('eventrye_realtime_events');
             bc.postMessage({
               type: 'NEW_ATTENDEE_REGISTERED',
               eventId: event.id,
@@ -200,7 +200,7 @@ export default function PublicEventPage() {
           <h2 className="text-2xl font-bold font-heading text-slate-900">Event Not Available</h2>
           <p className="text-sm text-slate-600 mt-2 mb-6">{error || 'This event does not exist or may have been unlisted.'}</p>
           <Link to="/" className="inline-block px-5 py-2.5 rounded-xl bg-[#1d4ed8] text-white text-xs font-bold">
-            Back to EventoraX Home
+            Back to Eventrye Home
           </Link>
         </div>
       </div>
@@ -533,13 +533,13 @@ export default function PublicEventPage() {
             <div className="flex items-center gap-3">
               <div className="w-12 h-12 rounded-2xl bg-blue-50 border border-blue-200 overflow-hidden flex items-center justify-center">
                 <img
-                  src={event.organizer_logo || '/images/eventorax-logo-concept9.jpg'}
+                  src={event.organizer_logo || '/images/eventrye-logo-concept9.jpg'}
                   alt={event.organizer_name || 'Organizer'}
                   className="w-full h-full object-cover"
                 />
               </div>
               <div>
-                <h5 className="font-bold text-sm text-slate-900">{event.organizer_name || 'EventoraX Verified Host'}</h5>
+                <h5 className="font-bold text-sm text-slate-900">{event.organizer_name || 'Eventrye Verified Host'}</h5>
                 <span className="text-[11px] text-emerald-600 font-semibold flex items-center gap-1">
                   <ShieldCheck className="w-3.5 h-3.5" />
                   Verified Organization
@@ -778,7 +778,7 @@ export default function PublicEventPage() {
                       {event.title}
                     </div>
                     <div className="text-[9px] text-slate-400">
-                      {event.venue_name || 'EventoraX Venue'} • {new Date(event.start_date).toLocaleDateString()}
+                      {event.venue_name || 'Eventrye Venue'} • {new Date(event.start_date).toLocaleDateString()}
                     </div>
                   </div>
 
@@ -840,7 +840,7 @@ export default function PublicEventPage() {
                   {/* Pass Footer */}
                   <div className="pt-2 border-t border-white/10 text-[8px] text-slate-400 flex items-center justify-between shrink-0">
                     <span className="text-emerald-400 font-bold">VERIFIED PASS</span>
-                    <span>EventoraX Platform</span>
+                    <span>Eventrye Platform</span>
                   </div>
                 </div>
 

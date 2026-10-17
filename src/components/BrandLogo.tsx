@@ -33,8 +33,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   // Official Brand App Icon
   const iconImg = (
     <img 
-      src="/images/eventorax-app-icon.png" 
-      alt="EventoraX Official Icon" 
+      src="/logo.png" 
+      alt="Eventrye Official Icon" 
       loading="eager"
       decoding="async"
       className={cn(
@@ -42,8 +42,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
         sizeClasses[size]
       )}
       onError={(e) => {
-        // Fallback to logo.png or gradient if needed
-        (e.target as HTMLImageElement).src = '/logo.png';
+        (e.target as HTMLImageElement).src = '/favicon.png';
       }}
     />
   );
@@ -69,7 +68,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
               theme === 'dark' ? "text-white" : "text-[#0f172a]",
               textSizes[size]
             )}>
-              Eventora<span className="text-[#2563eb]">X</span>
+              Event<span className="text-[#2563eb]">rye</span>
             </span>
             {showTagline && (
               <span className="text-[10px] tracking-[0.2em] font-bold text-[#64748b] uppercase">
@@ -87,12 +86,12 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
     return (
       <div className={cn("inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-blue-50 border border-blue-200/80 shadow-xs", className)}>
         <img 
-          src="/images/eventorax-app-icon.png" 
-          alt="EX" 
+          src="/logo.png" 
+          alt="ER" 
           className="w-4 h-4 rounded-md object-cover"
         />
         <span className="text-xs font-bold tracking-tight text-[#1d4ed8]">
-          Eventora<span className="text-[#2563eb]">X</span>
+          Event<span className="text-[#2563eb]">rye</span>
         </span>
       </div>
     );
@@ -113,9 +112,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
             isDark ? "text-white" : "text-[#0f172a]",
             textSizes[size]
           )}>
-            Eventora
+            Event
             <span className="bg-gradient-to-r from-[#2563eb] to-[#38bdf8] bg-clip-text text-transparent">
-              X
+              rye
             </span>
           </span>
         </div>

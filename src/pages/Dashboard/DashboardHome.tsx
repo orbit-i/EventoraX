@@ -96,7 +96,7 @@ export default function DashboardHome() {
                   {currentTenant.plan || 'Subscription'} Upgrade Pending SuperAdmin Approval
                 </h4>
                 <p className="text-xs text-amber-800">
-                  Your plan payment has been submitted to EventoraX HQ. Free Starter limits remain active until the master authority confirms your access.
+                  Your plan payment has been submitted to Eventrye HQ. Free Starter limits remain active until the master authority confirms your access.
                 </p>
               </div>
             </div>
@@ -112,7 +112,7 @@ export default function DashboardHome() {
           <div className="relative z-10 max-w-2xl space-y-3">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-xs font-semibold">
               <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-              EventoraX Enterprise Cloud
+              Eventrye Enterprise Cloud
             </div>
             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
               Welcome back, {user?.fullName || "Organizer"}!

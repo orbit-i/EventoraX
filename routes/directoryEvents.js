@@ -213,7 +213,7 @@ router.post('/', verifyToken, (req, res) => {
       location: location || 'Islamabad, Pakistan',
       city: city || 'Islamabad',
       banner_url: banner_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
-      description: description || 'Exciting third-party event hosted via EventoraX.',
+      description: description || 'Exciting third-party event hosted via Eventrye.',
       agenda: typeof agenda === 'string' ? agenda : JSON.stringify(agenda || []),
       speakers: typeof speakers === 'string' ? speakers : JSON.stringify(speakers || []),
       ticket_tiers: typeof ticket_tiers === 'string' ? ticket_tiers : JSON.stringify(ticket_tiers || [
@@ -266,7 +266,7 @@ router.put('/:id', verifyToken, requireSuperAdmin, (req, res) => {
   }
 });
 
-// Official EventoraX Event Listing & Monetization Plans
+// Official Eventrye Event Listing & Monetization Plans
 export const listingPlans = [
   {
     id: 'standard',
@@ -279,7 +279,7 @@ export const listingPlans = [
     tagline: 'Ideal for university societies, free meetups, and local workshops',
     payout_schedule: '48-72 hours post-event',
     features: [
-      'Public listing on EventoraX Directory & Marketplace',
+      'Public listing on Eventrye Directory & Marketplace',
       'Automated dynamic QR code passes & check-in scanning',
       'Instant attendee payments via SBP Raast, JazzCash, Easypaisa & Cards',
       'Standard attendee analytics & downloadable CSV exports',
@@ -324,14 +324,14 @@ export const listingPlans = [
       'VIP Gold Verified Organizer Shield on event page & tickets',
       'Dedicated on-ground hardware QR gate app & hardware scanner assistance',
       'Tamper-evident SHA-256 digital passport passes & ID cards',
-      'Custom branded portal URL (e.g. yourevent.eventorax.orbit-i.tech)',
+      'Custom branded portal URL (e.g. yourevent.eventrye.orbit-i.tech)',
       'Lowest 2.5% platform commission on all ticket sales',
       '24/7 VIP dedicated account director & on-call technician'
     ]
   }
 ];
 
-// Official EventoraX receiving accounts for listing fee payments
+// Official Eventrye receiving accounts for listing fee payments
 export const receivingAccounts = {
   bank_name: 'Meezan Bank Limited',
   account_title: 'ORBIT-I Private Limited',
@@ -343,7 +343,7 @@ export const receivingAccounts = {
   easypaisa_account: '03190375751',
   currency: 'PKR',
   support_whatsapp: '+923190375751',
-  support_email: 'eventorax@orbit-i.tech'
+  support_email: 'eventrye@orbit-i.tech'
 };
 
 // GET /api/directory-events/plans - Get listing tiers & receiving accounts
@@ -443,7 +443,7 @@ router.post('/submit-listing', (req, res) => {
       location: location || 'Islamabad, Pakistan',
       city: city || 'Islamabad',
       banner_url: banner_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
-      description: description || 'Submitted event hosted via EventoraX.',
+      description: description || 'Submitted event hosted via Eventrye.',
       agenda: typeof agenda === 'string' ? agenda : JSON.stringify(agenda || []),
       speakers: JSON.stringify([]),
       ticket_tiers: typeof ticket_tiers === 'string' ? ticket_tiers : JSON.stringify(ticket_tiers || [

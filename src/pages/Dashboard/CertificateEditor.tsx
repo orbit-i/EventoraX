@@ -102,7 +102,7 @@ export default function CertificateEditor() {
     { id: 'el-body', type: 'text', text: 'for outstanding performance and successful participation in {{event_name}}.', x: 50, y: 52, fontSize: 15, fontFamily: 'Inter', fontWeight: 'normal', color: '#475569', align: 'center' },
     { id: 'el-date', type: 'variable', text: 'Issued on: {{issue_date}}', x: 25, y: 72, fontSize: 13, fontFamily: 'Inter', fontWeight: '500', color: '#64748b', align: 'center', variableKey: 'issue_date' },
     { id: 'el-id', type: 'variable', text: 'ID: {{certificate_id}}', x: 75, y: 72, fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: '600', color: '#1d4ed8', align: 'center', variableKey: 'certificate_id' },
-    { id: 'el-sign', type: 'text', text: 'Authorized Executive\nEventoraX Credentials', x: 50, y: 72, fontSize: 12, fontFamily: 'Montserrat', fontWeight: '600', color: '#334155', align: 'center' }
+    { id: 'el-sign', type: 'text', text: 'Authorized Executive\nEventrye Credentials', x: 50, y: 72, fontSize: 12, fontFamily: 'Montserrat', fontWeight: '600', color: '#334155', align: 'center' }
   ]);
 
   useEffect(() => {
@@ -190,7 +190,7 @@ export default function CertificateEditor() {
     t = t.replace('{{certificate_id}}', 'EVX-CERT-2026-001');
     t = t.replace('{{issue_date}}', new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }));
     t = t.replace('{{event_name}}', 'Global Tech Summit 2026');
-    t = t.replace('{{organization_name}}', 'EventoraX Global');
+    t = t.replace('{{organization_name}}', 'Eventrye Global');
     return t;
   };
 

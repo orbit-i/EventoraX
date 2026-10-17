@@ -1,6 +1,6 @@
-# EventoraX Enterprise - Multi-Tenant Event SaaS & Developer PaaS Platform
+# Eventrye Enterprise - Multi-Tenant Event SaaS & Developer PaaS Platform
 
-EventoraX is an enterprise-grade, high-performance **Multi-Tenant Event Management Platform** engineered to be hosted, scaled, and monetized both as a **B2B SaaS** (for event organizers, universities, conference agencies) and as a **Developer PaaS** (Platform-as-a-Service for external mobile apps, websites, and ticketing systems).
+Eventrye is an enterprise-grade, high-performance **Multi-Tenant Event Management Platform** engineered to be hosted, scaled, and monetized both as a **B2B SaaS** (for event organizers, universities, conference agencies) and as a **Developer PaaS** (Platform-as-a-Service for external mobile apps, websites, and ticketing systems).
 
 Built with **React 19 + Vite + TypeScript + Tailwind CSS** on the frontend and an enterprise **Node.js (Express) + MySQL 8** multi-tenant partitioned architecture on the backend.
 
@@ -14,14 +14,14 @@ When running locally (`http://localhost:5000`) or hosted on your production doma
 |---|---|---|
 | **Main Landing Page** | `/` | Showcase of features, live 3D canvas, interactive pricing |
 | **Pricing (SaaS & PaaS)** | `/pricing` | 4-Tier monetization matrix (Starter, Pro, Enterprise, PaaS) |
-| **Sign In** | `/login` | Demo credentials: `admin@eventorax.com` / `admin123` |
+| **Sign In** | `/login` | Demo credentials: `admin@eventrye.com` / `admin123` |
 | **Sign Up & Workspace** | `/register` | Auto-provisions isolated tenant workspace + PaaS API key |
 | **Multi-Tenant Dashboard** | `/dashboard` | Tenant-scoped event KPIs, tickets, revenue & activities |
 | **Workspace Switcher** | Top Bar in Dashboard | 1-click switch between client tenant organizations |
 | **White-Label & Branding** | `/dashboard/settings` | Custom logo, primary/secondary colors, custom slug & CNAME |
 | **Developer PaaS Console** | `/dashboard/developer` | API Keys manager, Webhook subscriptions, Embed Widget SDK |
 | **Platform Superadmin** | `/dashboard/platform` | SaaS Owner console (Platform MRR, ARR, tenant health, suspend/upgrade) |
-| **Branded Public Portal 1** | `/t/eventorax-hq` | EventoraX HQ public event ticketing & RSVP showcase |
+| **Branded Public Portal 1** | `/t/eventrye-hq` | Eventrye HQ public event ticketing & RSVP showcase |
 | **Branded Public Portal 2** | `/t/apex-tech` | Apex Tech Ventures public event showcase (Blue theme) |
 | **Health & Monitoring** | `/api/health` | Real-time tenancy status, uptime, MySQL connection pool |
 
@@ -95,7 +95,7 @@ Open **`http://localhost:5000`** in your browser.
 Run the complete multi-tenant platform with MySQL 8 container in seconds:
 
 ```bash
-# Start EventoraX App + MySQL 8 container
+# Start Eventrye App + MySQL 8 container
 docker compose up -d
 
 # View running services
@@ -111,7 +111,7 @@ Access the platform at `http://your-server-ip:5000`.
 
 ## 🌐 Deploying to Hostinger (cPanel / hPanel)
 
-EventoraX is natively optimized for Hostinger Business and Cloud hosting:
+Eventrye is natively optimized for Hostinger Business and Cloud hosting:
 
 1. **Upload Files**: Upload the project directory to your Hostinger `public_html` or Node.js application directory.
 2. **Environment Variables**: Configure `.env`:
@@ -119,9 +119,9 @@ EventoraX is natively optimized for Hostinger Business and Cloud hosting:
    PORT=5000
    NODE_ENV=production
    DB_HOST=localhost
-   DB_USER=u123456789_eventorax
+   DB_USER=u123456789_eventrye
    DB_PASSWORD=YourPassword
-   DB_NAME=u123456789_eventorax_db
+   DB_NAME=u123456789_eventrye_db
    JWT_SECRET=your_ultra_secure_jwt_secret
    ```
 3. **Database Import**: In phpMyAdmin, import `database.sql`.
@@ -131,7 +131,7 @@ EventoraX is natively optimized for Hostinger Business and Cloud hosting:
    - Node.js Version: `20.x` or `22.x`
 5. **Run**: Click **Restart Application**.
 
-See [HOSTINGER_DEPLOYMENT_GUIDE.md](file:///c:/Users/orbit-iX/OneDrive/Desktop/EventoraX/EventoraX-main/HOSTINGER_DEPLOYMENT_GUIDE.md) for step-by-step screenshots and wildcard DNS configuration.
+See [HOSTINGER_DEPLOYMENT_GUIDE.md](file:///c:/Users/orbit-iX/OneDrive/Desktop/Eventrye/Eventrye-main/HOSTINGER_DEPLOYMENT_GUIDE.md) for step-by-step screenshots and wildcard DNS configuration.
 
 ---
 

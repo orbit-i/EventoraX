@@ -16,7 +16,7 @@ function generateCertificateNumber(prefix = 'EVX') {
 
 // Generate cryptographic hash for certificate verification (PRD 3.7 & 5.2)
 function generateVerificationHash(certNum, recipientName, eventName, date) {
-  const data = `${certNum}|${recipientName}|${eventName}|${date}|eventorax_orbit_i_salt`;
+  const data = `${certNum}|${recipientName}|${eventName}|${date}|eventrye_orbit_i_salt`;
   return crypto.createHash('sha256').update(data).digest('hex');
 }
 
@@ -48,7 +48,7 @@ router.get('/verify/:certNumber', async (req, res) => {
           invoice: {
             invoiceNumber: certNumber.startsWith('EVX-INV-') ? certNumber : `EVX-INV-2026-${sub.id || String(sub.transaction_ref).slice(-6)}`,
             transactionRef: sub.transaction_ref || certNumber,
-            clientOrg: sub.tenant_name || 'EventoraX Client Workspace',
+            clientOrg: sub.tenant_name || 'Eventrye Client Workspace',
             plan: sub.plan,
             amount: sub.price,
             originalPrice: sub.original_price || sub.price,
@@ -60,7 +60,7 @@ router.get('/verify/:certNumber', async (req, res) => {
             createdAt: sub.created_at,
             statusBadge: isPaid ? 'VIP VERIFIED - ACTIVE' : 'VIP VERIFIED - PAYMENT RECORDED',
             receivingAccount: '03190375751',
-            receivingTitle: 'ORBIT-I Private Limited / EventoraX',
+            receivingTitle: 'ORBIT-I Private Limited / Eventrye',
             governance: {
               ntn: '9842104-7',
               strn: '3277876123456',
@@ -80,7 +80,7 @@ router.get('/verify/:certNumber', async (req, res) => {
           invoice: {
             invoiceNumber: certNumber.startsWith('EVX-INV-') ? certNumber : `EVX-INV-2026-${certNumber.slice(-6)}`,
             transactionRef: certNumber,
-            clientOrg: 'Verified EventoraX Enterprise Client',
+            clientOrg: 'Verified Eventrye Enterprise Client',
             plan: 'Professional Tier',
             amount: 13800,
             originalPrice: 13800,
@@ -92,7 +92,7 @@ router.get('/verify/:certNumber', async (req, res) => {
             createdAt: new Date().toISOString(),
             statusBadge: 'VIP VERIFIED - PAID & AUTHENTICATED',
             receivingAccount: '03190375751',
-            receivingTitle: 'ORBIT-I Private Limited / EventoraX',
+            receivingTitle: 'ORBIT-I Private Limited / Eventrye',
             governance: {
               ntn: '9842104-7',
               strn: '3277876123456',
@@ -112,7 +112,7 @@ router.get('/verify/:certNumber', async (req, res) => {
 
     const cert = rows[0];
     const [orgRows] = await query('SELECT `id`, `name`, `logo_url`, `primary_color` FROM `tenants` WHERE `id` = ?', [cert.organization_id]);
-    const org = orgRows[0] || { name: 'EventoraX Organization', primary_color: '#1d4ed8' };
+    const org = orgRows[0] || { name: 'Eventrye Organization', primary_color: '#1d4ed8' };
 
     // Get template details
     let templateConfig = null;
@@ -441,7 +441,7 @@ router.post('/batches', async (req, res) => {
       title,
       templateId,
       templateVersionId,
-      eventName = 'EventoraX Global Summit',
+      eventName = 'Eventrye Global Summit',
       issueDate = new Date().toISOString().split('T')[0],
       recipients = [],
       queueDelivery = false
@@ -572,16 +572,16 @@ router.get('/batches/:id/archive', async (req, res) => {
     // 1. Create collision-safe manifest.csv
     let manifestCsv = 'certificate_number,recipient_name,recipient_email,event_name,issue_date,verification_url\n';
     certs.forEach(c => {
-      const verifyUrl = `https://eventorax.com/verify/${c.certificate_number}`;
+      const verifyUrl = `https://eventrye.com/verify/${c.certificate_number}`;
       manifestCsv += `"${c.certificate_number}","${c.recipient_name}","${c.recipient_email}","${c.event_name}","${c.issue_date}","${verifyUrl}"\n`;
 
       // 2. Add certificate metadata badge text file
-      const certSummary = `EVENTORAX OFFICIAL CREDENTIAL\nCertificate ID: ${c.certificate_number}\nRecipient: ${c.recipient_name}\nEvent: ${c.event_name}\nIssue Date: ${c.issue_date}\nVerification Hash: ${c.verification_hash}\nStatus: ${c.status.toUpperCase()}\n`;
+      const certSummary = `EVENTRYE OFFICIAL CREDENTIAL\nCertificate ID: ${c.certificate_number}\nRecipient: ${c.recipient_name}\nEvent: ${c.event_name}\nIssue Date: ${c.issue_date}\nVerification Hash: ${c.verification_hash}\nStatus: ${c.status.toUpperCase()}\n`;
       zip.file(`certificates/${c.certificate_number}_${c.recipient_name.replace(/[^a-zA-Z0-9]/g, '_')}.txt`, certSummary);
     });
 
     zip.file('manifest.csv', manifestCsv);
-    zip.file('README.txt', `EventoraX Enterprise Certificate Package\nBatch: ${batch.title}\nTotal Certificates: ${certs.length}\nAll credentials digitally verified by ORBIT-I Private Limited.\n`);
+    zip.file('README.txt', `Eventrye Enterprise Certificate Package\nBatch: ${batch.title}\nTotal Certificates: ${certs.length}\nAll credentials digitally verified by ORBIT-I Private Limited.\n`);
 
     const zipBuffer = await zip.generateAsync({ type: 'nodebuffer' });
 
@@ -657,7 +657,7 @@ router.post('/single', async (req, res) => {
     const {
       recipientName,
       recipientEmail,
-      eventName = 'EventoraX Conference',
+      eventName = 'Eventrye Conference',
       issueDate = new Date().toISOString().split('T')[0],
       templateId = 1,
       templateVersionId = 1,

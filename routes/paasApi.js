@@ -192,7 +192,7 @@ router.post('/events/:id/attendees', async (req, res) => {
         ticketType,
         attendeeName: name.trim(),
         attendeeEmail: email.toLowerCase().trim(),
-        qrVerificationUrl: `https://eventorax.com/verify?code=${ticketCode}`,
+        qrVerificationUrl: `https://eventrye.com/verify?code=${ticketCode}`,
         status: 'confirmed'
       }
     });

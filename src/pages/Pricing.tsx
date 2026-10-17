@@ -50,7 +50,7 @@ const plansData: PlanData[] = [
     features: [
       '50,000+ attendees & 500 events',
       'Unlimited Certificate & ID Badge Generation',
-      'Full White-Labeling (Remove EventoraX)',
+      'Full White-Labeling (Remove Eventrye)',
       'Custom Domain (events.yourdomain.com)',
       'Multi-Tenant Workspaces Isolation',
       'Tamper-Proof Public Verification Portal',
@@ -61,8 +61,8 @@ const plansData: PlanData[] = [
 ];
 
 const faqs = [
-  { q: 'How does Multi-Tenancy work in EventoraX?', a: 'Every organizer gets an isolated workspace with partitioned events, attendees, team permissions, custom branding, and settings. You can also manage multiple client workspaces from a single login.' },
-  { q: 'Can I sell EventoraX to my clients under my own brand (White-Label)?', a: 'Yes! On the Enterprise plan, you can attach custom domains, upload your own logo, set custom theme colors, and remove all EventoraX branding.' },
+  { q: 'How does Multi-Tenancy work in Eventrye?', a: 'Every organizer gets an isolated workspace with partitioned events, attendees, team permissions, custom branding, and settings. You can also manage multiple client workspaces from a single login.' },
+  { q: 'Can I sell Eventrye to my clients under my own brand (White-Label)?', a: 'Yes! On the Enterprise plan, you can attach custom domains, upload your own logo, set custom theme colors, and remove all Eventrye branding.' },
   { q: 'Which payment methods are supported for Pakistani and international organizations?', a: 'We natively support Pakistani local gateways including JazzCash, Easypaisa, Raast Instant Pay, and Direct Bank Transfer (Meezan, HBL, Alfalah), as well as international Credit/Debit cards via Stripe.' },
   { q: 'Is there a free trial?', a: 'Yes! Every tier includes a 14-day free trial. You can start right away without committing.' },
 ];
@@ -344,7 +344,7 @@ export default function Pricing() {
         <div className="max-w-3xl mx-auto space-y-6">
           <div className="text-center mb-10">
             <h2 className="text-3xl font-extrabold text-slate-900 font-heading">Frequently Asked Questions</h2>
-            <p className="text-sm text-slate-600 mt-2">Everything you need to know about EventoraX Event Platform</p>
+            <p className="text-sm text-slate-600 mt-2">Everything you need to know about Eventrye Event Platform</p>
           </div>
 
           <div className="space-y-3">

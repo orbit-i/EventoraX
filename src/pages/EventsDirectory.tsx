@@ -209,7 +209,7 @@ export default function EventsDirectory() {
           </h1>
 
           <p className="mt-4 text-base sm:text-lg text-[#64748b] max-w-2xl mx-auto">
-            Browse upcoming conferences powered by EventoraX. Book delegate passes with verified Pakistani payment rails: Easypaisa, JazzCash, Raast & Meezan Bank.
+            Browse upcoming conferences powered by Eventrye. Book delegate passes with verified Pakistani payment rails: Easypaisa, JazzCash, Raast & Meezan Bank.
           </p>
 
           {/* Search & Quick Filter Bar */}

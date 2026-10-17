@@ -27,7 +27,7 @@ export default function Maintenance() {
         </h1>
 
         <p className="text-base sm:text-lg text-[#475569] max-w-xl mx-auto leading-relaxed mb-8">
-          EventoraX engine is currently undergoing performance optimizations, database indexing, and 24/7 security hardening to ensure maximum reliability for your events.
+          Eventrye engine is currently undergoing performance optimizations, database indexing, and 24/7 security hardening to ensure maximum reliability for your events.
         </p>
 
         {/* Live Status Indicators */}
@@ -71,11 +71,11 @@ export default function Maintenance() {
               WhatsApp Support (+92 3190375751)
             </a>
             <a
-              href="mailto:eventorax@orbit-i.tech"
+              href="mailto:eventrye@orbit-i.tech"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold shadow-md transition-colors"
             >
               <Mail className="w-4 h-4" />
-              eventorax@orbit-i.tech
+              eventrye@orbit-i.tech
             </a>
           </div>
         </div>
@@ -86,7 +86,7 @@ export default function Maintenance() {
             className="inline-flex items-center gap-2 text-xs font-bold text-[#1d4ed8] hover:underline"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
-            Back to EventoraX Homepage
+            Back to Eventrye Homepage
           </Link>
         </div>
       </div>

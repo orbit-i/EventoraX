@@ -1,5 +1,5 @@
 /**
- * EventoraX Master Authority Initialization CLI
+ * Eventrye Master Authority Initialization CLI
  * Secure Production Setup for ORBIT-I Platform Master SuperAdmin
  *
  * Usage on Live Server (Ubuntu / VPS / Hostinger):
@@ -21,7 +21,7 @@ const dbConfig = {
   port: parseInt(process.env.DB_PORT || '3306', 10),
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'eventorax_db',
+  database: process.env.DB_NAME || 'eventrye_db',
 };
 
 function askQuestion(query) {
@@ -39,7 +39,7 @@ function askQuestion(query) {
 
 async function main() {
   console.log('\n======================================================');
-  console.log('  EventoraX Enterprise - Master SuperAdmin Provisioning');
+  console.log('  Eventrye Enterprise - Master SuperAdmin Provisioning');
   console.log('  Platform Authority by ORBIT-I Private Limited');
   console.log('======================================================\n');
 
@@ -86,9 +86,9 @@ async function main() {
     // 1. Ensure master tenant exists
     await connection.query(`
       INSERT INTO \`tenants\` (\`id\`, \`name\`, \`slug\`, \`owner_id\`, \`plan\`, \`status\`, \`license_key\`, \`license_status\`, \`white_label_enabled\`)
-      VALUES (1, 'EventoraX HQ', 'eventorax-hq', 1, 'Platform Authority', 'active', 'EVX-HQ-MASTER-KEY-2026', 'active', TRUE)
+      VALUES (1, 'Eventrye HQ', 'eventrye-hq', 1, 'Platform Authority', 'active', 'EVX-HQ-MASTER-KEY-2026', 'active', TRUE)
       ON DUPLICATE KEY UPDATE 
-        \`name\` = 'EventoraX HQ',
+        \`name\` = 'Eventrye HQ',
         \`status\` = 'active',
         \`plan\` = 'Platform Authority';
     `);
@@ -106,7 +106,7 @@ async function main() {
       console.log(`Creating new Master SuperAdmin account: ${email}...`);
       await connection.query(
         'INSERT INTO `users` (`full_name`, `org_name`, `email`, `password`, `role`, `plan`) VALUES (?, ?, ?, ?, "admin", "Platform Authority")',
-        [fullName, 'EventoraX HQ (ORBIT-I)', email, hashedPassword]
+        [fullName, 'Eventrye HQ (ORBIT-I)', email, hashedPassword]
       );
     }
 
@@ -127,7 +127,7 @@ async function main() {
     console.log('======================================================');
     console.log(`  Email:       ${email}`);
     console.log(`  Role:        Platform SuperAdmin (Master Authority)`);
-    console.log(`  Gateway URL: https://eventorax.orbit-i.tech/orbit-i-master-gateway/login`);
+    console.log(`  Gateway URL: https://eventrye.orbit-i.tech/orbit-i-master-gateway/login`);
     console.log('======================================================\n');
     console.log('🔒 Security Notice: SuperAdmin credentials can ONLY authenticate');
     console.log('via the private gateway route (/orbit-i-master-gateway/login).');

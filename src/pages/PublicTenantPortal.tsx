@@ -57,7 +57,7 @@ export default function PublicTenantPortal() {
           setEvents(res.events || []);
 
           // Dynamic SEO Meta updates for Google Indexing
-          document.title = `${res.tenant.name} — Official Public Event & Seminar Portal | EventoraX`;
+          document.title = `${res.tenant.name} — Official Public Event & Seminar Portal | Eventrye`;
           
           let metaDesc = document.querySelector('meta[name="description"]');
           if (!metaDesc) {
@@ -82,7 +82,7 @@ export default function PublicTenantPortal() {
             "@type": "Organization",
             "name": res.tenant.name,
             "url": window.location.href,
-            "logo": res.tenant.logo_url || "https://eventorax.orbit-i.tech/favicon.png",
+            "logo": res.tenant.logo_url || "https://eventrye.orbit-i.tech/favicon.png",
             "department": (res.events || []).map((e: any) => ({
               "@type": "Event",
               "name": e.title,
@@ -138,7 +138,7 @@ export default function PublicTenantPortal() {
   };
 
   const handleShareTwitter = () => {
-    const text = encodeURIComponent(`Check out official events hosted by ${tenant?.name || 'our organization'}: ${window.location.href} via @EventoraX`);
+    const text = encodeURIComponent(`Check out official events hosted by ${tenant?.name || 'our organization'}: ${window.location.href} via @Eventrye`);
     window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
   };
 
@@ -184,8 +184,8 @@ export default function PublicTenantPortal() {
     (e.city && e.city.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
-  // EventoraX HQ is the Master Platform Authority, not an event organizer
-  if (slug?.toLowerCase() === 'eventorax-hq' || tenant?.id === 1 || tenant?.slug === 'eventorax-hq') {
+  // Eventrye HQ is the Master Platform Authority, not an event organizer
+  if (slug?.toLowerCase() === 'eventrye-hq' || tenant?.id === 1 || tenant?.slug === 'eventrye-hq') {
     return (
       <div className="min-h-screen bg-[#faf8ff] flex items-center justify-center p-6 text-center">
         <div className="max-w-md bg-white p-8 rounded-3xl border border-blue-200 shadow-xl space-y-4 animate-in fade-in zoom-in-95">
@@ -193,15 +193,15 @@ export default function PublicTenantPortal() {
             <ShieldCheck className="w-9 h-9" />
           </div>
           <h2 className="text-xl font-bold text-[#0f172a] font-heading">
-            EventoraX Master HQ • Platform Authority
+            Eventrye Master HQ • Platform Authority
           </h2>
           <p className="text-xs text-[#64748b] leading-relaxed">
-            EventoraX HQ is the master platform governance authority and owns this software. SuperAdmin governs the platform and does not host public events. Public event portals only exist for our registered client organizations.
+            Eventrye HQ is the master platform governance authority and owns this software. SuperAdmin governs the platform and does not host public events. Public event portals only exist for our registered client organizations.
           </p>
           <div className="pt-2">
             <Link to="/">
               <Button className="w-full bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs font-bold h-10">
-                Return to Official EventoraX Platform
+                Return to Official Eventrye Platform
               </Button>
             </Link>
           </div>
@@ -228,7 +228,7 @@ export default function PublicTenantPortal() {
           <h2 className="text-xl font-bold text-[#0f172a]">Portal Unavailable</h2>
           <p className="text-sm text-[#64748b]">{error || "This organization does not exist or has been suspended."}</p>
           <Link to="/">
-            <Button className="mt-2 bg-[#1d4ed8] text-white rounded-xl">Return to EventoraX Home</Button>
+            <Button className="mt-2 bg-[#1d4ed8] text-white rounded-xl">Return to Eventrye Home</Button>
           </Link>
         </div>
       </div>
@@ -269,7 +269,7 @@ export default function PublicTenantPortal() {
             </Button>
             <Link to="/">
               <span className="hidden sm:inline text-xs text-slate-400 hover:text-blue-600 pl-2">
-                Powered by <strong>EventoraX</strong>
+                Powered by <strong>Eventrye</strong>
               </span>
             </Link>
           </div>
@@ -620,7 +620,7 @@ export default function PublicTenantPortal() {
 
                       {/* Back Bottom Security Line */}
                       <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[8px] text-slate-400">
-                        <span className="text-emerald-400 font-bold">EVENTORAX SECURE</span>
+                        <span className="text-emerald-400 font-bold">EVENTRYE SECURE</span>
                         <span>Issued under Authority of ORBIT-I Private Limited</span>
                       </div>
                     </div>

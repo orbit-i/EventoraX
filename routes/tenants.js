@@ -177,7 +177,7 @@ router.post('/activate-with-key', verifyToken, resolveTenant, async (req, res) =
           keyMatched = true;
           targetPlan = anySub[0].plan || targetPlan;
         } else if (cleanKey.startsWith('EVX-') && cleanKey.split('-').length >= 4) {
-          // Valid EventoraX format issued by SuperAdmin
+          // Valid Eventrye format issued by SuperAdmin
           keyMatched = true;
         }
       }
@@ -337,11 +337,11 @@ router.get('/public/:slug', async (req, res) => {
     const tenant = rows[0];
 
     // Master SuperAdmin HQ is the platform authority, not an event organizer
-    if (tenant.id === 1 || tenant.slug === 'eventorax-hq' || slug.toLowerCase() === 'eventorax-hq') {
+    if (tenant.id === 1 || tenant.slug === 'eventrye-hq' || slug.toLowerCase() === 'eventrye-hq') {
       return res.status(404).json({
         success: false,
         isMasterAuthority: true,
-        message: 'EventoraX HQ is the Platform Authority, not an event organizer workspace. Public attendee portals only exist for client organizations.'
+        message: 'Eventrye HQ is the Platform Authority, not an event organizer workspace. Public attendee portals only exist for client organizations.'
       });
     }
 

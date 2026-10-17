@@ -115,10 +115,10 @@ export default function TestimonialsSection() {
               <MessageSquare className="w-8 h-8" />
             </div>
             <h3 className="text-xl md:text-2xl font-bold text-[#0f172a] mb-3">
-              Partner With EventoraX for Your Next Event
+              Partner With Eventrye for Your Next Event
             </h3>
             <p className="text-sm md:text-base text-[#64748b] leading-relaxed mb-6 max-w-xl mx-auto">
-              We do not publish placeholder or fictitious reviews. Are you an educational institute, professional community, or summit organizer utilizing EventoraX? Partner feedback can be submitted directly through our platform administration.
+              We do not publish placeholder or fictitious reviews. Are you an educational institute, professional community, or summit organizer utilizing Eventrye? Partner feedback can be submitted directly through our platform administration.
             </p>
             <div className="flex flex-wrap items-center justify-center gap-4">
               <Link to="/contact">

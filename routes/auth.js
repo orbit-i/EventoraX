@@ -178,13 +178,13 @@ router.post('/login', async (req, res) => {
        GROUP BY t.id`,
       [userRow.id, userRow.id]
     );
-    userTenants = (myTenants || []).filter(t => t.id !== 1 && t.slug !== 'eventorax-hq');
+    userTenants = (myTenants || []).filter(t => t.id !== 1 && t.slug !== 'eventrye-hq');
 
     let activeTenant = userTenants[0];
     if (!activeTenant) {
       if (userRow.role === 'admin') {
         const [hq] = await query('SELECT * FROM `tenants` WHERE `id` = 1');
-        activeTenant = hq[0] || { id: 1, name: 'EventoraX HQ', slug: 'eventorax-hq', plan: 'Enterprise' };
+        activeTenant = hq[0] || { id: 1, name: 'Eventrye HQ', slug: 'eventrye-hq', plan: 'Enterprise' };
       } else {
         const workspaceName = userRow.org_name || `${userRow.full_name}'s Workspace`;
         let tenantSlug = slugify(workspaceName) || `client-${userRow.id}`;
@@ -274,15 +274,15 @@ router.get('/me', verifyToken, async (req, res) => {
          GROUP BY t.id`,
         [userRow.id, userRow.id]
       );
-      // Strict isolation: Client organizations can NEVER hold tenant #1 (EventoraX HQ)
-      userTenants = (myTenants || []).filter(t => t.id !== 1 && t.slug !== 'eventorax-hq');
+      // Strict isolation: Client organizations can NEVER hold tenant #1 (Eventrye HQ)
+      userTenants = (myTenants || []).filter(t => t.id !== 1 && t.slug !== 'eventrye-hq');
     }
 
     let activeTenant = userTenants[0];
     if (!activeTenant) {
       if (userRow.role === 'admin') {
         const [hq] = await query('SELECT * FROM `tenants` WHERE `id` = 1');
-        activeTenant = hq[0] || { id: 1, name: 'EventoraX HQ', slug: 'eventorax-hq', plan: 'Platform Authority' };
+        activeTenant = hq[0] || { id: 1, name: 'Eventrye HQ', slug: 'eventrye-hq', plan: 'Platform Authority' };
         userTenants = [activeTenant];
       } else {
         const workspaceName = userRow.org_name || `${userRow.full_name}'s Workspace`;

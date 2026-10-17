@@ -1,5 +1,5 @@
 -- =====================================================
--- EventoraX Enterprise Multi-Tenant SaaS & PaaS Database Schema
+-- Eventrye Enterprise Multi-Tenant SaaS & PaaS Database Schema
 -- Compatible with MySQL 8.0+, MariaDB 10.4+, Hostinger Cloud / VPS
 -- Charset: utf8mb4 / Collation: utf8mb4_unicode_ci
 -- =====================================================
@@ -243,18 +243,18 @@ CREATE TABLE IF NOT EXISTS `website_cms` (
 -- Default Seed Data (Platform Master Tenant & Superadmin Only)
 -- Ready for Production: All fake/demo events & tenants removed
 -- -----------------------------------------------------
--- 1. Platform Superadmin (EventoraX Company Internal Master Account)
+-- 1. Platform Superadmin (Eventrye Company Internal Master Account)
 -- -----------------------------------------------------
 INSERT INTO `users` (`id`, `full_name`, `org_name`, `email`, `password`, `phone`, `role`, `bio`, `plan`)
 VALUES (
   1,
-  'EventoraX Platform Superadmin',
-  'EventoraX HQ',
-  'admin@eventorax.com',
+  'Eventrye Platform Superadmin',
+  'Eventrye HQ',
+  'admin@eventrye.com',
   '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
   '+92 300 1234567',
   'admin',
-  'Platform Superadmin at EventoraX. Internal system administration and client management.',
+  'Platform Superadmin at Eventrye. Internal system administration and client management.',
   'Enterprise'
 ) ON DUPLICATE KEY UPDATE `id` = `id`;
 
@@ -262,8 +262,8 @@ VALUES (
 INSERT INTO `tenants` (`id`, `name`, `slug`, `owner_id`, `plan`, `status`, `primary_color`, `secondary_color`, `api_access_enabled`, `white_label_enabled`, `max_events`, `max_attendees`)
 VALUES (
   1,
-  'EventoraX HQ',
-  'eventorax-hq',
+  'Eventrye HQ',
+  'eventrye-hq',
   1,
   'Enterprise',
   'active',
@@ -284,16 +284,16 @@ ON DUPLICATE KEY UPDATE `role` = VALUES(`role`);
 -- Seed Master API Key for PaaS
 INSERT INTO `tenant_api_keys` (`id`, `tenant_id`, `name`, `api_key`, `permissions`, `is_active`)
 VALUES 
-(1, 1, 'EventoraX Master Production Key', 'evx_live_99d8b746a5124e93bc48102a9b31', 'admin_full', 1)
+(1, 1, 'Eventrye Master Production Key', 'ery_live_99d8b746a5124e93bc48102a9b31', 'admin_full', 1)
 ON DUPLICATE KEY UPDATE `id` = `id`;
 
 -- Default Website CMS Seed Content (SuperAdmin Manageable)
 INSERT INTO `website_cms` (`page_key`, `title`, `data`)
 VALUES
-('home', 'Home Page CMS', '{"heroTitle":"Automated Event Operations & Cryptographic Credential Cloud","heroSubtitle":"The enterprise multi-tenant platform for seminars, summits, and conferences. Live attendee ID badge passes, tamper-evident certificate issuance, and real-time RFID/QR check-in.","announcement":"Official Release v1.0.0 is live! Verified by ORBIT-I Private Limited.","ctaPrimaryText":"Get Started Free","ctaPrimaryLink":"/register","ctaSecondaryText":"Verify Credential","ctaSecondaryLink":"/verify"}'),
+('home', 'Home Page CMS', '{"heroTitle":"Automated Event Operations & Cryptographic Credential Cloud","heroSubtitle":"The enterprise multi-tenant platform for seminars, summits, and conferences. Live attendee ID badge passes, tamper-evident certificate issuance, and real-time RFID/QR check-in.","announcement":"Official Eventrye Release v2.0 is live! Verified by ORBIT-I Private Limited.","ctaPrimaryText":"Get Started Free","ctaPrimaryLink":"/register","ctaSecondaryText":"Verify Credential","ctaSecondaryLink":"/verify"}'),
 ('about', 'About Us CMS', '{"headline":"Pioneering Intelligent Event Management & Digital Verification","mission":"To empower educational institutes, tech communities, and corporate enterprises with automated, secure, and seamless event ticketing and certification infrastructure.","parentCompany":"ORBIT-I Private Limited","foundedYear":"2023","headquarters":"Nawabshah, Pakistan"}'),
-('contact', 'Contact & Helpdesk CMS', '{"email":"eventorax@orbit-i.tech","phone":"+92 3190375751","address":"ORBIT-I Private Limited, Nawabshah, Sindh, Pakistan","supportHours":"24/7 Dedicated Support"}'),
-('legal', 'Legal & Compliance CMS', '{"companyName":"ORBIT-I Private Limited","platformName":"EventoraX","jurisdiction":"Nawabshah, Sindh, Pakistan","dpoContact":"privacy@orbit-i.tech"}')
+('contact', 'Contact & Helpdesk CMS', '{"email":"eventrye@orbit-i.tech","phone":"+92 3190375751","address":"ORBIT-I Private Limited, Nawabshah, Sindh, Pakistan","supportHours":"24/7 Dedicated Support"}'),
+('legal', 'Legal & Compliance CMS', '{"companyName":"ORBIT-I Private Limited","platformName":"Eventrye","jurisdiction":"Nawabshah, Sindh, Pakistan","dpoContact":"privacy@orbit-i.tech"}')
 ON DUPLICATE KEY UPDATE `title` = VALUES(`title`);
 
 -- -----------------------------------------------------
@@ -521,7 +521,7 @@ ON DUPLICATE KEY UPDATE `id` = `id`;
 
 INSERT INTO `template_versions` (`id`, `template_id`, `version_number`, `editor_config`, `background_asset_key`)
 VALUES 
-(1, 1, 1, '{"theme":"cobalt_executive","elements":[{"id":"el-title","type":"title","text":"CERTIFICATE OF EXCELLENCE","x":525,"y":160,"fontSize":32,"fontFamily":"Cinzel","fontWeight":"bold","color":"#1e40af","align":"center"},{"id":"el-subtitle","type":"text","text":"THIS IS PROUDLY PRESENTED TO","x":525,"y":230,"fontSize":13,"fontFamily":"Montserrat","fontWeight":"600","color":"#64748b","align":"center"},{"id":"el-name","type":"variable","text":"{{recipient_name}}","x":525,"y":310,"fontSize":38,"fontFamily":"Playfair Display","fontWeight":"bold","color":"#0f172a","align":"center"},{"id":"el-body","type":"text","text":"for remarkable performance and successful completion of the global technical program at {{event_name}}.","x":525,"y":390,"fontSize":15,"fontFamily":"Inter","fontWeight":"normal","color":"#475569","align":"center"},{"id":"el-date","type":"variable","text":"Issued on: {{issue_date}}","x":260,"y":540,"fontSize":13,"fontFamily":"Inter","fontWeight":"500","color":"#64748b","align":"center"},{"id":"el-id","type":"variable","text":"Credential ID: {{certificate_id}}","x":790,"y":540,"fontSize":13,"fontFamily":"Space Grotesk","fontWeight":"600","color":"#1e40af","align":"center"},{"id":"el-sign","type":"text","text":"Authorized Signatory\\nEventoraX Director","x":525,"y":570,"fontSize":12,"fontFamily":"Montserrat","fontWeight":"600","color":"#334155","align":"center"}]}', 'preset:cobalt_executive'),
+(1, 1, 1, '{"theme":"cobalt_executive","elements":[{"id":"el-title","type":"title","text":"CERTIFICATE OF EXCELLENCE","x":525,"y":160,"fontSize":32,"fontFamily":"Cinzel","fontWeight":"bold","color":"#1e40af","align":"center"},{"id":"el-subtitle","type":"text","text":"THIS IS PROUDLY PRESENTED TO","x":525,"y":230,"fontSize":13,"fontFamily":"Montserrat","fontWeight":"600","color":"#64748b","align":"center"},{"id":"el-name","type":"variable","text":"{{recipient_name}}","x":525,"y":310,"fontSize":38,"fontFamily":"Playfair Display","fontWeight":"bold","color":"#0f172a","align":"center"},{"id":"el-body","type":"text","text":"for remarkable performance and successful completion of the global technical program at {{event_name}}.","x":525,"y":390,"fontSize":15,"fontFamily":"Inter","fontWeight":"normal","color":"#475569","align":"center"},{"id":"el-date","type":"variable","text":"Issued on: {{issue_date}}","x":260,"y":540,"fontSize":13,"fontFamily":"Inter","fontWeight":"500","color":"#64748b","align":"center"},{"id":"el-id","type":"variable","text":"Credential ID: {{certificate_id}}","x":790,"y":540,"fontSize":13,"fontFamily":"Space Grotesk","fontWeight":"600","color":"#1e40af","align":"center"},{"id":"el-sign","type":"text","text":"Authorized Signatory\\nEventrye Director","x":525,"y":570,"fontSize":12,"fontFamily":"Montserrat","fontWeight":"600","color":"#334155","align":"center"}]}', 'preset:cobalt_executive'),
 (2, 2, 1, '{"theme":"modern_diploma","elements":[{"id":"el-title","type":"title","text":"DIPLOMA OF COMPLETION","x":525,"y":160,"fontSize":34,"fontFamily":"Playfair Display","fontWeight":"bold","color":"#1d4ed8","align":"center"},{"id":"el-subtitle","type":"text","text":"CONFERRED UPON","x":525,"y":225,"fontSize":13,"fontFamily":"Montserrat","fontWeight":"600","color":"#64748b","align":"center"},{"id":"el-name","type":"variable","text":"{{recipient_name}}","x":525,"y":305,"fontSize":36,"fontFamily":"Playfair Display","fontWeight":"bold","color":"#0f172a","align":"center"},{"id":"el-body","type":"text","text":"in recognition of demonstrated expertise and mastery in {{event_name}}.","x":525,"y":385,"fontSize":15,"fontFamily":"Inter","fontWeight":"normal","color":"#475569","align":"center"},{"id":"el-date","type":"variable","text":"Date: {{issue_date}}","x":260,"y":540,"fontSize":13,"fontFamily":"Inter","fontWeight":"500","color":"#64748b","align":"center"},{"id":"el-id","type":"variable","text":"Verify: {{certificate_id}}","x":790,"y":540,"fontSize":13,"fontFamily":"Space Grotesk","fontWeight":"600","color":"#1d4ed8","align":"center"}]}', 'preset:modern_diploma')
 ON DUPLICATE KEY UPDATE `id` = `id`;
 
@@ -609,16 +609,18 @@ ON DUPLICATE KEY UPDATE `id` = `id`;
 INSERT INTO `coupons` (`id`, `code`, `description`, `discount_type`, `discount_value`, `min_purchase`, `max_uses`, `times_used`, `expires_at`, `is_active`)
 VALUES 
 (1, 'ORBIT2026', 'Official 2026 Launch Promo - 20% Off', 'percentage', 20.00, 0.00, 1000, 14, '2027-01-01 00:00:00', 1),
-(2, 'EVENTORAX50', 'Exclusive 50% Off Early Bird Campaign', 'percentage', 50.00, 50.00, 500, 8, '2027-01-01 00:00:00', 1),
+(2, 'EVENTRYE50', 'Exclusive 50% Off Early Bird Campaign', 'percentage', 50.00, 50.00, 500, 8, '2027-01-01 00:00:00', 1),
 (3, 'WELCOME10', 'Flat $10 Off Any Upgrade Plan', 'fixed', 10.00, 20.00, 2000, 25, '2027-01-01 00:00:00', 1)
 ON DUPLICATE KEY UPDATE `id` = `id`;
 
 INSERT INTO `platform_team_members` (`id`, `name`, `role`, `department`, `bio`, `avatar_url`, `display_order`, `is_active`)
 VALUES 
-(1, 'Abdul Samad Rind', 'Full Stack Web Developer & Platform Architect', 'Leadership & Engineering', 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading EventoraX core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.', '', 1, 1),
+(1, 'Abdul Samad Rind', 'Full Stack Web Developer & Platform Architect', 'Leadership & Engineering', 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading Eventrye core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.', '', 1, 1),
 (2, 'Maria Almani', 'Full Stack Web Developer, SEO & Content Specialist', 'Product & Web Growth', 'Full Stack Web Developer, SEO Strategist and Technical Content Specialist at ORBIT-I Private Limited. Leading fast-loading frontend architecture, organic search visibility, platform content strategy, and intuitive organizer UX.', '', 2, 1),
 (3, 'Muhammad Muneeb Ur Rahman Shahzad', 'DevOps Engineer', 'DevOps & Systems Infrastructure', 'DevOps & Systems Infrastructure Engineer at ORBIT-I Private Limited. Spearheading zero-downtime CI/CD deployment pipelines, Dockerized microservices, high-availability database clustering, and SBP-compliant server hardening.', '', 3, 1),
-(4, 'Hassan Ansar', 'Web Developer', 'Web Development & Engineering', 'Web Developer at ORBIT-I Private Limited. Specializing in modern web applications, performant user interfaces, responsive frontends, and dynamic event management workflows.', '', 4, 1)
+(4, 'Hassan Ansar', 'Web Developer', 'Web Development & Engineering', 'Web Developer at ORBIT-I Private Limited. Specializing in modern web applications, performant user interfaces, responsive frontends, and dynamic event management workflows.', '', 4, 1),
+(5, 'Chander Parakash', 'Backend Developer', 'Backend Engineering & Distributed Systems', 'Backend Developer at ORBIT-I Private Limited. Specializing in high-concurrency Node.js microservices, database query optimization, Redis caching layers, and secure payment webhook pipelines for Eventrye.', '', 5, 1),
+(6, 'Laiba', 'Backend Developer', 'Backend Engineering & Cloud Architecture', 'Backend Developer at ORBIT-I Private Limited. Expert in RESTful API architecture, cryptographic ticket verification algorithms, automated batch processing, and scalable cloud database structures for Eventrye.', '', 6, 1)
 ON DUPLICATE KEY UPDATE 
   `name` = VALUES(`name`),
   `role` = VALUES(`role`),

@@ -283,7 +283,7 @@ export default function Settings() {
                 <Input
                   value={brandOrgName}
                   onChange={(e) => setBrandOrgName(e.target.value)}
-                  placeholder="e.g. Acme Tech, EventoraX HQ"
+                  placeholder="e.g. Acme Tech, Eventrye HQ"
                   className="bg-white border-[#e9e4ff]"
                 />
               </div>
@@ -354,7 +354,7 @@ export default function Settings() {
                       <div className="grid grid-cols-3 gap-2 bg-white p-2 rounded-lg border border-blue-100 font-mono text-[11px]">
                         <div><span className="text-slate-400 block text-[9px] font-sans">TYPE</span>CNAME</div>
                         <div><span className="text-slate-400 block text-[9px] font-sans">HOST</span>events</div>
-                        <div><span className="text-slate-400 block text-[9px] font-sans">TARGET</span>cname.eventorax.com</div>
+                        <div><span className="text-slate-400 block text-[9px] font-sans">TARGET</span>cname.eventrye.com</div>
                       </div>
                       <p className="text-[10px] text-slate-500">
                         SSL Certificates (HTTPS) are provisioned automatically within 15 minutes of DNS propagation.
@@ -393,7 +393,7 @@ export default function Settings() {
                   </div>
                   <div>
                     <p className="text-xs font-bold text-[#0f172a]">{brandOrgName || "Organization Name"}</p>
-                    <p className="text-[10px] text-[#94a3b8]">eventorax.com/t/{brandSlug || "slug"}</p>
+                    <p className="text-[10px] text-[#94a3b8]">eventrye.com/t/{brandSlug || "slug"}</p>
                   </div>
                 </div>
                 <Button 
@@ -467,7 +467,7 @@ export default function Settings() {
                     {user?.role ? user.role.toUpperCase() : "ORGANIZER"}
                   </span>
                 </div>
-                <p className="text-xs text-[#475569]">{user?.email || "organizer@eventorax.com"}</p>
+                <p className="text-xs text-[#475569]">{user?.email || "organizer@eventrye.com"}</p>
                 <div className="flex items-center gap-2 pt-1">
                   <label 
                     htmlFor="avatar-upload-btn" 

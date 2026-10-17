@@ -13,7 +13,7 @@ const productLinks = [
 ];
 
 const companyLinks = [
-  { label: 'About EventoraX & ORBIT-I', href: '/about' },
+  { label: 'About Eventrye & ORBIT-I', href: '/about' },
   { label: 'Contact Support', href: '/contact' },
   { label: 'Service Usage & SLA', href: '/service-usage' },
   { label: 'Client Sign In', href: '/login' },
@@ -40,7 +40,7 @@ export default function Footer() {
             <Link 
               to="/" 
               className="inline-block"
-              title="EventoraX Homepage"
+              title="Eventrye Homepage"
             >
               <BrandLogo variant="compact" size="lg" theme="dark" showTagline={true} />
             </Link>
@@ -56,19 +56,19 @@ export default function Footer() {
               </div>
               <div>
                 <a 
-                  href="mailto:eventorax@orbit-i.tech" 
+                  href="mailto:eventrye@orbit-i.tech" 
                   className="flex items-center gap-2 text-blue-400 hover:text-blue-300 hover:underline transition-colors"
-                  title="Send email to EventoraX support"
+                  title="Send email to Eventrye support"
                 >
                   <Mail className="w-4 h-4 shrink-0" />
-                  <span>eventorax@orbit-i.tech</span>
+                  <span>eventrye@orbit-i.tech</span>
                 </a>
               </div>
               <div>
                 <a 
                   href="tel:+923190375751" 
                   className="flex items-center gap-2 text-emerald-400 hover:text-emerald-300 hover:underline transition-colors"
-                  title="Direct phone call to EventoraX"
+                  title="Direct phone call to Eventrye"
                 >
                   <Phone className="w-4 h-4 shrink-0" />
                   <span>+92 3190375751</span>
@@ -157,9 +157,9 @@ export default function Footer() {
         {/* Bottom bar with dynamic current copyright year & trust badges */}
         <div className="mt-12 pt-6 border-t border-[#1e293b] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-xs text-[#94a3b8] text-center sm:text-left">
-            &copy; {currentYear} EventoraX • Developed &amp; Maintained by{' '}
+            &copy; {currentYear} Eventrye • Developed &amp; Maintained by{' '}
             <a 
-              href="mailto:eventorax@orbit-i.tech" 
+              href="mailto:eventrye@orbit-i.tech" 
               className="text-blue-400 hover:underline"
             >
               ORBIT-I Private Limited

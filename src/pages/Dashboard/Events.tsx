@@ -112,7 +112,7 @@ export default function Events() {
     let bc: BroadcastChannel | null = null;
     try {
       if (typeof BroadcastChannel !== 'undefined') {
-        bc = new BroadcastChannel('eventorax_realtime_events');
+        bc = new BroadcastChannel('eventrye_realtime_events');
         bc.onmessage = (msg) => {
           if (msg.data && msg.data.type === 'NEW_ATTENDEE_REGISTERED') {
             const { eventTitle, attendee, eventId } = msg.data;
@@ -201,8 +201,8 @@ export default function Events() {
       currency: 'USD',
       capacity: 500,
       description: '',
-      organizerName: 'EventoraX Organization',
-      organizerEmail: 'events@eventorax.com',
+      organizerName: 'Eventrye Organization',
+      organizerEmail: 'events@eventrye.com',
       organizerPhone: '+92 300 1234567',
       organizerBio: 'Verified event organizer delivering premier hybrid summits.',
       refundPolicy: 'Full refund available up to 7 days before event start.',

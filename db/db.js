@@ -16,7 +16,7 @@ const dbConfig = {
   port: parseInt(process.env.DB_PORT || '3306', 10),
   user: process.env.DB_USER || 'root',
   password: process.env.DB_PASSWORD || '',
-  database: process.env.DB_NAME || 'eventorax_db',
+  database: process.env.DB_NAME || 'eventrye_db',
   waitForConnections: true,
   connectionLimit: 15,
   queueLimit: 0,
@@ -35,14 +35,14 @@ export const memoryStore = {
   users: [
     {
       id: 1,
-      full_name: 'EventoraX Admin',
-      org_name: 'EventoraX',
-      email: 'admin@eventorax.com',
+      full_name: 'Eventrye Admin',
+      org_name: 'Eventrye',
+      email: 'admin@eventrye.com',
       password: bcrypt.hashSync('admin123', 10),
       phone: '+92 300 1234567',
       role: 'admin',
       avatar_url: '',
-      bio: 'Administrator at EventoraX.',
+      bio: 'Administrator at Eventrye.',
       timezone: 'UTC+5 (Pakistan Standard Time)',
       language: 'English (US)',
       notifications_enabled: 1,
@@ -55,8 +55,8 @@ export const memoryStore = {
   tenants: [
     {
       id: 1,
-      name: 'EventoraX HQ',
-      slug: 'eventorax-hq',
+      name: 'Eventrye HQ',
+      slug: 'eventrye-hq',
       custom_domain: '',
       logo_url: '',
       primary_color: '#1d4ed8',
@@ -92,7 +92,7 @@ export const memoryStore = {
       name: 'Abdul Samad Rind',
       role: 'Full Stack Web Developer & Platform Architect',
       department: 'Leadership & Engineering',
-      bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading EventoraX core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
+      bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading Eventrye core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
       avatar_url: '',
       display_order: 1,
       is_active: 1,
@@ -134,6 +134,30 @@ export const memoryStore = {
       is_active: 1,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
+    },
+    {
+      id: 5,
+      name: 'Chander Parakash',
+      role: 'Backend Developer',
+      department: 'Backend Engineering & Distributed Systems',
+      bio: 'Backend Developer at ORBIT-I Private Limited. Specializing in high-concurrency Node.js microservices, database query optimization, Redis caching layers, and secure payment webhook pipelines for Eventrye.',
+      avatar_url: '',
+      display_order: 5,
+      is_active: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
+    },
+    {
+      id: 6,
+      name: 'Laiba',
+      role: 'Backend Developer',
+      department: 'Backend Engineering & Cloud Architecture',
+      bio: 'Backend Developer at ORBIT-I Private Limited. Expert in RESTful API architecture, cryptographic ticket verification algorithms, automated batch processing, and scalable cloud database structures for Eventrye.',
+      avatar_url: '',
+      display_order: 6,
+      is_active: 1,
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString()
     }
   ],
   activity_logs: [
@@ -141,10 +165,10 @@ export const memoryStore = {
       id: 1,
       tenant_id: 1,
       user_id: 1,
-      user_name: 'EventoraX System',
+      user_name: 'Eventrye System',
       type: 'system',
       action: 'Production Platform Initialized',
-      detail: 'EventoraX Enterprise Multi-Tenant Engine live (v1.0.0). Verified by ORBIT-I Private Limited.',
+      detail: 'Eventrye Enterprise Multi-Tenant Engine live (v2.0.0). Verified by ORBIT-I Private Limited.',
       created_at: new Date().toISOString()
     }
   ],
@@ -184,7 +208,7 @@ export const memoryStore = {
       page_key: 'contact',
       title: 'Contact & Helpdesk CMS',
       data: JSON.stringify({
-        email: 'eventorax@orbit-i.tech',
+        email: 'eventrye@orbit-i.tech',
         phone: '+92 3190375751',
         address: 'ORBIT-I Private Limited, Nawabshah, Sindh, Pakistan',
         supportHours: '24/7 Dedicated Support'
@@ -197,7 +221,7 @@ export const memoryStore = {
       title: 'Legal & Compliance CMS',
       data: JSON.stringify({
         companyName: 'ORBIT-I Private Limited',
-        platformName: 'EventoraX',
+        platformName: 'Eventrye',
         jurisdiction: 'Nawabshah, Sindh, Pakistan',
         dpoContact: 'privacy@orbit-i.tech'
       }),
@@ -244,7 +268,7 @@ export const memoryStore = {
           { id: 'el-body', type: 'text', text: 'for remarkable performance and successful completion of the global technical program at {{event_name}}.', x: 525, y: 385, fontSize: 15, fontFamily: 'Inter', fontWeight: 'normal', color: '#475569', align: 'center' },
           { id: 'el-date', type: 'variable', text: 'Issued on: {{issue_date}}', x: 260, y: 540, fontSize: 13, fontFamily: 'Inter', fontWeight: '500', color: '#64748b', align: 'center' },
           { id: 'el-id', type: 'variable', text: 'Credential ID: {{certificate_id}}', x: 790, y: 540, fontSize: 13, fontFamily: 'Space Grotesk', fontWeight: '600', color: '#1e40af', align: 'center' },
-          { id: 'el-sign', type: 'text', text: 'Authorized Signatory\nEventoraX Director • ORBIT-I Private Limited', x: 525, y: 570, fontSize: 12, fontFamily: 'Montserrat', fontWeight: '600', color: '#334155', align: 'center' }
+          { id: 'el-sign', type: 'text', text: 'Authorized Signatory\nEventrye Director • ORBIT-I Private Limited', x: 525, y: 570, fontSize: 12, fontFamily: 'Montserrat', fontWeight: '600', color: '#334155', align: 'center' }
         ]
       }),
       background_asset_key: 'preset:cobalt_executive',
@@ -384,7 +408,7 @@ export const memoryStore = {
     },
     {
       id: 2,
-      code: 'EVENTORAX50',
+      code: 'EVENTRYE50',
       description: 'Exclusive 50% Off Early Bird Campaign',
       discount_type: 'percentage',
       discount_value: 50.00,
@@ -758,16 +782,16 @@ function handleMemoryQuery(sql, params = []) {
     let phone = '';
 
     if (s.includes('`master_key`') || s.includes('master_key')) {
-      // [adminName, 'EventoraX (ORBIT-I)', cleanEmail, hashedPassword, cleanMasterKey]
+      // [adminName, 'Eventrye (ORBIT-I)', cleanEmail, hashedPassword, cleanMasterKey]
       fullName = params[0];
-      orgName = params[1] || 'EventoraX (ORBIT-I)';
+      orgName = params[1] || 'Eventrye (ORBIT-I)';
       email = params[2];
       password = params[3];
       masterKey = params[4];
     } else if (params.length === 3) {
       // [adminName, cleanEmail, hashedPassword]
       fullName = params[0];
-      orgName = 'EventoraX (ORBIT-I)';
+      orgName = 'Eventrye (ORBIT-I)';
       email = params[1];
       password = params[2];
     } else if (params.length === 4) {
@@ -2058,7 +2082,7 @@ export async function initDatabase() {
           name: 'Abdul Samad Rind',
           role: 'Full Stack Web Developer & Platform Architect',
           department: 'Leadership & Engineering',
-          bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading EventoraX core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
+          bio: 'Founder & Platform Architect at ORBIT-I Private Limited. Lead Full Stack Web Developer heading Eventrye core distributed multi-tenant engine, high-concurrency event registration pipelines, and tamper-evident credential verification.',
           display_order: 1
         },
         {
@@ -2084,6 +2108,22 @@ export async function initDatabase() {
           department: 'Web Development & Engineering',
           bio: 'Web Developer at ORBIT-I Private Limited. Specializing in modern web applications, performant user interfaces, responsive frontends, and dynamic event management workflows.',
           display_order: 4
+        },
+        {
+          id: 5,
+          name: 'Chander Parakash',
+          role: 'Backend Developer',
+          department: 'Backend Engineering & Distributed Systems',
+          bio: 'Backend Developer at ORBIT-I Private Limited. Specializing in high-concurrency Node.js microservices, database query optimization, Redis caching layers, and secure payment webhook pipelines for Eventrye.',
+          display_order: 5
+        },
+        {
+          id: 6,
+          name: 'Laiba',
+          role: 'Backend Developer',
+          department: 'Backend Engineering & Cloud Architecture',
+          bio: 'Backend Developer at ORBIT-I Private Limited. Expert in RESTful API architecture, cryptographic ticket verification algorithms, automated batch processing, and scalable cloud database structures for Eventrye.',
+          display_order: 6
         }
       ];
 
@@ -2103,6 +2143,10 @@ export async function initDatabase() {
 
       // Explicitly sanitize any past records with Shahzad Hassan Ansar
       await pool.query("UPDATE \`platform_team_members\` SET \`name\` = 'Hassan Ansar', \`role\` = 'Web Developer', \`department\` = 'Web Development & Engineering' WHERE \`name\` LIKE '%Shahzad Hassan%' OR \`id\` = 4;").catch(() => {});
+
+      // Migrate existing DB names from EventoraX to Eventrye seamlessly
+      await pool.query("UPDATE \`tenants\` SET \`name\` = 'Eventrye HQ', \`slug\` = 'eventrye-hq' WHERE \`id\` = 1 AND (\`slug\` = 'eventorax-hq' OR \`name\` LIKE '%EventoraX%');").catch(() => {});
+      await pool.query("UPDATE \`users\` SET \`org_name\` = 'Eventrye (ORBIT-I)' WHERE \`id\` = 1 AND (\`org_name\` LIKE '%EventoraX%' OR \`org_name\` = 'EventoraX');").catch(() => {});
     } catch (teamErr) {
       console.warn('[Database] Platform team sync notice:', teamErr?.message);
     }
@@ -2116,7 +2160,7 @@ export async function initDatabase() {
           INSERT INTO \`coupons\` (\`code\`, \`description\`, \`discount_type\`, \`discount_value\`, \`min_purchase\`, \`max_uses\`, \`times_used\`, \`expires_at\`, \`is_active\`)
           VALUES 
           ('ORBIT2026', 'Official 2026 Launch Promo - 20% Off', 'percentage', 20.00, 0.00, 1000, 14, '2027-01-01 00:00:00', 1),
-          ('EVENTORAX50', 'Exclusive 50% Off Early Bird Campaign', 'percentage', 50.00, 50.00, 500, 8, '2027-01-01 00:00:00', 1),
+          ('EVENTRYE50', 'Exclusive 50% Off Early Bird Campaign', 'percentage', 50.00, 50.00, 500, 8, '2027-01-01 00:00:00', 1),
           ('WELCOME10', 'Flat $10 Off Any Upgrade Plan', 'fixed', 10.00, 20.00, 2000, 25, '2027-01-01 00:00:00', 1);
         `);
       }
@@ -2131,18 +2175,18 @@ export async function initDatabase() {
         VALUES (
           1,
           'Admin User',
-          'EventoraX HQ',
-          'admin@eventorax.com',
+          'Eventrye HQ',
+          'admin@eventrye.com',
           '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
           '+92 300 1234567',
           'admin',
-          'Platform Superadmin & Co-Founder at EventoraX.',
+          'Platform Superadmin & Co-Founder at Eventrye.',
           'Enterprise'
         );
       `);
       await pool.query(`
         INSERT INTO \`tenants\` (\`id\`, \`name\`, \`slug\`, \`owner_id\`, \`plan\`, \`status\`, \`primary_color\`, \`secondary_color\`, \`api_access_enabled\`, \`white_label_enabled\`)
-        VALUES (1, 'EventoraX HQ', 'eventorax-hq', 1, 'Enterprise', 'active', '#7c3aed', '#6d28d9', TRUE, TRUE);
+        VALUES (1, 'Eventrye HQ', 'eventrye-hq', 1, 'Enterprise', 'active', '#7c3aed', '#6d28d9', TRUE, TRUE);
       `);
       await pool.query(`
         INSERT INTO \`tenant_members\` (\`tenant_id\`, \`user_id\`, \`role\`, \`status\`)
