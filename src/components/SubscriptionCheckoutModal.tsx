@@ -11,8 +11,7 @@ import {
   ShieldAlert,
   Eye,
   EyeOff,
-  Printer,
-  Image as ImageIcon
+  Printer
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { api } from '@/services/api';

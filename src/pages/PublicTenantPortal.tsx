@@ -45,6 +45,7 @@ export default function PublicTenantPortal() {
   const [registering, setRegistering] = useState(false);
   const [idCardFace, setIdCardFace] = useState<'front' | 'back'>('front');
   const [isDownloadingImage, setIsDownloadingImage] = useState(false);
+  const [registrationSuccess, setRegistrationSuccess] = useState<any | null>(null);
 
   useEffect(() => {
     const fetchPortal = async () => {

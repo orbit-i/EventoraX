@@ -45,10 +45,12 @@ import {
   Download,
   Percent,
   Edit,
-  Users
+  Users,
+  FileSpreadsheet
 } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
+import FinancialAuditReportsSection from "./FinancialAuditReportsSection";
 import {
   EasypaisaBadge,
   JazzCashBadge,
@@ -58,7 +60,7 @@ import {
   CardNetworksBadge
 } from "@/components/payment/PaymentLogos";
 
-type AdminTab = 'overview' | 'licenses' | 'approvals' | 'tenants' | 'billing' | 'pricing' | 'gateways' | 'casestudies' | 'directory' | 'team' | 'testimonials' | 'cms' | 'security' | 'notifications' | 'backup' | 'profile';
+type AdminTab = 'overview' | 'reports' | 'licenses' | 'approvals' | 'tenants' | 'billing' | 'pricing' | 'gateways' | 'casestudies' | 'directory' | 'team' | 'testimonials' | 'cms' | 'security' | 'notifications' | 'backup' | 'profile';
 
 export default function PlatformAdmin() {
   const { isSuperAdmin, user } = useAuth();
@@ -1303,6 +1305,18 @@ export default function PlatformAdmin() {
           </button>
 
           <button
+            onClick={() => switchTab('reports')}
+            className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+              activeTab === 'reports'
+                ? 'bg-[#1d4ed8] text-white shadow-md shadow-blue-600/20'
+                : 'bg-white text-slate-600 hover:bg-slate-100 border border-slate-200'
+            }`}
+          >
+            <FileSpreadsheet className="w-4 h-4 text-emerald-500" />
+            Financial &amp; Audit Reports
+          </button>
+
+          <button
             onClick={() => switchTab('licenses')}
             className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
               activeTab === 'licenses'
@@ -1544,6 +1558,13 @@ export default function PlatformAdmin() {
               </div>
             </div>
           </div>
+        )}
+
+        {/* ============================================================== */}
+        {/* TAB 0.2: EXECUTIVE FINANCIAL AUDIT & MULTI-INTERVAL REPORTS */}
+        {/* ============================================================== */}
+        {activeTab === 'reports' && (
+          <FinancialAuditReportsSection />
         )}
 
         {/* ============================================================== */}
@@ -2290,13 +2311,20 @@ export default function PlatformAdmin() {
                 </p>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Button
+                  onClick={() => switchTab('reports')}
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold h-9 flex items-center gap-1.5 shadow-sm"
+                >
+                  <FileSpreadsheet className="w-3.5 h-3.5" />
+                  Audit Reports (Excel, PPT, PDF)
+                </Button>
                 <Button
                   onClick={() => switchTab('approvals')}
-                  className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold h-9"
+                  className="bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-bold h-9 flex items-center gap-1.5"
                 >
-                  <CreditCard className="w-3.5 h-3.5 mr-1.5" />
-                  View Approvals Queue ({pendingSubs.length})
+                  <CreditCard className="w-3.5 h-3.5" />
+                  Approvals ({pendingSubs.length})
                 </Button>
               </div>
             </div>

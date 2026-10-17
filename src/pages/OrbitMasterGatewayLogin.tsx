@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Lock, ArrowRight, Eye, EyeOff, AlertCircle, ShieldAlert, UserPlus, LogIn, CheckCircle2, KeyRound } from 'lucide-react';
+import { ShieldCheck, Lock, ArrowRight, Eye, EyeOff, AlertCircle, ShieldAlert, UserPlus, LogIn, CheckCircle2, KeyRound, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { api } from '@/services/api';
 import BrandLogo from '@/components/BrandLogo';
 
 export default function OrbitMasterGatewayLogin() {
   const [mode, setMode] = useState<'login' | 'setup'>('login');
+  const [isInitialized, setIsInitialized] = useState<boolean | null>(null);
+  const [checkingStatus, setCheckingStatus] = useState(true);
   
   // Login states - no hardcoded loophole credentials
   const [email, setEmail] = useState('');
@@ -32,6 +34,35 @@ export default function OrbitMasterGatewayLogin() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
+  // Check if a Master SuperAdmin has already been created.
+  // Once a SuperAdmin exists, secondary registration is permanently locked out.
+  useEffect(() => {
+    let isMounted = true;
+    const checkStatus = async () => {
+      try {
+        const res = await api.platformAdmin.getGatewayStatus();
+        if (isMounted && res.success) {
+          setIsInitialized(res.isInitialized);
+          if (res.isInitialized) {
+            setMode('login');
+          } else {
+            setMode('setup'); // First-time provisioning
+          }
+        }
+      } catch (err) {
+        console.warn('[Master Gateway] Status check notice:', err);
+        if (isMounted) {
+          setIsInitialized(true);
+          setMode('login');
+        }
+      } finally {
+        if (isMounted) setCheckingStatus(false);
+      }
+    };
+    checkStatus();
+    return () => { isMounted = false; };
+  }, []);
 
   const handleMasterLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -106,6 +137,8 @@ export default function OrbitMasterGatewayLogin() {
 
       if (res.success && res.token) {
         setSuccessMsg('SuperAdmin credentials configured successfully! Logging in...');
+        setIsInitialized(true);
+        setMode('login');
         
         // Synchronize login states
         setEmail(setupEmail.trim().toLowerCase());
@@ -157,29 +190,25 @@ export default function OrbitMasterGatewayLogin() {
             </p>
           </div>
 
-          {/* Mode Switch Tabs */}
-          <div className="grid grid-cols-2 p-1 rounded-2xl bg-slate-800/80 border border-slate-700/60 text-xs font-bold">
-            <button
-              type="button"
-              onClick={() => { setMode('login'); setError(null); }}
-              className={`py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-                mode === 'login' ? 'bg-[#1d4ed8] text-white shadow-md' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <LogIn className="w-3.5 h-3.5" />
-              Sign In
-            </button>
-            <button
-              type="button"
-              onClick={() => { setMode('setup'); setError(null); }}
-              className={`py-2 rounded-xl flex items-center justify-center gap-1.5 transition-all ${
-                mode === 'setup' ? 'bg-[#1d4ed8] text-white shadow-md' : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <UserPlus className="w-3.5 h-3.5" />
-              Create / Reset Admin
-            </button>
-          </div>
+          {/* Mode Switch Tabs / Initialization State Banner */}
+          {checkingStatus ? (
+            <div className="py-2.5 px-3 rounded-2xl bg-slate-800/60 border border-slate-700/60 flex items-center justify-center gap-2 text-xs text-slate-400">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-blue-400" />
+              Verifying Master Authority Sentinel...
+            </div>
+          ) : isInitialized ? (
+            /* Strict Single SuperAdmin Rule: Direct Login Only - Setup Tab is permanently removed */
+            <div className="p-2.5 rounded-2xl bg-blue-950/50 border border-blue-800/60 flex items-center justify-center gap-2 text-xs font-bold text-blue-300 shadow-inner">
+              <Lock className="w-3.5 h-3.5 text-blue-400 shrink-0" />
+              Single Master Authority Enforced • Direct Login Only
+            </div>
+          ) : (
+            /* First-Time Provisioning Mode */
+            <div className="p-2.5 rounded-2xl bg-emerald-950/50 border border-emerald-800/60 flex items-center justify-center gap-2 text-xs font-bold text-emerald-300 shadow-inner">
+              <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
+              ⚡ First-Time Initialization • Configure SuperAdmin
+            </div>
+          )}
 
           {error && (
             <div className="p-3.5 rounded-2xl bg-rose-950/70 border border-rose-800 text-rose-300 text-xs flex items-start gap-2.5 animate-in fade-in">
@@ -279,8 +308,8 @@ export default function OrbitMasterGatewayLogin() {
             </form>
           )}
 
-          {/* TAB 2: SETUP CUSTOM SUPERADMIN CREDENTIALS */}
-          {mode === 'setup' && (
+          {/* TAB 2: SETUP CUSTOM SUPERADMIN CREDENTIALS (ONLY RENDERED ON FIRST-TIME SETUP) */}
+          {mode === 'setup' && !isInitialized && (
             <form onSubmit={handleMasterSetup} className="space-y-3.5">
               <div className="bg-blue-500/10 border border-blue-500/20 rounded-2xl p-3 text-[11px] text-blue-200 space-y-1">
                 <span className="font-bold block text-white flex items-center gap-1.5">

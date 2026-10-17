@@ -119,6 +119,9 @@ export const api = {
 
   // Super Admin Platform Console (SaaS Owner)
   platformAdmin: {
+    getGatewayStatus: () =>
+      request<{ success: boolean; isInitialized: boolean; adminCount?: number; message?: string }>('/admin/gateway/status'),
+
     gatewayLogin: (credentials: { email: string; password: string; masterKey?: string }) =>
       request<{ success: boolean; message: string; token: string; user: any; tenant: any }>('/admin/gateway/login', {
         method: 'POST',
@@ -130,6 +133,9 @@ export const api = {
         method: 'POST',
         body: JSON.stringify(data),
       }),
+
+    getFinancialAuditReport: (interval: string = '1m') =>
+      request<{ success: boolean; report: any }>(`/admin/reports/financial-audit?interval=${encodeURIComponent(interval)}`),
 
     getOverview: () =>
       request<{ success: boolean; metrics: any }>('/admin/overview'),

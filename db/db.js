@@ -32,54 +32,9 @@ let isConnected = false;
 // Provides 100% feature parity and durability across restarts
 // =====================================================
 export const memoryStore = {
-  users: [
-    {
-      id: 1,
-      full_name: 'Eventrye Admin',
-      org_name: 'Eventrye',
-      email: 'admin@eventrye.com',
-      password: bcrypt.hashSync('admin123', 10),
-      phone: '+92 300 1234567',
-      role: 'admin',
-      avatar_url: '',
-      bio: 'Administrator at Eventrye.',
-      timezone: 'UTC+5 (Pakistan Standard Time)',
-      language: 'English (US)',
-      notifications_enabled: 1,
-      marketing_emails_enabled: 0,
-      two_factor_enabled: 0,
-      plan: 'Platform Authority',
-      created_at: new Date().toISOString()
-    }
-  ],
-  tenants: [
-    {
-      id: 1,
-      name: 'Eventrye HQ',
-      slug: 'eventrye-hq',
-      custom_domain: '',
-      logo_url: '',
-      primary_color: '#1d4ed8',
-      secondary_color: '#1e40af',
-      owner_id: 1,
-      plan: 'Platform Authority',
-      status: 'active',
-      license_key: 'EVX-HQ-MASTER-KEY-2026',
-      license_status: 'active',
-      license_activated_at: new Date().toISOString(),
-      license_expires_at: '2099-12-31T23:59:59.000Z',
-      max_events: 999999999,
-      max_attendees: 999999999,
-      max_certs: 999999999,
-      api_access_enabled: 0,
-      white_label_enabled: 1,
-      trial_ends_at: null,
-      created_at: new Date().toISOString()
-    }
-  ],
-  tenant_members: [
-    { id: 1, tenant_id: 1, user_id: 1, role: 'owner', status: 'active', created_at: new Date().toISOString() }
-  ],
+  users: [],
+  tenants: [],
+  tenant_members: [],
   tenant_api_keys: [],
   tenant_webhooks: [],
   events: [],
@@ -160,18 +115,7 @@ export const memoryStore = {
       updated_at: new Date().toISOString()
     }
   ],
-  activity_logs: [
-    {
-      id: 1,
-      tenant_id: 1,
-      user_id: 1,
-      user_name: 'Eventrye System',
-      type: 'system',
-      action: 'Production Platform Initialized',
-      detail: 'Eventrye Enterprise Multi-Tenant Engine live (v2.0.0). Verified by ORBIT-I Private Limited.',
-      created_at: new Date().toISOString()
-    }
-  ],
+  activity_logs: [],
   contact_messages: [],
   subscriptions: [],
   website_cms: [
@@ -2166,35 +2110,7 @@ export async function initDatabase() {
       }
     } catch {}
 
-    // Seed master admin if not exists
-    const [users] = await pool.query('SELECT COUNT(*) as count FROM `users`');
-    if (users[0].count === 0) {
-      console.log('[Database] Seeding initial admin and demo tenant into MySQL...');
-      await pool.query(`
-        INSERT INTO \`users\` (\`id\`, \`full_name\`, \`org_name\`, \`email\`, \`password\`, \`phone\`, \`role\`, \`bio\`, \`plan\`)
-        VALUES (
-          1,
-          'Admin User',
-          'Eventrye HQ',
-          'admin@eventrye.com',
-          '$2a$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi',
-          '+92 300 1234567',
-          'admin',
-          'Platform Superadmin & Co-Founder at Eventrye.',
-          'Enterprise'
-        );
-      `);
-      await pool.query(`
-        INSERT INTO \`tenants\` (\`id\`, \`name\`, \`slug\`, \`owner_id\`, \`plan\`, \`status\`, \`primary_color\`, \`secondary_color\`, \`api_access_enabled\`, \`white_label_enabled\`)
-        VALUES (1, 'Eventrye HQ', 'eventrye-hq', 1, 'Enterprise', 'active', '#7c3aed', '#6d28d9', TRUE, TRUE);
-      `);
-      await pool.query(`
-        INSERT INTO \`tenant_members\` (\`tenant_id\`, \`user_id\`, \`role\`, \`status\`)
-        VALUES (1, 1, 'owner', 'active');
-      `);
-      console.log('✅ [Database] Seed data successfully populated in MySQL.');
-    }
-
+    // Database ready. SuperAdmin credentials are provisioned cleanly via the private Master Gateway Setup.
     return true;
   } catch (err) {
     isConnected = false;
@@ -2208,10 +2124,62 @@ export function isDbConnected() {
   return isConnected;
 }
 
+export async function clearAllPlatformData() {
+  memoryStore.users = [];
+  memoryStore.tenants = [];
+  memoryStore.tenant_members = [];
+  memoryStore.tenant_api_keys = [];
+  memoryStore.tenant_webhooks = [];
+  memoryStore.events = [];
+  memoryStore.event_attendees = [];
+  memoryStore.team_members = [];
+  memoryStore.event_listing_requests = [];
+  memoryStore.activity_logs = [];
+  memoryStore.contact_messages = [];
+  memoryStore.subscriptions = [];
+  memoryStore.recipients = [];
+  memoryStore.generation_batches = [];
+  memoryStore.generation_items = [];
+  memoryStore.certificates = [];
+  memoryStore.delivery_attempts = [];
+  memoryStore.check_ins = [];
+  memoryStore.ticket_types = [];
+  memoryStore.testimonials = [];
+
+  saveMemoryStoreToDisk();
+
+  if (pool && isConnected) {
+    try {
+      await pool.query('SET FOREIGN_KEY_CHECKS = 0');
+      const tables = [
+        'users', 'tenants', 'tenant_members', 'tenant_api_keys', 'tenant_webhooks',
+        'events', 'event_attendees', 'team_members', 'activity_logs', 'contact_messages',
+        'subscriptions', 'recipients', 'generation_batches', 'generation_items',
+        'certificates', 'delivery_attempts', 'check_ins'
+      ];
+      for (const t of tables) {
+        try {
+          await pool.query(`TRUNCATE TABLE \`${t}\``);
+        } catch {
+          try {
+            await pool.query(`DELETE FROM \`${t}\``);
+          } catch {}
+        }
+      }
+      await pool.query('SET FOREIGN_KEY_CHECKS = 1');
+    } catch (err) {
+      console.warn('[clearAllPlatformData] MySQL clear notice:', err.message);
+    }
+  }
+
+  return true;
+}
+
 export default {
   getPool,
   query,
   initDatabase,
   isDbConnected,
+  clearAllPlatformData,
   memoryStore
 };
