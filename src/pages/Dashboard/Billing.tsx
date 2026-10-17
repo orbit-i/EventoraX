@@ -24,7 +24,7 @@ import {
 import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 import SubscriptionCheckoutModal, { type PlanData } from "@/components/SubscriptionCheckoutModal";
-import { printElement } from "@/lib/printUtils";
+import { printElement, downloadElementAsImage } from "@/lib/printUtils";
 
 const clientPlans: PlanData[] = [
   {
@@ -88,6 +88,7 @@ export default function Billing() {
   const [checkoutModalOpen, setCheckoutModalOpen] = useState(false);
   const [selectedPlanForCheckout, setSelectedPlanForCheckout] = useState<PlanData>(clientPlans[1]);
   const [viewingTaxInvoiceTx, setViewingTaxInvoiceTx] = useState<any | null>(null);
+  const [isDownloadingImage, setIsDownloadingImage] = useState(false);
 
   const isPlatformAuthority = isSuperAdmin || user?.role === 'admin';
 
@@ -549,41 +550,51 @@ export default function Billing() {
               {/* Printable Invoice Body */}
               <div
                 id="billing-official-tax-invoice"
-                className="bg-slate-50 p-5 rounded-2xl border border-slate-200 space-y-3 font-sans text-xs"
+                className="bg-white p-5 rounded-2xl border border-slate-200 space-y-3 font-sans text-xs shadow-sm"
               >
-                <div className="flex justify-between items-start pb-2 border-b border-slate-200">
-                  <div>
-                    <h4 className="font-black text-xs text-slate-900">EVENTRYE TECHNOLOGIES (PVT) LTD</h4>
-                    <p className="text-[10px] text-slate-500">ORBIT-I Cloud Digital Platform</p>
-                    <p className="text-[10px] text-slate-400 font-mono">NTN: 9842104-7 • STRN: 3277876123456</p>
+                <div className="flex justify-between items-start pb-3 border-b border-slate-200">
+                  <div className="flex items-center gap-2.5">
+                    <img
+                      src="/favicon.png"
+                      alt="Eventrye Logo"
+                      width="32"
+                      height="32"
+                      style={{ width: '32px', height: '32px', minWidth: '32px', minHeight: '32px', maxWidth: '32px', maxHeight: '32px' }}
+                      className="rounded-lg object-contain shadow-sm border border-slate-200 bg-white p-0.5"
+                    />
+                    <div>
+                      <h4 className="font-black text-xs text-slate-900 tracking-tight">EVENTRYE TECHNOLOGIES (PVT) LTD</h4>
+                      <p className="text-[10px] text-slate-500">ORBIT-I Cloud Digital Platform • SBP Digital Reg: PK-2026-PSO/PSP</p>
+                      <p className="text-[10px] text-slate-400 font-mono">NTN: 9842104-7 • STRN: 3277876123456</p>
+                    </div>
                   </div>
-                  <div className="text-right">
+                  <div className="text-right shrink-0">
                     <span className="px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 border border-emerald-300">
                       ★ VIP VERIFIED &amp; ACTIVE
                     </span>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] bg-white p-3 rounded-xl border border-slate-200">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px] bg-slate-50 p-3 rounded-xl border border-slate-200">
                   <div className="break-all">
-                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Invoice / Order Ref</span>
+                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Official Tax Invoice ID</span>
                     <span className="font-mono font-bold text-slate-900">
                       {viewingTaxInvoiceTx.invoice_number || viewingTaxInvoiceTx.transaction_ref || `EVX-INV-2026-${viewingTaxInvoiceTx.id}`}
                     </span>
                   </div>
                   <div className="break-all">
-                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Transaction TID</span>
+                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Transaction Reference (TID)</span>
                     <span className="font-mono font-bold text-[#1d4ed8]">
                       {viewingTaxInvoiceTx.transaction_ref || `TID-${viewingTaxInvoiceTx.id}`}
                     </span>
                   </div>
                   <div className="break-all">
-                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Organization Workspace</span>
+                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Client Organization</span>
                     <span className="font-bold text-slate-900">{currentTenant?.name || user?.orgName || 'Client Organization'}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Order Date</span>
-                    <span className="text-slate-800">
+                    <span className="text-slate-400 text-[10px] uppercase font-bold block">Issue Date</span>
+                    <span className="text-slate-800 font-medium">
                       {new Date(viewingTaxInvoiceTx.created_at || Date.now()).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
                     </span>
                   </div>
@@ -591,12 +602,12 @@ export default function Billing() {
 
                 <div className="bg-blue-50/70 p-3 rounded-xl border border-blue-200 text-[11px] space-y-1">
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
-                    <span className="text-slate-500">Receiving Merchant:</span>
+                    <span className="text-slate-500">Merchant Recipient:</span>
                     <span className="font-bold text-slate-900">ORBIT-I / Eventrye Technologies</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
-                    <span className="text-slate-500">Merchant Account / IBFT:</span>
-                    <span className="font-mono font-bold text-blue-700">0102-0104889912 (Meezan) / 03190375751</span>
+                    <span className="text-slate-500">Merchant Account / Till:</span>
+                    <span className="font-mono font-bold text-blue-700">03190375751</span>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                     <span className="text-slate-500">Payment Gateway:</span>
@@ -608,23 +619,27 @@ export default function Billing() {
                   <table className="w-full text-left text-xs">
                     <thead className="bg-slate-100 text-slate-600 font-bold text-[11px]">
                       <tr>
-                        <th className="p-2">Description</th>
-                        <th className="p-2 text-right">Amount</th>
+                        <th className="p-2.5">Description</th>
+                        <th className="p-2.5 text-center">Cycle</th>
+                        <th className="p-2.5 text-right">Amount</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       <tr>
-                        <td className="p-2">
+                        <td className="p-2.5">
                           <strong className="block text-slate-900">Eventrye {viewingTaxInvoiceTx.plan} Plan</strong>
-                          <span className="text-[10px] text-slate-500">Billing Cycle: {viewingTaxInvoiceTx.billing_cycle || 'Monthly'}</span>
+                          <span className="text-[10px] text-slate-500">Enterprise Cloud Event Management &amp; Pass Infrastructure (2026 Release)</span>
                         </td>
-                        <td className="p-2 text-right font-bold text-slate-900">
+                        <td className="p-2.5 text-center text-slate-700 font-medium">
+                          {viewingTaxInvoiceTx.billing_cycle || 'Monthly'}
+                        </td>
+                        <td className="p-2.5 text-right font-bold text-slate-900">
                           {viewingTaxInvoiceTx.price === 0 ? 'Free ($0)' : `${viewingTaxInvoiceTx.currency || 'USD'} ${viewingTaxInvoiceTx.original_price || viewingTaxInvoiceTx.price}`}
                         </td>
                       </tr>
                       {viewingTaxInvoiceTx.coupon_code && (
                         <tr className="bg-emerald-50/60">
-                          <td className="p-2 text-emerald-800 text-[11px] font-semibold">
+                          <td colSpan={2} className="p-2 text-emerald-800 text-[11px] font-semibold">
                             Promo Coupon Applied ({viewingTaxInvoiceTx.coupon_code})
                           </td>
                           <td className="p-2 text-right font-mono font-bold text-emerald-700">
@@ -633,12 +648,12 @@ export default function Billing() {
                         </tr>
                       )}
                       <tr>
-                        <td className="p-1.5 text-right text-slate-500 text-[10px]">Sales Tax / GST (0% Section 65F IT Exemption):</td>
-                        <td className="p-1.5 text-right font-mono text-slate-700 text-[10px]">PKR 0.00</td>
+                        <td colSpan={2} className="p-2 text-right text-slate-500 text-[10px]">Sales Tax / GST (0% Section 65F IT Exemption):</td>
+                        <td className="p-2 text-right font-mono text-slate-700 text-[10px]">PKR 0.00</td>
                       </tr>
                       <tr className="bg-slate-50 font-bold text-xs text-[#1d4ed8]">
-                        <td className="p-2 text-right">Net Amount Paid:</td>
-                        <td className="p-2 text-right">
+                        <td colSpan={2} className="p-2.5 text-right">Total Paid (Inclusive of all dues):</td>
+                        <td className="p-2.5 text-right">
                           {viewingTaxInvoiceTx.price === 0 ? 'Free ($0)' : `${viewingTaxInvoiceTx.currency || 'USD'} ${viewingTaxInvoiceTx.price}`}
                         </td>
                       </tr>
@@ -646,33 +661,56 @@ export default function Billing() {
                   </table>
                 </div>
 
-                <div className="flex items-center justify-between pt-2 border-t border-slate-200">
-                  <div className="flex items-center gap-2">
+                <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+                  <div className="flex items-center gap-2.5">
                     <img
-                      src={`https://api.qrserver.com/v1/create-qr-code/?size=80x80&data=${encodeURIComponent(`https://eventrye.orbit-i.tech/verify/${viewingTaxInvoiceTx.transaction_ref || viewingTaxInvoiceTx.id}`)}`}
-                      alt="Verification QR"
-                      className="w-10 h-10 rounded border border-slate-200"
+                      src={`https://api.qrserver.com/v1/create-qr-code/?size=120x120&data=${encodeURIComponent(`https://eventrye.orbit-i.tech/verify/${viewingTaxInvoiceTx.transaction_ref || viewingTaxInvoiceTx.id}`)}`}
+                      alt="Digital QR Verification"
+                      width="44"
+                      height="44"
+                      style={{ width: '44px', height: '44px', minWidth: '44px', minHeight: '44px', maxWidth: '44px', maxHeight: '44px' }}
+                      className="rounded border border-slate-200 bg-white p-0.5"
                     />
                     <div className="text-[9px] text-slate-500">
-                      <span className="font-bold text-slate-700 block">QR Authenticated</span>
-                      State Bank 2026 Compliant
+                      <span className="font-bold text-slate-700 block">Digital QR Verification</span>
+                      Scan to authenticate digital invoice on Eventrye public verification ledger.
                     </div>
                   </div>
                   <div className="text-right text-[9px] text-slate-400">
                     <span className="block font-bold text-slate-700">ORBIT-I Cloud Platform</span>
-                    <span>Digital Tax Invoice</span>
+                    <span>Official Tax Invoice • Tamper Evident</span>
                   </div>
                 </div>
               </div>
 
               {/* Actions */}
-              <div className="flex items-center justify-end gap-2 pt-2">
+              <div className="flex flex-wrap items-center justify-end gap-2 pt-2">
                 <Button
                   variant="outline"
                   onClick={() => setViewingTaxInvoiceTx(null)}
                   className="rounded-xl text-xs h-9 px-4"
                 >
                   Close
+                </Button>
+                <Button
+                  variant="outline"
+                  disabled={isDownloadingImage}
+                  onClick={async () => {
+                    setIsDownloadingImage(true);
+                    try {
+                      await downloadElementAsImage(
+                        'billing-official-tax-invoice',
+                        `Eventrye-Invoice-${viewingTaxInvoiceTx.transaction_ref || viewingTaxInvoiceTx.id}.png`,
+                        3
+                      );
+                    } finally {
+                      setIsDownloadingImage(false);
+                    }
+                  }}
+                  className="rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 border-slate-300 h-9 px-3.5 flex items-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5 text-blue-600" />
+                  {isDownloadingImage ? 'Generating HD Image...' : 'Save Invoice (Image)'}
                 </Button>
                 <Button
                   onClick={() => printElement('billing-official-tax-invoice', `Eventrye Tax Invoice - ${viewingTaxInvoiceTx.transaction_ref || viewingTaxInvoiceTx.id}`)}

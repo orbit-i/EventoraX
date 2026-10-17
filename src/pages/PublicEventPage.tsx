@@ -16,13 +16,16 @@ import {
   Smartphone, 
   AlertCircle,
   X,
-  Ticket
+  Ticket,
+  Printer,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import BrandLogo from '@/components/BrandLogo';
 import { api } from '@/services/api';
-import { printElement } from '@/lib/printUtils';
+import { printElement, downloadElementAsImage } from '@/lib/printUtils';
+import { toast } from 'sonner';
 
 export default function PublicEventPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -45,6 +48,7 @@ export default function PublicEventPage() {
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registeredAttendee, setRegisteredAttendee] = useState<any | null>(null);
+  const [isDownloadingImage, setIsDownloadingImage] = useState(false);
 
   // Countdown timer
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
@@ -767,53 +771,80 @@ export default function PublicEventPage() {
                 {/* Printable ID Card Badge Component */}
                 <div 
                   id="public-event-pass-card"
-                  className="max-w-xs mx-auto bg-gradient-to-b from-slate-900 via-blue-950 to-slate-900 text-white rounded-3xl p-6 border-2 border-blue-400 shadow-2xl relative overflow-hidden text-center min-h-[500px] flex flex-col justify-between"
+                  className="w-full max-w-[320px] mx-auto text-white rounded-3xl p-6 border-2 border-blue-400 shadow-2xl relative overflow-hidden text-center min-h-[520px] flex flex-col justify-between"
+                  style={{
+                    background: 'linear-gradient(180deg, #0f172a 0%, #0b1329 50%, #0f172a 100%)',
+                    backgroundColor: '#0f172a',
+                    color: '#ffffff',
+                    borderColor: '#60a5fa',
+                    boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.45)',
+                    pageBreakInside: 'avoid',
+                    breakInside: 'avoid'
+                  }}
                 >
                   {/* Lanyard punch hole indicator */}
-                  <div className="w-10 h-2.5 bg-slate-950 rounded-full mx-auto mb-3 border border-slate-700 shrink-0" />
+                  <div 
+                    className="w-12 h-3 rounded-full mx-auto mb-3 border shrink-0"
+                    style={{ backgroundColor: '#020617', borderColor: '#334155' }}
+                  />
 
                   {/* Event Title */}
                   <div className="shrink-0">
-                    <div className="text-[10px] font-bold tracking-widest text-blue-300 uppercase truncate mb-0.5">
+                    <div className="text-[11px] font-black tracking-widest text-blue-300 uppercase truncate mb-0.5">
                       {event.title}
                     </div>
-                    <div className="text-[9px] text-slate-400">
+                    <div className="text-[9px] text-slate-300">
                       {event.venue_name || 'Eventrye Venue'} • {new Date(event.start_date).toLocaleDateString()}
                     </div>
                   </div>
 
                   {/* Avatar / Photo placeholder */}
-                  <div className="my-auto py-1">
-                    <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-500 p-1 mx-auto mb-2 shadow-lg">
-                      <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center font-bold text-xl text-white">
+                  <div className="my-auto py-2">
+                    <div 
+                      className="w-18 h-18 rounded-2xl p-1 mx-auto mb-2 shadow-lg"
+                      style={{ background: 'linear-gradient(135deg, #2563eb 0%, #6366f1 50%, #9333ea 100%)' }}
+                    >
+                      <div 
+                        className="w-full h-full rounded-xl flex items-center justify-center font-bold text-xl text-white"
+                        style={{ backgroundColor: '#0f172a' }}
+                      >
                         {registeredAttendee.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'AT'}
                       </div>
                     </div>
 
                     {/* Attendee Name & Designation */}
-                    <h5 className="font-heading font-extrabold text-base text-white truncate px-1">
+                    <h5 className="font-heading font-extrabold text-lg text-white truncate px-1">
                       {registeredAttendee.name}
                     </h5>
-                    <p className="text-[11px] text-blue-200 truncate mt-0.5">
+                    <p className="text-[11px] text-blue-200 truncate mt-0.5 font-medium">
                       {registeredAttendee.designation || 'Participant'}
                     </p>
-                    <p className="text-[10px] text-slate-400 truncate">
+                    <p className="text-[10px] text-slate-300 truncate">
                       {registeredAttendee.organization || 'Attendee'}
                     </p>
 
                     {/* Tier Badge */}
-                    <div className="my-2">
-                      <span className="inline-block px-3 py-0.5 rounded-full text-[10px] font-extrabold tracking-wider uppercase bg-blue-500 text-white shadow-sm">
-                        {registeredAttendee.ticketType || 'GENERAL ACCESS'}
+                    <div className="my-2.5">
+                      <span 
+                        className="inline-block px-3.5 py-1 rounded-full text-[10px] font-extrabold tracking-wider uppercase text-white shadow-sm"
+                        style={{ backgroundColor: '#2563eb', color: '#ffffff' }}
+                      >
+                        {registeredAttendee.ticketType || 'VIP ACCESS PASS'}
                       </span>
                     </div>
 
                     {/* Real Scannable QR Code */}
-                    <div className="bg-white p-2 rounded-2xl inline-block shadow-md my-1">
+                    <div 
+                      className="p-2 rounded-2xl inline-block shadow-md my-1"
+                      style={{ backgroundColor: '#ffffff' }}
+                    >
                       <img
                         src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`${window.location.origin}/verify?code=${registeredAttendee.ticketCode}`)}`}
                         alt="Event Pass QR"
+                        width="64"
+                        height="64"
                         className="w-16 h-16 object-contain rounded-md"
+                        style={{ width: '64px', height: '64px', minWidth: '64px', minHeight: '64px' }}
                         onError={(e) => {
                           (e.target as HTMLImageElement).src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="white"/><rect x="6" y="6" width="20" height="20" fill="black"/><rect x="10" y="10" width="12" height="12" fill="white"/><rect x="14" y="14" width="4" height="4" fill="black"/><rect x="38" y="6" width="20" height="20" fill="black"/><rect x="42" y="10" width="12" height="12" fill="white"/><rect x="46" y="14" width="4" height="4" fill="black"/><rect x="6" y="38" width="20" height="20" fill="black"/><rect x="10" y="42" width="12" height="12" fill="white"/><rect x="14" y="46" width="4" height="4" fill="black"/></svg>`;
                         }}
@@ -822,12 +853,12 @@ export default function PublicEventPage() {
 
                     {/* Barcode lines */}
                     <div className="mt-1 flex flex-col items-center">
-                      <div className="h-3.5 flex items-center justify-center gap-0.5 max-w-[160px] mx-auto opacity-75">
+                      <div className="h-3.5 flex items-center justify-center gap-0.5 max-w-[160px] mx-auto opacity-80">
                         {[2, 1, 3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 2, 1].map((w, i) => (
                           <span
                             key={i}
-                            className="h-full bg-white rounded-xs"
-                            style={{ width: `${w * 1.4}px` }}
+                            className="h-full rounded-xs"
+                            style={{ width: `${w * 1.4}px`, backgroundColor: '#ffffff' }}
                           />
                         ))}
                       </div>
@@ -838,28 +869,56 @@ export default function PublicEventPage() {
                   </div>
 
                   {/* Pass Footer */}
-                  <div className="pt-2 border-t border-white/10 text-[8px] text-slate-400 flex items-center justify-between shrink-0">
-                    <span className="text-emerald-400 font-bold">VERIFIED PASS</span>
-                    <span>Eventrye Platform</span>
+                  <div 
+                    className="pt-2.5 border-t text-[9px] flex items-center justify-between shrink-0"
+                    style={{ borderColor: 'rgba(255, 255, 255, 0.15)', color: '#94a3b8' }}
+                  >
+                    <span className="font-bold" style={{ color: '#34d399' }}>VERIFIED PASS</span>
+                    <span style={{ color: '#cbd5e1' }}>Eventrye Platform</span>
                   </div>
                 </div>
 
                 {/* Badge Actions */}
-                <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2">
+                  <Button
+                    onClick={async () => {
+                      setIsDownloadingImage(true);
+                      toast.info('Generating high-resolution ID Badge image...');
+                      const ok = await downloadElementAsImage(
+                        'public-event-pass-card', 
+                        `${registeredAttendee.name.replace(/\s+/g, '_')}_Eventrye_Pass.png`,
+                        3
+                      );
+                      setIsDownloadingImage(false);
+                      if (ok) {
+                        toast.success('ID Badge image saved successfully!');
+                      } else {
+                        toast.error('Failed to capture badge image. Please use Print / PDF option.');
+                      }
+                    }}
+                    disabled={isDownloadingImage}
+                    className="rounded-xl text-xs font-bold w-full sm:w-auto flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-md shadow-blue-500/25 h-11 px-4 cursor-pointer"
+                  >
+                    <Download className="w-4 h-4" />
+                    {isDownloadingImage ? 'Generating Image...' : 'Save Badge (HD Image)'}
+                  </Button>
+
                   <Button
                     onClick={() => printElement('public-event-pass-card', `${registeredAttendee.name} - ${event.title} Pass`)}
                     variant="outline"
-                    className="rounded-xl text-xs font-bold w-full sm:w-auto flex items-center gap-2"
+                    className="rounded-xl text-xs font-bold w-full sm:w-auto flex items-center gap-2 h-11 px-4 border-slate-300 hover:bg-slate-50 text-slate-700 cursor-pointer"
                   >
-                    <Download className="w-4 h-4" />
-                    Print / Download ID Card
+                    <Printer className="w-4 h-4 text-blue-600" />
+                    Print / Save PDF
                   </Button>
+
                   <Button
                     onClick={() => {
                       setIsRegisterOpen(false);
                       setRegisteredAttendee(null);
                     }}
-                    className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl text-xs font-bold w-full sm:w-auto"
+                    variant="ghost"
+                    className="rounded-xl text-xs font-semibold w-full sm:w-auto h-11 px-3 text-slate-500 hover:text-slate-900"
                   >
                     Done
                   </Button>

@@ -18,7 +18,8 @@ import {
   CreditCard
 } from 'lucide-react';
 import { api } from '@/services/api';
-import { printElement } from '@/lib/printUtils';
+import { printElement, downloadElementAsImage } from '@/lib/printUtils';
+import { toast } from 'sonner';
 
 interface Attendee {
   id: number;
@@ -467,12 +468,33 @@ export default function IDCardGenerator() {
                   Target: {activeEvent?.title || 'No event selected'} • Tier: {currentSeat.label}
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <Button
+                  size="sm"
+                  onClick={async () => {
+                    if (!printAreaRef.current) return;
+                    toast.info('Rendering high-resolution badge images...');
+                    const ok = await downloadElementAsImage(
+                      printAreaRef.current, 
+                      `${activeEvent?.title || 'Event'}_Badges.png`,
+                      2.5
+                    );
+                    if (ok) {
+                      toast.success('Badge image exported successfully!');
+                    } else {
+                      toast.error('Failed to export image. Use Print / Export PDF instead.');
+                    }
+                  }}
+                  className="text-xs font-bold rounded-xl flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white shadow-xs cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  Save HD Pass (Image)
+                </Button>
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={handlePrint}
-                  className="text-xs font-bold rounded-xl flex items-center gap-1.5 border-slate-200"
+                  className="text-xs font-bold rounded-xl flex items-center gap-1.5 border-slate-300 hover:bg-slate-50 text-slate-700 cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Print / Export PDF
@@ -498,7 +520,8 @@ export default function IDCardGenerator() {
                       {/* ================= FRONT SIDE CARD ================= */}
                       {(cardSideView === 'dual' || cardSideView === 'front') && (
                         <div
-                          className={`rounded-3xl p-6 shadow-xl transition-all relative overflow-hidden text-center min-h-[580px] h-[580px] flex flex-col justify-between print:shadow-none print:border ${
+                          style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+                          className={`rounded-3xl p-6 shadow-xl transition-all relative overflow-hidden text-center min-h-[580px] h-[580px] print:min-h-0 print:h-auto print:max-h-[520px] print:p-4 print:rounded-2xl flex flex-col justify-between print:shadow-none print:border ${
                             selectedTemplate.id === 'corporate'
                               ? 'bg-gradient-to-br from-white via-slate-50 to-blue-50/40 text-slate-900 border-2 border-slate-300'
                               : `bg-gradient-to-b ${selectedTemplate.bg} ${selectedTemplate.textColor} border-2 ${selectedTemplate.border}`
@@ -511,7 +534,14 @@ export default function IDCardGenerator() {
                           <div className="flex items-center justify-between mb-2 px-2 shrink-0">
                             {includeOrgLogo ? (
                               <div className="flex items-center gap-1.5">
-                                <img src="/favicon.png" alt="Logo" className="w-5 h-5 rounded-md object-contain" />
+                                <img 
+                                  src="/favicon.png" 
+                                  alt="Logo" 
+                                  width="20"
+                                  height="20"
+                                  className="w-5 h-5 rounded-md object-contain shrink-0" 
+                                  style={{ width: '20px', height: '20px', maxWidth: '20px', maxHeight: '20px' }}
+                                />
                                 <span className="text-[10px] font-extrabold tracking-wider uppercase opacity-90">
                                   Eventrye Pass
                                 </span>
@@ -612,7 +642,8 @@ export default function IDCardGenerator() {
                       {/* ================= BACK SIDE CARD ================= */}
                       {(cardSideView === 'dual' || cardSideView === 'back') && (
                         <div
-                          className={`rounded-3xl p-6 shadow-xl transition-all relative overflow-hidden min-h-[580px] h-[580px] flex flex-col justify-between print:shadow-none print:border ${
+                          style={{ pageBreakInside: 'avoid', breakInside: 'avoid' }}
+                          className={`rounded-3xl p-6 shadow-xl transition-all relative overflow-hidden min-h-[580px] h-[580px] print:min-h-0 print:h-auto print:max-h-[520px] print:p-4 print:rounded-2xl flex flex-col justify-between print:shadow-none print:border ${
                             selectedTemplate.id === 'corporate'
                               ? 'bg-gradient-to-br from-slate-50 via-white to-slate-100 text-slate-900 border-2 border-slate-300'
                               : `bg-gradient-to-b ${selectedTemplate.bg} ${selectedTemplate.textColor} border-2 ${selectedTemplate.border}`

@@ -10,11 +10,14 @@ import {
   Tag,
   ShieldAlert,
   Eye,
-  EyeOff
+  EyeOff,
+  Printer,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Button } from './ui/button';
 import { api } from '@/services/api';
-import { printElement } from '@/lib/printUtils';
+import { printElement, downloadElementAsImage } from '@/lib/printUtils';
+import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import {
   SafepayBadge,
@@ -102,6 +105,7 @@ export default function SubscriptionCheckoutModal({
   } | null>(null);
   const [couponError, setCouponError] = useState<string | null>(null);
   const [validatingCoupon, setValidatingCoupon] = useState(false);
+  const [isSavingInvoiceImage, setIsSavingInvoiceImage] = useState(false);
 
   const invoiceUniqueId = useId().replace(/:/g, '');
 
@@ -1490,60 +1494,92 @@ export default function SubscriptionCheckoutModal({
               </p>
             </div>
 
-            {/* Official Tax Invoice Container (Printable via printElement) */}
+            {/* Official Tax Invoice Container (Printable via printElement & downloadable via downloadElementAsImage) */}
             <div 
               id={`subscription-receipt-${invoiceUniqueId}`}
-              className="bg-white p-6 rounded-2xl border-2 border-slate-300 text-left space-y-4 font-sans text-xs max-w-lg mx-auto shadow-sm relative overflow-hidden"
+              className="bg-white p-5 sm:p-7 rounded-2xl border-2 border-slate-300 text-left space-y-4 font-sans text-xs max-w-lg mx-auto shadow-md relative overflow-hidden"
+              style={{
+                backgroundColor: '#ffffff',
+                color: '#0f172a',
+                borderColor: '#cbd5e1',
+                pageBreakInside: 'avoid',
+                breakInside: 'avoid'
+              }}
             >
-              {/* Watermark */}
-              <div className="absolute right-4 bottom-14 opacity-5 pointer-events-none select-none text-slate-900 font-black text-6xl rotate-[-20deg]">
+              {/* Subtle Background Watermark */}
+              <div 
+                className="absolute right-4 bottom-14 opacity-5 pointer-events-none select-none text-slate-900 font-black text-6xl rotate-[-20deg]"
+                style={{ opacity: 0.04 }}
+              >
                 EVENTRYE
               </div>
 
               {/* Official Header */}
-              <div className="flex justify-between items-start pb-3 border-b border-slate-200">
-                <div>
-                  <h4 className="font-extrabold text-sm text-slate-900 tracking-tight">EVENTRYE TECHNOLOGIES (PVT) LTD</h4>
-                  <p className="text-[10px] text-slate-500 font-medium">ORBIT-I Cloud Digital Systems • SBP Digital Reg: PK-2026-PSO/PSP</p>
-                  <p className="text-[10px] text-slate-400 font-mono">NTN: 9842104-7 • STRN: 3277876123456</p>
+              <div 
+                className="flex items-start justify-between pb-3.5 border-b"
+                style={{ borderColor: '#e2e8f0' }}
+              >
+                <div className="flex items-center gap-2.5">
+                  <img 
+                    src="/favicon.png" 
+                    alt="Eventrye" 
+                    width="36" 
+                    height="36" 
+                    className="w-9 h-9 rounded-xl object-contain shrink-0 shadow-xs"
+                    style={{ width: '36px', height: '36px', minWidth: '36px', minHeight: '36px' }}
+                  />
+                  <div>
+                    <h4 className="font-extrabold text-sm text-slate-900 tracking-tight">EVENTRYE TECHNOLOGIES (PVT) LTD</h4>
+                    <p className="text-[10px] text-slate-500 font-medium">ORBIT-I Cloud Digital Systems • SBP Digital Reg: PK-2026-PSO/PSP</p>
+                    <p className="text-[10px] text-slate-400 font-mono">NTN: 9842104-7 • STRN: 3277876123456</p>
+                  </div>
                 </div>
-                <div className="text-right">
-                  <span className="px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 border border-emerald-300 block mb-1">
+                <div className="text-right shrink-0">
+                  <span 
+                    className="px-2.5 py-1 rounded-md text-[9px] font-extrabold uppercase inline-block mb-1 shadow-xs"
+                    style={{ backgroundColor: '#d1fae5', color: '#065f46', border: '1px solid #6ee7b7' }}
+                  >
                     ★ VIP VERIFIED &amp; ACTIVE
                   </span>
-                  <span className="text-[10px] text-slate-500 font-mono block">Year 2026 Edition</span>
+                  <span className="text-[10px] text-slate-500 font-mono block">2026 Edition</span>
                 </div>
               </div>
 
-              {/* Invoice Meta */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-                <div className="break-all">
+              {/* Invoice Meta Grid */}
+              <div 
+                className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs p-3 rounded-xl border"
+                style={{ backgroundColor: '#f8fafc', borderColor: '#e2e8f0' }}
+              >
+                <div className="break-all p-1">
                   <span className="text-[10px] text-slate-400 uppercase font-bold block">Official Tax Invoice ID</span>
                   <span className="font-mono font-bold text-slate-900">{successData.invoiceNumber}</span>
                 </div>
-                <div className="break-all">
+                <div className="break-all p-1">
                   <span className="text-[10px] text-slate-400 uppercase font-bold block">Transaction Reference (TID)</span>
-                  <span className="font-mono font-bold text-[#1d4ed8]">{successData.transactionRef}</span>
+                  <span className="font-mono font-bold" style={{ color: '#1d4ed8' }}>{successData.transactionRef}</span>
                 </div>
-                <div className="break-all">
+                <div className="break-all p-1">
                   <span className="text-[10px] text-slate-400 uppercase font-bold block">Client Organization</span>
                   <span className="font-bold text-slate-900">{successData.orgName}</span>
                 </div>
-                <div>
+                <div className="p-1">
                   <span className="text-[10px] text-slate-400 uppercase font-bold block">Issue Date</span>
                   <span className="font-medium text-slate-800">{successData.date}</span>
                 </div>
               </div>
 
               {/* Receiving Merchant Info */}
-              <div className="bg-blue-50/60 p-3.5 rounded-xl border border-blue-200 text-[11px] space-y-1.5">
+              <div 
+                className="p-3 rounded-xl border text-[11px] space-y-1.5"
+                style={{ backgroundColor: '#eff6ff', borderColor: '#bfdbfe' }}
+              >
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                   <span className="text-slate-500">Merchant Recipient:</span>
                   <span className="font-bold text-slate-900">ORBIT-I / Eventrye Technologies</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                   <span className="text-slate-500">Merchant Account / Till:</span>
-                  <span className="font-mono font-bold text-blue-700">{successData.receivingAccount}</span>
+                  <span className="font-mono font-bold" style={{ color: '#1d4ed8' }}>{successData.receivingAccount}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row sm:justify-between gap-0.5">
                   <span className="text-slate-500">Payment Gateway:</span>
@@ -1552,13 +1588,16 @@ export default function SubscriptionCheckoutModal({
               </div>
 
               {/* Line Items Table */}
-              <div className="border border-slate-200 rounded-xl overflow-hidden">
-                <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-100 text-slate-600 font-bold text-[11px]">
-                    <tr>
-                      <th className="p-2.5">Description</th>
-                      <th className="p-2.5 text-center">Cycle</th>
-                      <th className="p-2.5 text-right">Amount</th>
+              <div 
+                className="border rounded-xl overflow-hidden"
+                style={{ borderColor: '#e2e8f0' }}
+              >
+                <table className="w-full text-left text-xs" style={{ borderCollapse: 'collapse' }}>
+                  <thead style={{ backgroundColor: '#f1f5f9', color: '#475569' }}>
+                    <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
+                      <th className="p-2.5 font-bold text-[11px]">Description</th>
+                      <th className="p-2.5 text-center font-bold text-[11px]">Cycle</th>
+                      <th className="p-2.5 text-right font-bold text-[11px]">Amount</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -1571,7 +1610,7 @@ export default function SubscriptionCheckoutModal({
                       <td className="p-2.5 text-right font-bold text-slate-900">{successData.originalPriceFormatted || successData.amount}</td>
                     </tr>
                     {successData.couponCode && (
-                      <tr className="bg-emerald-50/60">
+                      <tr style={{ backgroundColor: '#ecfdf5' }}>
                         <td colSpan={2} className="p-2 text-right text-emerald-700 text-[11px] font-bold">
                           Promo Coupon Applied ({successData.couponCode}):
                         </td>
@@ -1584,40 +1623,53 @@ export default function SubscriptionCheckoutModal({
                       <td colSpan={2} className="p-2 text-right text-slate-500 text-[11px]">Sales Tax / GST (0% Section 65F IT Exemption):</td>
                       <td className="p-2 text-right font-mono text-slate-700">PKR 0.00</td>
                     </tr>
-                    <tr className="bg-slate-50 font-bold text-sm text-[#1d4ed8]">
-                      <td colSpan={2} className="p-2.5 text-right">Total Paid (Inclusive of all dues):</td>
-                      <td className="p-2.5 text-right">{successData.amount}</td>
+                    <tr style={{ backgroundColor: '#f8fafc', color: '#1d4ed8' }}>
+                      <td colSpan={2} className="p-2.5 text-right font-bold text-sm">Total Paid (Inclusive of all dues):</td>
+                      <td className="p-2.5 text-right font-bold text-sm">{successData.amount}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
 
               {/* QR Code & Digital Signature */}
-              <div className="flex items-center justify-between pt-2 border-t border-slate-200">
-                <div className="flex items-center gap-3">
+              <div 
+                className="flex items-center justify-between pt-2.5 border-t"
+                style={{ borderColor: '#e2e8f0' }}
+              >
+                <div className="flex items-center gap-2.5">
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`https://eventrye.orbit-i.tech/verify/${successData.invoiceNumber}`)}`}
                     alt="Official Invoice QR Verification"
-                    className="w-14 h-14 rounded-lg border border-slate-200 p-0.5"
+                    width="52"
+                    height="52"
+                    className="w-13 h-13 rounded-lg border p-0.5 shrink-0"
+                    style={{ width: '52px', height: '52px', minWidth: '52px', minHeight: '52px', borderColor: '#e2e8f0' }}
                   />
                   <div>
-                    <span className="text-[10px] font-bold text-slate-700 block">Digital QR Verification</span>
-                    <p className="text-[9px] text-slate-400 max-w-[170px]">
-                      Scan to authenticate digital invoice on the Eventrye public verification ledger.
+                    <span className="text-[10px] font-bold text-slate-800 block">Digital QR Verification</span>
+                    <p className="text-[9px] text-slate-400 max-w-[170px] leading-tight mt-0.5">
+                      Scan with phone camera to authenticate on the official public ledger.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <svg viewBox="0 0 48 48" className="w-10 h-10 text-[#1d4ed8]" fill="none">
-                    <circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="2" strokeDasharray="3 2" />
+                <div className="flex items-center gap-2 shrink-0">
+                  <svg 
+                    width="40" 
+                    height="40" 
+                    viewBox="0 0 48 48" 
+                    className="w-10 h-10 shrink-0" 
+                    style={{ width: '40px', height: '40px', minWidth: '40px', minHeight: '40px', maxWidth: '40px', maxHeight: '40px' }}
+                    fill="none"
+                  >
+                    <circle cx="24" cy="24" r="22" stroke="#1d4ed8" strokeWidth="2" strokeDasharray="3 2" />
                     <circle cx="24" cy="24" r="18" stroke="#059669" strokeWidth="1.5" />
                     <path d="M16 24L21 29L32 18" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                   </svg>
                   <div className="text-right">
                     <span className="text-[9px] text-slate-400 uppercase font-bold block">ORBIT-I Cloud Platform</span>
                     <span className="font-serif italic text-xs text-slate-800 font-bold block">Authorized Digital Sign</span>
-                    <span className="text-[9px] text-emerald-600 font-mono font-bold block">SHA-256 Verified 2026</span>
+                    <span className="text-[9px] font-mono font-bold block" style={{ color: '#059669' }}>SHA-256 Verified 2026</span>
                   </div>
                 </div>
               </div>
@@ -1635,14 +1687,37 @@ export default function SubscriptionCheckoutModal({
             </div>
 
             {/* Actions Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2 max-w-lg mx-auto">
+            <div className="flex flex-col sm:flex-row items-center justify-center gap-2.5 pt-2 max-w-lg mx-auto">
+              <Button
+                onClick={async () => {
+                  setIsSavingInvoiceImage(true);
+                  toast.info('Generating high-resolution Tax Invoice image...');
+                  const ok = await downloadElementAsImage(
+                    `subscription-receipt-${invoiceUniqueId}`,
+                    `Eventrye_Invoice_${successData.invoiceNumber}.png`,
+                    2.5
+                  );
+                  setIsSavingInvoiceImage(false);
+                  if (ok) {
+                    toast.success('Tax Invoice image downloaded successfully!');
+                  } else {
+                    toast.error('Failed to capture image. Please use Print / PDF option.');
+                  }
+                }}
+                disabled={isSavingInvoiceImage}
+                className="rounded-xl flex items-center justify-center gap-2 w-full sm:w-auto text-xs h-11 px-5 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold shadow-md shadow-blue-500/20 cursor-pointer"
+              >
+                <Download className="w-4 h-4" />
+                {isSavingInvoiceImage ? 'Saving Image...' : 'Save Invoice (Image)'}
+              </Button>
+
               <Button
                 onClick={() => printElement(`subscription-receipt-${invoiceUniqueId}`, `Eventrye Official Tax Invoice - ${successData.invoiceNumber}`)}
                 variant="outline"
-                className="rounded-xl flex items-center justify-center gap-2 w-full sm:w-auto text-xs h-11 px-5"
+                className="rounded-xl flex items-center justify-center gap-2 w-full sm:w-auto text-xs h-11 px-5 border-slate-300 hover:bg-slate-50 text-slate-700 font-bold cursor-pointer"
               >
-                <Download className="w-4 h-4" />
-                Print / Save PDF Invoice
+                <Printer className="w-4 h-4 text-blue-600" />
+                Print / Save PDF
               </Button>
 
               <Button
@@ -1650,9 +1725,10 @@ export default function SubscriptionCheckoutModal({
                   onClose();
                   window.location.href = '/dashboard';
                 }}
-                className="bg-[#1d4ed8] hover:bg-[#1e40af] text-white rounded-xl px-6 w-full sm:w-auto font-bold flex items-center justify-center gap-2 text-xs h-11"
+                variant="ghost"
+                className="rounded-xl px-4 w-full sm:w-auto font-semibold flex items-center justify-center gap-2 text-xs h-11 text-slate-600 hover:text-slate-900"
               >
-                Go to Organization Dashboard
+                Go to Dashboard
                 <ArrowRight className="w-4 h-4" />
               </Button>
             </div>

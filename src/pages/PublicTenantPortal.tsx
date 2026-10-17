@@ -18,7 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { api } from "@/services/api";
-import { printElement } from "@/lib/printUtils";
+import { printElement, downloadElementAsImage } from "@/lib/printUtils";
+import { toast } from "sonner";
 
 const PASS_TIERS = [
   { id: 'vip', name: 'VIP Pass (Front Row)', seat: 'Row A • Stagefront VIP', extraPrice: 50 },
@@ -42,8 +43,8 @@ export default function PublicTenantPortal() {
   const [attendeePhone, setAttendeePhone] = useState("");
   const [selectedTier, setSelectedTier] = useState(PASS_TIERS[0].id);
   const [registering, setRegistering] = useState(false);
-  const [registrationSuccess, setRegistrationSuccess] = useState<any | null>(null);
   const [idCardFace, setIdCardFace] = useState<'front' | 'back'>('front');
+  const [isDownloadingImage, setIsDownloadingImage] = useState(false);
 
   useEffect(() => {
     const fetchPortal = async () => {
@@ -482,15 +483,32 @@ export default function PublicTenantPortal() {
                     /* FRONT FACE */
                     <div 
                       id="live-id-pass-card"
-                      className="w-full max-w-[420px] min-h-[520px] h-[520px] rounded-3xl p-6 bg-gradient-to-b from-slate-900 via-blue-950 to-slate-950 text-white text-center border-2 border-blue-500/40 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none"
+                      className="w-full max-w-[420px] min-h-[520px] h-[520px] rounded-3xl p-6 text-white text-center border-2 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none"
+                      style={{
+                        background: 'linear-gradient(180deg, #0f172a 0%, #0b1329 50%, #0f172a 100%)',
+                        backgroundColor: '#0f172a',
+                        color: '#ffffff',
+                        borderColor: '#3b82f6',
+                        boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.45)',
+                        pageBreakInside: 'avoid',
+                        breakInside: 'avoid'
+                      }}
                     >
                       {/* Top slot & Brand */}
                       <div>
-                        <div className="w-14 h-2.5 bg-black/70 rounded-full mx-auto mb-2.5 border border-white/20" />
+                        <div 
+                          className="w-14 h-2.5 rounded-full mx-auto mb-2.5 border"
+                          style={{ backgroundColor: '#020617', borderColor: '#334155' }}
+                        />
                         
                         <div className="flex items-center justify-between text-[9px] font-extrabold uppercase tracking-wider px-1">
                           <span className="text-blue-300 font-bold truncate max-w-[200px] text-left">{tenant.name}</span>
-                          <span className="px-2 py-0.5 rounded bg-white/10 text-white border border-white/10 shrink-0">FRONT PASS</span>
+                          <span 
+                            className="px-2 py-0.5 rounded text-white border shrink-0"
+                            style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.15)' }}
+                          >
+                            FRONT PASS
+                          </span>
                         </div>
 
                         <div className="text-sm font-black uppercase text-blue-400 mt-2 truncate tracking-wide">
@@ -504,8 +522,14 @@ export default function PublicTenantPortal() {
 
                       {/* Attendee Avatar & Title */}
                       <div className="my-auto py-1">
-                        <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-blue-500 via-indigo-500 to-purple-600 p-1 mx-auto mb-2 shadow-lg">
-                          <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center font-bold text-xl text-white">
+                        <div 
+                          className="w-16 h-16 rounded-2xl p-1 mx-auto mb-2 shadow-lg"
+                          style={{ background: 'linear-gradient(135deg, #2563eb 0%, #6366f1 50%, #9333ea 100%)' }}
+                        >
+                          <div 
+                            className="w-full h-full rounded-xl flex items-center justify-center font-bold text-xl text-white"
+                            style={{ backgroundColor: '#0f172a' }}
+                          >
                             {registrationSuccess.name.slice(0, 2).toUpperCase()}
                           </div>
                         </div>
@@ -514,10 +538,16 @@ export default function PublicTenantPortal() {
                         
                         {/* Seating & Tier */}
                         <div className="mt-1.5 flex items-center justify-center gap-1.5 flex-wrap">
-                          <span className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold bg-blue-600 text-white shadow-xs">
+                          <span 
+                            className="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold text-white shadow-xs"
+                            style={{ backgroundColor: '#2563eb', color: '#ffffff' }}
+                          >
                             {registrationSuccess.tier}
                           </span>
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-white/10 text-[10px] font-bold text-amber-300 border border-white/15">
+                          <span 
+                            className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold border"
+                            style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.15)', color: '#fcd34d' }}
+                          >
                             <Armchair className="w-3 h-3 text-amber-400" />
                             <span>{registrationSuccess.seat}</span>
                           </span>
@@ -525,13 +555,19 @@ export default function PublicTenantPortal() {
 
                         {/* Scannable Real QR Code */}
                         <div className="mt-3 flex items-center justify-center">
-                          <div className="bg-white p-2 rounded-2xl shadow-md inline-block">
+                          <div 
+                            className="p-2 rounded-2xl shadow-md inline-block"
+                            style={{ backgroundColor: '#ffffff' }}
+                          >
                             <img
                               src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`${window.location.origin}/verify?code=${registrationSuccess.ticketCode}`)}`}
                               alt="Live Pass QR Code"
+                              width="64"
+                              height="64"
                               className="w-16 h-16 object-contain rounded-md"
+                              style={{ width: '64px', height: '64px', minWidth: '64px', minHeight: '64px' }}
                               onError={(e) => {
-                                (e.target as HTMLImageElement).src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="white"/><rect x="6" y="6" width="20" height="20" fill="black"/><rect x="10" y="10" width="12" height="12" fill="white"/><rect x="14" y="14" width="4" height="4" fill="black"/><rect x="38" y="6" width="20" height="20" fill="black"/><rect x="42" y="10" width="12" height="12" fill="white"/><rect x="46" y="14" width="4" height="4" fill="black"/><rect x="6" y="38" width="20" height="20" fill="black"/><rect x="10" y="42" width="12" height="12" fill="white"/><rect x="14" y="46" width="4" height="4" fill="black"/><rect x="30" y="6" width="4" height="12" fill="black"/><rect x="30" y="30" width="4" height="4" fill="black"/><rect x="38" y="38" width="8" height="8" fill="black"/><rect x="50" y="38" width="8" height="20" fill="black"/><rect x="38" y="50" width="8" height="8" fill="black"/></svg>`;
+                                (e.target as HTMLImageElement).src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="white"/><rect x="6" y="6" width="20" height="20" fill="black"/><rect x="10" y="10" width="12" height="12" fill="white"/><rect x="14" y="14" width="4" height="4" fill="black"/><rect x="38" y="6" width="20" height="20" fill="black"/><rect x="42" y="10" width="12" height="12" fill="white"/><rect x="46" y="14" width="4" height="4" fill="black"/><rect x="6" y="38" width="20" height="20" fill="black"/><rect x="10" y="42" width="12" height="12" fill="white"/><rect x="14" y="46" width="4" height="4" fill="black"/></svg>`;
                               }}
                             />
                           </div>
@@ -543,8 +579,8 @@ export default function PublicTenantPortal() {
                             {[2, 1, 3, 1, 2, 4, 1, 3, 2, 1, 4, 2, 1, 3, 2, 1, 3, 2, 1, 2, 4, 1].map((w, i) => (
                               <span
                                 key={i}
-                                className="h-full bg-white rounded-xs"
-                                style={{ width: `${w * 1.4}px` }}
+                                className="h-full rounded-xs"
+                                style={{ width: `${w * 1.4}px`, backgroundColor: '#ffffff' }}
                               />
                             ))}
                           </div>
@@ -555,12 +591,15 @@ export default function PublicTenantPortal() {
                       </div>
 
                       {/* Front Bottom Security Line */}
-                      <div className="pt-2.5 border-t border-white/10 text-[8px] text-slate-400 flex items-center justify-between">
-                        <span className="flex items-center gap-1 text-emerald-400 font-bold">
+                      <div 
+                        className="pt-2.5 border-t text-[8px] flex items-center justify-between"
+                        style={{ borderColor: 'rgba(255, 255, 255, 0.15)', color: '#94a3b8' }}
+                      >
+                        <span className="flex items-center gap-1 font-bold" style={{ color: '#34d399' }}>
                           <ShieldCheck className="w-3 h-3 text-emerald-400" />
                           AUTHENTIC PASS
                         </span>
-                        <span className="font-semibold text-slate-300 truncate max-w-[240px]">
+                        <span className="font-semibold truncate max-w-[240px]" style={{ color: '#cbd5e1' }}>
                           Issued by {tenant.name} • Verified by ORBIT-I
                         </span>
                       </div>
@@ -569,15 +608,32 @@ export default function PublicTenantPortal() {
                     /* BACK FACE */
                     <div 
                       id="live-id-pass-card"
-                      className="w-full max-w-[420px] min-h-[520px] h-[520px] rounded-3xl p-6 bg-gradient-to-b from-slate-950 via-slate-900 to-indigo-950 text-white text-left border-2 border-indigo-500/40 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none"
+                      className="w-full max-w-[420px] min-h-[520px] h-[520px] rounded-3xl p-6 text-white text-left border-2 shadow-2xl relative overflow-hidden flex flex-col justify-between select-none"
+                      style={{
+                        background: 'linear-gradient(180deg, #090d16 0%, #0f172a 50%, #1e1b4b 100%)',
+                        backgroundColor: '#090d16',
+                        color: '#ffffff',
+                        borderColor: '#6366f1',
+                        boxShadow: '0 25px 50px -12px rgba(15, 23, 42, 0.45)',
+                        pageBreakInside: 'avoid',
+                        breakInside: 'avoid'
+                      }}
                     >
                       {/* Top slot & Brand */}
                       <div>
-                        <div className="w-14 h-2.5 bg-black/70 rounded-full mx-auto mb-2.5 border border-white/20" />
+                        <div 
+                          className="w-14 h-2.5 rounded-full mx-auto mb-2.5 border"
+                          style={{ backgroundColor: '#020617', borderColor: '#334155' }}
+                        />
 
                         <div className="flex items-center justify-between text-[9px] font-extrabold uppercase tracking-wider px-1">
                           <span className="text-indigo-300 truncate max-w-[200px]">{tenant.name} Accreditation</span>
-                          <span className="px-2 py-0.5 rounded bg-white/10 text-white border border-white/10 shrink-0">BACK PASS</span>
+                          <span 
+                            className="px-2 py-0.5 rounded text-white border shrink-0"
+                            style={{ backgroundColor: 'rgba(255, 255, 255, 0.1)', borderColor: 'rgba(255, 255, 255, 0.15)' }}
+                          >
+                            BACK PASS
+                          </span>
                         </div>
 
                         <div className="text-sm font-black uppercase text-indigo-300 mt-2 truncate tracking-wide text-center">
@@ -587,8 +643,11 @@ export default function PublicTenantPortal() {
 
                       {/* Center Rules & Dispatch Notice */}
                       <div className="my-auto space-y-3 py-1">
-                        <div className="p-3.5 rounded-2xl bg-white/10 border border-white/15 text-[10px] text-slate-200 space-y-1">
-                          <div className="font-bold text-amber-300 uppercase tracking-wide flex items-center gap-1.5">
+                        <div 
+                          className="p-3.5 rounded-2xl border text-[10px] space-y-1"
+                          style={{ backgroundColor: 'rgba(255, 255, 255, 0.08)', borderColor: 'rgba(255, 255, 255, 0.15)', color: '#e2e8f0' }}
+                        >
+                          <div className="font-bold uppercase tracking-wide flex items-center gap-1.5" style={{ color: '#fcd34d' }}>
                             <Sparkles className="w-3.5 h-3.5 text-amber-400" />
                             VIP Dispatch &amp; Entry Notice:
                           </div>
@@ -601,48 +660,79 @@ export default function PublicTenantPortal() {
                           <div className="font-bold text-white uppercase tracking-wider">Venue Entry Rules:</div>
                           <ul className="list-disc pl-3.5 space-y-1 text-slate-300">
                             <li>Present this official digital QR pass or e-credential on your mobile screen at security check.</li>
-                            <li>Allocated Seating: <strong className="text-amber-300">{registrationSuccess.seat}</strong> ({registrationSuccess.tier}).</li>
+                            <li>Allocated Seating: <strong style={{ color: '#fcd34d' }}>{registrationSuccess.seat}</strong> ({registrationSuccess.tier}).</li>
                             <li>Non-transferable official verified pass; ID matching may be requested.</li>
                             <li>Follow organizer protocols and venue security guidelines.</li>
                           </ul>
                         </div>
 
-                        <div className="p-2 rounded-xl bg-black/40 border border-white/10 flex items-center justify-between text-[8px]">
+                        <div 
+                          className="p-2 rounded-xl border flex items-center justify-between text-[8px]"
+                          style={{ backgroundColor: 'rgba(0, 0, 0, 0.4)', borderColor: 'rgba(255, 255, 255, 0.1)' }}
+                        >
                           <div className="flex items-center gap-1.5">
                             <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
                             <span className="font-mono text-emerald-300 font-bold">SEC-TOKEN: {registrationSuccess.ticketCode.slice(0, 14)}</span>
                           </div>
-                          <span className="text-[8px] font-extrabold uppercase text-amber-400">
+                          <span className="text-[8px] font-extrabold uppercase" style={{ color: '#fcd34d' }}>
                             VERIFIED AUTHENTIC
                           </span>
                         </div>
                       </div>
 
                       {/* Back Bottom Security Line */}
-                      <div className="pt-2.5 border-t border-white/10 flex items-center justify-between text-[8px] text-slate-400">
-                        <span className="text-emerald-400 font-bold">EVENTRYE SECURE</span>
-                        <span>Issued under Authority of ORBIT-I Private Limited</span>
+                      <div 
+                        className="pt-2.5 border-t flex items-center justify-between text-[8px]"
+                        style={{ borderColor: 'rgba(255, 255, 255, 0.15)', color: '#94a3b8' }}
+                      >
+                        <span className="font-bold" style={{ color: '#34d399' }}>EVENTRYE SECURE</span>
+                        <span style={{ color: '#94a3b8' }}>Issued under Authority of ORBIT-I Private Limited</span>
                       </div>
                     </div>
                   )}
                 </div>
 
                 {/* Actions */}
-                <div className="flex items-center gap-3 pt-2">
+                <div className="flex flex-col sm:flex-row items-center gap-2.5 pt-2">
+                  <Button
+                    type="button"
+                    onClick={async () => {
+                      setIsDownloadingImage(true);
+                      toast.info('Generating high-resolution ID Pass image...');
+                      const ok = await downloadElementAsImage(
+                        'live-id-pass-card', 
+                        `${registrationSuccess.name.replace(/\s+/g, '_')}_Official_Pass.png`,
+                        3
+                      );
+                      setIsDownloadingImage(false);
+                      if (ok) {
+                        toast.success('ID Pass image saved successfully!');
+                      } else {
+                        toast.error('Failed to capture image. Please use Print / PDF option.');
+                      }
+                    }}
+                    disabled={isDownloadingImage}
+                    className="flex-1 rounded-xl text-xs h-11 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white flex items-center justify-center gap-1.5 font-bold shadow-md shadow-blue-500/25 w-full sm:w-auto cursor-pointer"
+                  >
+                    <Printer className="w-4 h-4 text-white" />
+                    {isDownloadingImage ? 'Generating Image...' : 'Save Badge (HD Image)'}
+                  </Button>
+
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => printElement('live-id-pass-card', `${registrationSuccess.name} - ${selectedEvent.title} Official Pass`)}
-                    className="flex-1 rounded-xl text-xs h-11 border-slate-300 flex items-center justify-center gap-1.5 font-bold hover:bg-slate-50"
+                    className="flex-1 rounded-xl text-xs h-11 border-slate-300 flex items-center justify-center gap-1.5 font-bold hover:bg-slate-50 text-slate-700 w-full sm:w-auto cursor-pointer"
                   >
                     <Printer className="w-4 h-4 text-blue-600" />
-                    Print / Download ID Pass
+                    Print / Save PDF
                   </Button>
+
                   <Button
                     type="button"
                     onClick={() => setSelectedEvent(null)}
-                    className="flex-1 text-white font-bold text-xs h-11 rounded-xl shadow-md"
-                    style={{ backgroundColor: primaryColor }}
+                    variant="ghost"
+                    className="rounded-xl font-semibold text-xs h-11 px-3 text-slate-500 hover:text-slate-900 w-full sm:w-auto"
                   >
                     Done &amp; Close
                   </Button>

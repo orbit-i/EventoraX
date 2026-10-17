@@ -13,10 +13,12 @@ import {
   Copy, 
   Check, 
   ArrowLeft,
-  Sparkles
+  Sparkles,
+  Printer
 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';
-import { printElement } from '@/lib/printUtils';
+import { printElement, downloadElementAsImage } from '@/lib/printUtils';
+import { toast } from 'sonner';
 
 interface CertificateData {
   certificateNumber: string;
@@ -461,41 +463,86 @@ export default function PublicVerifyPage() {
                     setCopied(true);
                     setTimeout(() => setCopied(false), 2000);
                   }}
-                  className="px-3.5 py-2 rounded-xl bg-white border border-[#cbd5e1] hover:border-[#1d4ed8] text-xs font-bold text-[#334155] flex items-center gap-1.5 shadow-xs transition-colors"
+                  className="px-3.5 py-2 rounded-xl bg-white border border-[#cbd5e1] hover:border-[#1d4ed8] text-xs font-bold text-[#334155] flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#64748b]" />}
                   {copied ? 'Copied' : 'Copy ID'}
                 </button>
                 <button 
+                  onClick={async () => {
+                    toast.info('Generating high-resolution Tax Invoice image...');
+                    const ok = await downloadElementAsImage(
+                      'official-invoice-document', 
+                      `Eventrye_Tax_Invoice_${invoice.invoiceNumber}.png`,
+                      2.5
+                    );
+                    if (ok) {
+                      toast.success('Tax Invoice image downloaded!');
+                    } else {
+                      toast.error('Failed to capture image. Please use Print / PDF option.');
+                    }
+                  }}
+                  className="px-3.5 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-blue-600" />
+                  Save Image
+                </button>
+                <button 
                   onClick={() => printElement('official-invoice-document', `Eventrye Official Tax Invoice - ${invoice.invoiceNumber}`)}
                   className="px-4 py-2 rounded-xl bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#1d4ed8]/20 transition-all cursor-pointer"
                 >
-                  <Download className="w-3.5 h-3.5" />
+                  <Printer className="w-3.5 h-3.5" />
                   Print / Save PDF
                 </button>
               </div>
             </div>
 
             {/* Official Printable Tax Invoice Container */}
-            <div className="p-6 sm:p-10 bg-slate-50 border-b border-slate-200">
+            <div className="p-4 sm:p-8 bg-slate-50 border-b border-slate-200">
               <div
                 id="official-invoice-document"
-                className="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-2xl border-2 border-slate-300 shadow-sm relative overflow-hidden font-sans text-xs text-slate-800 space-y-4"
+                className="max-w-2xl mx-auto bg-white p-5 sm:p-8 rounded-2xl border-2 border-slate-300 shadow-sm relative overflow-hidden font-sans text-xs text-slate-800 space-y-4"
+                style={{
+                  backgroundColor: '#ffffff',
+                  color: '#0f172a',
+                  borderColor: '#cbd5e1',
+                  pageBreakInside: 'avoid',
+                  breakInside: 'avoid'
+                }}
               >
                 {/* Watermark */}
-                <div className="absolute right-4 bottom-14 opacity-5 pointer-events-none select-none text-slate-900 font-black text-6xl rotate-[-20deg]">
+                <div 
+                  className="absolute right-4 bottom-14 opacity-5 pointer-events-none select-none text-slate-900 font-black text-6xl rotate-[-20deg]"
+                  style={{ opacity: 0.04 }}
+                >
                   EVENTRYE
                 </div>
 
                 {/* Company Header */}
-                <div className="flex justify-between items-start pb-3 border-b border-slate-200">
-                  <div>
-                    <h4 className="font-extrabold text-sm text-slate-900 tracking-tight">EVENTRYE TECHNOLOGIES (PVT) LTD</h4>
-                    <p className="text-[10px] text-slate-500 font-medium">ORBIT-I Cloud Digital Systems • SBP Digital Reg: PK-2026-PSO/PSP</p>
-                    <p className="text-[10px] text-slate-400 font-mono">NTN: {invoice.governance.ntn} • STRN: {invoice.governance.strn}</p>
+                <div 
+                  className="flex items-start justify-between pb-3.5 border-b"
+                  style={{ borderColor: '#e2e8f0' }}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <img 
+                      src="/favicon.png" 
+                      alt="Eventrye" 
+                      width="36" 
+                      height="36" 
+                      className="w-9 h-9 rounded-xl object-contain shrink-0 shadow-xs"
+                      style={{ width: '36px', height: '36px', minWidth: '36px', minHeight: '36px' }}
+                    />
+                    <div>
+                      <h4 className="font-extrabold text-sm text-slate-900 tracking-tight">EVENTRYE TECHNOLOGIES (PVT) LTD</h4>
+                      <p className="text-[10px] text-slate-500 font-medium">ORBIT-I Cloud Digital Systems • SBP Digital Reg: PK-2026-PSO/PSP</p>
+                      <p className="text-[10px] text-slate-400 font-mono">NTN: {invoice.governance.ntn} • STRN: {invoice.governance.strn}</p>
+                    </div>
                   </div>
-                  <div className="text-right">
-                    <span className="px-2.5 py-1 rounded-md text-[10px] font-extrabold uppercase bg-emerald-100 text-emerald-800 border border-emerald-300 block mb-1">
+                  <div className="text-right shrink-0">
+                    <span 
+                      className="px-2.5 py-1 rounded-md text-[9px] font-extrabold uppercase inline-block mb-1 shadow-xs"
+                      style={{ backgroundColor: '#d1fae5', color: '#065f46', border: '1px solid #6ee7b7' }}
+                    >
                       ★ VIP VERIFIED &amp; ACTIVE
                     </span>
                     <span className="text-[10px] text-slate-500 font-mono block">2026 Fiscal Year</span>
@@ -595,9 +642,16 @@ export default function PublicVerifyPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2">
-                    <svg viewBox="0 0 48 48" className="w-10 h-10 text-[#1d4ed8]" fill="none">
-                      <circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="2" strokeDasharray="3 2" />
+                  <div className="flex items-center gap-2 shrink-0">
+                    <svg 
+                      width="40" 
+                      height="40" 
+                      viewBox="0 0 48 48" 
+                      className="w-10 h-10 shrink-0" 
+                      style={{ width: '40px', height: '40px', minWidth: '40px', minHeight: '40px', maxWidth: '40px', maxHeight: '40px' }}
+                      fill="none"
+                    >
+                      <circle cx="24" cy="24" r="22" stroke="#1d4ed8" strokeWidth="2" strokeDasharray="3 2" />
                       <circle cx="24" cy="24" r="18" stroke="#059669" strokeWidth="1.5" />
                       <path d="M16 24L21 29L32 18" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                     </svg>
