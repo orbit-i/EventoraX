@@ -100,7 +100,7 @@ export default function Navbar() {
 
       {/* Sticky White / Glassmorphic Header */}
       <header
-        className="sticky top-0 w-full z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200"
+        className="sticky top-0 w-full z-50 bg-white/95 backdrop-blur-md border-b border-slate-200/80 shadow-[0_1px_3px_rgba(0,0,0,0.03)] transition-all duration-200"
         style={{ height: 68 }}
       >
         <div className="content-max h-full flex items-center justify-between">
@@ -153,20 +153,22 @@ export default function Navbar() {
                 />
               </button>
 
-              {/* Dropdown Card - Fixed VIP Luxury Elevated Card */}
+              {/* Dropdown Card - Fully Opaque Luxury Glassmorphic Card */}
               {eventsDropdownOpen && (
                 <div 
-                  className="absolute top-full left-0 mt-2.5 w-84 bg-white/98 dark:bg-[#0c1222]/98 backdrop-blur-2xl border border-slate-200/90 dark:border-slate-800 rounded-2xl shadow-2xl shadow-blue-900/15 p-2.5 z-50 animate-in fade-in zoom-in-95 duration-150 ring-1 ring-black/5 overflow-hidden"
+                  className="absolute top-full left-0 mt-2.5 w-[350px] max-w-[90vw] bg-white dark:bg-[#0c1222] border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl shadow-slate-900/25 p-3 z-[100] animate-in fade-in zoom-in-95 duration-150 ring-1 ring-black/10 overflow-hidden"
+                  style={{ backgroundColor: '#ffffff' }}
                 >
                   {/* Subtle top neon accent line */}
-                  <div className="absolute top-0 inset-x-0 h-[2.5px] bg-gradient-to-r from-blue-600 via-sky-400 to-purple-600 rounded-t-2xl" />
+                  <div className="absolute top-0 inset-x-0 h-[3px] bg-gradient-to-r from-blue-600 via-sky-400 to-purple-600 rounded-t-2xl" />
 
                   {/* Header Title */}
-                  <div className="flex items-center justify-between px-3 pt-2 pb-1.5 mb-1 border-b border-slate-100 dark:border-slate-800/80">
-                    <span className="text-[10px] font-black uppercase tracking-wider bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+                  <div className="flex items-center justify-between px-3 pt-2 pb-2 mb-1.5 border-b border-slate-100 dark:border-slate-800/80">
+                    <span className="text-[11px] font-black uppercase tracking-wider bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                       Eventrye Network
                     </span>
-                    <span className="text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200/60 shadow-xs">
+                    <span className="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200/60 shadow-xs flex items-center gap-1">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       Live Directory
                     </span>
                   </div>
@@ -177,8 +179,8 @@ export default function Navbar() {
                     onClick={() => setEventsDropdownOpen(false)}
                     className={`flex items-start gap-3 p-2.5 rounded-xl transition-all duration-150 group ${
                       location.pathname === '/events-directory'
-                        ? 'bg-blue-50/90 text-blue-700 font-semibold'
-                        : 'hover:bg-slate-50/90 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 hover:text-blue-600'
+                        ? 'bg-blue-50 text-blue-700 font-semibold'
+                        : 'hover:bg-slate-50 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 hover:text-blue-600'
                     }`}
                   >
                     <div className="w-10 h-10 rounded-xl bg-blue-500/10 text-blue-600 border border-blue-500/20 flex items-center justify-center shrink-0 mt-0.5 group-hover:scale-105 group-hover:bg-blue-600 group-hover:text-white transition-all shadow-xs">
@@ -186,16 +188,16 @@ export default function Navbar() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-bold flex items-center justify-between text-slate-900 dark:text-white group-hover:text-blue-600">
-                        <span>Explore Directory</span>
-                        <ArrowRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-blue-600" />
+                        <span className="whitespace-nowrap">Explore Directory</span>
+                        <ArrowRight className="w-3.5 h-3.5 opacity-40 group-hover:opacity-100 group-hover:translate-x-1 transition-all text-blue-600 shrink-0 ml-1.5" />
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                         Conferences, tech summits &amp; seminars
                       </p>
                     </div>
                   </Link>
 
-                  <div className="border-t border-slate-100/80 dark:border-slate-800/80 my-1" />
+                  <div className="border-t border-slate-100 dark:border-slate-800/80 my-1" />
 
                   {/* Submenu Item 2: List Event (+ VIP Showcase) */}
                   <Link
@@ -203,7 +205,7 @@ export default function Navbar() {
                     onClick={() => setEventsDropdownOpen(false)}
                     className={`flex items-start gap-3 p-2.5 rounded-xl transition-all duration-150 group ${
                       location.pathname === '/list-event'
-                        ? 'bg-purple-50/90 text-purple-900 font-semibold'
+                        ? 'bg-purple-50 text-purple-900 font-semibold'
                         : 'hover:bg-gradient-to-r hover:from-amber-50/60 hover:to-purple-50/60 dark:hover:bg-slate-800/60 text-slate-700 dark:text-slate-200 hover:text-purple-900'
                     }`}
                   >
@@ -212,12 +214,12 @@ export default function Navbar() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="text-sm font-bold flex items-center gap-1.5 text-slate-900 dark:text-white group-hover:text-purple-700">
-                        <span>List Your Event</span>
-                        <span className="text-[10px] uppercase font-black px-1.5 py-0.2 rounded-md bg-gradient-to-r from-amber-500 to-purple-600 text-white tracking-wider shadow-xs">
+                        <span className="whitespace-nowrap">List Your Event</span>
+                        <span className="text-[10px] uppercase font-black px-1.5 py-0.5 rounded-md bg-gradient-to-r from-amber-500 to-purple-600 text-white tracking-wider shadow-xs shrink-0">
                           VIP
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 line-clamp-1">
+                      <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5 truncate">
                         Feature your event in the VIP Showcase
                       </p>
                     </div>
