@@ -145,7 +145,7 @@ export default function SubscriptionCheckoutModal({
       : `PKR ${finalCalculatedPrice.toLocaleString()}${isAnnual ? '/yr' : '/mo'}`;
 
   const totalDue = isFree 
-    ? (isStarter ? 'Free Trial (2 Events, 40 Attendees, 50 ID/Certs)' : 'Free Tier (Requires Approval)') 
+    ? (currency === 'USD' ? 'Free Trial ($0)' : 'PKR 0.00 (Free Trial)') 
     : displayPrice;
 
   // Validate coupon handler
@@ -354,28 +354,58 @@ export default function SubscriptionCheckoutModal({
       <div className="bg-white w-full max-w-2xl rounded-3xl shadow-2xl border border-slate-200 overflow-hidden my-auto relative animate-in fade-in zoom-in-95 duration-200">
         
         {/* Header */}
-        <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-5 sm:p-6 relative">
-          <button
-            onClick={onClose}
-            className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-            title="Close Checkout"
-          >
-            <X className="w-5 h-5" />
-          </button>
+        {step === 'form' ? (
+          <div className="bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white p-5 sm:p-6 relative">
+            <button
+              onClick={onClose}
+              className="absolute top-4 right-4 p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              title="Close Checkout"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-          <div className="flex flex-wrap items-center gap-2 mb-2">
-            <span className="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md text-white border border-white/20">
-              {selectedPlan.badge || '2026 Enterprise Tier'}
-            </span>
-            <span className="text-[11px] text-blue-200 flex items-center gap-1 font-medium">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              Eventrye Real-Time Gateway • SBP 2026 Certified
-            </span>
+            <div className="flex flex-wrap items-center gap-2 mb-2">
+              <span className="px-3 py-1 rounded-full text-[11px] font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md text-white border border-white/20">
+                {selectedPlan.badge || '2026 Enterprise Tier'}
+              </span>
+              <span className="text-[11px] text-blue-200 flex items-center gap-1 font-medium">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
+                Eventrye Real-Time Gateway • SBP 2026 Certified
+              </span>
+            </div>
+
+            <h2 className="text-xl sm:text-2xl font-bold font-heading">{selectedPlan.name} Subscription</h2>
+            <p className="text-xs text-blue-200 mt-1">{selectedPlan.description}</p>
           </div>
-
-          <h2 className="text-xl sm:text-2xl font-bold font-heading">{selectedPlan.name} Subscription</h2>
-          <p className="text-xs text-blue-200 mt-1">{selectedPlan.description}</p>
-        </div>
+        ) : (
+          <div className="bg-slate-900 text-white px-5 py-3.5 sm:px-6 sm:py-4 flex items-center justify-between border-b border-slate-800 shrink-0">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center border border-emerald-500/30 shrink-0">
+                <ShieldCheck className="w-4 h-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm sm:text-base font-extrabold text-white">
+                    Official Tax Invoice &amp; Payment Receipt
+                  </h2>
+                  <span className="text-[9px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
+                    ★ VERIFIED
+                  </span>
+                </div>
+                <p className="text-[10px] text-slate-400">
+                  Eventrye Enterprise Cloud Platform • SBP Digital Reg: PK-2026-PSO/PSP
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={onClose}
+              className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors cursor-pointer"
+              title="Close Checkout"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+        )}
 
         {/* ============================================================= */}
         {/* STEP 1: REGISTRATION & REAL-TIME PAYMENT SELECTION */}
@@ -1475,29 +1505,18 @@ export default function SubscriptionCheckoutModal({
         {/* STEP 3: OFFICIAL 2026 ENTERPRISE TAX INVOICE & RECEIPT */}
         {/* ============================================================= */}
         {step === 'invoice' && successData && (
-          <div className="p-4 sm:p-8 text-center space-y-6 max-h-[85vh] overflow-y-auto">
+          <div className="p-3.5 sm:p-6 text-center space-y-4 max-h-[85vh] overflow-y-auto">
             
-            <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto shadow-lg shadow-emerald-500/20">
-              <ShieldCheck className="w-8 h-8 stroke-[2.5]" />
-            </div>
-
-            <div>
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 mb-2">
-                <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-                Official VIP Verified Tax Invoice • State Bank 2026 Compliant
-              </div>
-              <h3 className="text-xl sm:text-2xl font-bold font-heading text-slate-900">
-                Payment Proof Recorded &amp; VIP Invoice Issued
-              </h3>
-              <p className="text-xs text-slate-600 mt-1.5 max-w-md mx-auto leading-relaxed">
-                Your transaction has been securely authenticated and registered on the Eventrye verification ledger. You can print or download your verified corporate tax invoice below.
-              </p>
+            {/* Quick Success Pill */}
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold shadow-xs mx-auto">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>Payment Authenticated • Digital Tax Invoice Ready</span>
             </div>
 
             {/* Official Tax Invoice Container (Printable via printElement & downloadable via downloadElementAsImage) */}
             <div 
               id={`subscription-receipt-${invoiceUniqueId}`}
-              className="bg-white p-5 sm:p-7 rounded-2xl border-2 border-slate-300 text-left space-y-4 font-sans text-xs max-w-lg mx-auto shadow-md relative overflow-hidden"
+              className="bg-white p-4 sm:p-7 rounded-2xl border-2 border-slate-300 text-left space-y-3.5 font-sans text-xs max-w-lg mx-auto shadow-md relative overflow-hidden"
               style={{
                 backgroundColor: '#ffffff',
                 color: '#0f172a',
@@ -1516,7 +1535,7 @@ export default function SubscriptionCheckoutModal({
 
               {/* Official Header */}
               <div 
-                className="flex items-start justify-between pb-3.5 border-b"
+                className="flex items-start justify-between pb-3 border-b"
                 style={{ borderColor: '#e2e8f0' }}
               >
                 <div className="flex items-center gap-2.5">
@@ -1529,19 +1548,19 @@ export default function SubscriptionCheckoutModal({
                     style={{ width: '36px', height: '36px', minWidth: '36px', minHeight: '36px' }}
                   />
                   <div>
-                    <h4 className="font-extrabold text-sm text-slate-900 tracking-tight">EVENTRYE TECHNOLOGIES (PVT) LTD</h4>
+                    <h4 className="font-extrabold text-xs sm:text-sm text-slate-900 tracking-tight">EVENTRYE TECHNOLOGIES (PVT) LTD</h4>
                     <p className="text-[10px] text-slate-500 font-medium">ORBIT-I Cloud Digital Systems • SBP Digital Reg: PK-2026-PSO/PSP</p>
                     <p className="text-[10px] text-slate-400 font-mono">NTN: 9842104-7 • STRN: 3277876123456</p>
                   </div>
                 </div>
                 <div className="text-right shrink-0">
                   <span 
-                    className="px-2.5 py-1 rounded-md text-[9px] font-extrabold uppercase inline-block mb-1 shadow-xs"
+                    className="px-2 py-0.5 rounded-md text-[9px] font-extrabold uppercase inline-block mb-0.5 shadow-xs"
                     style={{ backgroundColor: '#d1fae5', color: '#065f46', border: '1px solid #6ee7b7' }}
                   >
-                    ★ VIP VERIFIED &amp; ACTIVE
+                    ★ VIP VERIFIED
                   </span>
-                  <span className="text-[10px] text-slate-500 font-mono block">2026 Edition</span>
+                  <span className="text-[9px] text-slate-500 font-mono block">2026 Edition</span>
                 </div>
               </div>
 
@@ -1589,43 +1608,51 @@ export default function SubscriptionCheckoutModal({
 
               {/* Line Items Table */}
               <div 
-                className="border rounded-xl overflow-hidden"
+                className="border rounded-xl overflow-hidden bg-white shadow-2xs"
                 style={{ borderColor: '#e2e8f0' }}
               >
-                <table className="w-full text-left text-xs" style={{ borderCollapse: 'collapse' }}>
-                  <thead style={{ backgroundColor: '#f1f5f9', color: '#475569' }}>
+                <table className="w-full text-left text-xs" style={{ borderCollapse: 'collapse', tableLayout: 'fixed' }}>
+                  <thead style={{ backgroundColor: '#f8fafc', color: '#475569' }}>
                     <tr style={{ borderBottom: '1px solid #e2e8f0' }}>
-                      <th className="p-2.5 font-bold text-[11px]">Description</th>
-                      <th className="p-2.5 text-center font-bold text-[11px]">Cycle</th>
-                      <th className="p-2.5 text-right font-bold text-[11px]">Amount</th>
+                      <th style={{ width: '56%' }} className="p-2 sm:p-2.5 font-bold text-[10px] sm:text-[11px]">Description</th>
+                      <th style={{ width: '18%' }} className="p-2 sm:p-2.5 text-center font-bold text-[10px] sm:text-[11px]">Cycle</th>
+                      <th style={{ width: '26%' }} className="p-2 sm:p-2.5 text-right font-bold text-[10px] sm:text-[11px] whitespace-nowrap">Amount</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
                     <tr>
-                      <td className="p-2.5">
-                        <strong className="block text-slate-900">Eventrye {successData.plan} Tier</strong>
-                        <span className="text-[10px] text-slate-500">Enterprise Cloud Event Management &amp; Pass Infrastructure (2026 Release)</span>
+                      <td className="p-2 sm:p-2.5">
+                        <strong className="block text-slate-900 font-bold text-[11px] sm:text-xs">Eventrye {successData.plan} Tier</strong>
+                        <span className="text-[10px] text-slate-500 block leading-tight mt-0.5">
+                          {isStarter && starterMode === 'trial'
+                            ? 'Starter: 2 Events • 40 Attendees • 50 ID Passes & Certificates'
+                            : 'Enterprise Cloud Event Management & Pass Infrastructure'}
+                        </span>
                       </td>
-                      <td className="p-2.5 text-center text-slate-700 font-medium">{successData.billingCycle}</td>
-                      <td className="p-2.5 text-right font-bold text-slate-900">{successData.originalPriceFormatted || successData.amount}</td>
+                      <td className="p-2 sm:p-2.5 text-center text-slate-700 font-semibold text-[11px] sm:text-xs">
+                        {successData.billingCycle}
+                      </td>
+                      <td className="p-2 sm:p-2.5 text-right font-bold text-slate-900 font-mono text-[11px] sm:text-xs whitespace-nowrap">
+                        {successData.originalPriceFormatted || successData.amount}
+                      </td>
                     </tr>
                     {successData.couponCode && (
                       <tr style={{ backgroundColor: '#ecfdf5' }}>
-                        <td colSpan={2} className="p-2 text-right text-emerald-700 text-[11px] font-bold">
+                        <td colSpan={2} className="p-2 text-right text-emerald-700 text-[10px] sm:text-[11px] font-bold">
                           Promo Coupon Applied ({successData.couponCode}):
                         </td>
-                        <td className="p-2 text-right font-mono font-bold text-emerald-700">
+                        <td className="p-2 text-right font-mono font-bold text-emerald-700 text-[11px] sm:text-xs whitespace-nowrap">
                           -{successData.discountFormatted}
                         </td>
                       </tr>
                     )}
                     <tr>
-                      <td colSpan={2} className="p-2 text-right text-slate-500 text-[11px]">Sales Tax / GST (0% Section 65F IT Exemption):</td>
-                      <td className="p-2 text-right font-mono text-slate-700">PKR 0.00</td>
+                      <td colSpan={2} className="p-2 text-right text-slate-500 text-[10px] sm:text-[11px]">Sales Tax / GST (0% Section 65F IT Exemption):</td>
+                      <td className="p-2 text-right font-mono text-slate-700 text-[10px] sm:text-[11px] whitespace-nowrap">PKR 0.00</td>
                     </tr>
                     <tr style={{ backgroundColor: '#f8fafc', color: '#1d4ed8' }}>
-                      <td colSpan={2} className="p-2.5 text-right font-bold text-sm">Total Paid (Inclusive of all dues):</td>
-                      <td className="p-2.5 text-right font-bold text-sm">{successData.amount}</td>
+                      <td colSpan={2} className="p-2.5 text-right font-bold text-xs sm:text-sm">Total Paid (Inclusive of all dues):</td>
+                      <td className="p-2.5 text-right font-bold text-xs sm:text-sm whitespace-nowrap font-mono">{successData.amount}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -1633,43 +1660,34 @@ export default function SubscriptionCheckoutModal({
 
               {/* QR Code & Digital Signature */}
               <div 
-                className="flex items-center justify-between pt-2.5 border-t"
+                className="flex items-center justify-between pt-2.5 border-t gap-2"
                 style={{ borderColor: '#e2e8f0' }}
               >
-                <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2">
                   <img
                     src={`https://api.qrserver.com/v1/create-qr-code/?size=100x100&data=${encodeURIComponent(`https://eventrye.orbit-i.tech/verify/${successData.invoiceNumber}`)}`}
                     alt="Official Invoice QR Verification"
-                    width="52"
-                    height="52"
-                    className="w-13 h-13 rounded-lg border p-0.5 shrink-0"
-                    style={{ width: '52px', height: '52px', minWidth: '52px', minHeight: '52px', borderColor: '#e2e8f0' }}
+                    width="48"
+                    height="48"
+                    className="rounded-lg border p-0.5 shrink-0"
+                    style={{ width: '48px', height: '48px', minWidth: '48px', minHeight: '48px', borderColor: '#e2e8f0' }}
                   />
                   <div>
                     <span className="text-[10px] font-bold text-slate-800 block">Digital QR Verification</span>
-                    <p className="text-[9px] text-slate-400 max-w-[170px] leading-tight mt-0.5">
-                      Scan with phone camera to authenticate on the official public ledger.
+                    <p className="text-[9px] text-slate-400 max-w-[150px] leading-tight mt-0.5">
+                      Scan to authenticate on official public verification ledger.
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 shrink-0">
-                  <svg 
-                    width="40" 
-                    height="40" 
-                    viewBox="0 0 48 48" 
-                    className="w-10 h-10 shrink-0" 
-                    style={{ width: '40px', height: '40px', minWidth: '40px', minHeight: '40px', maxWidth: '40px', maxHeight: '40px' }}
-                    fill="none"
-                  >
-                    <circle cx="24" cy="24" r="22" stroke="#1d4ed8" strokeWidth="2" strokeDasharray="3 2" />
-                    <circle cx="24" cy="24" r="18" stroke="#059669" strokeWidth="1.5" />
-                    <path d="M16 24L21 29L32 18" stroke="#059669" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                  <div className="text-right">
-                    <span className="text-[9px] text-slate-400 uppercase font-bold block">ORBIT-I Cloud Platform</span>
-                    <span className="font-serif italic text-xs text-slate-800 font-bold block">Authorized Digital Sign</span>
-                    <span className="text-[9px] font-mono font-bold block" style={{ color: '#059669' }}>SHA-256 Verified 2026</span>
+                <div className="flex items-center gap-1.5 shrink-0 text-right">
+                  <div className="w-8 h-8 rounded-full border border-emerald-400 bg-emerald-50 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                  </div>
+                  <div>
+                    <span className="text-[8px] text-slate-400 uppercase font-mono font-bold block">ORBIT-I CLOUD</span>
+                    <span className="font-serif italic text-[11px] text-slate-800 font-bold block leading-tight">Authorized Digital Sign</span>
+                    <span className="text-[8px] font-mono font-bold block text-emerald-600">SHA-256 Verified 2026</span>
                   </div>
                 </div>
               </div>

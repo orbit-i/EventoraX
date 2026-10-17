@@ -74,6 +74,7 @@ export default function PublicVerifyPage() {
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [errorMessage, setErrorMessage] = useState('');
   const [copied, setCopied] = useState(false);
+  const [isDownloadingCertificate, setIsDownloadingCertificate] = useState(false);
 
   useEffect(() => {
     const q = certNumber || queryParam;
@@ -264,17 +265,39 @@ export default function PublicVerifyPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <button 
                   onClick={copyCertId}
-                  className="px-3.5 py-2 rounded-xl bg-white border border-[#cbd5e1] hover:border-[#1d4ed8] text-xs font-bold text-[#334155] flex items-center gap-1.5 shadow-xs transition-colors"
+                  className="px-3.5 py-2 rounded-xl bg-white border border-[#cbd5e1] hover:border-[#1d4ed8] text-xs font-bold text-[#334155] flex items-center gap-1.5 shadow-xs transition-colors cursor-pointer"
                 >
                   {copied ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5 text-[#64748b]" />}
                   {copied ? 'Copied' : 'Copy ID'}
                 </button>
                 <button 
+                  onClick={async () => {
+                    setIsDownloadingCertificate(true);
+                    toast.info('Generating high-resolution Certificate of Excellence image...');
+                    const ok = await downloadElementAsImage(
+                      'official-certificate-diploma', 
+                      `${certificate.recipientName.replace(/\s+/g, '_')}_Certificate_${certificate.certificateNumber}.png`,
+                      3
+                    );
+                    setIsDownloadingCertificate(false);
+                    if (ok) {
+                      toast.success('Certificate downloaded successfully in HD!');
+                    } else {
+                      toast.error('Could not capture image. Please use Print / Save PDF.');
+                    }
+                  }}
+                  disabled={isDownloadingCertificate}
+                  className="px-3.5 py-2 rounded-xl bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs font-bold flex items-center gap-1.5 shadow-xs transition-all cursor-pointer"
+                >
+                  <Download className="w-3.5 h-3.5 text-blue-600" />
+                  {isDownloadingCertificate ? 'Generating...' : 'Save Certificate (HD Image)'}
+                </button>
+                <button 
                   onClick={downloadPrintable}
-                  className="px-4 py-2 rounded-xl bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#1d4ed8]/20 transition-all"
+                  className="px-4 py-2 rounded-xl bg-[#1d4ed8] hover:bg-[#1e40af] text-white text-xs font-bold flex items-center gap-1.5 shadow-md shadow-[#1d4ed8]/20 transition-all cursor-pointer"
                 >
                   <Download className="w-3.5 h-3.5" />
                   Print / Save PDF
@@ -384,6 +407,13 @@ export default function PublicVerifyPage() {
               <div 
                 id="official-certificate-diploma"
                 className="max-w-2xl mx-auto rounded-2xl border-4 border-[#1d4ed8]/30 p-8 sm:p-12 relative bg-gradient-to-br from-white via-[#f8fafc] to-[#eff6ff] shadow-lg text-center overflow-hidden"
+                style={{
+                  backgroundColor: '#ffffff',
+                  color: '#0f172a',
+                  borderColor: '#93c5fd',
+                  pageBreakInside: 'avoid',
+                  breakInside: 'avoid'
+                }}
               >
                 {/* Decorative border corners */}
                 <div className="absolute top-2 left-2 w-8 h-8 border-t-2 border-l-2 border-[#1d4ed8]" />
