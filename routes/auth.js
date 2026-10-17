@@ -205,6 +205,10 @@ router.post('/login', async (req, res) => {
       }
     }
 
+    if (activeTenant && (typeof activeTenant.name !== 'string' || !activeTenant.name || activeTenant.name === '1' || activeTenant.name === 1)) {
+      activeTenant.name = activeTenant.id === 1 ? 'Eventrye HQ' : `Organization #${activeTenant.id}`;
+    }
+
     // Log login activity
     await query(
       `INSERT INTO \`activity_logs\` (\`tenant_id\`, \`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
@@ -282,7 +286,11 @@ router.get('/me', verifyToken, async (req, res) => {
     if (!activeTenant) {
       if (userRow.role === 'admin') {
         const [hq] = await query('SELECT * FROM `tenants` WHERE `id` = 1');
-        activeTenant = hq[0] || { id: 1, name: 'Eventrye HQ', slug: 'eventrye-hq', plan: 'Platform Authority' };
+        let hqTenant = hq[0];
+        if (!hqTenant || typeof hqTenant.name !== 'string' || !hqTenant.name || hqTenant.name === '1' || hqTenant.name === 1) {
+          hqTenant = { id: 1, name: 'Eventrye HQ', slug: 'eventrye-hq', plan: 'Platform Authority' };
+        }
+        activeTenant = hqTenant;
         userTenants = [activeTenant];
       } else {
         const workspaceName = userRow.org_name || `${userRow.full_name}'s Workspace`;
@@ -298,6 +306,10 @@ router.get('/me', verifyToken, async (req, res) => {
         activeTenant = newT[0];
         userTenants = [activeTenant];
       }
+    }
+
+    if (activeTenant && (typeof activeTenant.name !== 'string' || !activeTenant.name || activeTenant.name === '1' || activeTenant.name === 1)) {
+      activeTenant.name = activeTenant.id === 1 ? 'Eventrye HQ' : `Organization #${activeTenant.id}`;
     }
 
     const user = {

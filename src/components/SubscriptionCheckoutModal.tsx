@@ -609,10 +609,10 @@ export default function SubscriptionCheckoutModal({
               <div className="bg-blue-50/70 border border-blue-200 rounded-2xl p-4 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-[#1d4ed8] text-white flex items-center justify-center font-bold text-sm">
-                    {(currentTenant?.name || user.fullName || 'EX').slice(0, 2).toUpperCase()}
+                    {String(currentTenant?.name || user?.fullName || 'EX').slice(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-slate-900">{currentTenant?.name || user.orgName || 'Your Organization Workspace'}</p>
+                    <p className="text-xs font-bold text-slate-900">{String(currentTenant?.name || user?.orgName || 'Your Organization Workspace')}</p>
                     <p className="text-[11px] text-slate-500">Account: {user.email} • {user.fullName}</p>
                   </div>
                 </div>

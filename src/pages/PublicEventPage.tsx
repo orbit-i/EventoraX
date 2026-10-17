@@ -17,7 +17,11 @@ import {
   AlertCircle,
   X,
   Ticket,
-  Printer
+  Printer,
+  Image as ImageIcon,
+  Video as VideoIcon,
+  Play,
+  Maximize2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +52,7 @@ export default function PublicEventPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registeredAttendee, setRegisteredAttendee] = useState<any | null>(null);
   const [isDownloadingImage, setIsDownloadingImage] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   // Countdown timer
   const [timeLeft, setTimeLeft] = useState<{ days: number; hours: number; minutes: number; seconds: number }>({
@@ -217,6 +222,22 @@ export default function PublicEventPage() {
 
   const sponsorsList = Array.isArray(event.sponsors) ? event.sponsors : [];
   const agendaList = Array.isArray(event.agenda) ? event.agenda : [];
+
+  let galleryList: string[] = [];
+  if (Array.isArray(event.gallery_images)) {
+    galleryList = event.gallery_images;
+  } else if (typeof event.gallery_images === 'string' && event.gallery_images.trim()) {
+    try { galleryList = JSON.parse(event.gallery_images); } catch {}
+  }
+
+  let videoList: string[] = [];
+  if (Array.isArray(event.videos)) {
+    videoList = event.videos;
+  } else if (typeof event.videos === 'string' && event.videos.trim()) {
+    try { videoList = JSON.parse(event.videos); } catch {}
+  } else if (event.video_url) {
+    videoList = [event.video_url];
+  }
 
   return (
     <div className="min-h-screen bg-[#f8fafc] text-slate-900 antialiased">
@@ -408,6 +429,97 @@ export default function PublicEventPage() {
               </button>
             </div>
           </div>
+
+          {/* Official Media Showcase: Event Photo Gallery & Videos */}
+          {(galleryList.length > 0 || videoList.length > 0) && (
+            <div className="bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-xs space-y-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-4">
+                <div>
+                  <h3 className="text-xl font-bold font-heading text-slate-900 flex items-center gap-2">
+                    <ImageIcon className="w-5 h-5 text-[#1d4ed8]" />
+                    Event Media Showcase & Highlights
+                  </h3>
+                  <p className="text-xs text-slate-500">Official photo gallery, venue previews, and video stream</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  {galleryList.length > 0 && (
+                    <Badge variant="outline" className="text-xs font-semibold text-blue-700 border-blue-200 bg-blue-50">
+                      {galleryList.length} Photo{galleryList.length !== 1 ? 's' : ''}
+                    </Badge>
+                  )}
+                  {videoList.length > 0 && (
+                    <Badge variant="outline" className="text-xs font-semibold text-indigo-700 border-indigo-200 bg-indigo-50">
+                      {videoList.length} Video{videoList.length !== 1 ? 's' : ''}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Video Clips Player */}
+              {videoList.length > 0 && (
+                <div className="space-y-3">
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <VideoIcon className="w-3.5 h-3.5 text-indigo-600" />
+                    Featured Event Video & Clips
+                  </span>
+                  <div className="grid grid-cols-1 gap-4">
+                    {videoList.map((vidUrl: string, idx: number) => {
+                      const isDirect = vidUrl.endsWith('.mp4') || vidUrl.endsWith('.webm') || vidUrl.includes('/uploads/videos/');
+                      return (
+                        <div key={idx} className="rounded-2xl overflow-hidden border border-slate-200 bg-slate-950 shadow-md">
+                          {isDirect ? (
+                            <video
+                              src={vidUrl}
+                              controls
+                              preload="metadata"
+                              className="w-full max-h-[420px] object-contain bg-black"
+                            />
+                          ) : (
+                            <div className="aspect-video w-full">
+                              <iframe
+                                src={vidUrl.includes('youtube.com/watch?v=') ? vidUrl.replace('watch?v=', 'embed/') : vidUrl}
+                                title={`Event Video ${idx + 1}`}
+                                allowFullScreen
+                                className="w-full h-full border-0"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+
+              {/* Photo Gallery Grid */}
+              {galleryList.length > 0 && (
+                <div className="space-y-3">
+                  <span className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
+                    Official Photo Gallery
+                  </span>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                    {galleryList.map((imgUrl: string, idx: number) => (
+                      <div
+                        key={idx}
+                        onClick={() => setSelectedImage(imgUrl)}
+                        className="group relative aspect-video rounded-xl overflow-hidden border border-slate-200 bg-slate-100 cursor-pointer shadow-xs hover:shadow-md transition-all"
+                      >
+                        <img
+                          src={imgUrl}
+                          alt={`Event Photo ${idx + 1}`}
+                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        />
+                        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white">
+                          <Maximize2 className="w-5 h-5 drop-shadow-md" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Agenda & Sessions */}
           {agendaList.length > 0 && (
@@ -807,7 +919,7 @@ export default function PublicEventPage() {
                         className="w-full h-full rounded-xl flex items-center justify-center font-bold text-xl text-white"
                         style={{ backgroundColor: '#0f172a' }}
                       >
-                        {registeredAttendee.name?.split(' ').map((n: string) => n[0]).join('').slice(0, 2) || 'AT'}
+                        {String(registeredAttendee?.name || 'AT').split(/\s+/).map((n: string) => n[0] || '').filter(Boolean).slice(0, 2).join('').toUpperCase() || 'AT'}
                       </div>
                     </div>
 
@@ -924,6 +1036,29 @@ export default function PublicEventPage() {
                 </div>
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Lightbox Photo Modal */}
+      {selectedImage && (
+        <div 
+          onClick={() => setSelectedImage(null)}
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200"
+        >
+          <div className="relative max-w-4xl max-h-[90vh] flex flex-col items-center">
+            <button
+              onClick={() => setSelectedImage(null)}
+              className="absolute -top-12 right-0 p-2 text-white hover:text-slate-300 transition-colors"
+            >
+              <X className="w-6 h-6" />
+            </button>
+            <img
+              src={selectedImage}
+              alt="Enlarged Event Preview"
+              className="max-w-full max-h-[85vh] object-contain rounded-2xl shadow-2xl border border-white/20"
+              onClick={(e) => e.stopPropagation()}
+            />
           </div>
         </div>
       )}

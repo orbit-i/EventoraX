@@ -4,6 +4,7 @@ import { verifyToken } from '../middleware/auth.js';
 import { resolveTenant } from '../middleware/tenant.js';
 import { contentPolicyGuard } from '../middleware/securityScanner.js';
 import { dispatchNotification } from '../services/notificationsService.js';
+import { cacheService } from '../services/cacheService.js';
 
 const router = express.Router();
 
@@ -15,6 +16,28 @@ function createSlug(title) {
     .replace(/[\s_-]+/g, '-');
   const randomSuffix = Math.floor(1000 + Math.random() * 9000);
   return `${base}-${randomSuffix}`;
+}
+
+export function formatEvent(ev) {
+  if (!ev) return null;
+  let gallery = [];
+  let vids = [];
+  try {
+    gallery = typeof ev.gallery_images === 'string' ? JSON.parse(ev.gallery_images) : (ev.gallery_images || []);
+  } catch {
+    gallery = ev.gallery_images ? [String(ev.gallery_images)] : [];
+  }
+  try {
+    vids = typeof ev.videos === 'string' ? JSON.parse(ev.videos) : (ev.videos || []);
+  } catch {
+    vids = ev.videos ? [String(ev.videos)] : [];
+  }
+  return {
+    ...ev,
+    gallery_images: Array.isArray(gallery) ? gallery : [],
+    videos: Array.isArray(vids) ? vids : [],
+    video_url: ev.video_url || (Array.isArray(vids) && vids[0] ? (typeof vids[0] === 'string' ? vids[0] : vids[0].url) : '')
+  };
 }
 
 // GET /api/events - List events (Public or Tenant-scoped)
@@ -75,7 +98,7 @@ router.get('/', resolveTenant, async (req, res) => {
 
     return res.json({
       success: true,
-      events: rows,
+      events: rows.map(formatEvent),
       total: countRows[0]?.total || rows.length,
       tenantId: req.tenantId
     });
@@ -85,8 +108,34 @@ router.get('/', resolveTenant, async (req, res) => {
   }
 });
 
+// GET /api/events/public/:slug - Get public event by slug or ID with fast caching
+router.get('/public/:slug', cacheService.middleware({ ttl: 60, prefix: 'events:public' }), async (req, res) => {
+  try {
+    const param = req.params.slug;
+    let sql, params;
+
+    if (!isNaN(param)) {
+      sql = 'SELECT * FROM `events` WHERE `id` = ?';
+      params = [parseInt(param, 10)];
+    } else {
+      sql = 'SELECT * FROM `events` WHERE `slug` = ?';
+      params = [param];
+    }
+
+    const [rows] = await query(sql, params);
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Event not found.' });
+    }
+
+    return res.json({ success: true, event: formatEvent(rows[0]) });
+  } catch (error) {
+    console.error('[Get Public Event Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to retrieve event.' });
+  }
+});
+
 // GET /api/events/:id - Get event by ID or slug
-router.get('/:id', resolveTenant, async (req, res) => {
+router.get('/:id', resolveTenant, cacheService.middleware({ ttl: 60, prefix: 'events:item' }), async (req, res) => {
   try {
     const param = req.params.id;
     let sql, params;
@@ -104,7 +153,7 @@ router.get('/:id', resolveTenant, async (req, res) => {
       return res.status(404).json({ success: false, message: 'Event not found.' });
     }
 
-    return res.json({ success: true, event: rows[0] });
+    return res.json({ success: true, event: formatEvent(rows[0]) });
   } catch (error) {
     console.error('[Get Event Error]:', error);
     return res.status(500).json({ success: false, message: 'Failed to retrieve event.' });
@@ -160,30 +209,67 @@ router.post('/', verifyToken, resolveTenant, contentPolicyGuard, async (req, res
 
     const slug = createSlug(title);
 
-    const [result] = await query(
-      `INSERT INTO \`events\` 
-       (\`tenant_id\`, \`title\`, \`slug\`, \`category\`, \`description\`, \`event_type\`, \`venue_name\`, \`venue_address\`, \`virtual_link\`, \`start_date\`, \`start_time\`, \`end_date\`, \`end_time\`, \`price\`, \`capacity\`, \`status\`, \`banner_image\`, \`organizer_id\`)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'upcoming', ?, ?)`,
-      [
-        tenantId,
-        title.trim(),
-        slug,
-        category || 'General',
-        description || '',
-        eventType || 'in-person',
-        venueName || '',
-        venueAddress || '',
-        virtualLink || '',
-        startDate,
-        startTime || '09:00',
-        endDate || startDate,
-        endTime || '17:00',
-        parseFloat(price) || 0,
-        effectiveCapacity,
-        bannerImage || '',
-        req.user.id
-      ]
-    );
+    const rawGallery = req.body.galleryImages || req.body.gallery_images || [];
+    const rawVideos = req.body.videos || [];
+    const rawVideoUrl = req.body.videoUrl || req.body.video_url || (Array.isArray(rawVideos) && rawVideos[0] ? (typeof rawVideos[0] === 'string' ? rawVideos[0] : rawVideos[0].url) : '');
+    const cleanGallery = JSON.stringify(Array.isArray(rawGallery) ? rawGallery : []);
+    const cleanVideos = JSON.stringify(Array.isArray(rawVideos) ? rawVideos : []);
+
+    let result;
+    try {
+      [result] = await query(
+        `INSERT INTO \`events\` 
+         (\`tenant_id\`, \`title\`, \`slug\`, \`category\`, \`description\`, \`event_type\`, \`venue_name\`, \`venue_address\`, \`virtual_link\`, \`start_date\`, \`start_time\`, \`end_date\`, \`end_time\`, \`price\`, \`capacity\`, \`status\`, \`banner_image\`, \`gallery_images\`, \`videos\`, \`video_url\`, \`organizer_id\`)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'upcoming', ?, ?, ?, ?, ?)`,
+        [
+          tenantId,
+          title.trim(),
+          slug,
+          category || 'General',
+          description || '',
+          eventType || 'in-person',
+          venueName || '',
+          venueAddress || '',
+          virtualLink || '',
+          startDate,
+          startTime || '09:00',
+          endDate || startDate,
+          endTime || '17:00',
+          parseFloat(price) || 0,
+          effectiveCapacity,
+          bannerImage || '',
+          cleanGallery,
+          cleanVideos,
+          rawVideoUrl || '',
+          req.user.id
+        ]
+      );
+    } catch {
+      [result] = await query(
+        `INSERT INTO \`events\` 
+         (\`tenant_id\`, \`title\`, \`slug\`, \`category\`, \`description\`, \`event_type\`, \`venue_name\`, \`venue_address\`, \`virtual_link\`, \`start_date\`, \`start_time\`, \`end_date\`, \`end_time\`, \`price\`, \`capacity\`, \`status\`, \`banner_image\`, \`organizer_id\`)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'upcoming', ?, ?)`,
+        [
+          tenantId,
+          title.trim(),
+          slug,
+          category || 'General',
+          description || '',
+          eventType || 'in-person',
+          venueName || '',
+          venueAddress || '',
+          virtualLink || '',
+          startDate,
+          startTime || '09:00',
+          endDate || startDate,
+          endTime || '17:00',
+          parseFloat(price) || 0,
+          effectiveCapacity,
+          bannerImage || '',
+          req.user.id
+        ]
+      );
+    }
 
     // Log activity
     await query(
@@ -202,10 +288,12 @@ router.post('/', verifyToken, resolveTenant, contentPolicyGuard, async (req, res
 
     const [newEvent] = await query('SELECT * FROM `events` WHERE `id` = ?', [result.insertId]);
 
+    cacheService.invalidatePattern('events:');
+
     return res.status(201).json({
       success: true,
       message: 'Event created successfully!',
-      event: newEvent[0]
+      event: formatEvent(newEvent[0])
     });
   } catch (error) {
     console.error('[Create Event Error]:', error);
@@ -252,36 +340,75 @@ router.put('/:id', verifyToken, resolveTenant, contentPolicyGuard, async (req, r
       bannerImage = ev.banner_image
     } = req.body;
 
-    await query(
-      `UPDATE \`events\`
-       SET \`title\` = ?, \`category\` = ?, \`event_type\` = ?, \`venue_name\` = ?, \`venue_address\` = ?, \`virtual_link\` = ?, \`start_date\` = ?, \`start_time\` = ?, \`end_date\` = ?, \`end_time\` = ?, \`price\` = ?, \`capacity\` = ?, \`status\` = ?, \`description\` = ?, \`banner_image\` = ?
-       WHERE \`id\` = ?`,
-      [
-        title,
-        category,
-        eventType,
-        venueName,
-        venueAddress,
-        virtualLink,
-        startDate,
-        startTime,
-        endDate,
-        endTime,
-        parseFloat(price) || 0,
-        parseInt(capacity, 10) || 500,
-        status,
-        description,
-        bannerImage,
-        eventId
-      ]
-    );
+    const rawGallery = req.body.galleryImages !== undefined ? req.body.galleryImages : req.body.gallery_images;
+    const rawVideos = req.body.videos;
+    const rawVideoUrl = req.body.videoUrl !== undefined ? req.body.videoUrl : req.body.video_url;
+
+    const galleryVal = rawGallery !== undefined ? JSON.stringify(Array.isArray(rawGallery) ? rawGallery : [rawGallery]) : (ev.gallery_images || '[]');
+    const videosVal = rawVideos !== undefined ? JSON.stringify(Array.isArray(rawVideos) ? rawVideos : [rawVideos]) : (ev.videos || '[]');
+    const videoUrlVal = rawVideoUrl !== undefined ? rawVideoUrl : (ev.video_url || '');
+
+    try {
+      await query(
+        `UPDATE \`events\`
+         SET \`title\` = ?, \`category\` = ?, \`event_type\` = ?, \`venue_name\` = ?, \`venue_address\` = ?, \`virtual_link\` = ?, \`start_date\` = ?, \`start_time\` = ?, \`end_date\` = ?, \`end_time\` = ?, \`price\` = ?, \`capacity\` = ?, \`status\` = ?, \`description\` = ?, \`banner_image\` = ?, \`gallery_images\` = ?, \`videos\` = ?, \`video_url\` = ?
+         WHERE \`id\` = ?`,
+        [
+          title,
+          category,
+          eventType,
+          venueName,
+          venueAddress,
+          virtualLink,
+          startDate,
+          startTime,
+          endDate,
+          endTime,
+          parseFloat(price) || 0,
+          parseInt(capacity, 10) || 500,
+          status,
+          description,
+          bannerImage,
+          galleryVal,
+          videosVal,
+          videoUrlVal,
+          eventId
+        ]
+      );
+    } catch {
+      await query(
+        `UPDATE \`events\`
+         SET \`title\` = ?, \`category\` = ?, \`event_type\` = ?, \`venue_name\` = ?, \`venue_address\` = ?, \`virtual_link\` = ?, \`start_date\` = ?, \`start_time\` = ?, \`end_date\` = ?, \`end_time\` = ?, \`price\` = ?, \`capacity\` = ?, \`status\` = ?, \`description\` = ?, \`banner_image\` = ?
+         WHERE \`id\` = ?`,
+        [
+          title,
+          category,
+          eventType,
+          venueName,
+          venueAddress,
+          virtualLink,
+          startDate,
+          startTime,
+          endDate,
+          endTime,
+          parseFloat(price) || 0,
+          parseInt(capacity, 10) || 500,
+          status,
+          description,
+          bannerImage,
+          eventId
+        ]
+      );
+    }
 
     const [updated] = await query('SELECT * FROM `events` WHERE `id` = ?', [eventId]);
+
+    cacheService.invalidatePattern('events:');
 
     return res.json({
       success: true,
       message: 'Event updated successfully!',
-      event: updated[0]
+      event: formatEvent(updated[0])
     });
   } catch (error) {
     console.error('[Update Event Error]:', error);
@@ -315,6 +442,8 @@ router.delete('/:id', verifyToken, resolveTenant, async (req, res) => {
        VALUES (?, ?, ?, 'event', 'Event deleted', ?)`,
       [tenantId, req.user.id, req.user.email, `Deleted event "${existing[0].title}"`]
     );
+
+    cacheService.invalidatePattern('events:');
 
     return res.json({ success: true, message: 'Event deleted successfully.' });
   } catch (error) {

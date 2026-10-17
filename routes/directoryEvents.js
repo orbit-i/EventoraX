@@ -1,6 +1,7 @@
 import express from 'express';
 import { memoryStore } from '../db/db.js';
 import { verifyToken } from '../middleware/auth.js';
+import { cacheService } from '../services/cacheService.js';
 
 const router = express.Router();
 
@@ -22,8 +23,8 @@ if (!memoryStore.directory_bookings) {
   memoryStore.directory_bookings = [];
 }
 
-// GET /api/directory-events - Public listing with filters
-router.get('/', (req, res) => {
+// GET /api/directory-events - Public listing with filters (Cached for 90s)
+router.get('/', cacheService.middleware({ ttl: 90, prefix: 'directory:list' }), (req, res) => {
   try {
     const events = memoryStore.directory_events || initialDirectoryEvents;
     const { category, city, search, featured } = req.query;
@@ -346,8 +347,8 @@ export const receivingAccounts = {
   support_email: 'eventrye@orbit-i.tech'
 };
 
-// GET /api/directory-events/plans - Get listing tiers & receiving accounts
-router.get('/plans', (req, res) => {
+// GET /api/directory-events/plans - Get listing tiers & receiving accounts (Cached for 300s)
+router.get('/plans', cacheService.middleware({ ttl: 300, prefix: 'directory:plans' }), (req, res) => {
   return res.json({
     success: true,
     plans: listingPlans,

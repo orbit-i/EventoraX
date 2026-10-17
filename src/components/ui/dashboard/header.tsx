@@ -142,7 +142,10 @@ export default function Header({ title }: HeaderProps) {
     }
   };
 
-  const activeTenantName = currentTenant?.name || "Eventrye Workspace";
+  const rawTenantName = typeof currentTenant?.name === 'string'
+    ? currentTenant.name.trim()
+    : (currentTenant?.name !== undefined && currentTenant?.name !== null ? String(currentTenant.name) : "Eventrye Workspace");
+  const activeTenantName = rawTenantName || "Eventrye Workspace";
   const isMaster = isSuperAdmin || currentTenant?.id === 1 || currentTenant?.slug === 'eventrye-hq' || currentTenant?.slug === 'eventrye-hq';
   const displayPlan = isMaster ? "Platform Master" : (currentTenant?.plan || "Starter");
 
@@ -179,7 +182,7 @@ export default function Header({ title }: HeaderProps) {
                     backgroundColor: currentTenant?.primary_color || '#7c3aed'
                   }}
                 >
-                  {activeTenantName.slice(0, 2).toUpperCase()}
+                  {String(activeTenantName || 'EX').slice(0, 2).toUpperCase()}
                 </div>
 
                 <div className="flex flex-col">
@@ -233,7 +236,7 @@ export default function Header({ title }: HeaderProps) {
                                 className="w-6 h-6 rounded-md flex items-center justify-center text-white font-bold text-[10px] shrink-0"
                                 style={{ backgroundColor: t.primary_color || '#7c3aed' }}
                               >
-                                {t.name.slice(0, 2).toUpperCase()}
+                                {String(t?.name || 'EX').slice(0, 2).toUpperCase()}
                               </div>
                               <div className="truncate">
                                 <p className="truncate font-semibold text-[#0f172a]">{t.name}</p>

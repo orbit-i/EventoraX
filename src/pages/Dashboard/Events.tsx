@@ -20,7 +20,13 @@ import {
   ExternalLink,
   Copy,
   Check,
-  IdCard
+  IdCard,
+  Image as ImageIcon,
+  Video,
+  Upload,
+  Film,
+  Play,
+  Loader2
 } from 'lucide-react';
 import AttendanceScannerModal from '@/components/AttendanceScannerModal';
 import { api } from '@/services/api';
@@ -79,8 +85,141 @@ export default function Events() {
     organizerBio: '',
     refundPolicy: 'Full 100% refund available up to 7 days before event start.',
     cancellationPolicy: 'In case of postponement or cancellation, all tickets are automatically refunded.',
-    bannerImage: ''
+    bannerImage: '',
+    galleryImages: [] as string[],
+    videos: [] as string[],
+    videoUrl: ''
   });
+
+  // Upload States
+  const [uploadingBanner, setUploadingBanner] = useState(false);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
+  const [galleryInputUrl, setGalleryInputUrl] = useState('');
+  const [videoInputUrl, setVideoInputUrl] = useState('');
+
+  const readFileAsBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleBannerFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingBanner(true);
+    try {
+      const base64Data = await readFileAsBase64(file);
+      const res = await api.upload.media({
+        base64Data,
+        filename: file.name,
+        folder: 'events'
+      });
+      if (res.success && res.url) {
+        setForm((prev) => ({ ...prev, bannerImage: res.url }));
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload banner image.');
+    } finally {
+      setUploadingBanner(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleGalleryFilesUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploadingGallery(true);
+    try {
+      const newUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const base64Data = await readFileAsBase64(file);
+        const res = await api.upload.media({
+          base64Data,
+          filename: file.name,
+          folder: 'events'
+        });
+        if (res.success && res.url) {
+          newUrls.push(res.url);
+        }
+      }
+      setForm((prev) => ({ ...prev, galleryImages: [...prev.galleryImages, ...newUrls] }));
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload gallery images.');
+    } finally {
+      setUploadingGallery(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleAddGalleryUrl = () => {
+    if (!galleryInputUrl.trim()) return;
+    setForm((prev) => ({ ...prev, galleryImages: [...prev.galleryImages, galleryInputUrl.trim()] }));
+    setGalleryInputUrl('');
+  };
+
+  const handleRemoveGalleryImage = (indexToRemove: number) => {
+    setForm((prev) => ({
+      ...prev,
+      galleryImages: prev.galleryImages.filter((_, idx) => idx !== indexToRemove)
+    }));
+  };
+
+  const handleVideoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploadingVideo(true);
+    try {
+      const newVideoUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const base64Data = await readFileAsBase64(file);
+        const res = await api.upload.media({
+          base64Data,
+          filename: file.name,
+          folder: 'videos'
+        });
+        if (res.success && res.url) {
+          newVideoUrls.push(res.url);
+        }
+      }
+      setForm((prev) => ({
+        ...prev,
+        videos: [...prev.videos, ...newVideoUrls],
+        videoUrl: prev.videoUrl || newVideoUrls[0] || ''
+      }));
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload video.');
+    } finally {
+      setUploadingVideo(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleAddVideoUrl = () => {
+    if (!videoInputUrl.trim()) return;
+    setForm((prev) => ({
+      ...prev,
+      videos: [...prev.videos, videoInputUrl.trim()],
+      videoUrl: prev.videoUrl || videoInputUrl.trim()
+    }));
+    setVideoInputUrl('');
+  };
+
+  const handleRemoveVideo = (indexToRemove: number) => {
+    setForm((prev) => {
+      const filtered = prev.videos.filter((_, idx) => idx !== indexToRemove);
+      return {
+        ...prev,
+        videos: filtered,
+        videoUrl: prev.videoUrl === prev.videos[indexToRemove] ? (filtered[0] || '') : prev.videoUrl
+      };
+    });
+  };
 
   // Real-time notification banner state
   const [realtimeNotification, setRealtimeNotification] = useState<string | null>(null);
@@ -181,6 +320,8 @@ export default function Events() {
 
   const handleOpenCreate = () => {
     setEditEvent(null);
+    setGalleryInputUrl('');
+    setVideoInputUrl('');
     setForm({
       title: '',
       category: 'Conference',
@@ -207,13 +348,33 @@ export default function Events() {
       organizerBio: 'Verified event organizer delivering premier hybrid summits.',
       refundPolicy: 'Full refund available up to 7 days before event start.',
       cancellationPolicy: 'Full automatic refund if event is rescheduled or canceled.',
-      bannerImage: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80'
+      bannerImage: 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1200&q=80',
+      galleryImages: [],
+      videos: [],
+      videoUrl: ''
     });
     setCreateModalOpen(true);
   };
 
   const handleOpenEdit = (event: any) => {
     setEditEvent(event);
+    setGalleryInputUrl('');
+    setVideoInputUrl('');
+    
+    let parsedGallery: string[] = [];
+    if (Array.isArray(event.gallery_images)) {
+      parsedGallery = event.gallery_images;
+    } else if (typeof event.gallery_images === 'string' && event.gallery_images.trim()) {
+      try { parsedGallery = JSON.parse(event.gallery_images); } catch {}
+    }
+
+    let parsedVideos: string[] = [];
+    if (Array.isArray(event.videos)) {
+      parsedVideos = event.videos;
+    } else if (typeof event.videos === 'string' && event.videos.trim()) {
+      try { parsedVideos = JSON.parse(event.videos); } catch {}
+    }
+
     setForm({
       title: event.title || '',
       category: event.category || 'Conference',
@@ -240,7 +401,10 @@ export default function Events() {
       organizerBio: event.organizer_bio || '',
       refundPolicy: event.refund_policy || '',
       cancellationPolicy: event.cancellation_policy || '',
-      bannerImage: event.banner_image || ''
+      bannerImage: event.banner_image || '',
+      galleryImages: Array.isArray(parsedGallery) ? parsedGallery : [],
+      videos: Array.isArray(parsedVideos) ? parsedVideos : [],
+      videoUrl: event.video_url || ''
     });
     setCreateModalOpen(true);
   };
@@ -827,6 +991,233 @@ export default function Events() {
                       onChange={(e) => setForm({ ...form, organizerPhone: e.target.value })}
                       className="w-full px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white"
                     />
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Media & Showcase (Banner, Multi-Image Gallery, Videos) */}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/20 border border-slate-200 space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-blue-600/10 text-[#1d4ed8] flex items-center justify-center">
+                      <ImageIcon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <span className="font-bold text-slate-900 block text-xs">Event Media & Visual Showcase</span>
+                      <p className="text-[11px] text-slate-500">Upload multiple photos, high-resolution banners, and video clips</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">
+                      {form.galleryImages.length} Images
+                    </span>
+                    <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 text-[10px] font-bold">
+                      {form.videos.length} Videos
+                    </span>
+                  </div>
+                </div>
+
+                {/* 1. Main Banner Image */}
+                <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-2">
+                  <label className="text-[11px] font-bold text-slate-800 flex items-center justify-between">
+                    <span>Main Event Cover / Banner</span>
+                    {uploadingBanner && (
+                      <span className="text-blue-600 flex items-center gap-1 font-semibold text-[10px]">
+                        <Loader2 className="w-3 h-3 animate-spin" /> Uploading Banner...
+                      </span>
+                    )}
+                  </label>
+                  
+                  {form.bannerImage && (
+                    <div className="relative w-full h-32 rounded-xl overflow-hidden border border-slate-200 bg-slate-900 group">
+                      <img
+                        src={form.bannerImage}
+                        alt="Event Banner Preview"
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setForm(prev => ({ ...prev, bannerImage: '' }))}
+                        className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/60 hover:bg-rose-600 text-white transition-colors"
+                        title="Remove Banner"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <label className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 cursor-pointer text-xs font-bold transition-all shrink-0">
+                      <Upload className="w-3.5 h-3.5" />
+                      <span>{uploadingBanner ? 'Uploading...' : 'Upload Banner'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        disabled={uploadingBanner}
+                        onChange={handleBannerFileUpload}
+                      />
+                    </label>
+                    <input
+                      type="url"
+                      placeholder="Or enter banner image URL (https://...)"
+                      value={form.bannerImage}
+                      onChange={(e) => setForm(prev => ({ ...prev, bannerImage: e.target.value }))}
+                      className="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white"
+                    />
+                  </div>
+                </div>
+
+                {/* 2. Multiple Gallery Images */}
+                <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-800 block">Event Photo Gallery (Multiple Photos)</span>
+                      <span className="text-[10px] text-slate-500">Upload multiple photos from your device or paste direct image links</span>
+                    </div>
+                    {uploadingGallery && (
+                      <span className="text-blue-600 flex items-center gap-1 font-semibold text-[10px]">
+                        <Loader2 className="w-3 h-3 animate-spin" /> Uploading Photos...
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Thumbnail Grid */}
+                  {form.galleryImages.length > 0 && (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 md:grid-cols-5 gap-2.5 pt-1">
+                      {form.galleryImages.map((imgUrl, idx) => (
+                        <div key={idx} className="relative aspect-video rounded-lg overflow-hidden border border-slate-200 bg-slate-100 group">
+                          <img
+                            src={imgUrl}
+                            alt={`Gallery ${idx + 1}`}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveGalleryImage(idx)}
+                            className="absolute top-1 right-1 p-1 rounded-md bg-black/70 hover:bg-rose-600 text-white transition-colors"
+                            title="Remove photo"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Upload and URL input */}
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <label className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 cursor-pointer text-xs font-bold transition-all shrink-0">
+                      <Upload className="w-3.5 h-3.5 text-blue-600" />
+                      <span>{uploadingGallery ? 'Uploading...' : 'Upload Photos (Multi-select)'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        multiple
+                        className="hidden"
+                        disabled={uploadingGallery}
+                        onChange={handleGalleryFilesUpload}
+                      />
+                    </label>
+                    <div className="flex items-center gap-1.5 flex-1">
+                      <input
+                        type="url"
+                        placeholder="Or add photo URL (https://...)"
+                        value={galleryInputUrl}
+                        onChange={(e) => setGalleryInputUrl(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddGalleryUrl(); } }}
+                        className="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddGalleryUrl}
+                        disabled={!galleryInputUrl.trim()}
+                        className="px-3 py-2 rounded-xl bg-[#1d4ed8] text-white text-xs font-bold hover:bg-[#1e40af] disabled:opacity-50"
+                      >
+                        + Add
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* 3. Event Videos (Direct Upload & URLs) */}
+                <div className="p-3 bg-white rounded-xl border border-slate-200 space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-[11px] font-bold text-slate-800 block">Event Videos & Teasers (Direct Upload & Links)</span>
+                      <span className="text-[10px] text-slate-500">Upload MP4 / WEBM video clips (up to 100MB) or provide promo video links</span>
+                    </div>
+                    {uploadingVideo && (
+                      <span className="text-blue-600 flex items-center gap-1 font-semibold text-[10px]">
+                        <Loader2 className="w-3 h-3 animate-spin" /> Uploading Video...
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Video Previews */}
+                  {form.videos.length > 0 && (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                      {form.videos.map((vidUrl, idx) => (
+                        <div key={idx} className="relative rounded-xl border border-slate-200 bg-slate-950 overflow-hidden group">
+                          {vidUrl.endsWith('.mp4') || vidUrl.endsWith('.webm') || vidUrl.includes('/uploads/videos/') ? (
+                            <video
+                              src={vidUrl}
+                              controls
+                              className="w-full max-h-36 object-contain bg-black"
+                            />
+                          ) : (
+                            <div className="p-4 bg-slate-900 text-white flex items-center gap-3">
+                              <Film className="w-6 h-6 text-indigo-400 shrink-0" />
+                              <div className="truncate flex-1">
+                                <span className="text-xs font-semibold block truncate">{vidUrl}</span>
+                                <span className="text-[10px] text-slate-400 uppercase font-mono">External Video Stream</span>
+                              </div>
+                            </div>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveVideo(idx)}
+                            className="absolute top-2 right-2 p-1.5 rounded-lg bg-black/80 hover:bg-rose-600 text-white transition-colors"
+                            title="Remove video"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Upload and Video URL input */}
+                  <div className="flex flex-col sm:flex-row gap-2 pt-1">
+                    <label className="flex items-center justify-center gap-2 px-3 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 cursor-pointer text-xs font-bold transition-all shrink-0">
+                      <Video className="w-3.5 h-3.5 text-indigo-600" />
+                      <span>{uploadingVideo ? 'Uploading...' : 'Upload Video File (MP4/WEBM)'}</span>
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/quicktime"
+                        className="hidden"
+                        disabled={uploadingVideo}
+                        onChange={handleVideoFileUpload}
+                      />
+                    </label>
+                    <div className="flex items-center gap-1.5 flex-1">
+                      <input
+                        type="url"
+                        placeholder="Or paste video link (YouTube, Vimeo, MP4)..."
+                        value={videoInputUrl}
+                        onChange={(e) => setVideoInputUrl(e.target.value)}
+                        onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); handleAddVideoUrl(); } }}
+                        className="flex-1 px-3 py-2 rounded-xl border border-slate-300 text-xs bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddVideoUrl}
+                        disabled={!videoInputUrl.trim()}
+                        className="px-3 py-2 rounded-xl bg-indigo-600 text-white text-xs font-bold hover:bg-indigo-700 disabled:opacity-50"
+                      >
+                        + Add Video
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>

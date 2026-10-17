@@ -13,6 +13,16 @@ dist-ssr
 *.local
 db/local_store.json
 
+# User Uploads (Keep directory structure via .gitkeep)
+public/uploads/**
+!public/uploads/
+!public/uploads/**/
+!public/uploads/**/.gitkeep
+dist/uploads/**
+!dist/uploads/
+!dist/uploads/**/
+!dist/uploads/**/.gitkeep
+
 # Environment variables
 .env
 .env.local
@@ -30,3 +40,5 @@ db/local_store.json
 *.njsproj
 *.sln
 *.sw?
+.agents/
+skills-lock.json

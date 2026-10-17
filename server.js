@@ -18,6 +18,8 @@ import certificatesRoutes from './routes/certificates.js';
 import caseStudiesRoutes from './routes/caseStudies.js';
 import merchantGatewaysRoutes from './routes/merchantGateways.js';
 import directoryEventsRoutes from './routes/directoryEvents.js';
+import uploadRoutes from './routes/upload.js';
+import { cacheService } from './services/cacheService.js';
 
 dotenv.config();
 
@@ -104,8 +106,75 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'x-tenant-id', 'x-tenant-slug', 'x-api-key']
 }));
-app.use(express.json({ limit: '15mb' }));
-app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ extended: true, limit: '100mb' }));
+
+// Static Media Uploads Directory Serving
+const uploadsPath = path.join(__dirname, 'public', 'uploads');
+app.use('/uploads', express.static(uploadsPath));
+
+// Strict System Resource & Environment Key Protection (.env, .git, dumps, certificates, secrets)
+const SENSITIVE_PATTERNS = [
+  /\.env(\..+)?$/i,
+  /\.git(\/.*)?$/i,
+  /\.htaccess$/i,
+  /local_store\.json$/i,
+  /\.(bak|backup|sql|dump|sqlite|sqlite3|db)$/i,
+  /\.(pem|key|crt|csr|p12|pfx)$/i,
+  /(id_rsa|id_dsa|id_ecdsa|id_ed25519)(\..*)?$/i,
+  /(package-lock\.json|yarn\.lock|pnpm-lock\.yaml)$/i,
+  /web\.config$/i
+];
+
+app.use((req, res, next) => {
+  const p = req.path.toLowerCase();
+  for (const pattern of SENSITIVE_PATTERNS) {
+    if (pattern.test(p)) {
+      console.warn(`[Security Alert] Blocked unauthorized probe to sensitive resource: ${req.path} from IP: ${req.ip}`);
+      return res.status(403).json({
+        success: false,
+        error: 'Forbidden',
+        message: 'Access Denied: Protected System Resource'
+      });
+    }
+  }
+  next();
+});
+
+// Automatic Sensitive Key & Secret Sanitizer Middleware
+// Recursively sanitizes JSON responses to prevent leakage of credentials, passwords, or master keys
+function sanitizeSecrets(data, depth = 0) {
+  if (!data || depth > 8) return data;
+  if (Array.isArray(data)) {
+    return data.map(item => sanitizeSecrets(item, depth + 1));
+  }
+  if (typeof data === 'object' && !(data instanceof Date)) {
+    const clean = {};
+    for (const [k, v] of Object.entries(data)) {
+      const lower = k.toLowerCase();
+      // Completely remove critical password hashes and internal database/JWT secrets
+      if (lower === 'password' || lower === 'password_hash' || lower === 'db_password' || lower === 'jwt_secret') {
+        continue;
+      }
+      // Mask master key
+      if (lower === 'master_key') {
+        clean[k] = typeof v === 'string' && v.length > 8 ? `${v.slice(0, 4)}****${v.slice(-4)}` : '[PROTECTED]';
+        continue;
+      }
+      clean[k] = sanitizeSecrets(v, depth + 1);
+    }
+    return clean;
+  }
+  return data;
+}
+
+app.use((req, res, next) => {
+  const originalJson = res.json.bind(res);
+  res.json = (body) => {
+    return originalJson(sanitizeSecrets(body));
+  };
+  next();
+});
 
 // Request logger for API calls
 app.use((req, res, next) => {
@@ -119,6 +188,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', authRateLimiter, authRoutes);
 app.use('/api/users', authRateLimiter, authRoutes);
 app.use('/api/events', eventsRoutes);
+app.use('/api/upload', uploadRoutes);
 app.use('/api/certificates/verify', verifyRateLimiter);
 app.use('/api/certificates', certificatesRoutes);
 app.use('/api/dashboard/stats', statsRoutes);
@@ -134,8 +204,8 @@ app.use('/api/case-studies', caseStudiesRoutes);
 app.use('/api/merchant-gateways', merchantGatewaysRoutes);
 app.use('/api/public/merchant-gateways', merchantGatewaysRoutes);
 app.use('/api/directory-events', directoryEventsRoutes);
-// Public CMS endpoint for official website content (Fast, free, cached)
-app.get('/api/public/cms/:pageKey', async (req, res) => {
+// Public CMS endpoint for official website content (Fast, free, cached for 300s)
+app.get('/api/public/cms/:pageKey', cacheService.middleware({ ttl: 300, prefix: 'cms:' }), async (req, res) => {
   try {
     const { pageKey } = req.params;
     const { query: dbQuery } = await import('./db/db.js');
@@ -153,8 +223,8 @@ app.get('/api/public/cms/:pageKey', async (req, res) => {
     return res.status(500).json({ success: false, message: 'Failed to fetch CMS content' });
   }
 });
-// Public Testimonials endpoint for verified client reviews
-app.get('/api/public/testimonials', async (req, res) => {
+// Public Testimonials endpoint for verified client reviews (Cached for 300s)
+app.get('/api/public/testimonials', cacheService.middleware({ ttl: 300, prefix: 'testimonials:' }), async (req, res) => {
   try {
     const { query: dbQuery } = await import('./db/db.js');
     const [rows] = await dbQuery('SELECT * FROM `testimonials` WHERE `is_featured` = 1 ORDER BY `created_at` DESC');
@@ -165,8 +235,8 @@ app.get('/api/public/testimonials', async (req, res) => {
   }
 });
 
-// Public Platform Team endpoint (ORBIT-I leadership & core platform team)
-app.get('/api/public/platform-team', async (req, res) => {
+// Public Platform Team endpoint (ORBIT-I leadership & core platform team - Cached for 300s)
+app.get('/api/public/platform-team', cacheService.middleware({ ttl: 300, prefix: 'platform_team:' }), async (req, res) => {
   try {
     const { query: dbQuery } = await import('./db/db.js');
     const [rows] = await dbQuery('SELECT * FROM `platform_team_members` WHERE `is_active` = 1 ORDER BY `display_order` ASC, `id` ASC');

@@ -1729,7 +1729,7 @@ export default function PlatformAdmin() {
                             <td className="p-3.5 pl-4">
                               <div className="flex items-center gap-2.5">
                                 <div className="w-8 h-8 rounded-lg bg-blue-100 text-[#1d4ed8] font-bold flex items-center justify-center text-xs">
-                                  {licName.slice(0, 2).toUpperCase()}
+                                  {String(licName || 'EX').slice(0, 2).toUpperCase()}
                                 </div>
                                 <div>
                                   <p className="font-bold text-slate-900 text-xs">{licName}</p>
@@ -4471,7 +4471,7 @@ export default function PlatformAdmin() {
                             />
                           ) : (
                             <div className="w-14 h-14 rounded-2xl bg-gradient-to-tr from-[#7c3aed] to-[#3b82f6] text-white flex items-center justify-center font-bold text-lg shadow-xs">
-                              {member.name.split(' ').map((n: string) => n[0]).filter(Boolean).slice(0, 2).join('')}
+                              {String(member?.name || 'TM').split(/\s+/).map((n: string) => n[0] || '').filter(Boolean).slice(0, 2).join('').toUpperCase() || 'TM'}
                             </div>
                           )}
                           <span className="absolute -bottom-1 -right-1 px-1.5 py-0.2 bg-slate-900 text-purple-300 text-[8px] font-bold rounded">
@@ -4683,7 +4683,7 @@ export default function PlatformAdmin() {
               <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-black">
-                    {inspectingTenant.name.slice(0, 2).toUpperCase()}
+                    {String(inspectingTenant?.name || 'EX').slice(0, 2).toUpperCase()}
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-900">{inspectingTenant.name}</h3>

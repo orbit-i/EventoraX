@@ -142,7 +142,7 @@ export const memoryStore = {
         headline: 'Pioneering Intelligent Event Management & Digital Verification',
         mission: 'To empower educational institutes, tech communities, and corporate enterprises with automated, secure, and seamless event ticketing and certification infrastructure.',
         parentCompany: 'ORBIT-I Private Limited',
-        foundedYear: '2023',
+        foundedYear: '2026',
         headquarters: 'Nawabshah, Pakistan'
       }),
       updated_at: new Date().toISOString()
@@ -391,6 +391,7 @@ export function saveMemoryStoreToDisk() {
     console.warn('[DB Local Store] Notice saving store to disk:', err.message);
   }
 }
+export const saveLocalStore = saveMemoryStoreToDisk;
 
 export function loadMemoryStoreFromDisk() {
   try {
@@ -412,6 +413,44 @@ export function loadMemoryStoreFromDisk() {
 
 // Hydrate store from disk upon startup if existing
 loadMemoryStoreFromDisk();
+
+// Enforce resilient tenant structure (prevents numeric/object corruption of tenant names)
+if (!memoryStore.tenants || !Array.isArray(memoryStore.tenants)) {
+  memoryStore.tenants = [];
+}
+let hqTenant = memoryStore.tenants.find(t => t.id === 1 || t.slug === 'eventrye-hq');
+if (!hqTenant) {
+  hqTenant = {
+    id: 1,
+    name: 'Eventrye HQ',
+    slug: 'eventrye-hq',
+    custom_domain: '',
+    logo_url: '',
+    primary_color: '#1d4ed8',
+    secondary_color: '#1e40af',
+    owner_id: 1,
+    plan: 'Platform Authority',
+    status: 'active',
+    license_key: 'EVX-MASTER-AUTH-2026',
+    license_status: 'active',
+    white_label_enabled: 1,
+    created_at: new Date().toISOString()
+  };
+  memoryStore.tenants.unshift(hqTenant);
+} else {
+  if (typeof hqTenant.name !== 'string' || !hqTenant.name || hqTenant.name === '1' || hqTenant.name === 1) {
+    hqTenant.name = 'Eventrye HQ';
+    hqTenant.slug = 'eventrye-hq';
+    hqTenant.plan = 'Platform Authority';
+    hqTenant.status = 'active';
+  }
+}
+for (const t of memoryStore.tenants) {
+  if (typeof t.name !== 'string' || !t.name || t.name === '1' || t.name === 1) {
+    t.name = t.id === 1 ? 'Eventrye HQ' : `Organization #${t.id}`;
+  }
+}
+saveMemoryStoreToDisk();
 
 export function getPool() {
   if (!pool) {
@@ -462,48 +501,78 @@ function handleMemoryQuery(sql, params = []) {
   }
 
   if (s.includes('insert into `tenants`') || s.includes('insert into tenants')) {
-    // Correctly resolve owner_id regardless of which column variant was inserted
-    const ownerId = (params[2] !== undefined && !isNaN(Number(params[2])))
-      ? Number(params[2])
-      : (params[6] !== undefined && !isNaN(Number(params[6])))
-        ? Number(params[6])
-        : 1;
+    let tenantId = memoryStore.tenants.length + 1;
+    let tenantName = 'My Organization';
+    let tenantSlug = `tenant-${Date.now()}`;
+    let ownerId = 1;
+    let planName = 'Starter';
 
-    const rawPlan = params[7] || params[3] || 'Starter';
-    const planName = typeof rawPlan === 'string' && rawPlan !== 'active' ? rawPlan : 'Starter';
+    if (s.includes('eventrye hq') || s.includes('eventrye-hq')) {
+      tenantId = 1;
+      tenantName = 'Eventrye HQ';
+      tenantSlug = 'eventrye-hq';
+      planName = 'Platform Authority';
+      ownerId = Number(params[0]) || 1;
+    } else {
+      if (typeof params[0] === 'string' && isNaN(Number(params[0])) && params[0].trim().length > 0) {
+        tenantName = params[0].trim();
+      } else if (params[0] !== undefined && params[0] !== null) {
+        tenantName = String(params[0]);
+      }
+      if (typeof params[1] === 'string' && params[1].trim().length > 0) {
+        tenantSlug = params[1].trim();
+      }
+      ownerId = (params[2] !== undefined && !isNaN(Number(params[2])))
+        ? Number(params[2])
+        : (params[6] !== undefined && !isNaN(Number(params[6])))
+          ? Number(params[6])
+          : 1;
+      const rawPlan = params[7] || params[3] || 'Starter';
+      planName = typeof rawPlan === 'string' && rawPlan !== 'active' ? rawPlan : 'Starter';
+    }
 
+    const existingIdx = memoryStore.tenants.findIndex(t => t.id === tenantId);
     const newTenant = {
-      id: memoryStore.tenants.length + 1,
-      name: params[0] || 'My Organization',
-      slug: params[1] || `tenant-${Date.now()}`,
+      id: tenantId,
+      name: tenantName,
+      slug: tenantSlug,
       custom_domain: '',
       logo_url: '',
-      primary_color: '#7c3aed',
-      secondary_color: '#6d28d9',
+      primary_color: tenantId === 1 ? '#1d4ed8' : '#7c3aed',
+      secondary_color: tenantId === 1 ? '#1e40af' : '#6d28d9',
       owner_id: ownerId,
       plan: planName,
-      status: 'pending_approval',
-      license_key: null,
-      license_status: 'pending',
+      status: tenantId === 1 ? 'active' : 'pending_approval',
+      license_key: tenantId === 1 ? 'EVX-MASTER-AUTH-2026' : null,
+      license_status: tenantId === 1 ? 'active' : 'pending',
       license_activated_at: null,
       license_expires_at: null,
-      max_events: 5,
-      max_attendees: 500,
+      max_events: 10,
+      max_attendees: 1000,
       max_certs: 50,
       api_access_enabled: 0,
-      white_label_enabled: 0,
+      white_label_enabled: tenantId === 1 ? 1 : 0,
       created_at: new Date().toISOString()
     };
-    memoryStore.tenants.push(newTenant);
-    // Add default membership for owner
-    memoryStore.tenant_members.push({
-      id: memoryStore.tenant_members.length + 1,
-      tenant_id: newTenant.id,
-      user_id: newTenant.owner_id,
-      role: 'owner',
-      status: 'active',
-      created_at: new Date().toISOString()
-    });
+
+    if (existingIdx !== -1) {
+      memoryStore.tenants[existingIdx] = { ...memoryStore.tenants[existingIdx], ...newTenant };
+    } else {
+      memoryStore.tenants.push(newTenant);
+    }
+
+    // Add default membership for owner if not already present
+    if (!memoryStore.tenant_members.some(m => m.tenant_id === newTenant.id && m.user_id === newTenant.owner_id)) {
+      memoryStore.tenant_members.push({
+        id: memoryStore.tenant_members.length + 1,
+        tenant_id: newTenant.id,
+        user_id: newTenant.owner_id,
+        role: 'owner',
+        status: 'active',
+        created_at: new Date().toISOString()
+      });
+    }
+    saveMemoryStoreToDisk();
     return [{ insertId: newTenant.id }];
   }
 
@@ -851,6 +920,18 @@ function handleMemoryQuery(sql, params = []) {
   }
 
   if (s.includes('insert into `events`') || s.includes('insert into events')) {
+    let galleryVal = '[]';
+    let videosVal = '[]';
+    let videoUrlVal = '';
+    let organizerId = params[16];
+
+    if (s.includes('gallery_images')) {
+      galleryVal = params[16] || '[]';
+      videosVal = params[17] || '[]';
+      videoUrlVal = params[18] || '';
+      organizerId = params[19] || params[16];
+    }
+
     const newEvent = {
       id: memoryStore.events.length + 1,
       tenant_id: params[0] || 1,
@@ -870,18 +951,68 @@ function handleMemoryQuery(sql, params = []) {
       capacity: params[14],
       registered_count: 0,
       status: 'upcoming',
-      banner_image: params[15],
-      organizer_id: params[16],
+      banner_image: params[15] || '',
+      gallery_images: galleryVal,
+      videos: videosVal,
+      video_url: videoUrlVal,
+      organizer_id: organizerId,
       created_at: new Date().toISOString()
     };
     memoryStore.events.unshift(newEvent);
+    saveLocalStore();
     return [{ insertId: newEvent.id }];
+  }
+
+  if (s.includes('update `events`') || s.includes('update events')) {
+    const eventId = parseInt(params[params.length - 1], 10);
+    const ev = memoryStore.events.find(e => e.id === eventId);
+    if (ev) {
+      if (s.includes('gallery_images')) {
+        ev.title = params[0];
+        ev.category = params[1];
+        ev.event_type = params[2];
+        ev.venue_name = params[3];
+        ev.venue_address = params[4];
+        ev.virtual_link = params[5];
+        ev.start_date = params[6];
+        ev.start_time = params[7];
+        ev.end_date = params[8];
+        ev.end_time = params[9];
+        ev.price = params[10];
+        ev.capacity = params[11];
+        ev.status = params[12];
+        ev.description = params[13];
+        ev.banner_image = params[14];
+        ev.gallery_images = params[15];
+        ev.videos = params[16];
+        ev.video_url = params[17];
+      } else {
+        ev.title = params[0];
+        ev.category = params[1];
+        ev.event_type = params[2];
+        ev.venue_name = params[3];
+        ev.venue_address = params[4];
+        ev.virtual_link = params[5];
+        ev.start_date = params[6];
+        ev.start_time = params[7];
+        ev.end_date = params[8];
+        ev.end_time = params[9];
+        ev.price = params[10];
+        ev.capacity = params[11];
+        ev.status = params[12];
+        ev.description = params[13];
+        ev.banner_image = params[14];
+      }
+      saveLocalStore();
+    }
+    return [{ affectedRows: ev ? 1 : 0 }];
   }
 
   if (s.includes('delete from `events`') || s.includes('delete from events')) {
     const id = parseInt(params[0], 10);
     const idx = memoryStore.events.findIndex(e => e.id === id);
     if (idx !== -1) memoryStore.events.splice(idx, 1);
+    saveLocalStore();
     return [{ affectedRows: 1 }];
   }
 
@@ -890,7 +1021,7 @@ function handleMemoryQuery(sql, params = []) {
     if (s.includes('ticket_code')) {
       const code = String(params[0]).trim().toUpperCase();
       const tenantId = params[1] ? parseInt(params[1], 10) : null;
-      const att = memoryStore.event_attendees.find(a => 
+      const att = memoryStore.event_attendees.find(a =>
         String(a.ticket_code).toUpperCase() === code && (!tenantId || a.tenant_id === tenantId)
       );
       if (att) {
@@ -969,7 +1100,29 @@ function handleMemoryQuery(sql, params = []) {
       created_at: new Date().toISOString()
     };
     memoryStore.team_members.unshift(newMember);
+    saveMemoryStoreToDisk();
     return [{ insertId: newMember.id }];
+  }
+
+  if (s.includes('update `team_members`') || s.includes('update team_members')) {
+    const id = parseInt(params[params.length - 1], 10);
+    const m = memoryStore.team_members.find(x => x.id === id);
+    if (m) {
+      m.name = params[0] || m.name;
+      m.email = params[1] || m.email;
+      m.role = params[2] || m.role;
+      m.status = params[3] || m.status;
+      if (params.length >= 8) {
+        m.phone = params[4] || m.phone;
+        m.avatar_url = params[5] || m.avatar_url;
+        m.initials = params[6] || m.initials;
+      } else if (params.length >= 5) {
+        m.initials = params[4] || m.initials;
+      }
+      saveMemoryStoreToDisk();
+      return [{ affectedRows: 1 }];
+    }
+    return [{ affectedRows: 0 }];
   }
 
   if (s.includes('from `team_members`') || s.includes('from team_members')) {
@@ -1992,14 +2145,50 @@ export async function initDatabase() {
       { table: 'pricing_plans', col: 'trial_events', def: 'INT DEFAULT 2' },
       { table: 'pricing_plans', col: 'trial_attendees', def: 'INT DEFAULT 40' },
       { table: 'pricing_plans', col: 'trial_certs', def: 'INT DEFAULT 50' },
-      { table: 'users', col: 'master_key', def: 'VARCHAR(255) NULL' }
+      { table: 'users', col: 'master_key', def: 'VARCHAR(255) NULL' },
+      { table: 'events', col: 'gallery_images', def: 'LONGTEXT NULL' },
+      { table: 'events', col: 'videos', def: 'LONGTEXT NULL' },
+      { table: 'events', col: 'video_url', def: 'VARCHAR(500) NULL' },
+      { table: 'directory_events', col: 'gallery_images', def: 'LONGTEXT NULL' },
+      { table: 'directory_events', col: 'videos', def: 'LONGTEXT NULL' },
+      { table: 'directory_events', col: 'video_url', def: 'VARCHAR(500) NULL' },
+      { table: 'team_members', col: 'phone', def: 'VARCHAR(50) DEFAULT ""' },
+      { table: 'team_members', col: 'avatar_url', def: 'VARCHAR(500) DEFAULT ""' }
     ];
 
     for (const item of checkColumns) {
       try {
         await pool.query(`ALTER TABLE \`${item.table}\` ADD COLUMN IF NOT EXISTS \`${item.col}\` ${item.def}`);
       } catch (colErr) {
-        // Ignore duplicate column errors on older MariaDB/MySQL versions
+        // Fallback for older MySQL without IF NOT EXISTS syntax
+        try {
+          await pool.query(`ALTER TABLE \`${item.table}\` ADD COLUMN \`${item.col}\` ${item.def}`);
+        } catch { }
+      }
+    }
+
+    // High-Concurrency Database Indexes (Eliminates full table scans & website latency)
+    const checkIndexes = [
+      { table: 'users', name: 'idx_users_email', sql: 'CREATE INDEX `idx_users_email` ON `users` (`email`)' },
+      { table: 'users', name: 'idx_users_role', sql: 'CREATE INDEX `idx_users_role` ON `users` (`role`)' },
+      { table: 'tenants', name: 'idx_tenants_slug', sql: 'CREATE INDEX `idx_tenants_slug` ON `tenants` (`slug`)' },
+      { table: 'tenants', name: 'idx_tenants_owner', sql: 'CREATE INDEX `idx_tenants_owner` ON `tenants` (`owner_id`)' },
+      { table: 'tenants', name: 'idx_tenants_status', sql: 'CREATE INDEX `idx_tenants_status` ON `tenants` (`status`)' },
+      { table: 'events', name: 'idx_events_tenant_date', sql: 'CREATE INDEX `idx_events_tenant_date` ON `events` (`tenant_id`, `start_date`)' },
+      { table: 'events', name: 'idx_events_status', sql: 'CREATE INDEX `idx_events_status` ON `events` (`status`)' },
+      { table: 'events', name: 'idx_events_slug', sql: 'CREATE INDEX `idx_events_slug` ON `events` (`slug`)' },
+      { table: 'event_attendees', name: 'idx_ea_ticket_code', sql: 'CREATE INDEX `idx_ea_ticket_code` ON `event_attendees` (`ticket_code`)' },
+      { table: 'event_attendees', name: 'idx_ea_event_email', sql: 'CREATE INDEX `idx_ea_event_email` ON `event_attendees` (`event_id`, `email`)' },
+      { table: 'certificates', name: 'idx_cert_number', sql: 'CREATE INDEX `idx_cert_number` ON `certificates` (`certificate_number`)' },
+      { table: 'subscriptions', name: 'idx_subs_tenant', sql: 'CREATE INDEX `idx_subs_tenant` ON `subscriptions` (`tenant_id`, `status`)' },
+      { table: 'activity_logs', name: 'idx_logs_tenant_time', sql: 'CREATE INDEX `idx_logs_tenant_time` ON `activity_logs` (`tenant_id`, `created_at`)' }
+    ];
+
+    for (const idx of checkIndexes) {
+      try {
+        await pool.query(idx.sql);
+      } catch (err) {
+        // Index already exists
       }
     }
 
@@ -2016,7 +2205,7 @@ export async function initDatabase() {
           ('enterprise', 'Enterprise', 299.00, 239.00, 83000.00, 66400.00, 'Large Summits & Universities', 50000, 500, 50000, 0, 0, 0, 1, '["50,000+ attendees capacity","Unlimited platform events","Full White-label & custom CNAME domain","Bulk CSV pass & certificate generation","Dedicated account manager & SLA","Single Sign-On (SSO) & 2FA security"]', 1, 3);
         `);
       }
-    } catch {}
+    } catch { }
 
     // Seed / Ensure official ORBIT-I platform team members exist in MySQL
     try {
@@ -2086,11 +2275,11 @@ export async function initDatabase() {
       }
 
       // Explicitly sanitize any past records with Shahzad Hassan Ansar
-      await pool.query("UPDATE \`platform_team_members\` SET \`name\` = 'Hassan Ansar', \`role\` = 'Web Developer', \`department\` = 'Web Development & Engineering' WHERE \`name\` LIKE '%Shahzad Hassan%' OR \`id\` = 4;").catch(() => {});
+      await pool.query("UPDATE \`platform_team_members\` SET \`name\` = 'Hassan Ansar', \`role\` = 'Web Developer', \`department\` = 'Web Development & Engineering' WHERE \`name\` LIKE '%Shahzad Hassan%' OR \`id\` = 4;").catch(() => { });
 
       // Migrate existing DB names from EventoraX to Eventrye seamlessly
-      await pool.query("UPDATE \`tenants\` SET \`name\` = 'Eventrye HQ', \`slug\` = 'eventrye-hq' WHERE \`id\` = 1 AND (\`slug\` = 'eventorax-hq' OR \`name\` LIKE '%EventoraX%');").catch(() => {});
-      await pool.query("UPDATE \`users\` SET \`org_name\` = 'Eventrye (ORBIT-I)' WHERE \`id\` = 1 AND (\`org_name\` LIKE '%EventoraX%' OR \`org_name\` = 'EventoraX');").catch(() => {});
+      await pool.query("UPDATE \`tenants\` SET \`name\` = 'Eventrye HQ', \`slug\` = 'eventrye-hq' WHERE \`id\` = 1 AND (\`slug\` = 'eventorax-hq' OR \`name\` LIKE '%EventoraX%');").catch(() => { });
+      await pool.query("UPDATE \`users\` SET \`org_name\` = 'Eventrye (ORBIT-I)' WHERE \`id\` = 1 AND (\`org_name\` LIKE '%EventoraX%' OR \`org_name\` = 'EventoraX');").catch(() => { });
     } catch (teamErr) {
       console.warn('[Database] Platform team sync notice:', teamErr?.message);
     }
@@ -2108,7 +2297,7 @@ export async function initDatabase() {
           ('WELCOME10', 'Flat $10 Off Any Upgrade Plan', 'fixed', 10.00, 20.00, 2000, 25, '2027-01-01 00:00:00', 1);
         `);
       }
-    } catch {}
+    } catch { }
 
     // Database ready. SuperAdmin credentials are provisioned cleanly via the private Master Gateway Setup.
     return true;
@@ -2163,7 +2352,7 @@ export async function clearAllPlatformData() {
         } catch {
           try {
             await pool.query(`DELETE FROM \`${t}\``);
-          } catch {}
+          } catch { }
         }
       }
       await pool.query('SET FOREIGN_KEY_CHECKS = 1');

@@ -466,7 +466,7 @@ export default function About() {
                     />
                   ) : (
                     <div className="w-24 h-24 rounded-2xl bg-gradient-to-tr from-[#7c3aed] to-[#3b82f6] text-white flex items-center justify-center font-bold text-2xl shadow-md group-hover:scale-105 transition-transform">
-                      {member.name.split(' ').map((n: string) => n[0]).filter(Boolean).slice(0, 2).join('')}
+                      {String(member?.name || 'TM').split(/\s+/).map((n: string) => n[0] || '').filter(Boolean).slice(0, 2).join('').toUpperCase() || 'TM'}
                     </div>
                   )}
                   <span className="absolute -bottom-2 -right-2 px-2.5 py-0.5 bg-slate-900 text-purple-300 text-[10px] font-bold rounded-md uppercase tracking-wider border border-purple-500/30">

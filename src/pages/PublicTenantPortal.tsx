@@ -250,7 +250,7 @@ export default function PublicTenantPortal() {
                 className="w-10 h-10 rounded-2xl flex items-center justify-center text-white font-black text-base shadow-md"
                 style={{ backgroundColor: primaryColor }}
               >
-                {tenant.name.slice(0, 2).toUpperCase()}
+                {String(tenant?.name || 'EX').slice(0, 2).toUpperCase()}
               </div>
             )}
             <div>
@@ -531,7 +531,7 @@ export default function PublicTenantPortal() {
                             className="w-full h-full rounded-xl flex items-center justify-center font-bold text-xl text-white"
                             style={{ backgroundColor: '#0f172a' }}
                           >
-                            {registrationSuccess.name.slice(0, 2).toUpperCase()}
+                            {String(registrationSuccess?.name || 'EX').slice(0, 2).toUpperCase()}
                           </div>
                         </div>
 

@@ -105,4 +105,81 @@ router.delete('/:id', verifyToken, resolveTenant, requireTenantRole(['owner', 'a
   }
 });
 
+// PUT /api/team/:id - Update team member
+router.put('/:id', verifyToken, resolveTenant, requireTenantRole(['owner', 'admin']), async (req, res) => {
+  try {
+    const memberId = parseInt(req.params.id, 10);
+    const tenantId = req.tenantId || 1;
+    const { name, email, role, status = 'active', phone = '', avatar_url = '' } = req.body;
+
+    let [rows] = await query(
+      'SELECT * FROM `team_members` WHERE `id` = ? AND `tenant_id` = ?',
+      [memberId, tenantId]
+    );
+
+    if (rows.length === 0) {
+      const [anyRows] = await query('SELECT * FROM `team_members` WHERE `id` = ?', [memberId]);
+      if (anyRows.length > 0) {
+        rows = anyRows;
+      }
+    }
+
+    if (rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Team member not found.' });
+    }
+
+    const current = rows[0];
+    const newName = name !== undefined ? name.trim() : current.name;
+    const newEmail = email !== undefined ? email.toLowerCase().trim() : current.email;
+    const newRole = role !== undefined ? role.trim() : current.role;
+    const newStatus = status !== undefined ? status : current.status;
+    const newPhone = phone !== undefined ? phone.trim() : (current.phone || '');
+    const newAvatar = avatar_url !== undefined ? avatar_url : (current.avatar_url || '');
+
+    const initials = newName
+      ? newName
+          .split(' ')
+          .map((part) => part[0] || '')
+          .filter(Boolean)
+          .join('')
+          .toUpperCase()
+          .slice(0, 2)
+      : 'TM';
+
+    try {
+      await query(
+        `UPDATE \`team_members\`
+         SET \`name\` = ?, \`email\` = ?, \`role\` = ?, \`status\` = ?, \`phone\` = ?, \`avatar_url\` = ?, \`initials\` = ?
+         WHERE \`id\` = ?`,
+        [newName, newEmail, newRole, newStatus, newPhone, newAvatar, initials, memberId]
+      );
+    } catch {
+      await query(
+        `UPDATE \`team_members\`
+         SET \`name\` = ?, \`email\` = ?, \`role\` = ?, \`status\` = ?, \`initials\` = ?
+         WHERE \`id\` = ?`,
+        [newName, newEmail, newRole, newStatus, initials, memberId]
+      );
+    }
+
+    // Log activity
+    await query(
+      `INSERT INTO \`activity_logs\` (\`tenant_id\`, \`user_id\`, \`user_name\`, \`type\`, \`action\`, \`detail\`)
+       VALUES (?, ?, ?, 'user', 'Team member updated', ?)`,
+      [tenantId, req.user.id, req.user.email, `Updated team member ${newName} (${newRole})`]
+    );
+
+    const [updated] = await query('SELECT * FROM `team_members` WHERE `id` = ?', [memberId]);
+
+    return res.json({
+      success: true,
+      message: 'Team member updated successfully!',
+      member: updated[0]
+    });
+  } catch (error) {
+    console.error('[Update Team Error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to update team member.' });
+  }
+});
+
 export default router;

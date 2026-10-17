@@ -34,14 +34,21 @@ export default function Sidebar() {
 
   const isMaster = user?.role === 'admin';
 
-  const userInitials = user?.fullName
-    ? user.fullName
-        .split(" ")
-        .map((p) => p[0])
+  const rawFullName = typeof user?.fullName === 'string' ? user.fullName.trim() : (user?.fullName ? String(user.fullName) : '');
+  const userInitials = rawFullName
+    ? rawFullName
+        .split(/\s+/)
+        .map((p) => p[0] || '')
+        .filter(Boolean)
         .join("")
         .toUpperCase()
-        .slice(0, 2)
+        .slice(0, 2) || "EX"
     : "EX";
+
+  const rawTenantName = typeof currentTenant?.name === 'string' 
+    ? currentTenant.name.trim() 
+    : (currentTenant?.name !== undefined && currentTenant?.name !== null ? String(currentTenant.name) : (isMaster ? "Eventrye Master HQ" : "Eventrye Workspace"));
+  const tenantInitial = (rawTenantName || 'EX').slice(0, 1).toUpperCase();
 
   interface NavItem {
     to: string;
@@ -113,11 +120,11 @@ export default function Sidebar() {
             className="w-5 h-5 rounded-md flex items-center justify-center text-white font-bold text-[9px] shrink-0"
             style={{ backgroundColor: currentTenant?.primary_color || '#7c3aed' }}
           >
-            {(currentTenant?.name || 'EX').slice(0, 1).toUpperCase()}
+            {tenantInitial}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-[11px] font-bold text-[#0f172a] truncate">
-              {isMaster ? "Eventrye Master HQ" : (currentTenant?.name || "Eventrye Workspace")}
+              {isMaster ? "Eventrye Master HQ" : (rawTenantName || "Eventrye Workspace")}
             </p>
           </div>
           <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold ${isMaster ? 'bg-blue-100 text-blue-700 font-extrabold' : 'bg-[#f5f3ff] text-[#7c3aed]'}`}>
@@ -177,7 +184,7 @@ export default function Sidebar() {
             {user?.avatarUrl || user?.avatar_url ? (
               <img 
                 src={user.avatarUrl || user.avatar_url} 
-                alt={user?.fullName || "Avatar"} 
+                alt={rawFullName || "Avatar"} 
                 className="w-full h-full object-cover rounded-full" 
               />
             ) : (
@@ -186,7 +193,7 @@ export default function Sidebar() {
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-xs font-semibold text-[#0f172a] truncate">
-              {user?.fullName || "Event Organizer"}
+              {rawFullName || "Event Organizer"}
             </p>
             <p className="text-[10px] text-[#94a3b8] truncate">
               {user?.role === 'admin' ? 'Eventrye Administrator' : (user?.orgName || 'Organizer')}

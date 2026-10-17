@@ -113,7 +113,10 @@ router.post('/gateway/login', async (req, res) => {
     }
 
     const [hq] = await query('SELECT * FROM `tenants` WHERE `id` = 1');
-    const masterTenant = hq[0] || { id: 1, name: 'Eventrye HQ', slug: 'eventrye-hq', plan: 'Platform Authority' };
+    let masterTenant = hq[0];
+    if (!masterTenant || typeof masterTenant.name !== 'string' || !masterTenant.name || masterTenant.name === '1' || masterTenant.name === 1) {
+      masterTenant = { id: 1, name: 'Eventrye HQ', slug: 'eventrye-hq', plan: 'Platform Authority', status: 'active', primary_color: '#1d4ed8', secondary_color: '#1e40af' };
+    }
 
     const token = generateToken({
       id: userRow.id,
@@ -142,7 +145,8 @@ router.post('/gateway/login', async (req, res) => {
         role: 'admin',
         orgName: 'Eventrye (ORBIT-I)'
       },
-      tenant: masterTenant
+      tenant: masterTenant,
+      tenants: [masterTenant]
     });
   } catch (error) {
     console.error('[Master Gateway Login Error]:', error);
@@ -300,6 +304,21 @@ router.post('/gateway/setup', async (req, res) => {
       masterTenant = hq[0];
     }
 
+    if (!masterTenant || typeof masterTenant.name !== 'string' || !masterTenant.name || masterTenant.name === '1' || masterTenant.name === 1) {
+      masterTenant = {
+        id: 1,
+        name: 'Eventrye HQ',
+        slug: 'eventrye-hq',
+        plan: 'Platform Authority',
+        status: 'active',
+        primary_color: '#1d4ed8',
+        secondary_color: '#1e40af',
+        white_label_enabled: 1,
+        license_status: 'active'
+      };
+      await query("UPDATE `tenants` SET `name` = 'Eventrye HQ', `slug` = 'eventrye-hq' WHERE `id` = 1").catch(() => {});
+    }
+
     const token = generateToken({
       id: adminUserId,
       email: cleanEmail,
@@ -327,7 +346,8 @@ router.post('/gateway/setup', async (req, res) => {
         role: 'admin',
         orgName: 'Eventrye (ORBIT-I)'
       },
-      tenant: masterTenant
+      tenant: masterTenant,
+      tenants: [masterTenant]
     });
   } catch (error) {
     console.error('[Master Gateway Setup Error]:', error);

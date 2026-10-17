@@ -413,14 +413,20 @@ export const api = {
       request<{ success: boolean; stats: any; tenant: any }>('/dashboard/stats'),
   },
 
-  // Team (Scoped by Tenant)
+  // Team Management (Scoped by Tenant)
   team: {
     get: () =>
       request<{ success: boolean; team: any[]; tenantId: number }>('/team'),
 
-    invite: (data: { name: string; email: string; role: string; status?: string }) =>
+    invite: (data: { name: string; email: string; role: string; status?: string; phone?: string; avatar_url?: string }) =>
       request<{ success: boolean; message: string; member: any }>('/team/invite', {
         method: 'POST',
+        body: JSON.stringify(data),
+      }),
+
+    update: (id: number, data: { name?: string; email?: string; role?: string; status?: string; phone?: string; avatar_url?: string }) =>
+      request<{ success: boolean; message: string; member: any }>(`/team/${id}`, {
+        method: 'PUT',
         body: JSON.stringify(data),
       }),
 
@@ -567,6 +573,15 @@ export const api = {
 
     getListingRequests: () =>
       request<{ success: boolean; requests: any[] }>('/directory-events/admin/listing-requests'),
+  },
+
+  // High-Capacity Media Uploads (Images & Videos)
+  upload: {
+    media: (data: { base64Data: string; filename?: string; mediaType?: string; folder?: string }) =>
+      request<{ success: boolean; message: string; url: string; type: string; mimeType: string; size: number; filename: string }>('/upload', {
+        method: 'POST',
+        body: JSON.stringify(data),
+      }),
   },
 };
 

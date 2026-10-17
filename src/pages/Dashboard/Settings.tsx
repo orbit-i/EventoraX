@@ -207,8 +207,15 @@ export default function Settings() {
     }
   };
 
-  const userInitials = fullName
-    ? fullName.split(" ").map((p) => p[0]).join("").toUpperCase().slice(0, 2)
+  const rawFullName = typeof fullName === 'string' ? fullName.trim() : (fullName ? String(fullName) : '');
+  const userInitials = rawFullName
+    ? rawFullName
+        .split(/\s+/)
+        .map((p) => p[0] || '')
+        .filter(Boolean)
+        .join("")
+        .toUpperCase()
+        .slice(0, 2) || "JD"
     : "JD";
 
   return (
@@ -389,10 +396,10 @@ export default function Settings() {
                     className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-xs"
                     style={{ backgroundColor: brandPrimaryColor }}
                   >
-                    {(brandOrgName || "EX").slice(0, 2).toUpperCase()}
+                    {(String(brandOrgName || "EX")).slice(0, 2).toUpperCase()}
                   </div>
                   <div>
-                    <p className="text-xs font-bold text-[#0f172a]">{brandOrgName || "Organization Name"}</p>
+                    <p className="text-xs font-bold text-[#0f172a]">{String(brandOrgName || "Organization Name")}</p>
                     <p className="text-[10px] text-[#94a3b8]">eventrye.com/t/{brandSlug || "slug"}</p>
                   </div>
                 </div>

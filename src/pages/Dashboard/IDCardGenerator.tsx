@@ -569,7 +569,7 @@ export default function IDCardGenerator() {
                           <div className="my-auto py-1">
                             <div className="w-18 h-18 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-500 to-purple-600 p-1 mx-auto mb-2 shadow-lg">
                               <div className="w-full h-full rounded-xl bg-slate-900 flex items-center justify-center font-bold text-xl text-white">
-                                {att.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase()}
+                                {String(att?.name || 'AT').split(/\s+/).map((n: string) => n[0] || '').filter(Boolean).slice(0, 2).join('').toUpperCase() || 'AT'}
                               </div>
                             </div>
 
