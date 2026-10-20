@@ -1,4 +1,5 @@
 import express from 'express';
+import crypto from 'crypto';
 import { query } from '../db/db.js';
 import { verifyToken } from '../middleware/auth.js';
 import { resolveTenant } from '../middleware/tenant.js';
@@ -515,7 +516,9 @@ router.post('/:id/register', contentPolicyGuard, async (req, res) => {
     }
 
     const ev = events[0];
-    const ticketCode = `EVX-${eventId}-${Math.random().toString(36).substring(2, 6).toUpperCase()}-${Date.now().toString().slice(-4)}`;
+    const randPart = crypto.randomBytes(3).toString('hex').toUpperCase();
+    const timePart = Date.now().toString(36).toUpperCase().slice(-4);
+    const ticketCode = `EVX-${eventId}-${randPart}-${timePart}`;
 
     const [result] = await query(
       `INSERT INTO \`event_attendees\` (\`tenant_id\`, \`event_id\`, \`name\`, \`email\`, \`phone\`, \`ticket_code\`, \`ticket_type\`, \`status\`)
@@ -570,13 +573,19 @@ router.post('/:id/register', contentPolicyGuard, async (req, res) => {
 // POST /api/events/check-in - QR Code scanner ticket validation
 router.post('/check-in', async (req, res) => {
   try {
-    const ticketCode = req.body.ticketCode || req.body.ticket_code;
+    let ticketCode = req.body.ticketCode || req.body.ticket_code;
     const eventId = req.body.eventId || req.body.event_id;
     if (!ticketCode) {
       return res.status(400).json({ success: false, message: 'Ticket code is required for check-in.' });
     }
 
-    const cleanCode = String(ticketCode).trim().toUpperCase();
+    let cleanCode = String(ticketCode).trim();
+    if (cleanCode.includes('code=')) {
+      const match = cleanCode.match(/code=([^&]+)/);
+      if (match) cleanCode = decodeURIComponent(match[1]).trim();
+    }
+    cleanCode = cleanCode.toUpperCase();
+
     let sql = 'SELECT * FROM `event_attendees` WHERE UPPER(`ticket_code`) = ?';
     let params = [cleanCode];
 

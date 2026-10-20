@@ -1019,14 +1019,56 @@ function handleMemoryQuery(sql, params = []) {
   // EVENT ATTENDEES
   if (s.includes('from `event_attendees`') || s.includes('from event_attendees')) {
     if (s.includes('ticket_code')) {
-      const code = String(params[0]).trim().toUpperCase();
-      const tenantId = params[1] ? parseInt(params[1], 10) : null;
+      let code = '';
+      let eventId = null;
+      let tenantId = null;
+
+      // Extract conditions from WHERE clause
+      const whereParts = s.split(/\bwhere\b/i);
+      const whereClause = whereParts.length > 1 ? whereParts[whereParts.length - 1] : s;
+      const conditions = whereClause.split(/\band\b/i).map(c => c.trim());
+      let pIdx = 0;
+      for (const cond of conditions) {
+        if (cond.includes('?')) {
+          if (cond.includes('ticket_code')) {
+            code = String(params[pIdx] || '').trim().toUpperCase();
+          } else if (cond.includes('event_id')) {
+            eventId = Number(params[pIdx]);
+          } else if (cond.includes('tenant_id')) {
+            tenantId = Number(params[pIdx]);
+          }
+          pIdx++;
+        }
+      }
+      if (!code && params.length > 0) {
+        code = String(params[0] || '').trim().toUpperCase();
+      }
+
       const att = memoryStore.event_attendees.find(a =>
-        String(a.ticket_code).toUpperCase() === code && (!tenantId || a.tenant_id === tenantId)
+        String(a.ticket_code).trim().toUpperCase() === code &&
+        (!eventId || a.event_id === eventId) &&
+        (!tenantId || a.tenant_id === tenantId)
       );
+
       if (att) {
-        const ev = memoryStore.events.find(e => e.id === att.event_id);
-        return [[{ ...att, event_title: ev?.title || 'Live Event' }]];
+        const ev = memoryStore.events.find(e => e.id === att.event_id) || {};
+        const tenant = memoryStore.tenants.find(t => t.id === (att.tenant_id || ev.tenant_id || 1)) || {};
+        return [[{
+          ...att,
+          event_title: ev.title || 'Live Event',
+          event_slug: ev.slug || '',
+          event_date: ev.start_date || '',
+          event_time: ev.start_time || '',
+          event_end_date: ev.end_date || '',
+          event_end_time: ev.end_time || '',
+          event_venue: ev.venue_name || ev.city || 'Convention Center',
+          event_address: ev.venue_address || '',
+          event_city: ev.city || '',
+          event_banner: ev.banner_image || '',
+          tenant_name: tenant.name || 'Eventrye Organization',
+          tenant_logo: tenant.logo_url || '',
+          tenant_color: tenant.primary_color || '#1d4ed8'
+        }]];
       }
       return [[]];
     }
@@ -1035,18 +1077,47 @@ function handleMemoryQuery(sql, params = []) {
       const att = memoryStore.event_attendees.find(a => a.id === id);
       return [att ? [att] : []];
     }
-    const eventId = parseInt(params[0], 10);
-    const atts = memoryStore.event_attendees.filter(a => a.event_id === eventId);
-    return [atts];
+    if (s.includes('where `event_id` =') || s.includes('where event_id =') || s.includes('event_id = ?')) {
+      const eventId = parseInt(params[0], 10);
+      const atts = memoryStore.event_attendees.filter(a => a.event_id === eventId);
+      return [atts];
+    }
+    if (s.includes('where')) {
+      return [[]];
+    }
+    return [memoryStore.event_attendees];
   }
 
   if (s.includes('insert into `event_attendees`') || s.includes('insert into event_attendees')) {
-    let tenant_id = 1, event_id = 1, user_id = null, name = '', email = '', phone = '', ticket_code = '', ticket_type = 'General Admission';
-    if (params.length === 7) {
-      [tenant_id, event_id, name, email, phone, ticket_code, ticket_type] = params;
+    const colMatch = s.match(/insert\s+into\s+[`]?event_attendees[`]?\s*\(([^)]+)\)/i);
+    let tenant_id = 1, event_id = 1, user_id = null, name = '', email = '', phone = '', ticket_code = '', ticket_type = 'General Admission', status = 'confirmed';
+
+    if (colMatch) {
+      const cols = colMatch[1].split(',').map(c => c.trim().replace(/[`"']/g, ''));
+      cols.forEach((col, idx) => {
+        const val = params[idx];
+        if (col === 'tenant_id') tenant_id = Number(val) || 1;
+        else if (col === 'event_id') event_id = Number(val) || 1;
+        else if (col === 'user_id') user_id = val ? Number(val) : null;
+        else if (col === 'name') name = String(val || '');
+        else if (col === 'email') email = String(val || '');
+        else if (col === 'phone') phone = String(val || '');
+        else if (col === 'ticket_code') ticket_code = String(val || '');
+        else if (col === 'ticket_type') ticket_type = String(val || 'General Admission');
+        else if (col === 'status') status = String(val || 'confirmed');
+      });
     } else {
-      [tenant_id, event_id, user_id, name, email, phone, ticket_code, ticket_type] = params;
+      if (params.length === 7) {
+        [tenant_id, event_id, name, email, phone, ticket_code, ticket_type] = params;
+      } else if (params.length === 8 && typeof params[2] === 'number') {
+        [tenant_id, event_id, user_id, name, email, phone, ticket_code, ticket_type] = params;
+      } else if (params.length >= 8) {
+        [tenant_id, event_id, name, email, phone, ticket_code, ticket_type, status] = params;
+      } else {
+        [tenant_id, event_id, name, email, phone, ticket_code, ticket_type] = params;
+      }
     }
+
     const newAtt = {
       id: memoryStore.event_attendees.length + 1,
       tenant_id: tenant_id || 1,
@@ -1057,13 +1128,14 @@ function handleMemoryQuery(sql, params = []) {
       phone: phone || '',
       ticket_code,
       ticket_type: ticket_type || 'General Admission',
-      status: 'confirmed',
+      status: status || 'confirmed',
       checked_in_at: null,
       registered_at: new Date().toISOString()
     };
     memoryStore.event_attendees.push(newAtt);
     const ev = memoryStore.events.find(e => e.id === event_id);
     if (ev) ev.registered_count = (ev.registered_count || 0) + 1;
+    saveLocalStore();
     return [{ insertId: newAtt.id }];
   }
 
@@ -1073,8 +1145,9 @@ function handleMemoryQuery(sql, params = []) {
     if (att) {
       att.status = params[0] || 'checked_in';
       att.checked_in_at = params[1] || (att.status === 'checked_in' ? new Date().toISOString() : null);
+      saveLocalStore();
     }
-    return [{ affectedRows: 1 }];
+    return [{ affectedRows: att ? 1 : 0 }];
   }
 
   // TEAM MEMBERS
@@ -1183,6 +1256,31 @@ function handleMemoryQuery(sql, params = []) {
 
   // SUBSCRIPTIONS (Multi-Tenant Billing & SuperAdmin Approvals)
   if (s.includes('from `subscriptions`') || s.includes('from subscriptions')) {
+    if (s.includes('transaction_ref')) {
+      const ref = String(params[0] || '').trim().toUpperCase();
+      let numId = -1;
+      for (const p of params) {
+        if (!isNaN(Number(p)) && Number(p) > 0) {
+          numId = Number(p);
+          break;
+        }
+      }
+      const sub = memoryStore.subscriptions.find(x =>
+        (x.transaction_ref && String(x.transaction_ref).trim().toUpperCase() === ref) ||
+        (numId !== -1 && x.id === numId) ||
+        (`EVX-INV-2026-${x.id}`.toUpperCase() === ref)
+      );
+      if (sub) {
+        const tenant = memoryStore.tenants.find(t => t.id === sub.tenant_id) || { name: 'Eventrye Client Workspace', primary_color: '#1d4ed8' };
+        return [[{
+          ...sub,
+          tenant_name: tenant.name,
+          tenant_logo: tenant.logo_url || '',
+          tenant_color: tenant.primary_color || '#1d4ed8'
+        }]];
+      }
+      return [[]];
+    }
     if (s.includes('where `id` =') || s.includes('where id =')) {
       const id = parseInt(params[0], 10);
       const sub = memoryStore.subscriptions.find(x => x.id === id);
@@ -1191,6 +1289,9 @@ function handleMemoryQuery(sql, params = []) {
     if (s.includes('tenant_id = ?') || s.includes('`tenant_id` = ?')) {
       const tId = parseInt(params[0], 10);
       return [memoryStore.subscriptions.filter(s => s.tenant_id === tId)];
+    }
+    if (s.includes('where')) {
+      return [[]];
     }
     return [memoryStore.subscriptions];
   }
@@ -1403,9 +1504,9 @@ function handleMemoryQuery(sql, params = []) {
 
   // CERTIFICATES (PRD Section 3.7 & 5)
   if (s.includes('from `certificates`') || s.includes('from certificates')) {
-    if (s.includes('where `certificate_number` =') || s.includes('where certificate_number =')) {
-      const num = String(params[0]).trim();
-      const c = memoryStore.certificates.find(x => x.certificate_number.toLowerCase() === num.toLowerCase());
+    if (s.includes('certificate_number')) {
+      const num = String(params[0] || '').trim().toLowerCase();
+      const c = memoryStore.certificates.find(x => String(x.certificate_number).trim().toLowerCase() === num);
       return [c ? [c] : []];
     }
     if (s.includes('where `id` =') || s.includes('where id =')) {
@@ -1416,6 +1517,9 @@ function handleMemoryQuery(sql, params = []) {
     if (s.includes('organization_id = ?') || s.includes('`organization_id` = ?')) {
       const orgId = parseInt(params[0], 10);
       return [memoryStore.certificates.filter(x => x.organization_id === orgId)];
+    }
+    if (s.includes('where')) {
+      return [[]];
     }
     return [memoryStore.certificates];
   }
@@ -1437,6 +1541,7 @@ function handleMemoryQuery(sql, params = []) {
       created_at: new Date().toISOString()
     };
     memoryStore.certificates.unshift(newCert);
+    saveLocalStore();
     return [{ insertId: newCert.id }];
   }
 

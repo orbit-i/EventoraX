@@ -94,8 +94,14 @@ export default function AttendanceScannerModal({
   const attendanceRate = totalCount > 0 ? Math.round((checkedInCount / totalCount) * 100) : 0;
 
   const handleVerifyTicketCode = async (codeToVerify?: string) => {
-    const code = (codeToVerify || manualCodeInput).trim().toUpperCase();
-    if (!code) return;
+    let raw = (codeToVerify || manualCodeInput).trim();
+    if (!raw) return;
+
+    if (raw.includes('code=')) {
+      const match = raw.match(/code=([^&]+)/);
+      if (match) raw = decodeURIComponent(match[1]).trim();
+    }
+    const code = raw.toUpperCase();
     setIsVerifying(true);
     setScanResult(null);
 

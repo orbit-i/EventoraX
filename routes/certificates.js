@@ -24,130 +24,234 @@ function generateVerificationHash(certNum, recipientName, eventName, date) {
 // PUBLIC ENDPOINTS (No token required)
 // ====================================================================
 
-// GET /api/certificates/verify/:certNumber - Public verification (PRD 3.7 & 7)
+// GET /api/certificates/verify/:certNumber - Public unified verification (PRD 3.7 & 7)
+// Strictly authenticates against DB:
+// 1. Event Attendee Pass (event_attendees table)
+// 2. Official Certificate (certificates table)
+// 3. Official Paid/Active Subscription Invoice (subscriptions table)
+// 4. Directory Event Bookings (directory_bookings)
+// Any modified, random, or nonexistent ID returns 404 (valid: false).
 router.get('/verify/:certNumber', async (req, res) => {
   try {
-    const certNumber = req.params.certNumber.trim();
-    const [rows] = await query('SELECT * FROM `certificates` WHERE `certificate_number` = ?', [certNumber]);
+    let cleanCode = req.params.certNumber ? req.params.certNumber.trim() : '';
+    if (!cleanCode) {
+      return res.status(400).json({ success: false, valid: false, message: 'Please provide a valid credential or pass identifier.' });
+    }
 
-    if (rows.length === 0) {
-      // Check if this is an official invoice or transaction reference
-      const [subRows] = await query(
-        'SELECT s.*, t.name as tenant_name, t.logo_url as tenant_logo, t.primary_color as tenant_color FROM `subscriptions` s LEFT JOIN `tenants` t ON s.tenant_id = t.id WHERE s.transaction_ref = ? OR s.id = ? OR CONCAT("EVX-INV-2026-", s.id) = ? OR s.transaction_ref LIKE ? LIMIT 1',
-        [certNumber, isNaN(Number(certNumber)) ? -1 : Number(certNumber), certNumber, `%${certNumber}%`]
-      );
+    // If a full URL or query string was passed (e.g. from QR scanners)
+    if (cleanCode.includes('code=')) {
+      const match = cleanCode.match(/code=([^&]+)/);
+      if (match) cleanCode = decodeURIComponent(match[1]).trim();
+    }
+    if (cleanCode.includes('=')) {
+      const parts = cleanCode.split('=');
+      cleanCode = decodeURIComponent(parts[parts.length - 1]).trim();
+    }
 
-      if (subRows && subRows.length > 0) {
-        const sub = subRows[0];
-        const isPaid = sub.status === 'active' || sub.status === 'paid' || sub.status === 'approved';
-        return res.json({
-          success: true,
-          valid: true,
-          type: 'invoice',
-          status: 'issued',
-          invoice: {
-            invoiceNumber: certNumber.startsWith('EVX-INV-') ? certNumber : `EVX-INV-2026-${sub.id || String(sub.transaction_ref).slice(-6)}`,
-            transactionRef: sub.transaction_ref || certNumber,
-            clientOrg: sub.tenant_name || 'Eventrye Client Workspace',
-            plan: sub.plan,
-            amount: sub.price,
-            originalPrice: sub.original_price || sub.price,
-            discountAmount: sub.discount_amount || 0,
-            couponCode: sub.coupon_code || null,
-            currency: sub.currency || 'USD',
-            billingCycle: sub.billing_cycle || 'monthly',
-            paymentMethod: (sub.payment_method || 'Online Gateway').toUpperCase(),
-            createdAt: sub.created_at,
-            statusBadge: isPaid ? 'VIP VERIFIED - ACTIVE' : 'VIP VERIFIED - PAYMENT RECORDED',
-            receivingAccount: '03190375751',
-            receivingTitle: 'ORBIT-I Private Limited / Eventrye',
-            governance: {
-              ntn: '9842104-7',
-              strn: '3277876123456',
-              sbpReg: 'PK-2026-PSO/PSP-VERIFIED',
-              sha256Hash: Buffer.from(`${sub.id}-${sub.transaction_ref}-${sub.created_at}`).toString('hex').slice(0, 32).toUpperCase()
-            }
-          }
-        });
-      }
+    const cleanCodeUpper = cleanCode.toUpperCase();
 
-      if (certNumber.startsWith('EVX-INV-') || certNumber.startsWith('TXN-') || certNumber.startsWith('SP-2026-') || certNumber.startsWith('CARD-2026-')) {
-        return res.json({
-          success: true,
-          valid: true,
-          type: 'invoice',
-          status: 'issued',
-          invoice: {
-            invoiceNumber: certNumber.startsWith('EVX-INV-') ? certNumber : `EVX-INV-2026-${certNumber.slice(-6)}`,
-            transactionRef: certNumber,
-            clientOrg: 'Verified Eventrye Enterprise Client',
-            plan: 'Professional Tier',
-            amount: 13800,
-            originalPrice: 13800,
-            discountAmount: 0,
-            couponCode: null,
-            currency: 'PKR',
-            billingCycle: 'Monthly',
-            paymentMethod: 'OFFICIAL PAKISTANI PAYMENT GATEWAY',
-            createdAt: new Date().toISOString(),
-            statusBadge: 'VIP VERIFIED - PAID & AUTHENTICATED',
-            receivingAccount: '03190375751',
-            receivingTitle: 'ORBIT-I Private Limited / Eventrye',
-            governance: {
-              ntn: '9842104-7',
-              strn: '3277876123456',
-              sbpReg: 'PK-2026-PSO/PSP-VERIFIED',
-              sha256Hash: Buffer.from(`${certNumber}-2026`).toString('hex').slice(0, 32).toUpperCase()
-            }
-          }
-        });
-      }
+    // 1. Check Event Attendee Pass (Strict Exact Match on ticket_code)
+    const [attendeeRows] = await query(
+      `SELECT 
+        a.id, a.tenant_id, a.event_id, a.name, a.email, a.phone, 
+        a.ticket_code, a.ticket_type, a.status, a.checked_in_at, a.registered_at,
+        e.title as event_title, e.slug as event_slug, e.start_date as event_date,
+        e.start_time as event_time, e.end_date as event_end_date, e.end_time as event_end_time,
+        e.venue_name as event_venue, e.venue_address as event_address, e.city as event_city,
+        e.banner_image as event_banner,
+        t.name as tenant_name, t.logo_url as tenant_logo, t.primary_color as tenant_color
+       FROM \`event_attendees\` a
+       LEFT JOIN \`events\` e ON a.event_id = e.id
+       LEFT JOIN \`tenants\` t ON a.tenant_id = t.id
+       WHERE UPPER(a.ticket_code) = ?
+       LIMIT 1`,
+      [cleanCodeUpper]
+    );
 
-      return res.status(404).json({
-        success: false,
-        valid: false,
-        message: 'No official credential or invoice was found with this identifier.'
+    if (attendeeRows && attendeeRows.length > 0) {
+      const att = attendeeRows[0];
+      const org = {
+        name: att.tenant_name || 'Eventrye Organization',
+        logoUrl: att.tenant_logo || '',
+        primaryColor: att.tenant_color || '#1d4ed8'
+      };
+
+      // Tamper-evident verification hash computed from authentic DB attendee data
+      const verificationHash = crypto.createHash('sha256')
+        .update(`attendee-${att.id}-${att.ticket_code}-${att.event_id}-${att.email}`)
+        .digest('hex')
+        .toUpperCase();
+
+      return res.json({
+        success: true,
+        valid: true,
+        type: 'event_pass',
+        status: att.status || 'confirmed', // 'confirmed' or 'checked_in'
+        attendee: {
+          id: att.id,
+          name: att.name,
+          email: att.email,
+          phone: att.phone || '',
+          ticketCode: att.ticket_code,
+          ticketType: att.ticket_type || 'General Pass',
+          status: att.status || 'confirmed',
+          checkedInAt: att.checked_in_at,
+          registeredAt: att.registered_at,
+          event: {
+            id: att.event_id,
+            title: att.event_title || 'Official Event',
+            slug: att.event_slug || '',
+            date: att.event_date,
+            time: att.event_time,
+            endDate: att.event_end_date,
+            endTime: att.event_end_time,
+            venue: att.event_venue || att.event_city || 'Convention Center',
+            address: att.event_address || '',
+            city: att.event_city || '',
+            banner: att.event_banner || ''
+          },
+          organization: org,
+          verificationHash
+        }
       });
     }
 
-    const cert = rows[0];
-    const [orgRows] = await query('SELECT `id`, `name`, `logo_url`, `primary_color` FROM `tenants` WHERE `id` = ?', [cert.organization_id]);
-    const org = orgRows[0] || { name: 'Eventrye Organization', primary_color: '#1d4ed8' };
+    // 2. Check Certificates (Strict Exact Match on certificate_number)
+    const [rows] = await query('SELECT * FROM `certificates` WHERE UPPER(`certificate_number`) = ? LIMIT 1', [cleanCodeUpper]);
 
-    // Get template details
-    let templateConfig = null;
-    if (cert.template_version_id) {
-      const [vRows] = await query('SELECT * FROM `template_versions` WHERE `id` = ?', [cert.template_version_id]);
-      if (vRows.length > 0) {
-        templateConfig = typeof vRows[0].editor_config === 'string' 
-          ? JSON.parse(vRows[0].editor_config) 
-          : vRows[0].editor_config;
+    if (rows && rows.length > 0) {
+      const cert = rows[0];
+      const [orgRows] = await query('SELECT `id`, `name`, `logo_url`, `primary_color` FROM `tenants` WHERE `id` = ?', [cert.organization_id]);
+      const org = orgRows[0] || { name: 'Eventrye Organization', primary_color: '#1d4ed8' };
+
+      // Get template details
+      let templateConfig = null;
+      if (cert.template_version_id) {
+        const [vRows] = await query('SELECT * FROM `template_versions` WHERE `id` = ?', [cert.template_version_id]);
+        if (vRows.length > 0) {
+          templateConfig = typeof vRows[0].editor_config === 'string' 
+            ? JSON.parse(vRows[0].editor_config) 
+            : vRows[0].editor_config;
+        }
+      }
+
+      return res.json({
+        success: true,
+        valid: cert.status === 'issued',
+        type: 'certificate',
+        status: cert.status, // 'issued', 'revoked', 'expired'
+        certificate: {
+          certificateNumber: cert.certificate_number,
+          recipientName: cert.recipient_name,
+          eventName: cert.event_name,
+          issueDate: cert.issue_date,
+          verificationHash: cert.verification_hash,
+          revokedAt: cert.revoked_at,
+          revokedReason: cert.revoked_reason,
+          organization: {
+            name: org.name,
+            logoUrl: org.logo_url,
+            primaryColor: org.primary_color
+          },
+          templateConfig
+        }
+      });
+    }
+
+    // 3. Check Subscriptions / Tax Invoices (Strict Exact Match only, no wildcards)
+    let subNum = -1;
+    if (cleanCodeUpper.startsWith('EVX-INV-2026-')) {
+      const parsed = parseInt(cleanCodeUpper.replace('EVX-INV-2026-', ''), 10);
+      if (!isNaN(parsed)) subNum = parsed;
+    } else if (!isNaN(Number(cleanCode))) {
+      subNum = Number(cleanCode);
+    }
+
+    const [subRows] = await query(
+      'SELECT s.*, t.name as tenant_name, t.logo_url as tenant_logo, t.primary_color as tenant_color FROM `subscriptions` s LEFT JOIN `tenants` t ON s.tenant_id = t.id WHERE UPPER(s.transaction_ref) = ? OR s.id = ? LIMIT 1',
+      [cleanCodeUpper, subNum]
+    );
+
+    if (subRows && subRows.length > 0) {
+      const sub = subRows[0];
+      const isPaid = sub.status === 'active' || sub.status === 'paid' || sub.status === 'approved';
+      return res.json({
+        success: true,
+        valid: isPaid,
+        type: 'invoice',
+        status: isPaid ? 'issued' : 'pending',
+        invoice: {
+          invoiceNumber: `EVX-INV-2026-${sub.id || String(sub.transaction_ref).slice(-6)}`,
+          transactionRef: sub.transaction_ref || cleanCode,
+          clientOrg: sub.tenant_name || 'Eventrye Client Workspace',
+          plan: sub.plan,
+          amount: sub.price,
+          originalPrice: sub.original_price || sub.price,
+          discountAmount: sub.discount_amount || 0,
+          couponCode: sub.coupon_code || null,
+          currency: sub.currency || 'USD',
+          billingCycle: sub.billing_cycle || 'monthly',
+          paymentMethod: (sub.payment_method || 'Online Gateway').toUpperCase(),
+          createdAt: sub.created_at,
+          statusBadge: isPaid ? 'VIP VERIFIED - ACTIVE' : 'PENDING APPROVAL',
+          receivingAccount: '03190375751',
+          receivingTitle: 'ORBIT-I Private Limited / Eventrye',
+          governance: {
+            ntn: '9842104-7',
+            strn: '3277876123456',
+            sbpReg: 'PK-2026-PSO/PSP-VERIFIED',
+            sha256Hash: crypto.createHash('sha256').update(`${sub.id}-${sub.transaction_ref}-${sub.created_at}`).digest('hex').toUpperCase()
+          }
+        }
+      });
+    }
+
+    // 4. Check Directory Bookings (if any booking exists with this exact booking_ref or ticket_code)
+    if (memoryStore.directory_bookings && memoryStore.directory_bookings.length > 0) {
+      const booking = memoryStore.directory_bookings.find(b => 
+        String(b.booking_ref).toUpperCase() === cleanCodeUpper || 
+        String(b.ticket_code).toUpperCase() === cleanCodeUpper
+      );
+      if (booking) {
+        const isPaid = booking.payment_status === 'verified';
+        return res.json({
+          success: true,
+          valid: isPaid,
+          type: 'event_pass',
+          status: isPaid ? 'confirmed' : 'pending',
+          attendee: {
+            id: booking.id,
+            name: booking.attendee_name,
+            email: booking.attendee_email,
+            phone: booking.attendee_phone || '',
+            ticketCode: booking.ticket_code,
+            ticketType: booking.tier_name || 'Directory Event Pass',
+            status: isPaid ? 'confirmed' : 'pending',
+            registeredAt: booking.created_at,
+            event: {
+              id: booking.event_id,
+              title: booking.event_title || 'Public Event',
+              venue: 'Directory Listed Venue'
+            },
+            organization: {
+              name: 'Eventrye Public Events Directory',
+              primaryColor: '#1d4ed8'
+            },
+            verificationHash: crypto.createHash('sha256').update(`booking-${booking.id}-${booking.ticket_code}`).digest('hex').toUpperCase()
+          }
+        });
       }
     }
 
-    return res.json({
-      success: true,
-      valid: cert.status === 'issued',
-      status: cert.status, // 'issued', 'revoked', 'expired'
-      certificate: {
-        certificateNumber: cert.certificate_number,
-        recipientName: cert.recipient_name,
-        eventName: cert.event_name,
-        issueDate: cert.issue_date,
-        verificationHash: cert.verification_hash,
-        revokedAt: cert.revoked_at,
-        revokedReason: cert.revoked_reason,
-        organization: {
-          name: org.name,
-          logoUrl: org.logo_url,
-          primaryColor: org.primary_color
-        },
-        templateConfig
-      }
+    // NOT FOUND: Do NOT return valid for random strings or modified numbers!
+    return res.status(404).json({
+      success: false,
+      valid: false,
+      message: 'No official event attendee pass, digital certificate, or verified invoice was found with this identifier. Please verify the code on your pass or contact the event organizer.'
     });
   } catch (err) {
-    console.error('[Public Verify Certificate Error]:', err);
-    return res.status(500).json({ success: false, message: 'Server verification check failed.' });
+    console.error('[Public Verify Error]:', err);
+    return res.status(500).json({ success: false, valid: false, message: 'Server verification check failed.' });
   }
 });
 

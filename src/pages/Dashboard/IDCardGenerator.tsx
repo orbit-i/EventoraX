@@ -603,10 +603,20 @@ export default function IDCardGenerator() {
                               </span>
                             </div>
 
-                            {/* QR Code Container */}
+                            {/* Real Scannable QR Code Container */}
                             {showQrCode && (
-                              <div className="bg-white p-2 rounded-2xl inline-block shadow-inner my-1">
-                                <QrCode className="w-16 h-16 text-slate-900 mx-auto" />
+                              <div className="bg-white p-1.5 rounded-2xl inline-block shadow-md my-1">
+                                <img
+                                  src={`https://api.qrserver.com/v1/create-qr-code/?size=160x160&data=${encodeURIComponent(`${window.location.origin}/verify?code=${att.ticket_code}`)}`}
+                                  alt="Live Verification QR"
+                                  width="64"
+                                  height="64"
+                                  className="w-16 h-16 object-contain rounded-md mx-auto"
+                                  style={{ width: '64px', height: '64px', minWidth: '64px', minHeight: '64px' }}
+                                  onError={(e) => {
+                                    (e.target as HTMLImageElement).src = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><rect width="64" height="64" fill="white"/><rect x="6" y="6" width="20" height="20" fill="black"/><rect x="10" y="10" width="12" height="12" fill="white"/><rect x="14" y="14" width="4" height="4" fill="black"/><rect x="38" y="6" width="20" height="20" fill="black"/><rect x="42" y="10" width="12" height="12" fill="white"/><rect x="46" y="14" width="4" height="4" fill="black"/><rect x="6" y="38" width="20" height="20" fill="black"/><rect x="10" y="42" width="12" height="12" fill="white"/><rect x="14" y="46" width="4" height="4" fill="black"/></svg>`;
+                                  }}
+                                />
                               </div>
                             )}
 
