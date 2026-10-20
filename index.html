@@ -272,14 +272,14 @@
             if (preloader && preloader.parentNode) {
               preloader.parentNode.removeChild(preloader);
             }
-          }, 600);
+          }, 350);
         }
         window.addEventListener('eventrye-ready', dismissVIPPreloader);
         window.addEventListener('load', function() {
-          setTimeout(dismissVIPPreloader, 350);
+          dismissVIPPreloader();
         });
-        // Safety fallback so user is never blocked
-        setTimeout(dismissVIPPreloader, 1500);
+        // Fast fallback so user is never kept waiting
+        setTimeout(dismissVIPPreloader, 400);
       })();
     </script>
 

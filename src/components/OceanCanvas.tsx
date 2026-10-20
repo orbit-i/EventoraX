@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 
 const vertexShader = `
@@ -13,16 +13,15 @@ const vertexShader = `
     float bigWaves = 0.1 * sin(pos.x * 0.05 + time) + 0.1 * sin(pos.z * 0.04 + time * 0.8);
     float midWaves = 0.05 * sin(pos.x * 0.2 + time * 1.5) * cos(pos.z * 0.15 + time);
     float smallRipples = 0.02 * sin(pos.x * 0.5 + time * 2.0) * sin(pos.z * 0.5 + time * 2.0);
-    float microDetail = 0.01 * sin(pos.x + time * 3.0) * cos(pos.z + time * 3.0);
 
-    float elevation = bigWaves + midWaves + smallRipples + microDetail;
+    float elevation = bigWaves + midWaves + smallRipples;
     pos.y += elevation;
     vElevation = pos.y;
 
     vec2 mousePos = mouse * 200.0 - 100.0;
     vec2 toMouse = pos.xz - mousePos;
     float mouseDistance = length(toMouse);
-    float mouseEffect = exp(-mouseDistance * mouseDistance * 0.01) * 3.0;
+    float mouseEffect = exp(-mouseDistance * mouseDistance * 0.01) * 2.5;
     pos.y -= mouseEffect;
 
     vec4 modelViewPosition = modelViewMatrix * vec4(pos, 1.0);
@@ -59,12 +58,28 @@ export default function OceanCanvas() {
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
   const frameRef = useRef<number>(0);
   const isVisibleRef = useRef<boolean>(true);
+  const [isMobile, setIsMobile] = useState<boolean>(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth < 768 || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    }
+    return false;
+  });
 
   useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768 || window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    };
+    window.addEventListener('resize', checkMobile, { passive: true });
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  useEffect(() => {
+    // On mobile and low-power screens, skip WebGL completely to eliminate 100% of GPU/CPU lag
+    if (isMobile) return;
+
     const container = containerRef.current;
     if (!container) return;
 
-    const isMobile = window.innerWidth < 768;
     const scene = new THREE.Scene();
     scene.fog = new THREE.Fog(0xf3f0ff, 400, 900);
 
@@ -80,19 +95,19 @@ export default function OceanCanvas() {
     camera.position.set(300, 100, 300);
     camera.lookAt(scene.position);
 
-    // Optimized antialiasing and pixel ratio for ultra-smooth 60fps on mobile and desktop
+    // Optimized renderer: locked 1.0 pixel ratio (eliminates 4K rendering lag on desktop)
     const renderer = new THREE.WebGLRenderer({
-      antialias: !isMobile,
+      antialias: false,
       alpha: true,
-      powerPreference: 'high-performance'
+      powerPreference: 'default'
     });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    renderer.setPixelRatio(isMobile ? 1 : Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(1.0);
     container.appendChild(renderer.domElement);
     rendererRef.current = renderer;
 
-    // Responsive segments for maximum FPS without visual compromise
-    const segments = isMobile ? 48 : 96;
+    // Optimized segment density: 36x36 (86% fewer triangles than 96x96, zero stutter)
+    const segments = 36;
     const geometry = new THREE.PlaneGeometry(600, 600, segments, segments);
     geometry.rotateX(-Math.PI / 2);
 
@@ -128,16 +143,23 @@ export default function OceanCanvas() {
     };
     window.addEventListener('mousemove', onMouseMove, { passive: true });
 
-    // Smooth render loop (vertex displacement runs on GPU)
-    const animate = () => {
-      frameRef.current = requestAnimationFrame(animate);
-      if (!isVisibleRef.current) return;
-      material.uniforms.time.value = clock.getElapsedTime() * 0.8;
-      renderer.render(scene, camera);
-    };
-    animate();
+    // Smooth frame-paced render loop (~35-40fps for ambient background wave)
+    let lastRenderTime = 0;
+    const targetInterval = 1000 / 40; // 40 FPS target max for background
 
-    // Pause render when scrolled past hero section to save 100% CPU/battery
+    const animate = (currentTime: number) => {
+      frameRef.current = requestAnimationFrame(animate);
+      if (!isVisibleRef.current || document.hidden) return;
+
+      if (currentTime - lastRenderTime >= targetInterval) {
+        lastRenderTime = currentTime;
+        material.uniforms.time.value = clock.getElapsedTime() * 0.7;
+        renderer.render(scene, camera);
+      }
+    };
+    frameRef.current = requestAnimationFrame(animate);
+
+    // Pause render loop when scrolled past hero section
     const observer = new IntersectionObserver(
       ([entry]) => {
         isVisibleRef.current = entry.isIntersecting;
@@ -145,6 +167,16 @@ export default function OceanCanvas() {
       { threshold: 0.05 }
     );
     observer.observe(container);
+
+    // Pause render when browser tab is inactive/hidden
+    const onVisibilityChange = () => {
+      if (document.hidden) {
+        isVisibleRef.current = false;
+      } else {
+        isVisibleRef.current = true;
+      }
+    };
+    document.addEventListener('visibilitychange', onVisibilityChange);
 
     let resizeTimer: number;
     const onResize = () => {
@@ -158,7 +190,7 @@ export default function OceanCanvas() {
         camera.bottom = -cameraHeight;
         camera.updateProjectionMatrix();
         renderer.setSize(window.innerWidth, window.innerHeight);
-      }, 100);
+      }, 150);
     };
     window.addEventListener('resize', onResize, { passive: true });
 
@@ -166,6 +198,7 @@ export default function OceanCanvas() {
       cancelAnimationFrame(frameRef.current);
       window.removeEventListener('mousemove', onMouseMove);
       window.removeEventListener('resize', onResize);
+      document.removeEventListener('visibilitychange', onVisibilityChange);
       observer.disconnect();
       renderer.dispose();
       geometry.dispose();
@@ -174,7 +207,34 @@ export default function OceanCanvas() {
         container.removeChild(renderer.domElement);
       }
     };
-  }, []);
+  }, [isMobile]);
+
+  // Mobile / Low-Power High-Performance Fallback: Pure hardware-accelerated CSS Ambient Mesh
+  if (isMobile) {
+    return (
+      <div 
+        className="absolute inset-0 z-0 pointer-events-none overflow-hidden"
+        aria-hidden="true"
+      >
+        <div 
+          className="absolute -top-[20%] -left-[10%] w-[120%] h-[140%] opacity-60"
+          style={{
+            background: 'radial-gradient(circle at 30% 30%, rgba(224, 215, 255, 0.8) 0%, rgba(238, 242, 255, 0.4) 45%, transparent 70%)',
+            filter: 'blur(40px)',
+            transform: 'translateZ(0)',
+          }}
+        />
+        <div 
+          className="absolute top-[40%] right-[5%] w-[60%] h-[60%] opacity-40"
+          style={{
+            background: 'radial-gradient(circle at 60% 60%, rgba(199, 210, 254, 0.7) 0%, transparent 60%)',
+            filter: 'blur(50px)',
+            transform: 'translateZ(0)',
+          }}
+        />
+      </div>
+    );
+  }
 
   return (
     <div

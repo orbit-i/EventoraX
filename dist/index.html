@@ -234,11 +234,15 @@
         100% { opacity: 1; }
       }
     </style>
-    <script type="module" crossorigin src="/assets/index-Dul2773j.js"></script>
-    <link rel="modulepreload" crossorigin href="/assets/router-Bn_mLyxo.js">
-    <link rel="modulepreload" crossorigin href="/assets/charts-DaMSdvJ4.js">
-    <link rel="modulepreload" crossorigin href="/assets/three-Cu-NmlLO.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-BcCshrTx.css">
+    <script type="module" crossorigin src="/assets/index-Bz7GCBtJ.js"></script>
+    <link rel="modulepreload" crossorigin href="/assets/vendor-react-1LXPKaX6.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-charts-ow8nQ1EY.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-router-CDXSUSP8.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-gsap-a3sj5zmn.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-three-Cu-NmlLO.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-radix-D7RlFgf3.js">
+    <link rel="modulepreload" crossorigin href="/assets/vendor-export-BWk7brGk.js">
+    <link rel="stylesheet" crossorigin href="/assets/index-DuzN4QOp.css">
   </head>
   <body>
     <!-- VIP High-Performance Instant Preloader -->
@@ -278,14 +282,14 @@
             if (preloader && preloader.parentNode) {
               preloader.parentNode.removeChild(preloader);
             }
-          }, 600);
+          }, 350);
         }
         window.addEventListener('eventrye-ready', dismissVIPPreloader);
         window.addEventListener('load', function() {
-          setTimeout(dismissVIPPreloader, 350);
+          dismissVIPPreloader();
         });
-        // Safety fallback so user is never blocked
-        setTimeout(dismissVIPPreloader, 1500);
+        // Fast fallback so user is never kept waiting
+        setTimeout(dismissVIPPreloader, 400);
       })();
     </script>
 

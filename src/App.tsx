@@ -1,5 +1,5 @@
 import { Routes, Route, useLocation, Navigate } from 'react-router-dom';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
 import ScrollProgressBar from './components/ScrollProgressBar';
@@ -9,44 +9,47 @@ import { Toaster } from './components/ui/sonner';
 import { usePageSEO } from './hooks/usePageSEO';
 import { initUtmTracking } from './lib/utm';
 
+// Eagerly loaded for instantaneous first paint of Home
 import Home from './pages/Home';
-import About from './pages/About';
-import Features from './pages/Features';
-import Pricing from './pages/Pricing';
-import Contact from './pages/Contact';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Terms from './pages/Terms';
-import Privacy from './pages/Privacy';
-import Cookies from './pages/Cookies';
-import ServiceUsage from './pages/ServiceUsage';
-import NotFound from './pages/NotFound';
-import Forbidden from './pages/Forbidden';
-import PublicTenantPortal from './pages/PublicTenantPortal';
-import PublicVerifyPage from './pages/PublicVerifyPage';
-import PublicEventPage from './pages/PublicEventPage';
-import CaseStudies from './pages/CaseStudies';
-import EventsDirectory from './pages/EventsDirectory';
-import ListYourEvent from './pages/ListYourEvent';
 
-// Dashboard imports
-import DashboardLayout from './pages/Dashboard/DashboardLayout';
-import DashboardHome from './pages/Dashboard/DashboardHome';
-import Events from './pages/Dashboard/Events';
-import IDCardGenerator from './pages/Dashboard/IDCardGenerator';
-import Certificates from './pages/Dashboard/Certificates';
-import Maintenance from './pages/Maintenance';
-import DesignStudio from './pages/Dashboard/DesignStudio';
-import CertificateEditor from './pages/Dashboard/CertificateEditor';
-import IDCardEditor from './pages/Dashboard/IDCardEditor';
-import Statistics from './pages/Dashboard/Statistics';
-import Charts from './pages/Dashboard/Charts';
-import Team from './pages/Dashboard/Team';
-import Billing from './pages/Dashboard/Billing';
-import Settings from './pages/Dashboard/Settings';
-import Activity from './pages/Dashboard/activity';
-import PlatformAdmin from './pages/Dashboard/PlatformAdmin';
-import OrbitMasterGatewayLogin from './pages/OrbitMasterGatewayLogin';
+// Public Pages (Lazy Loaded on demand)
+const About = lazy(() => import('./pages/About'));
+const Features = lazy(() => import('./pages/Features'));
+const Pricing = lazy(() => import('./pages/Pricing'));
+const Contact = lazy(() => import('./pages/Contact'));
+const Login = lazy(() => import('./pages/Login'));
+const Register = lazy(() => import('./pages/Register'));
+const Terms = lazy(() => import('./pages/Terms'));
+const Privacy = lazy(() => import('./pages/Privacy'));
+const Cookies = lazy(() => import('./pages/Cookies'));
+const ServiceUsage = lazy(() => import('./pages/ServiceUsage'));
+const NotFound = lazy(() => import('./pages/NotFound'));
+const Forbidden = lazy(() => import('./pages/Forbidden'));
+const PublicTenantPortal = lazy(() => import('./pages/PublicTenantPortal'));
+const PublicVerifyPage = lazy(() => import('./pages/PublicVerifyPage'));
+const PublicEventPage = lazy(() => import('./pages/PublicEventPage'));
+const CaseStudies = lazy(() => import('./pages/CaseStudies'));
+const EventsDirectory = lazy(() => import('./pages/EventsDirectory'));
+const ListYourEvent = lazy(() => import('./pages/ListYourEvent'));
+const Maintenance = lazy(() => import('./pages/Maintenance'));
+
+// Dashboard & Heavy Studio Pages (Lazy Loaded only when accessed)
+const DashboardLayout = lazy(() => import('./pages/Dashboard/DashboardLayout'));
+const DashboardHome = lazy(() => import('./pages/Dashboard/DashboardHome'));
+const Events = lazy(() => import('./pages/Dashboard/Events'));
+const IDCardGenerator = lazy(() => import('./pages/Dashboard/IDCardGenerator'));
+const Certificates = lazy(() => import('./pages/Dashboard/Certificates'));
+const DesignStudio = lazy(() => import('./pages/Dashboard/DesignStudio'));
+const CertificateEditor = lazy(() => import('./pages/Dashboard/CertificateEditor'));
+const IDCardEditor = lazy(() => import('./pages/Dashboard/IDCardEditor'));
+const Statistics = lazy(() => import('./pages/Dashboard/Statistics'));
+const Charts = lazy(() => import('./pages/Dashboard/Charts'));
+const Team = lazy(() => import('./pages/Dashboard/Team'));
+const Billing = lazy(() => import('./pages/Dashboard/Billing'));
+const Settings = lazy(() => import('./pages/Dashboard/Settings'));
+const Activity = lazy(() => import('./pages/Dashboard/activity'));
+const PlatformAdmin = lazy(() => import('./pages/Dashboard/PlatformAdmin'));
+const OrbitMasterGatewayLogin = lazy(() => import('./pages/OrbitMasterGatewayLogin'));
 
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { SidebarProvider } from './context/SidebarContext';
@@ -58,6 +61,16 @@ function ScrollToTop() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [pathname]);
   return null;
+}
+
+// Minimal, zero-overhead loading indicator for route transitions
+function PageFallback() {
+  return (
+    <div className="min-h-[50vh] flex flex-col items-center justify-center gap-3">
+      <div className="w-8 h-8 border-3 border-[#1d4ed8] border-t-transparent rounded-full animate-spin" />
+      <span className="text-xs text-slate-400 font-medium tracking-wide">Loading Eventrye...</span>
+    </div>
+  );
 }
 
 // Protected Route wrapper
@@ -144,123 +157,125 @@ function AppRoutes() {
     <>
       <ScrollToTop />
       <Layout>
-        <Routes>
-          {/* Public Main Site Routes */}
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/features" element={<Features />} />
-          <Route path="/pricing" element={<Pricing />} />
-          <Route path="/case-studies" element={<CaseStudies />} />
-          <Route path="/past-events" element={<CaseStudies />} />
-          <Route path="/events-directory" element={<EventsDirectory />} />
-          <Route path="/directory" element={<EventsDirectory />} />
-          <Route path="/list-event" element={<ListYourEvent />} />
-          <Route path="/host-event" element={<ListYourEvent />} />
-          <Route path="/submit-event" element={<ListYourEvent />} />
-          <Route path="/contact" element={<Contact />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/terms" element={<Terms />} />
-          <Route path="/privacy" element={<Privacy />} />
-          <Route path="/cookies" element={<Cookies />} />
-          <Route path="/service-usage" element={<ServiceUsage />} />
-          <Route path="/maintenance" element={<Maintenance />} />
+        <Suspense fallback={<PageFallback />}>
+          <Routes>
+            {/* Public Main Site Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/features" element={<Features />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/case-studies" element={<CaseStudies />} />
+            <Route path="/past-events" element={<CaseStudies />} />
+            <Route path="/events-directory" element={<EventsDirectory />} />
+            <Route path="/directory" element={<EventsDirectory />} />
+            <Route path="/list-event" element={<ListYourEvent />} />
+            <Route path="/host-event" element={<ListYourEvent />} />
+            <Route path="/submit-event" element={<ListYourEvent />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/terms" element={<Terms />} />
+            <Route path="/privacy" element={<Privacy />} />
+            <Route path="/cookies" element={<Cookies />} />
+            <Route path="/service-usage" element={<ServiceUsage />} />
+            <Route path="/maintenance" element={<Maintenance />} />
 
-          {/* Public Tamper-Evident Credential & Invoice Verification (PRD 3.7 & 8) */}
-          <Route path="/verify" element={<PublicVerifyPage />} />
-          <Route path="/verify/:certNumber" element={<PublicVerifyPage />} />
-          <Route path="/verify-invoice" element={<PublicVerifyPage />} />
+            {/* Public Tamper-Evident Credential & Invoice Verification (PRD 3.7 & 8) */}
+            <Route path="/verify" element={<PublicVerifyPage />} />
+            <Route path="/verify/:certNumber" element={<PublicVerifyPage />} />
+            <Route path="/verify-invoice" element={<PublicVerifyPage />} />
 
-          {/* Dedicated Public Event Detail & Registration Page */}
-          <Route path="/e/:slug" element={<PublicEventPage />} />
-          <Route path="/events/:slug" element={<PublicEventPage />} />
+            {/* Dedicated Public Event Detail & Registration Page */}
+            <Route path="/e/:slug" element={<PublicEventPage />} />
+            <Route path="/events/:slug" element={<PublicEventPage />} />
 
-          {/* Public Branded Tenant Portal */}
-          <Route path="/t/:slug" element={<PublicTenantPortal />} />
-          <Route path="/c/:slug" element={<PublicTenantPortal />} />
+            {/* Public Branded Tenant Portal */}
+            <Route path="/t/:slug" element={<PublicTenantPortal />} />
+            <Route path="/c/:slug" element={<PublicTenantPortal />} />
 
-          {/* Fullscreen Certificate, ID Card & Canva Design Studio */}
-          <Route 
-            path="/dashboard/design-studio" 
-            element={
-              <ProtectedRoute>
-                <DesignStudio />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/dashboard/certificates/editor" 
-            element={
-              <ProtectedRoute>
-                <CertificateEditor />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/dashboard/certificates/editor/:id" 
-            element={
-              <ProtectedRoute>
-                <CertificateEditor />
-              </ProtectedRoute>
-            } 
-          />
-          <Route 
-            path="/dashboard/id-cards/editor" 
-            element={
-              <ProtectedRoute>
-                <IDCardEditor />
-              </ProtectedRoute>
-            } 
-          />
-
-          {/* Protected Multi-Tenant Organization Dashboard Routes */}
-          <Route 
-            path="/dashboard" 
-            element={
-              <ProtectedRoute>
-                <DashboardLayout />
-              </ProtectedRoute>
-            }
-          >
-            <Route index element={<DashboardHome />} />
-            <Route path="events" element={<Events />} />
-            <Route path="id-cards" element={<IDCardGenerator />} />
-            <Route path="certificates" element={<Certificates />} />
-            <Route path="statistics" element={<Statistics />} />
-            <Route path="charts" element={<Charts />} />
-            <Route path="team" element={<Team />} />
-            <Route path="billing" element={<Billing />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="activity" element={<Activity />} />
+            {/* Fullscreen Certificate, ID Card & Canva Design Studio */}
             <Route 
-              path="platform" 
-              element={<Navigate to="/orbit-i-master-gateway/console" replace />} 
+              path="/dashboard/design-studio" 
+              element={
+                <ProtectedRoute>
+                  <DesignStudio />
+                </ProtectedRoute>
+              } 
             />
-          </Route>
+            <Route 
+              path="/dashboard/certificates/editor" 
+              element={
+                <ProtectedRoute>
+                  <CertificateEditor />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/certificates/editor/:id" 
+              element={
+                <ProtectedRoute>
+                  <CertificateEditor />
+                </ProtectedRoute>
+              } 
+            />
+            <Route 
+              path="/dashboard/id-cards/editor" 
+              element={
+                <ProtectedRoute>
+                  <IDCardEditor />
+                </ProtectedRoute>
+              } 
+            />
 
-          {/* SuperAdmin Master Access Aliases */}
-          <Route path="/superadmin" element={<Navigate to="/orbit-i-master-gateway/login" replace />} />
-          <Route path="/platform-admin" element={<Navigate to="/orbit-i-master-gateway/login" replace />} />
-          <Route path="/admin" element={<Navigate to="/orbit-i-master-gateway/login" replace />} />
+            {/* Protected Multi-Tenant Organization Dashboard Routes */}
+            <Route 
+              path="/dashboard" 
+              element={
+                <ProtectedRoute>
+                  <DashboardLayout />
+                </ProtectedRoute>
+              }
+            >
+              <Route index element={<DashboardHome />} />
+              <Route path="events" element={<Events />} />
+              <Route path="id-cards" element={<IDCardGenerator />} />
+              <Route path="certificates" element={<Certificates />} />
+              <Route path="statistics" element={<Statistics />} />
+              <Route path="charts" element={<Charts />} />
+              <Route path="team" element={<Team />} />
+              <Route path="billing" element={<Billing />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="activity" element={<Activity />} />
+              <Route 
+                path="platform" 
+                element={<Navigate to="/orbit-i-master-gateway/console" replace />} 
+              />
+            </Route>
 
-          {/* Secret ORBIT-I Platform Master Gateway (Isolated from client org login) */}
-          <Route path="/orbit-i-master-gateway/login" element={<OrbitMasterGatewayLogin />} />
-          <Route 
-            path="/orbit-i-master-gateway/console" 
-            element={
-              <SuperAdminRoute>
-                <DashboardLayout />
-              </SuperAdminRoute>
-            }
-          >
-            <Route index element={<PlatformAdmin />} />
-          </Route>
+            {/* SuperAdmin Master Access Aliases */}
+            <Route path="/superadmin" element={<Navigate to="/orbit-i-master-gateway/login" replace />} />
+            <Route path="/platform-admin" element={<Navigate to="/orbit-i-master-gateway/login" replace />} />
+            <Route path="/admin" element={<Navigate to="/orbit-i-master-gateway/login" replace />} />
 
-          {/* Error & Maintenance Routes */}
-          <Route path="/403" element={<Forbidden />} />
-          <Route path="/404" element={<NotFound />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            {/* Secret ORBIT-I Platform Master Gateway (Isolated from client org login) */}
+            <Route path="/orbit-i-master-gateway/login" element={<OrbitMasterGatewayLogin />} />
+            <Route 
+              path="/orbit-i-master-gateway/console" 
+              element={
+                <SuperAdminRoute>
+                  <DashboardLayout />
+                </SuperAdminRoute>
+              }
+            >
+              <Route index element={<PlatformAdmin />} />
+            </Route>
+
+            {/* Error & Maintenance Routes */}
+            <Route path="/403" element={<Forbidden />} />
+            <Route path="/404" element={<NotFound />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </Suspense>
       </Layout>
     </>
   );

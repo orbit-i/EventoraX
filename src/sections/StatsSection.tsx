@@ -20,14 +20,20 @@ function StatItem({ value, suffix, label, prefix = '' }: StatItemProps) {
       ([entry]) => {
         if (entry.isIntersecting && !hasAnimated.current) {
           hasAnimated.current = true;
-          const duration = 1500;
+          const duration = 1200;
           const startTime = performance.now();
+          let lastUpdate = 0;
 
           const animate = (currentTime: number) => {
             const elapsed = currentTime - startTime;
             const progress = Math.min(elapsed / duration, 1);
-            const eased = 1 - Math.pow(1 - progress, 3);
-            setCount(Math.floor(eased * value));
+
+            // Throttle state updates to ~30fps (every 33ms) or completion
+            if (currentTime - lastUpdate >= 33 || progress >= 1) {
+              lastUpdate = currentTime;
+              const eased = 1 - Math.pow(1 - progress, 3);
+              setCount(Math.floor(eased * value));
+            }
 
             if (progress < 1) {
               requestAnimationFrame(animate);
@@ -36,7 +42,7 @@ function StatItem({ value, suffix, label, prefix = '' }: StatItemProps) {
           requestAnimationFrame(animate);
         }
       },
-      { threshold: 0.5 }
+      { threshold: 0.3 }
     );
 
     observer.observe(el);
