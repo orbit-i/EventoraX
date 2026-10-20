@@ -246,16 +246,12 @@ function AppRoutes() {
               <Route path="billing" element={<Billing />} />
               <Route path="settings" element={<Settings />} />
               <Route path="activity" element={<Activity />} />
-              <Route 
-                path="platform" 
-                element={<Navigate to="/orbit-i-master-gateway/console" replace />} 
-              />
             </Route>
 
-            {/* SuperAdmin Master Access Aliases */}
-            <Route path="/superadmin" element={<Navigate to="/orbit-i-master-gateway/login" replace />} />
-            <Route path="/platform-admin" element={<Navigate to="/orbit-i-master-gateway/login" replace />} />
-            <Route path="/admin" element={<Navigate to="/orbit-i-master-gateway/login" replace />} />
+            {/* Standard 404 for obvious admin paths so nobody can discover or access the master gateway */}
+            <Route path="/superadmin" element={<NotFound />} />
+            <Route path="/platform-admin" element={<NotFound />} />
+            <Route path="/admin" element={<NotFound />} />
 
             {/* Secret ORBIT-I Platform Master Gateway (Isolated from client org login) */}
             <Route path="/orbit-i-master-gateway/login" element={<OrbitMasterGatewayLogin />} />

@@ -44,7 +44,16 @@ export default function Activity() {
     try {
       const res = await api.activity.get({ type: filter !== 'All' ? filter : undefined, limit: 100 });
       if (res.success) {
-        setActivities(res.activities || []);
+        // Double-lock: Ensure no superadmin or platform internal activity leaks into client org view
+        const clientLogs = (res.activities || []).filter((act: any) => {
+          if (act.user_id === 1) return false;
+          const uname = String(act.user_name || '').toLowerCase();
+          if (uname.includes('superadmin') || uname.includes('master authority') || uname.includes('platform architect')) return false;
+          const atype = String(act.type || '').toLowerCase();
+          if (atype === 'superadmin' || atype === 'platform' || atype === 'security_master') return false;
+          return true;
+        });
+        setActivities(clientLogs);
       }
     } catch (err) {
       console.error(err);

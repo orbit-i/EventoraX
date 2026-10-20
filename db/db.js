@@ -1219,7 +1219,20 @@ function handleMemoryQuery(sql, params = []) {
   if (s.includes('from `activity_logs`') || s.includes('from activity_logs')) {
     if (s.includes('tenant_id = ?') || s.includes('`tenant_id` = ?')) {
       const tId = parseInt(params[0], 10);
-      return [memoryStore.activity_logs.filter(a => a.tenant_id === tId)];
+      let logs = memoryStore.activity_logs.filter(a => a.tenant_id === tId);
+      // Client Organizations must NEVER see SuperAdmin or Master Authority activities
+      if (tId !== 1 || s.includes('user_id != 1')) {
+        logs = logs.filter(a => {
+          if (a.user_id === 1) return false;
+          if (a.is_superadmin) return false;
+          const uname = String(a.user_name || '').toLowerCase();
+          if (uname.includes('superadmin') || uname.includes('master authority') || uname.includes('platform architect') || uname.includes('orbit-i admin')) return false;
+          const atype = String(a.type || '').toLowerCase();
+          if (atype === 'superadmin' || atype === 'platform' || atype === 'security_master') return false;
+          return true;
+        });
+      }
+      return [logs];
     }
     return [memoryStore.activity_logs];
   }

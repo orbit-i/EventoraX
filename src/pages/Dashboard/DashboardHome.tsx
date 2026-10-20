@@ -55,7 +55,15 @@ export default function DashboardHome() {
           setRecentEvents(eventsRes.value.events || []);
         }
         if (actRes.status === 'fulfilled' && actRes.value.success) {
-          setActivities(actRes.value.activities || []);
+          const cleanActivities = (actRes.value.activities || []).filter((act: any) => {
+            if (act.user_id === 1) return false;
+            const uname = String(act.user_name || '').toLowerCase();
+            if (uname.includes('superadmin') || uname.includes('master authority') || uname.includes('platform architect')) return false;
+            const atype = String(act.type || '').toLowerCase();
+            if (atype === 'superadmin' || atype === 'platform' || atype === 'security_master') return false;
+            return true;
+          });
+          setActivities(cleanActivities);
         }
       } catch (err) {
         console.error('Error fetching dashboard data:', err);
