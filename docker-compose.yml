@@ -19,6 +19,9 @@ services:
       - DB_PASSWORD=eventrye_secure_pass_2025
       - DB_NAME=eventrye_db
       - JWT_SECRET=eventrye_enterprise_secret_jwt_key_2025
+    volumes:
+      - ./db:/app/db
+      - ./public/uploads:/app/public/uploads
     depends_on:
       db:
         condition: service_healthy

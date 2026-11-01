@@ -4,7 +4,6 @@ import {
   ShieldCheck, 
   Download, 
   ArrowRight,
-  Lock,
   CheckCircle2,
   Sparkles,
   Tag,
@@ -19,14 +18,8 @@ import { printElement, downloadElementAsImage } from '@/lib/printUtils';
 import { toast } from 'sonner';
 import { useAuth } from '@/context/AuthContext';
 import {
-  SafepayBadge,
-  JazzCashBadge,
-  EasypaisaBadge,
   SadaPayBadge,
-  NayaPayBadge,
-  RaastBadge,
-  CardNetworksBadge,
-  BankTransferBadge
+  NayaPayBadge
 } from './payment/PaymentLogos';
 
 export interface PlanData {
@@ -46,7 +39,7 @@ interface SubscriptionCheckoutModalProps {
   initialAnnual?: boolean;
 }
 
-type PaymentMethodType = 'safepay' | 'card' | 'jazzcash' | 'easypaisa' | 'sadapay' | 'nayapay' | 'raast' | 'bank';
+type PaymentMethodType = 'sadapay' | 'nayapay';
 
 export default function SubscriptionCheckoutModal({
   isOpen,
@@ -57,7 +50,7 @@ export default function SubscriptionCheckoutModal({
 }: SubscriptionCheckoutModalProps) {
   const [currency, setCurrency] = useState<'USD' | 'PKR'>(initialCurrency);
   const [isAnnual, setIsAnnual] = useState(initialAnnual);
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('safepay');
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethodType>('sadapay');
   const [isProcessing, setIsProcessing] = useState(false);
   const [step, setStep] = useState<'form' | 'invoice'>('form');
   const [successData, setSuccessData] = useState<any | null>(null);
@@ -86,13 +79,8 @@ export default function SubscriptionCheckoutModal({
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Payment form states
-  const [customerMobile, setCustomerMobile] = useState('');
-  const [trxId, setTrxId] = useState('');
-  const [cardNumber, setCardNumber] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  const [cardHolder, setCardHolder] = useState('');
-
+    const [trxId, setTrxId] = useState('');
+        
   // Dynamic Coupon State
   const [couponInput, setCouponInput] = useState('');
   const [appliedCoupon, setAppliedCoupon] = useState<{
@@ -183,22 +171,7 @@ export default function SubscriptionCheckoutModal({
     setTimeout(() => setCopiedField(null), 2000);
   };
 
-  // Helper format for 16-digit card number
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const raw = e.target.value.replace(/\D/g, '').slice(0, 16);
-    const formatted = raw.replace(/(\d{4})(?=\d)/g, '$1 ');
-    setCardNumber(formatted);
-  };
-
-  // Helper format for MM/YY
-  const handleExpiryChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    let raw = e.target.value.replace(/\D/g, '').slice(0, 4);
-    if (raw.length >= 3) {
-      raw = `${raw.slice(0, 2)}/${raw.slice(2)}`;
-    }
-    setCardExpiry(raw);
-  };
-
+  
   // Step 1: Pre-validation & Gateway Intercept
   const handleInitiatePayment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -226,47 +199,14 @@ export default function SubscriptionCheckoutModal({
     }
 
     // Dynamic Merchant Account determination
-    const activeMerchantAccount = 
-      paymentMethod === 'easypaisa' ? (liveGateways?.easypaisa?.account_number || '03190375751') :
-      paymentMethod === 'jazzcash' ? (liveGateways?.jazzcash?.account_number || '03190375751') :
-      paymentMethod === 'raast' ? (liveGateways?.raast?.raast_id || '03190375751') :
-      paymentMethod === 'bank' ? (liveGateways?.meezan?.iban || 'PK64MEZN0001020104889912') :
-      'ORBIT-I Master Merchant';
+    const activeMerchantAccount = paymentMethod === 'sadapay' ? (liveGateways?.sadapay?.account_number || '03190375751') : (liveGateways?.nayapay?.account_number || '03190375751');
 
-    // Pakistani Mobile Wallets & Bank Transfer (Easypaisa, JazzCash, Raast, Meezan IBFT, SadaPay, NayaPay)
-    if (['jazzcash', 'easypaisa', 'sadapay', 'nayapay', 'raast', 'bank'].includes(paymentMethod)) {
-      if (!trxId || trxId.trim().length < 4) {
-        alert('Please enter your Transaction ID (TID) / Reference Number received from your payment receipt / SMS.');
+    if (['sadapay', 'nayapay'].includes(paymentMethod)) {
+      if (!trxId || trxId.trim().length < 3) {
+        alert('Please enter your Transaction ID (TID) from your SadaPay or NayaPay payment receipt.');
         return;
       }
-      if (['jazzcash', 'easypaisa'].includes(paymentMethod) && (!customerMobile || customerMobile.trim().length < 7)) {
-        alert(`Please enter your sending mobile or account number.`);
-        return;
-      }
-      const cleanRef = trxId.trim();
-      executeFinalPurchase(cleanRef, activeMerchantAccount);
-      return;
-    }
-
-    // Direct Cards / Safepay Online Checkout
-    if (paymentMethod === 'safepay' || paymentMethod === 'card') {
-      const cleanCard = cardNumber.replace(/\s/g, '');
-      if (cleanCard.length < 16) {
-        alert('Please enter a valid 16-digit credit or debit card number.');
-        return;
-      }
-      if (!cardExpiry || cardExpiry.length < 5) {
-        alert('Please enter card expiry in MM/YY format.');
-        return;
-      }
-      if (!cardCvv || cardCvv.length < 3) {
-        alert('Please enter a valid 3-digit CVV code.');
-        return;
-      }
-      const ref = paymentMethod === 'safepay' 
-        ? `SP-2026-${Date.now().toString(36).toUpperCase()}`
-        : `CARD-2026-${Date.now().toString(36).toUpperCase()}`;
-      executeFinalPurchase(ref, activeMerchantAccount);
+      executeFinalPurchase(trxId.trim().toUpperCase(), activeMerchantAccount);
       return;
     }
   };
@@ -301,7 +241,7 @@ export default function SubscriptionCheckoutModal({
           couponCode: appliedCoupon?.code,
           notes: isFree && isStarter
             ? `Starter Plan 14-Day Free Trial (2 Events, 40 Attendees, 50 ID Passes & Certificates) | Ref: ${finalTrxRef}`
-            : `Payment Proof Logged (${paymentMethod.toUpperCase()}) | Sender: ${customerMobile || cardHolder || 'Direct'} | TID: ${finalTrxRef} | Merchant: ${activeMerchantAcc}${appliedCoupon ? ` | Coupon: ${appliedCoupon.code}` : ''}`
+            : `Payment Proof Logged (${paymentMethod.toUpperCase()}) | Sender: Direct | TID: ${finalTrxRef} | Merchant: ${activeMerchantAcc}${appliedCoupon ? ` | Coupon: ${appliedCoupon.code}` : ''}`
         });
       } catch (err) {
         console.warn('Backend billing purchase fallback:', err);
@@ -334,7 +274,7 @@ export default function SubscriptionCheckoutModal({
         date: todayDate,
         orgName: finalOrgName,
         adminEmail: finalAdminEmail,
-        customerMobile: customerMobile || 'Direct Transfer',
+        customerMobile: 'Direct Transfer',
         receivingAccount: activeMerchantAcc
       });
       setStep('invoice');
@@ -726,155 +666,42 @@ export default function SubscriptionCheckoutModal({
                     </span>
                   </div>
 
-                  {/* Gateway Cards Grid */}
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                    
-                    {/* Safepay (Featured Pakistani Gateway) */}
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('safepay')}
-                      className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
-                        paymentMethod === 'safepay'
-                          ? 'border-[#182A4D] bg-slate-900 text-white ring-2 ring-blue-500 shadow-md'
-                          : 'border-slate-200 bg-white hover:border-slate-400'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <SafepayBadge className="w-7 h-7" />
-                        {paymentMethod === 'safepay' && <CheckCircle2 className="w-4 h-4 text-emerald-400" />}
-                      </div>
-                      <span className={`text-xs font-bold block ${paymentMethod === 'safepay' ? 'text-white' : 'text-slate-900'}`}>
-                        Safepay
-                      </span>
-                      <span className={`text-[10px] ${paymentMethod === 'safepay' ? 'text-slate-300' : 'text-slate-500'}`}>
-                        Cards &amp; Checkout
-                      </span>
-                    </button>
-
-                    {/* JazzCash */}
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('jazzcash')}
-                      className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
-                        paymentMethod === 'jazzcash'
-                          ? 'border-red-600 bg-red-50/70 ring-2 ring-red-600/30 shadow-md'
-                          : 'border-slate-200 bg-white hover:border-red-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <JazzCashBadge className="w-7 h-7" />
-                        {paymentMethod === 'jazzcash' && <CheckCircle2 className="w-4 h-4 text-red-600" />}
-                      </div>
-                      <span className="text-xs font-bold text-slate-900 block">JazzCash</span>
-                      <span className="text-[10px] text-slate-500 font-medium">Wallet &amp; QR</span>
-                    </button>
-
-                    {/* Easypaisa */}
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('easypaisa')}
-                      className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
-                        paymentMethod === 'easypaisa'
-                          ? 'border-emerald-600 bg-emerald-50/70 ring-2 ring-emerald-600/30 shadow-md'
-                          : 'border-slate-200 bg-white hover:border-emerald-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <EasypaisaBadge className="w-7 h-7" />
-                        {paymentMethod === 'easypaisa' && <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
-                      </div>
-                      <span className="text-xs font-bold text-slate-900 block">Easypaisa</span>
-                      <span className="text-[10px] text-slate-500 font-medium">Wallet &amp; QR</span>
-                    </button>
-
+                  {/* Gateway Cards Grid (SadaPay & NayaPay ONLY) */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {/* SadaPay */}
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('sadapay')}
-                      className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
+                      className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between ${
                         paymentMethod === 'sadapay'
                           ? 'border-[#00A389] bg-teal-50/70 ring-2 ring-[#00A389]/30 shadow-md'
                           : 'border-slate-200 bg-white hover:border-teal-300'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <SadaPayBadge className="w-7 h-7" />
-                        {paymentMethod === 'sadapay' && <CheckCircle2 className="w-4 h-4 text-teal-600" />}
+                      <div className="flex items-center justify-between mb-2">
+                        <SadaPayBadge className="w-8 h-8" />
+                        {paymentMethod === 'sadapay' && <CheckCircle2 className="w-5 h-5 text-teal-600" />}
                       </div>
-                      <span className="text-xs font-bold text-slate-900 block">SadaPay</span>
-                      <span className="text-[10px] text-slate-500 font-medium">Fast IBAN</span>
+                      <span className="text-sm font-bold text-slate-900 block">SadaPay</span>
+                      <span className="text-xs text-slate-500 font-medium">Fast IBAN &amp; Wallet Transfer</span>
                     </button>
 
                     {/* NayaPay */}
                     <button
                       type="button"
                       onClick={() => setPaymentMethod('nayapay')}
-                      className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
+                      className={`p-4 rounded-2xl border text-left transition-all flex flex-col justify-between ${
                         paymentMethod === 'nayapay'
                           ? 'border-[#FF5C00] bg-orange-50/70 ring-2 ring-[#FF5C00]/30 shadow-md'
                           : 'border-slate-200 bg-white hover:border-orange-300'
                       }`}
                     >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <NayaPayBadge className="w-7 h-7" />
-                        {paymentMethod === 'nayapay' && <CheckCircle2 className="w-4 h-4 text-orange-600" />}
+                      <div className="flex items-center justify-between mb-2">
+                        <NayaPayBadge className="w-8 h-8" />
+                        {paymentMethod === 'nayapay' && <CheckCircle2 className="w-5 h-5 text-orange-600" />}
                       </div>
-                      <span className="text-xs font-bold text-slate-900 block">NayaPay</span>
-                      <span className="text-[10px] text-slate-500 font-medium">E-Money Wallet</span>
-                    </button>
-
-                    {/* Raast Instant Pay */}
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('raast')}
-                      className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
-                        paymentMethod === 'raast'
-                          ? 'border-[#0B5D34] bg-emerald-50/70 ring-2 ring-[#0B5D34]/30 shadow-md'
-                          : 'border-slate-200 bg-white hover:border-emerald-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <RaastBadge className="w-7 h-7" />
-                        {paymentMethod === 'raast' && <CheckCircle2 className="w-4 h-4 text-emerald-700" />}
-                      </div>
-                      <span className="text-xs font-bold text-slate-900 block">Raast Pay</span>
-                      <span className="text-[10px] text-slate-500 font-medium">SBP Instant 0% Fee</span>
-                    </button>
-
-                    {/* International / Domestic Cards */}
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('card')}
-                      className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
-                        paymentMethod === 'card'
-                          ? 'border-[#1d4ed8] bg-blue-50/70 ring-2 ring-[#1d4ed8]/30 shadow-md'
-                          : 'border-slate-200 bg-white hover:border-blue-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <CardNetworksBadge className="h-6 w-14" />
-                        {paymentMethod === 'card' && <CheckCircle2 className="w-4 h-4 text-blue-600" />}
-                      </div>
-                      <span className="text-xs font-bold text-slate-900 block">Credit / Debit</span>
-                      <span className="text-[10px] text-slate-500 font-medium">Visa / Master 3DS</span>
-                    </button>
-
-                    {/* Direct Bank Transfer (IBFT) */}
-                    <button
-                      type="button"
-                      onClick={() => setPaymentMethod('bank')}
-                      className={`p-3 rounded-2xl border text-left transition-all flex flex-col justify-between ${
-                        paymentMethod === 'bank'
-                          ? 'border-blue-900 bg-slate-100 ring-2 ring-blue-900/30 shadow-md'
-                          : 'border-slate-200 bg-white hover:border-blue-300'
-                      }`}
-                    >
-                      <div className="flex items-center justify-between mb-1.5">
-                        <BankTransferBadge className="w-7 h-7" />
-                        {paymentMethod === 'bank' && <CheckCircle2 className="w-4 h-4 text-blue-900" />}
-                      </div>
-                      <span className="text-xs font-bold text-slate-900 block">Meezan IBFT</span>
-                      <span className="text-[10px] text-slate-500 font-medium">All Banks Transfer</span>
+                      <span className="text-sm font-bold text-slate-900 block">NayaPay</span>
+                      <span className="text-xs text-slate-500 font-medium">E-Money ID &amp; Mobile Wallet</span>
                     </button>
                   </div>
                 </div>
@@ -883,258 +710,7 @@ export default function SubscriptionCheckoutModal({
                 {/* DYNAMIC PAYMENT METHOD DETAILS & DIRECT MERCHANT INSTRUCTIONS */}
                 {/* ============================================================= */}
 
-                {/* 1. Safepay Gateway */}
-                {paymentMethod === 'safepay' && (
-                  <div className="p-4 rounded-2xl bg-gradient-to-br from-slate-900 via-[#182A4D] to-slate-900 text-white space-y-4 animate-in fade-in">
-                    <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                      <div className="flex items-center gap-2">
-                        <SafepayBadge className="w-6 h-6" />
-                        <div>
-                          <h4 className="font-bold text-xs">Safepay Direct Checkout</h4>
-                          <p className="text-[10px] text-slate-300">Pakistan&apos;s Leading Digital Payment Gateway • PCI-DSS Certified</p>
-                        </div>
-                      </div>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                        Live 2026 TLS 1.3
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-300 block mb-1">Cardholder Full Name</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. John Doe"
-                          value={cardHolder}
-                          onChange={(e) => setCardHolder(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border border-white/20 bg-white/10 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-300 block mb-1">16-Digit Card Number (Visa / MasterCard / PayPak)</label>
-                        <input
-                          type="text"
-                          required
-                          maxLength={19}
-                          placeholder="4242 •••• •••• 4242"
-                          value={cardNumber}
-                          onChange={handleCardNumberChange}
-                          className="w-full px-3 py-2 rounded-xl border border-white/20 bg-white/10 text-white placeholder-slate-400 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-300 block mb-1">Expiry Date</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="MM/YY"
-                          maxLength={5}
-                          value={cardExpiry}
-                          onChange={handleExpiryChange}
-                          className="w-full px-3 py-2 rounded-xl border border-white/20 bg-white/10 text-white placeholder-slate-400 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-300 block mb-1">CVV / Security Code</label>
-                        <input
-                          type="password"
-                          required
-                          placeholder="•••"
-                          maxLength={4}
-                          value={cardCvv}
-                          onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                          className="w-full px-3 py-2 rounded-xl border border-white/20 bg-white/10 text-white placeholder-slate-400 font-mono focus:outline-none focus:ring-2 focus:ring-cyan-400"
-                        />
-                      </div>
-                    </div>
-
-                    <p className="text-[10px] text-slate-300 flex items-center gap-1.5">
-                      <Lock className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                      Safepay tokenizes card data with State Bank of Pakistan 3D Secure 2.0 biometric clearance.
-                    </p>
-                  </div>
-                )}
-
-                {/* 2. JazzCash */}
-                {paymentMethod === 'jazzcash' && (
-                  <div className="p-4 rounded-2xl bg-red-50/70 border border-red-200 space-y-4 animate-in fade-in text-xs">
-                    <div className="flex items-center justify-between pb-2 border-b border-red-200">
-                      <div className="flex items-center gap-2">
-                        <JazzCashBadge className="w-7 h-7" />
-                        <div>
-                          <h4 className="font-bold text-red-950 text-xs">JazzCash Official Merchant Account</h4>
-                          <p className="text-[10px] text-red-700">Instant Verification via 8585 SMS</p>
-                        </div>
-                      </div>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-red-100 text-red-800 border border-red-300 font-bold">
-                        Live 2026
-                      </span>
-                    </div>
-
-                    <div className="bg-white p-3.5 rounded-xl border border-red-200 flex flex-col sm:flex-row items-center gap-4">
-                      <div className="flex flex-col items-center justify-center p-2 rounded-xl border border-red-100 bg-red-50/60 shrink-0">
-                        <img
-                          src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=03190375751"
-                          alt="JazzCash Official QR"
-                          className="w-20 h-20 rounded-lg shadow-2xs"
-                        />
-                        <span className="text-[8px] font-bold text-red-800 mt-1 uppercase tracking-tight">Scan via JazzCash</span>
-                      </div>
-                      <div className="space-y-2 flex-1 w-full">
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-500 font-medium">Account Title:</span>
-                          <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                            <span>{liveGateways?.jazzcash?.account_title || 'ORBIT-I Private Limited'}</span>
-                            <button
-                              type="button"
-                              onClick={() => copyToClipboard(liveGateways?.jazzcash?.account_title || 'ORBIT-I Private Limited', 'jc_title')}
-                              className="px-2 py-0.5 rounded bg-slate-100 text-[10px] text-slate-700 font-sans font-bold"
-                            >
-                              {copiedField === 'jc_title' ? 'Copied' : 'Copy'}
-                            </button>
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-500 font-medium">JazzCash Mobile / Till:</span>
-                          <div className="flex items-center gap-1.5 font-mono font-bold text-red-700">
-                            <span>{liveGateways?.jazzcash?.account_number || '03190375751'}</span>
-                            <button
-                              type="button"
-                              onClick={() => copyToClipboard(liveGateways?.jazzcash?.account_number || '03190375751', 'jc_num')}
-                              className="px-2 py-0.5 rounded bg-red-100 text-[10px] text-red-900 font-sans font-bold"
-                            >
-                              {copiedField === 'jc_num' ? 'Copied' : 'Copy'}
-                            </button>
-                          </div>
-                        </div>
-                        <p className="text-[10px] text-slate-500 pt-1 border-t border-slate-100">
-                          Transfer fee to account above via app or dial <strong>*786#</strong>. Then paste your 11-12 digit TID from the 8585 SMS receipt below.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold text-slate-800 block mb-1">
-                          Sender Mobile / Account Number *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. 0300 1234567"
-                          value={customerMobile}
-                          onChange={(e) => setCustomerMobile(e.target.value)}
-                          className="w-full px-3.5 py-2 rounded-xl border border-red-300 text-sm bg-white font-mono focus:outline-none focus:ring-2 focus:ring-red-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-slate-800 block mb-1">
-                          JazzCash Transaction ID (TID from 8585 SMS) *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. 02948102941"
-                          value={trxId}
-                          onChange={(e) => setTrxId(e.target.value)}
-                          className="w-full px-3.5 py-2 rounded-xl border border-red-300 text-sm bg-white font-mono focus:outline-none focus:ring-2 focus:ring-red-500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 3. Easypaisa */}
-                {paymentMethod === 'easypaisa' && (
-                  <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200 space-y-4 animate-in fade-in text-xs">
-                    <div className="flex items-center justify-between pb-2 border-b border-emerald-200">
-                      <div className="flex items-center gap-2">
-                        <EasypaisaBadge className="w-7 h-7" />
-                        <div>
-                          <h4 className="font-bold text-emerald-950 text-xs">Easypaisa Official Merchant Account</h4>
-                          <p className="text-[10px] text-emerald-700">Instant Verification via 3737 SMS</p>
-                        </div>
-                      </div>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 border border-emerald-300 font-bold">
-                        Live 2026
-                      </span>
-                    </div>
-
-                    <div className="bg-white p-3.5 rounded-xl border border-emerald-200 flex flex-col sm:flex-row items-center gap-4">
-                      <div className="flex flex-col items-center justify-center p-2 rounded-xl border border-emerald-100 bg-emerald-50/60 shrink-0">
-                        <img
-                          src="https://api.qrserver.com/v1/create-qr-code/?size=130x130&data=03190375751"
-                          alt="Easypaisa Official QR"
-                          className="w-20 h-20 rounded-lg shadow-2xs"
-                        />
-                        <span className="text-[8px] font-bold text-emerald-800 mt-1 uppercase tracking-tight">Scan via Easypaisa</span>
-                      </div>
-                      <div className="space-y-2 flex-1 w-full">
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-500 font-medium">Account Title:</span>
-                          <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                            <span>{liveGateways?.easypaisa?.account_title || 'ORBIT-I Private Limited'}</span>
-                            <button
-                              type="button"
-                              onClick={() => copyToClipboard(liveGateways?.easypaisa?.account_title || 'ORBIT-I Private Limited', 'ep_title')}
-                              className="px-2 py-0.5 rounded bg-slate-100 text-[10px] text-slate-700 font-sans font-bold"
-                            >
-                              {copiedField === 'ep_title' ? 'Copied' : 'Copy'}
-                            </button>
-                          </div>
-                        </div>
-                        <div className="flex justify-between items-center">
-                          <span className="text-slate-500 font-medium">Easypaisa Mobile:</span>
-                          <div className="flex items-center gap-1.5 font-mono font-bold text-emerald-700">
-                            <span>{liveGateways?.easypaisa?.account_number || '03190375751'}</span>
-                            <button
-                              type="button"
-                              onClick={() => copyToClipboard(liveGateways?.easypaisa?.account_number || '03190375751', 'ep_num')}
-                              className="px-2 py-0.5 rounded bg-emerald-100 text-[10px] text-emerald-900 font-sans font-bold"
-                            >
-                              {copiedField === 'ep_num' ? 'Copied' : 'Copy'}
-                            </button>
-                          </div>
-                        </div>
-                        <p className="text-[10px] text-slate-500 pt-1 border-t border-slate-100">
-                          Transfer fee to account above via app or dial <strong>*786#</strong>. Then paste your 11-digit TID from the 3737 SMS receipt below.
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                      <div>
-                        <label className="text-xs font-bold text-slate-800 block mb-1">
-                          Sender Mobile / Easypaisa Account *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. 0345 1234567"
-                          value={customerMobile}
-                          onChange={(e) => setCustomerMobile(e.target.value)}
-                          className="w-full px-3.5 py-2 rounded-xl border border-emerald-300 text-sm bg-white font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-xs font-bold text-slate-800 block mb-1">
-                          Easypaisa Transaction ID (TID from 3737 SMS) *
-                        </label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. 19827401928"
-                          value={trxId}
-                          onChange={(e) => setTrxId(e.target.value)}
-                          className="w-full px-3.5 py-2 rounded-xl border border-emerald-300 text-sm bg-white font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 4. SadaPay */}
+                {/* 1. SadaPay */}
                 {paymentMethod === 'sadapay' && (
                   <div className="p-4 rounded-2xl bg-teal-50/70 border border-teal-200 space-y-3 animate-in fade-in text-xs text-teal-950">
                     <div className="flex items-center gap-2 font-bold text-xs">
@@ -1193,7 +769,7 @@ export default function SubscriptionCheckoutModal({
                   </div>
                 )}
 
-                {/* 5. NayaPay */}
+                {/* 2. NayaPay */}
                 {paymentMethod === 'nayapay' && (
                   <div className="p-4 rounded-2xl bg-orange-50/70 border border-orange-200 space-y-3 animate-in fade-in text-xs text-orange-950">
                     <div className="flex items-center gap-2 font-bold text-xs">
@@ -1252,206 +828,7 @@ export default function SubscriptionCheckoutModal({
                   </div>
                 )}
 
-                {/* 6. Raast Instant Pay */}
-                {paymentMethod === 'raast' && (
-                  <div className="p-4 rounded-2xl bg-emerald-50/70 border border-emerald-300 space-y-3 animate-in fade-in text-xs text-emerald-950">
-                    <div className="flex items-center gap-2 font-bold text-xs">
-                      <RaastBadge className="w-6 h-6" />
-                      <div>
-                        <h4>Raast Instant Payment (State Bank of Pakistan)</h4>
-                        <p className="text-[10px] text-emerald-700">Zero Fees • Instant Settlement across 35+ Pakistani Banks</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-white p-3 rounded-xl border border-emerald-200 space-y-2 font-mono">
-                      <div className="flex justify-between items-center font-sans">
-                        <span className="text-slate-500">Beneficiary Title:</span>
-                        <span className="font-bold text-slate-900">ORBIT-I / Eventrye</span>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="font-sans text-slate-500">Official Raast ID:</span>
-                        <div className="flex items-center gap-1.5 font-bold text-emerald-700">
-                          <span>03190375751</span>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard('03190375751', 'raast_id')}
-                            className="px-2 py-0.5 rounded bg-emerald-100 text-[10px] text-emerald-900 font-sans"
-                          >
-                            {copiedField === 'raast_id' ? 'Copied' : 'Copy Raast ID'}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center pt-1 border-t border-slate-100">
-                        <span className="font-sans text-slate-500">Raast IBAN:</span>
-                        <div className="flex items-center gap-1.5 font-bold text-slate-800 text-[11px]">
-                          <span>PK64MEZN0001020104889912</span>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard('PK64MEZN0001020104889912', 'raast_iban')}
-                            className="px-2 py-0.5 rounded bg-emerald-100 text-[10px] text-emerald-900 font-sans"
-                          >
-                            {copiedField === 'raast_iban' ? 'Copied' : 'Copy'}
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-bold text-slate-800 block mb-1">
-                        Enter Raast Reference Number (RRN from Bank SMS / App) *
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. RAST-2026-98124501"
-                        value={trxId}
-                        onChange={(e) => setTrxId(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl border border-emerald-300 text-sm bg-white font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* 7. Direct Cards (Visa / Mastercard) */}
-                {paymentMethod === 'card' && (
-                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3 animate-in fade-in">
-                    <div className="flex items-center justify-between pb-2 border-b border-slate-200">
-                      <div className="flex items-center gap-2">
-                        <CardNetworksBadge className="h-5 w-12" />
-                        <span className="text-xs font-bold text-slate-800">Credit / Debit Card (256-Bit 3DS 2.0)</span>
-                      </div>
-                      <span className="text-[10px] text-emerald-600 font-bold flex items-center gap-1">
-                        <Lock className="w-3 h-3" />
-                        Secure Issuing Switch
-                      </span>
-                    </div>
-
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Cardholder Full Name</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="e.g. John Doe"
-                          value={cardHolder}
-                          onChange={(e) => setCardHolder(e.target.value)}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">16-Digit Card Number</label>
-                        <input
-                          type="text"
-                          required
-                          maxLength={19}
-                          placeholder="4242 •••• •••• 4242"
-                          value={cardNumber}
-                          onChange={handleCardNumberChange}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">Expiry Date</label>
-                        <input
-                          type="text"
-                          required
-                          placeholder="MM/YY"
-                          maxLength={5}
-                          value={cardExpiry}
-                          onChange={handleExpiryChange}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-mono"
-                        />
-                      </div>
-                      <div>
-                        <label className="text-[11px] font-semibold text-slate-600 block mb-1">CVV / CVC Code</label>
-                        <input
-                          type="password"
-                          required
-                          placeholder="•••"
-                          maxLength={4}
-                          value={cardCvv}
-                          onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, ''))}
-                          className="w-full px-3 py-2 rounded-xl border border-slate-300 bg-white text-slate-900 font-mono"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 8. Bank Transfer (IBFT) */}
-                {paymentMethod === 'bank' && (
-                  <div className="p-4 rounded-2xl bg-blue-50/70 border border-blue-200 space-y-3.5 animate-in fade-in text-xs text-blue-950">
-                    <div className="flex items-center gap-3 pb-2.5 border-b border-blue-200">
-                      <BankTransferBadge className="w-10 h-10 shadow-xs" />
-                      <div>
-                        <h4 className="font-bold text-slate-900 text-xs">Meezan Bank Limited (Corporate Islamic Banking)</h4>
-                        <p className="text-[10px] text-blue-700">Premier Inter-Bank 1Link IBFT &amp; Raast Clearances</p>
-                      </div>
-                    </div>
-
-                    <div className="bg-white p-3.5 rounded-xl border border-blue-200 space-y-2.5 font-mono">
-                      <div className="flex justify-between items-center font-sans">
-                        <span className="text-slate-500 font-medium">Bank Name:</span>
-                        <span className="font-bold text-slate-900">Meezan Bank Limited</span>
-                      </div>
-                      <div className="flex justify-between items-center font-sans">
-                        <span className="text-slate-500 font-medium">Account Title:</span>
-                        <div className="flex items-center gap-1.5 font-bold text-slate-900">
-                          <span>Eventrye Technologies (ORBIT-I)</span>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard('Eventrye Technologies (ORBIT-I)', 'meezan_title')}
-                            className="px-2 py-0.5 rounded bg-slate-100 text-[10px] text-slate-700 font-sans font-bold"
-                          >
-                            {copiedField === 'meezan_title' ? 'Copied' : 'Copy'}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center">
-                        <span className="font-sans text-slate-500 font-medium">Account Number:</span>
-                        <div className="flex items-center gap-1.5 font-bold text-blue-700">
-                          <span>0102-0104889912</span>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard('01020104889912', 'bank_acc')}
-                            className="px-2 py-0.5 rounded bg-blue-100 text-[10px] text-blue-900 font-sans font-bold"
-                          >
-                            {copiedField === 'bank_acc' ? 'Copied' : 'Copy'}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center pt-1 border-t border-slate-100">
-                        <span className="font-sans text-slate-500 font-medium">24-Char Official IBAN:</span>
-                        <div className="flex items-center gap-1.5 font-bold text-slate-800 text-[11px]">
-                          <span>PK64MEZN0001020104889912</span>
-                          <button
-                            type="button"
-                            onClick={() => copyToClipboard('PK64MEZN0001020104889912', 'bank_iban')}
-                            className="px-2 py-0.5 rounded bg-blue-100 text-[10px] text-blue-900 font-sans font-bold"
-                          >
-                            {copiedField === 'bank_iban' ? 'Copied' : 'Copy IBAN'}
-                          </button>
-                        </div>
-                      </div>
-                      <div className="flex justify-between items-center font-sans text-[10px] text-slate-500 pt-1 border-t border-slate-100">
-                        <span>Branch: Clifton Corporate Branch, Karachi</span>
-                        <span className="font-semibold text-emerald-700">0% Fee IBFT</span>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="text-xs font-bold text-slate-800 block mb-1">
-                        Enter Bank Transaction Reference / Slip ID / RRN *
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. TRX-982347102 or RRN-402910"
-                        value={trxId}
-                        onChange={(e) => setTrxId(e.target.value)}
-                        className="w-full px-3.5 py-2 rounded-xl border border-blue-300 text-sm bg-white font-mono focus:outline-none focus:ring-2 focus:ring-blue-500"
-                      />
-                    </div>
-                  </div>
-                )}
+                
               </div>
             ) : (
               <div className="p-4 rounded-2xl bg-amber-50 border border-amber-200 text-xs text-amber-900 space-y-2">

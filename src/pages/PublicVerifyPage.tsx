@@ -17,7 +17,6 @@ import {
   Printer,
   Ticket,
   MapPin,
-  Clock,
   Tag
 } from 'lucide-react';
 import BrandLogo from '@/components/BrandLogo';

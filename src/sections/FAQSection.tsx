@@ -20,7 +20,7 @@ const faqs = [
   },
   {
     q: 'Which payment methods are supported for attendee ticketing?',
-    a: 'We natively support real-time Pakistani payment rails including SBP Raast Instant Pay, JazzCash, Easypaisa, and Meezan Bank IBFT, alongside international Visa and Mastercard processing.',
+    a: 'We support direct digital payments through SadaPay and NayaPay with instant transaction verification, receipts, and automatic attendee badge generation.',
   },
   {
     q: 'Can I import existing attendee lists via CSV or Excel?',

@@ -386,6 +386,7 @@ export const api = {
       designation?: string;
       currency?: string;
       paymentMethod?: string;
+      transactionId?: string;
     }) =>
       request<{ success: boolean; message: string; registration: any }>(`/events/${id}/register`, {
         method: 'POST',
@@ -572,7 +573,23 @@ export const api = {
       ),
 
     getListingRequests: () =>
-      request<{ success: boolean; requests: any[] }>('/directory-events/admin/listing-requests'),
+      request<{ success: boolean; requests: any[] }>('/directory-events/listing-requests'),
+
+    approveListingRequest: (id: number) =>
+      request<{ success: boolean; message: string; request: any; event?: any }>(`/directory-events/listing-requests/${id}/approve`, {
+        method: 'PUT'
+      }),
+
+    rejectListingRequest: (id: number, reason?: string) =>
+      request<{ success: boolean; message: string; request: any }>(`/directory-events/listing-requests/${id}/reject`, {
+        method: 'PUT',
+        body: JSON.stringify({ reason })
+      }),
+
+    toggleApprove: (id: number) =>
+      request<{ success: boolean; message: string; is_approved: number; event: any }>(`/directory-events/${id}/toggle-approve`, {
+        method: 'PUT'
+      }),
   },
 
   // High-Capacity Media Uploads (Images & Videos)

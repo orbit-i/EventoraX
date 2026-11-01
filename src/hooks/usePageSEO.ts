@@ -25,7 +25,7 @@ const routeMetadataMap: Record<string, RouteMetadata> = {
   },
   '/pricing': {
     title: 'Simple & Predictable Pricing — Multi-Tenant Workspaces | Eventrye',
-    description: 'Transparent pricing for organizers, universities and enterprise summits. Supported payment options include Raast, JazzCash, Easypaisa, Meezan Bank, and Credit Cards.'
+    description: 'Transparent pricing for organizers, universities and enterprise summits. Supported payment options include instant direct transfers via SadaPay and NayaPay.'
   },
   '/case-studies': {
     title: 'Case Studies & Institutional Deployments — Success Stories | Eventrye',

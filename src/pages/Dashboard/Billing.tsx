@@ -231,7 +231,7 @@ export default function Billing() {
                   Subscription Approvals
                 </h4>
                 <p className="text-xs text-slate-500 mt-1">
-                  Verify client payments (Card, Bank IBFT, JazzCash, Easypaisa, Raast) and activate keys.
+                  Verify client payments (SadaPay, NayaPay) and activate keys.
                 </p>
                 <span className="text-xs font-bold text-amber-600 mt-3 inline-flex items-center gap-1">
                   {pendingApprovalsCount} Pending Verification &rarr;

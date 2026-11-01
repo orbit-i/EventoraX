@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { 
   IdCard, 
   Printer, 
-  Download, 
-  QrCode,
+  Download,
   Palette,
   Layers,
   MapPin,

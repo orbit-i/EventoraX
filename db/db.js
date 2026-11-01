@@ -10,6 +10,7 @@ dotenv.config();
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const LOCAL_STORE_PATH = path.join(__dirname, 'local_store.json');
+const LOCAL_STORE_BACKUP_PATH = path.join(__dirname, 'local_store.backup.json');
 
 const dbConfig = {
   host: process.env.DB_HOST || 'localhost',
@@ -386,7 +387,11 @@ export const memoryStore = {
 // =====================================================
 export function saveMemoryStoreToDisk() {
   try {
-    fs.writeFileSync(LOCAL_STORE_PATH, JSON.stringify(memoryStore, null, 2), 'utf-8');
+    const serialized = JSON.stringify(memoryStore, null, 2);
+    fs.writeFileSync(LOCAL_STORE_PATH, serialized, 'utf-8');
+    if (Array.isArray(memoryStore.users) && memoryStore.users.length > 0) {
+      fs.writeFileSync(LOCAL_STORE_BACKUP_PATH, serialized, 'utf-8');
+    }
   } catch (err) {
     console.warn('[DB Local Store] Notice saving store to disk:', err.message);
   }
@@ -395,12 +400,22 @@ export const saveLocalStore = saveMemoryStoreToDisk;
 
 export function loadMemoryStoreFromDisk() {
   try {
-    if (fs.existsSync(LOCAL_STORE_PATH)) {
-      const content = fs.readFileSync(LOCAL_STORE_PATH, 'utf-8');
+    let sourcePath = LOCAL_STORE_PATH;
+    if (!fs.existsSync(sourcePath) && fs.existsSync(LOCAL_STORE_BACKUP_PATH)) {
+      sourcePath = LOCAL_STORE_BACKUP_PATH;
+    }
+    if (fs.existsSync(sourcePath)) {
+      const content = fs.readFileSync(sourcePath, 'utf-8');
       if (content && content.trim()) {
         const loaded = JSON.parse(content);
         for (const key of Object.keys(loaded)) {
+          if (Array.isArray(loaded[key]) && loaded[key].length === 0 && Array.isArray(memoryStore[key]) && memoryStore[key].length > 0) {
+            continue;
+          }
           memoryStore[key] = loaded[key];
+        }
+        if (sourcePath === LOCAL_STORE_BACKUP_PATH && !fs.existsSync(LOCAL_STORE_PATH)) {
+          fs.writeFileSync(LOCAL_STORE_PATH, content, 'utf-8');
         }
         return true;
       }

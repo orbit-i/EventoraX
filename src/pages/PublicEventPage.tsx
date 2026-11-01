@@ -12,7 +12,6 @@ import {
   Download, 
   Copy, 
   Check, 
-  CreditCard, 
   Smartphone, 
   AlertCircle,
   X,
@@ -20,11 +19,11 @@ import {
   Printer,
   Image as ImageIcon,
   Video as VideoIcon,
-  Play,
   Maximize2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { SadaPayBadge, NayaPayBadge } from '@/components/payment/PaymentLogos';
 import BrandLogo from '@/components/BrandLogo';
 import { api } from '@/services/api';
 import { printElement, downloadElementAsImage } from '@/lib/printUtils';
@@ -47,7 +46,8 @@ export default function PublicEventPage() {
     phone: '',
     organization: '',
     designation: '',
-    paymentMethod: 'free'
+    paymentMethod: 'sadapay',
+    tid: ''
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [registeredAttendee, setRegisteredAttendee] = useState<any | null>(null);
@@ -139,6 +139,10 @@ export default function PublicEventPage() {
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!event) return;
+    if (!isFree && !regForm.tid.trim()) {
+      alert('Please enter your Transaction ID (TID) from your SadaPay or NayaPay payment receipt.');
+      return;
+    }
     setIsSubmitting(true);
 
     try {
@@ -150,7 +154,8 @@ export default function PublicEventPage() {
         organization: regForm.organization,
         designation: regForm.designation,
         currency,
-        paymentMethod: isFree ? 'free' : regForm.paymentMethod
+        paymentMethod: isFree ? 'free' : regForm.paymentMethod,
+        transactionId: isFree ? 'FREE' : regForm.tid.trim().toUpperCase()
       });
 
       if (res.success && res.registration) {
@@ -811,38 +816,57 @@ export default function PublicEventPage() {
                 {/* Payment Options (if paid) */}
                 {!isFree && (
                   <div className="space-y-2 pt-2 border-t border-slate-100">
-                    <label className="text-xs font-bold text-slate-700 block">Select Payment Method</label>
-                    <div className="grid grid-cols-3 gap-2">
+                    <label className="text-xs font-bold text-slate-700 block">Select Payment Method (SadaPay &amp; NayaPay)</label>
+                    <div className="grid grid-cols-2 gap-2.5">
                       <button
                         type="button"
-                        onClick={() => setRegForm({ ...regForm, paymentMethod: 'card' })}
-                        className={`p-2.5 rounded-xl border text-center text-xs font-bold ${
-                          regForm.paymentMethod === 'card' ? 'border-[#1d4ed8] bg-blue-50 text-[#1d4ed8]' : 'border-slate-200'
+                        onClick={() => setRegForm({ ...regForm, paymentMethod: 'sadapay' })}
+                        className={`p-3 rounded-xl border text-center text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                          regForm.paymentMethod === 'sadapay' ? 'border-[#00A389] bg-teal-50 text-teal-900 ring-2 ring-[#00A389]/20' : 'border-slate-200'
                         }`}
                       >
-                        <CreditCard className="w-4 h-4 mx-auto mb-1" />
-                        Card (Stripe)
+                        <SadaPayBadge className="w-5 h-5" />
+                        <span>SadaPay</span>
                       </button>
                       <button
                         type="button"
-                        onClick={() => setRegForm({ ...regForm, paymentMethod: 'jazzcash' })}
-                        className={`p-2.5 rounded-xl border text-center text-xs font-bold ${
-                          regForm.paymentMethod === 'jazzcash' ? 'border-red-600 bg-red-50 text-red-600' : 'border-slate-200'
+                        onClick={() => setRegForm({ ...regForm, paymentMethod: 'nayapay' })}
+                        className={`p-3 rounded-xl border text-center text-xs font-bold flex items-center justify-center gap-2 transition-all ${
+                          regForm.paymentMethod === 'nayapay' ? 'border-[#FF5C00] bg-orange-50 text-orange-900 ring-2 ring-[#FF5C00]/20' : 'border-slate-200'
                         }`}
                       >
-                        <Smartphone className="w-4 h-4 mx-auto mb-1 text-red-600" />
-                        JazzCash
+                        <NayaPayBadge className="w-5 h-5" />
+                        <span>NayaPay</span>
                       </button>
-                      <button
-                        type="button"
-                        onClick={() => setRegForm({ ...regForm, paymentMethod: 'easypaisa' })}
-                        className={`p-2.5 rounded-xl border text-center text-xs font-bold ${
-                          regForm.paymentMethod === 'easypaisa' ? 'border-emerald-600 bg-emerald-50 text-emerald-600' : 'border-slate-200'
-                        }`}
-                      >
-                        <Smartphone className="w-4 h-4 mx-auto mb-1 text-emerald-600" />
-                        Easypaisa
-                      </button>
+                    </div>
+
+                    <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 text-xs space-y-1">
+                      {regForm.paymentMethod === 'sadapay' ? (
+                        <>
+                          <div className="font-bold text-teal-800">SadaPay Account: 03190375751</div>
+                          <div className="text-slate-500 text-[11px]">Title: ORBIT-I Private Limited | IBAN: PK03SADA0000003190375751</div>
+                        </>
+                      ) : (
+                        <>
+                          <div className="font-bold text-orange-800">NayaPay ID: orbit-i@nayapay / 03190375751</div>
+                          <div className="text-slate-500 text-[11px]">Title: ORBIT-I Private Limited</div>
+                        </>
+                      )}
+                      <p className="text-[11px] text-slate-500 pt-1">
+                        Transfer the ticket amount ({displayPrice}) then enter your receipt Transaction ID (TID) below.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="text-xs font-bold text-slate-700 block mb-1">Transaction ID (TID) *</label>
+                      <input
+                        type="text"
+                        required
+                        placeholder="e.g. SADA-119922 or NAYA-887766"
+                        value={regForm.tid}
+                        onChange={(e) => setRegForm({ ...regForm, tid: e.target.value })}
+                        className="w-full px-3.5 py-2 text-xs font-mono uppercase font-bold rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
                     </div>
                   </div>
                 )}

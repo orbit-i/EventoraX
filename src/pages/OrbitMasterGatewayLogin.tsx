@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { ShieldCheck, Lock, ArrowRight, Eye, EyeOff, AlertCircle, ShieldAlert, UserPlus, LogIn, CheckCircle2, KeyRound, Loader2 } from 'lucide-react';
+import { ShieldCheck, Lock, ArrowRight, Eye, EyeOff, AlertCircle, ShieldAlert, CheckCircle2, KeyRound, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { api } from '@/services/api';
 import BrandLogo from '@/components/BrandLogo';

@@ -3,6 +3,7 @@ import { Check, Sparkles, CreditCard } from 'lucide-react';
 import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import SubscriptionCheckoutModal, { type PlanData } from '@/components/SubscriptionCheckoutModal';
+import { SadaPayBadge, NayaPayBadge } from '@/components/payment/PaymentLogos';
 import { api } from '@/services/api';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -224,47 +225,18 @@ export default function PricingSection() {
         </div>
 
         {/* Payment Methods Footer Strip */}
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-xs font-semibold text-slate-600">
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-3 sm:gap-4 text-xs font-semibold text-slate-600">
           <span className="flex items-center gap-1.5 text-slate-800 font-bold mr-1">
             <CreditCard className="w-4 h-4 text-[#1d4ed8]" />
-            Official Real-Time Gateways:
+            Official Real-Time Direct Payments:
           </span>
-          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
-            <img
-              src="/images/payments/jazzcash.png"
-              alt="JazzCash"
-              className="h-5 w-auto max-w-[65px] object-contain shrink-0"
-              style={{ height: '20px', maxHeight: '20px', maxWidth: '65px', objectFit: 'contain' }}
-              loading="lazy"
-            />
-            <span className="font-bold text-slate-800 text-[11px]">JazzCash</span>
+          <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-xs hover:border-[#00A389]/50 transition-all">
+            <SadaPayBadge className="w-5 h-5 shrink-0" />
+            <span className="font-bold text-slate-800 text-[11px]">SadaPay</span>
           </div>
-          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
-            <img
-              src="/images/payments/easypaisa.png"
-              alt="Easypaisa"
-              className="h-5 w-auto max-w-[65px] object-contain shrink-0"
-              style={{ height: '20px', maxHeight: '20px', maxWidth: '65px', objectFit: 'contain' }}
-              loading="lazy"
-            />
-            <span className="font-bold text-slate-800 text-[11px]">Easypaisa</span>
-          </div>
-          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
-            <img
-              src="/images/payments/meezan.png"
-              alt="Meezan Bank"
-              className="h-5 w-auto max-w-[65px] object-contain shrink-0"
-              style={{ height: '20px', maxHeight: '20px', maxWidth: '65px', objectFit: 'contain' }}
-              loading="lazy"
-            />
-            <span className="font-bold text-slate-800 text-[11px]">Meezan IBFT</span>
-          </div>
-          <div className="flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-            <span className="font-bold text-[#0B5D34] text-[11px]">Raast Instant</span>
-          </div>
-          <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-slate-200 shadow-xs hover:border-slate-300 transition-all">
-            <span className="font-bold text-slate-800 text-[11px]">PayFast / Visa / Mastercard</span>
+          <div className="flex items-center gap-2 bg-white px-3.5 py-2 rounded-xl border border-slate-200 shadow-xs hover:border-[#FF5C00]/50 transition-all">
+            <NayaPayBadge className="w-5 h-5 shrink-0" />
+            <span className="font-bold text-slate-800 text-[11px]">NayaPay</span>
           </div>
         </div>
       </div>

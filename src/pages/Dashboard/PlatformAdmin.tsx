@@ -17,7 +17,7 @@ import {
   ShieldCheck,
   Lock,
   Radio,
-  CheckCircle2,
+  CheckCircle2, Clock,
   Globe,
   Save,
   ExternalLink,
@@ -52,12 +52,8 @@ import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
 import FinancialAuditReportsSection from "./FinancialAuditReportsSection";
 import {
-  EasypaisaBadge,
-  JazzCashBadge,
-  RaastBadge,
-  BankTransferBadge,
-  SafepayBadge,
-  CardNetworksBadge
+  SadaPayBadge,
+  NayaPayBadge
 } from "@/components/payment/PaymentLogos";
 
 type AdminTab = 'overview' | 'reports' | 'licenses' | 'approvals' | 'tenants' | 'billing' | 'pricing' | 'gateways' | 'casestudies' | 'directory' | 'team' | 'testimonials' | 'cms' | 'security' | 'notifications' | 'backup' | 'profile';
@@ -242,12 +238,8 @@ export default function PlatformAdmin() {
   // PAYMENT GATEWAYS & MERCHANT ACCOUNTS STATE
   // ==========================================
   const [merchantGateways, setMerchantGateways] = useState<any>({
-    easypaisa: { enabled: true, title: 'Easypaisa Mobile Wallet & QR', account_title: 'ORBIT-I Private Limited', account_number: '03190375751', store_id: 'EP-ORBIT-2026', hash_key: '', api_mode: 'manual', instructions: 'Send subscription fee to Easypaisa Account 03190375751. Enter 11-digit TID below.' },
-    jazzcash: { enabled: true, title: 'JazzCash Mobile Wallet & Till', account_title: 'ORBIT-I Private Limited', account_number: '03001234567', till_id: 'JC-ORBIT-8899', merchant_id: '', password: '', salt: '', api_mode: 'manual', instructions: 'Send amount to JazzCash Till 03001234567. Enter TID below.' },
-    raast: { enabled: true, title: 'Raast Instant Pay (State Bank of Pakistan)', account_title: 'ORBIT-I Private Limited', iban: 'PK45MEZN0001234567890101', raast_id: '03190375751', instructions: 'Pay instantly via mobile banking app using Raast ID or IBAN.' },
-    bank_transfer: { enabled: true, title: 'Direct Corporate Bank Transfer', bank_name: 'Meezan Bank Limited', account_title: 'ORBIT-I Private Limited', account_number: '01020304050607', iban: 'PK45MEZN0001234567890101', branch: 'F-7 Markaz, Islamabad', instructions: 'Direct wire to our Meezan Bank corporate clearing account.' },
-    safepay: { enabled: true, title: 'Safepay Pakistan (Debit / Credit Cards & PayPak)', public_key: 'sec_sandbox_eventrye_2026', secret_key: '', environment: 'sandbox', instructions: 'Accept Visa, Mastercard and PayPak.' },
-    stripe: { enabled: true, title: 'Stripe International (Global USD Cards)', publishable_key: 'pk_test_eventrye_global_2026', secret_key: '', instructions: 'Accept all international cards and Apple Pay.' }
+    sadapay: { enabled: true, title: 'SadaPay Business & Personal', account_title: 'ORBIT-I Technologies', account_number: '03001234567', iban: 'PK12SADA0000000000000001', instructions: 'Send money to our official SadaPay account (03001234567). Enter the 11-digit or 6-digit TID / Ref ID from your payment SMS/app.' },
+    nayapay: { enabled: true, title: 'NayaPay Wallet & IBAN', account_title: 'ORBIT-I Technologies', nayapay_id: 'orbit-i@nayapay', account_number: '03001234567', iban: 'PK12NAYA0000000000000001', instructions: 'Send money to NayaPay ID (orbit-i@nayapay) or mobile (03001234567). Enter your receipt reference ID / TID.' }
   });
   const [, setGatewaysLoading] = useState(false);
   const [gatewaysSaving, setGatewaysSaving] = useState(false);
@@ -366,7 +358,8 @@ export default function PlatformAdmin() {
   const [directoryEventsList, setDirectoryEventsList] = useState<any[]>([]);
   const [, setDirectoryLoading] = useState(false);
   const [directoryBookingsList, setDirectoryBookingsList] = useState<any[]>([]);
-  const [directorySubTab, setDirectorySubTab] = useState<'events' | 'bookings'>('events');
+  const [listingRequests, setListingRequests] = useState<any[]>([]);
+  const [directorySubTab, setDirectorySubTab] = useState<'events' | 'requests' | 'bookings'>('events');
   const [directoryModal, setDirectoryModal] = useState<{ open: boolean; isNew: boolean; event: any }>({
     open: false,
     isNew: true,
@@ -393,16 +386,56 @@ export default function PlatformAdmin() {
   const loadDirectoryEvents = async () => {
     setDirectoryLoading(true);
     try {
-      const [evRes, bkRes] = await Promise.allSettled([
+      const [evRes, bkRes, lrRes] = await Promise.allSettled([
         api.directoryEvents.list(true),
-        api.directoryEvents.getBookings()
+        api.directoryEvents.getBookings(),
+        api.directoryEvents.getListingRequests()
       ]);
       if (evRes.status === 'fulfilled' && evRes.value.success) setDirectoryEventsList(evRes.value.events);
       if (bkRes.status === 'fulfilled' && bkRes.value.success) setDirectoryBookingsList(bkRes.value.bookings);
+      if (lrRes.status === 'fulfilled' && lrRes.value.success) setListingRequests(lrRes.value.requests || []);
     } catch (err) {
       console.error('Failed to load directory events:', err);
     } finally {
       setDirectoryLoading(false);
+    }
+  };
+
+  const handleToggleApproveEvent = async (id: number) => {
+    try {
+      const res = await api.directoryEvents.toggleApprove(id);
+      if (res.success) {
+        await loadDirectoryEvents();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to toggle event approval');
+    }
+  };
+
+  const handleApproveListingRequest = async (id: number) => {
+    if (!confirm('Approve this listing request and publish the event publicly to the Directory?')) return;
+    try {
+      const res = await api.directoryEvents.approveListingRequest(id);
+      if (res.success) {
+        alert('Event approved and published successfully!');
+        await loadDirectoryEvents();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to approve listing request');
+    }
+  };
+
+  const handleRejectListingRequest = async (id: number) => {
+    const reason = prompt('Reason for rejecting listing request (optional):');
+    if (reason === null) return;
+    try {
+      const res = await api.directoryEvents.rejectListingRequest(id, reason);
+      if (res.success) {
+        alert('Listing request rejected.');
+        await loadDirectoryEvents();
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to reject listing request');
     }
   };
 
@@ -3212,7 +3245,7 @@ export default function PlatformAdmin() {
                   Official Merchant Gateways &amp; Payment Accounts
                 </h2>
                 <p className="text-xs text-[#64748b]">
-                  SuperAdmin control center for real Pakistani wallets, State Bank Raast rails, corporate bank clearing, and international cards. All accounts are 100% configurable and live.
+                  SuperAdmin control center for official SadaPay and NayaPay merchant accounts. Direct transfers with zero middleman fees.
                 </p>
               </div>
 
@@ -3235,25 +3268,25 @@ export default function PlatformAdmin() {
 
             {/* Gateways Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* 1. Easypaisa */}
-              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <EasypaisaBadge className="w-7 h-7" />
+              {/* 1. SadaPay */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-4 hover:border-[#00A389]/40 transition-all">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <SadaPayBadge className="w-8 h-8" />
                     <div>
-                      <h4 className="text-sm font-bold text-slate-900">Easypaisa Mobile Wallet &amp; QR</h4>
-                      <span className="text-[10px] text-emerald-700 font-semibold">Telenor Microfinance Bank</span>
+                      <h4 className="text-sm font-bold text-slate-900">SadaPay Business &amp; Personal</h4>
+                      <span className="text-[10px] text-[#00A389] font-semibold">Instant Real-Time Verification Rail</span>
                     </div>
                   </div>
                   <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
                     <input
                       type="checkbox"
-                      checked={Boolean(merchantGateways.easypaisa?.enabled)}
+                      checked={Boolean(merchantGateways.sadapay?.enabled)}
                       onChange={(e) => setMerchantGateways({
                         ...merchantGateways,
-                        easypaisa: { ...merchantGateways.easypaisa, enabled: e.target.checked }
+                        sadapay: { ...merchantGateways.sadapay, enabled: e.target.checked }
                       })}
-                      className="rounded text-emerald-600 w-4 h-4"
+                      className="rounded text-[#00A389] w-4 h-4"
                     />
                     Enabled
                   </label>
@@ -3263,305 +3296,23 @@ export default function PlatformAdmin() {
                   <div>
                     <label className="font-bold text-slate-700 block mb-1">Account Title</label>
                     <Input
-                      value={merchantGateways.easypaisa?.account_title || ''}
+                      value={merchantGateways.sadapay?.account_title || ''}
                       onChange={(e) => setMerchantGateways({
                         ...merchantGateways,
-                        easypaisa: { ...merchantGateways.easypaisa, account_title: e.target.value }
+                        sadapay: { ...merchantGateways.sadapay, account_title: e.target.value }
                       })}
-                      className="rounded-xl h-9 text-xs"
+                      className="rounded-xl h-9 text-xs font-semibold"
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Account Number / Mobile</label>
+                    <label className="font-bold text-slate-700 block mb-1">Mobile / Account Number</label>
                     <Input
-                      value={merchantGateways.easypaisa?.account_number || ''}
+                      value={merchantGateways.sadapay?.account_number || ''}
                       onChange={(e) => setMerchantGateways({
                         ...merchantGateways,
-                        easypaisa: { ...merchantGateways.easypaisa, account_number: e.target.value }
+                        sadapay: { ...merchantGateways.sadapay, account_number: e.target.value }
                       })}
                       className="rounded-xl h-9 text-xs font-mono font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Store ID (Open API)</label>
-                    <Input
-                      value={merchantGateways.easypaisa?.store_id || ''}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        easypaisa: { ...merchantGateways.easypaisa, store_id: e.target.value }
-                      })}
-                      placeholder="e.g. EP-ORBIT-2026"
-                      className="rounded-xl h-9 text-xs font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Hash Key / Secret (Optional)</label>
-                    <Input
-                      type="password"
-                      value={merchantGateways.easypaisa?.hash_key || ''}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        easypaisa: { ...merchantGateways.easypaisa, hash_key: e.target.value }
-                      })}
-                      placeholder="••••••••••••"
-                      className="rounded-xl h-9 text-xs font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1 text-xs">Checkout Instructions for Attendees</label>
-                  <textarea
-                    rows={2}
-                    value={merchantGateways.easypaisa?.instructions || ''}
-                    onChange={(e) => setMerchantGateways({
-                      ...merchantGateways,
-                      easypaisa: { ...merchantGateways.easypaisa, instructions: e.target.value }
-                    })}
-                    className="w-full p-2 rounded-xl border border-slate-200 text-xs"
-                  />
-                </div>
-              </div>
-
-              {/* 2. JazzCash */}
-              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <JazzCashBadge className="w-7 h-7" />
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900">JazzCash Mobile Wallet &amp; Till</h4>
-                      <span className="text-[10px] text-red-700 font-semibold">Mobilink Microfinance Bank</span>
-                    </div>
-                  </div>
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(merchantGateways.jazzcash?.enabled)}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        jazzcash: { ...merchantGateways.jazzcash, enabled: e.target.checked }
-                      })}
-                      className="rounded text-red-600 w-4 h-4"
-                    />
-                    Enabled
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Account Title</label>
-                    <Input
-                      value={merchantGateways.jazzcash?.account_title || ''}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        jazzcash: { ...merchantGateways.jazzcash, account_title: e.target.value }
-                      })}
-                      className="rounded-xl h-9 text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Wallet / Till Number</label>
-                    <Input
-                      value={merchantGateways.jazzcash?.account_number || ''}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        jazzcash: { ...merchantGateways.jazzcash, account_number: e.target.value }
-                      })}
-                      className="rounded-xl h-9 text-xs font-mono font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Merchant ID</label>
-                    <Input
-                      value={merchantGateways.jazzcash?.merchant_id || ''}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        jazzcash: { ...merchantGateways.jazzcash, merchant_id: e.target.value }
-                      })}
-                      placeholder="MC12345"
-                      className="rounded-xl h-9 text-xs font-mono"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Password / Salt</label>
-                    <Input
-                      type="password"
-                      value={merchantGateways.jazzcash?.password || ''}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        jazzcash: { ...merchantGateways.jazzcash, password: e.target.value }
-                      })}
-                      placeholder="••••••••••••"
-                      className="rounded-xl h-9 text-xs font-mono"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1 text-xs">Checkout Instructions for Attendees</label>
-                  <textarea
-                    rows={2}
-                    value={merchantGateways.jazzcash?.instructions || ''}
-                    onChange={(e) => setMerchantGateways({
-                      ...merchantGateways,
-                      jazzcash: { ...merchantGateways.jazzcash, instructions: e.target.value }
-                    })}
-                    className="w-full p-2 rounded-xl border border-slate-200 text-xs"
-                  />
-                </div>
-              </div>
-
-              {/* 3. Raast */}
-              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <RaastBadge className="w-7 h-7" />
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900">Raast Instant Direct (State Bank of Pakistan)</h4>
-                      <span className="text-[10px] text-emerald-800 font-semibold">Zero Transaction Fee Rail</span>
-                    </div>
-                  </div>
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(merchantGateways.raast?.enabled)}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        raast: { ...merchantGateways.raast, enabled: e.target.checked }
-                      })}
-                      className="rounded text-emerald-700 w-4 h-4"
-                    />
-                    Enabled
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Account Title</label>
-                    <Input
-                      value={merchantGateways.raast?.account_title || ''}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        raast: { ...merchantGateways.raast, account_title: e.target.value }
-                      })}
-                      className="rounded-xl h-9 text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Raast ID / Registered Mobile</label>
-                    <Input
-                      value={merchantGateways.raast?.raast_id || ''}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        raast: { ...merchantGateways.raast, raast_id: e.target.value }
-                      })}
-                      className="rounded-xl h-9 text-xs font-mono font-bold"
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1 text-xs">Raast Official IBAN</label>
-                  <Input
-                    value={merchantGateways.raast?.iban || ''}
-                    onChange={(e) => setMerchantGateways({
-                      ...merchantGateways,
-                      raast: { ...merchantGateways.raast, iban: e.target.value }
-                    })}
-                    className="rounded-xl h-9 text-xs font-mono font-bold"
-                  />
-                </div>
-
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1 text-xs">Checkout Instructions</label>
-                  <textarea
-                    rows={2}
-                    value={merchantGateways.raast?.instructions || ''}
-                    onChange={(e) => setMerchantGateways({
-                      ...merchantGateways,
-                      raast: { ...merchantGateways.raast, instructions: e.target.value }
-                    })}
-                    className="w-full p-2 rounded-xl border border-slate-200 text-xs"
-                  />
-                </div>
-              </div>
-
-              {/* 4. Meezan Bank */}
-              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <BankTransferBadge className="w-7 h-7" />
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900">Direct Corporate Bank Transfer</h4>
-                      <span className="text-[10px] text-blue-800 font-semibold">Institutional Wire Clearing</span>
-                    </div>
-                  </div>
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(merchantGateways.bank_transfer?.enabled)}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        bank_transfer: { ...merchantGateways.bank_transfer, enabled: e.target.checked }
-                      })}
-                      className="rounded text-blue-700 w-4 h-4"
-                    />
-                    Enabled
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Bank Name</label>
-                    <Input
-                      value={merchantGateways.bank_transfer?.bank_name || 'Meezan Bank Limited'}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        bank_transfer: { ...merchantGateways.bank_transfer, bank_name: e.target.value }
-                      })}
-                      className="rounded-xl h-9 text-xs"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Account Title</label>
-                    <Input
-                      value={merchantGateways.bank_transfer?.account_title || ''}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        bank_transfer: { ...merchantGateways.bank_transfer, account_title: e.target.value }
-                      })}
-                      className="rounded-xl h-9 text-xs"
-                    />
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Account Number</label>
-                    <Input
-                      value={merchantGateways.bank_transfer?.account_number || ''}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        bank_transfer: { ...merchantGateways.bank_transfer, account_number: e.target.value }
-                      })}
-                      className="rounded-xl h-9 text-xs font-mono font-bold"
-                    />
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Branch Name</label>
-                    <Input
-                      value={merchantGateways.bank_transfer?.branch || ''}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        bank_transfer: { ...merchantGateways.bank_transfer, branch: e.target.value }
-                      })}
-                      className="rounded-xl h-9 text-xs"
                     />
                   </div>
                 </div>
@@ -3569,102 +3320,48 @@ export default function PlatformAdmin() {
                 <div>
                   <label className="font-bold text-slate-700 block mb-1 text-xs">IBAN (24 Characters)</label>
                   <Input
-                    value={merchantGateways.bank_transfer?.iban || ''}
+                    value={merchantGateways.sadapay?.iban || ''}
                     onChange={(e) => setMerchantGateways({
                       ...merchantGateways,
-                      bank_transfer: { ...merchantGateways.bank_transfer, iban: e.target.value }
+                      sadapay: { ...merchantGateways.sadapay, iban: e.target.value }
                     })}
                     className="rounded-xl h-9 text-xs font-mono font-bold"
                   />
                 </div>
-              </div>
-
-              {/* 5. Safepay */}
-              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <SafepayBadge className="w-7 h-7" />
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900">Safepay Pakistan (Debit / Credit Cards)</h4>
-                      <span className="text-[10px] text-slate-500 font-semibold">Visa, Mastercard &amp; PayPak</span>
-                    </div>
-                  </div>
-                  <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
-                    <input
-                      type="checkbox"
-                      checked={Boolean(merchantGateways.safepay?.enabled)}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        safepay: { ...merchantGateways.safepay, enabled: e.target.checked }
-                      })}
-                      className="rounded text-blue-600 w-4 h-4"
-                    />
-                    Enabled
-                  </label>
-                </div>
-
-                <div className="grid grid-cols-2 gap-3 text-xs">
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Environment</label>
-                    <select
-                      value={merchantGateways.safepay?.environment || 'sandbox'}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        safepay: { ...merchantGateways.safepay, environment: e.target.value }
-                      })}
-                      className="w-full h-9 rounded-xl border border-slate-200 px-3 text-xs font-semibold"
-                    >
-                      <option value="sandbox">Sandbox / Testing</option>
-                      <option value="production">Production Live</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label className="font-bold text-slate-700 block mb-1">Public Key</label>
-                    <Input
-                      value={merchantGateways.safepay?.public_key || ''}
-                      onChange={(e) => setMerchantGateways({
-                        ...merchantGateways,
-                        safepay: { ...merchantGateways.safepay, public_key: e.target.value }
-                      })}
-                      className="rounded-xl h-9 text-xs font-mono"
-                    />
-                  </div>
-                </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1 text-xs">Secret Key</label>
-                  <Input
-                    type="password"
-                    value={merchantGateways.safepay?.secret_key || ''}
+                  <label className="font-bold text-slate-700 block mb-1 text-xs">Checkout Instructions for Attendees &amp; Organizers</label>
+                  <textarea
+                    rows={2}
+                    value={merchantGateways.sadapay?.instructions || ''}
                     onChange={(e) => setMerchantGateways({
                       ...merchantGateways,
-                      safepay: { ...merchantGateways.safepay, secret_key: e.target.value }
+                      sadapay: { ...merchantGateways.sadapay, instructions: e.target.value }
                     })}
-                    placeholder="sec_..."
-                    className="rounded-xl h-9 text-xs font-mono"
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs"
                   />
                 </div>
               </div>
 
-              {/* 6. Stripe */}
-              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-3">
-                <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-                  <div className="flex items-center gap-2.5">
-                    <CardNetworksBadge className="w-12 h-6" />
+              {/* 2. NayaPay */}
+              <div className="p-5 rounded-2xl border border-slate-200 bg-white shadow-xs space-y-4 hover:border-[#FF5C00]/40 transition-all">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <NayaPayBadge className="w-8 h-8" />
                     <div>
-                      <h4 className="text-sm font-bold text-slate-900">Stripe International (Global USD Cards)</h4>
-                      <span className="text-[10px] text-indigo-700 font-semibold">Global Visa, Mastercard &amp; Apple Pay</span>
+                      <h4 className="text-sm font-bold text-slate-900">NayaPay Wallet &amp; IBAN</h4>
+                      <span className="text-[10px] text-[#FF5C00] font-semibold">Direct Wallet &amp; Virtual Clearing</span>
                     </div>
                   </div>
                   <label className="flex items-center gap-1.5 cursor-pointer text-xs font-bold text-slate-700">
                     <input
                       type="checkbox"
-                      checked={Boolean(merchantGateways.stripe?.enabled)}
+                      checked={Boolean(merchantGateways.nayapay?.enabled)}
                       onChange={(e) => setMerchantGateways({
                         ...merchantGateways,
-                        stripe: { ...merchantGateways.stripe, enabled: e.target.checked }
+                        nayapay: { ...merchantGateways.nayapay, enabled: e.target.checked }
                       })}
-                      className="rounded text-indigo-600 w-4 h-4"
+                      className="rounded text-[#FF5C00] w-4 h-4"
                     />
                     Enabled
                   </label>
@@ -3672,42 +3369,64 @@ export default function PlatformAdmin() {
 
                 <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Publishable Key</label>
+                    <label className="font-bold text-slate-700 block mb-1">Account Title</label>
                     <Input
-                      value={merchantGateways.stripe?.publishable_key || ''}
+                      value={merchantGateways.nayapay?.account_title || ''}
                       onChange={(e) => setMerchantGateways({
                         ...merchantGateways,
-                        stripe: { ...merchantGateways.stripe, publishable_key: e.target.value }
+                        nayapay: { ...merchantGateways.nayapay, account_title: e.target.value }
                       })}
-                      placeholder="pk_live_..."
-                      className="rounded-xl h-9 text-xs font-mono"
+                      className="rounded-xl h-9 text-xs font-semibold"
                     />
                   </div>
                   <div>
-                    <label className="font-bold text-slate-700 block mb-1">Secret Key</label>
+                    <label className="font-bold text-slate-700 block mb-1">NayaPay ID (e.g. name@nayapay)</label>
                     <Input
-                      type="password"
-                      value={merchantGateways.stripe?.secret_key || ''}
+                      value={merchantGateways.nayapay?.nayapay_id || ''}
                       onChange={(e) => setMerchantGateways({
                         ...merchantGateways,
-                        stripe: { ...merchantGateways.stripe, secret_key: e.target.value }
+                        nayapay: { ...merchantGateways.nayapay, nayapay_id: e.target.value }
                       })}
-                      placeholder="sk_live_..."
-                      className="rounded-xl h-9 text-xs font-mono"
+                      className="rounded-xl h-9 text-xs font-mono font-bold"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">Mobile / Account Number</label>
+                    <Input
+                      value={merchantGateways.nayapay?.account_number || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        nayapay: { ...merchantGateways.nayapay, account_number: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-mono font-bold"
+                    />
+                  </div>
+                  <div>
+                    <label className="font-bold text-slate-700 block mb-1">IBAN (24 Characters)</label>
+                    <Input
+                      value={merchantGateways.nayapay?.iban || ''}
+                      onChange={(e) => setMerchantGateways({
+                        ...merchantGateways,
+                        nayapay: { ...merchantGateways.nayapay, iban: e.target.value }
+                      })}
+                      className="rounded-xl h-9 text-xs font-mono font-bold"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="font-bold text-slate-700 block mb-1 text-xs">Checkout Instructions</label>
+                  <label className="font-bold text-slate-700 block mb-1 text-xs">Checkout Instructions for Attendees &amp; Organizers</label>
                   <textarea
                     rows={2}
-                    value={merchantGateways.stripe?.instructions || ''}
+                    value={merchantGateways.nayapay?.instructions || ''}
                     onChange={(e) => setMerchantGateways({
                       ...merchantGateways,
-                      stripe: { ...merchantGateways.stripe, instructions: e.target.value }
+                      nayapay: { ...merchantGateways.nayapay, instructions: e.target.value }
                     })}
-                    className="w-full p-2 rounded-xl border border-slate-200 text-xs"
+                    className="w-full p-2.5 rounded-xl border border-slate-200 text-xs"
                   />
                 </div>
               </div>
@@ -3883,7 +3602,7 @@ export default function PlatformAdmin() {
             </div>
 
             {/* Subtabs */}
-            <div className="flex gap-2 border-b border-slate-200 pb-3">
+            <div className="flex flex-wrap gap-2 border-b border-slate-200 pb-3">
               <button
                 type="button"
                 onClick={() => setDirectorySubTab('events')}
@@ -3892,6 +3611,18 @@ export default function PlatformAdmin() {
                 }`}
               >
                 Directory Events ({directoryEventsList.length})
+              </button>
+              <button
+                type="button"
+                onClick={() => setDirectorySubTab('requests')}
+                className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5 ${
+                  directorySubTab === 'requests' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-600'
+                }`}
+              >
+                <span>Listing Requests ({listingRequests.length})</span>
+                {listingRequests.filter(r => r.status === 'pending').length > 0 && (
+                  <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+                )}
               </button>
               <button
                 type="button"
@@ -3938,9 +3669,28 @@ export default function PlatformAdmin() {
                           {new Date(evt.start_date).toLocaleDateString()}
                         </td>
                         <td className="py-3.5">
-                          <Badge className={`text-[10px] ${evt.is_approved ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}`}>
-                            {evt.is_approved ? 'Approved' : 'Pending'}
-                          </Badge>
+                          <button
+                            type="button"
+                            onClick={() => handleToggleApproveEvent(evt.id)}
+                            className={`px-2.5 py-1 rounded-lg text-[10px] font-bold inline-flex items-center gap-1.5 transition-all cursor-pointer ${
+                              evt.is_approved
+                                ? 'bg-emerald-100 text-emerald-800 hover:bg-rose-100 hover:text-rose-700'
+                                : 'bg-amber-100 text-amber-800 hover:bg-emerald-100 hover:text-emerald-700'
+                            }`}
+                            title={evt.is_approved ? 'Click to Unpublish' : 'Click to 1-Click Approve'}
+                          >
+                            {evt.is_approved ? (
+                              <>
+                                <CheckCircle2 className="w-3 h-3 text-emerald-600 shrink-0" />
+                                <span>Approved &amp; Live</span>
+                              </>
+                            ) : (
+                              <>
+                                <Clock className="w-3 h-3 text-amber-600 shrink-0" />
+                                <span>Approve Event &rarr;</span>
+                              </>
+                            )}
+                          </button>
                         </td>
                         <td className="py-3.5 text-right space-x-2">
                           <Button
@@ -3963,6 +3713,85 @@ export default function PlatformAdmin() {
                         </td>
                       </tr>
                     ))}
+                  </tbody>
+                </table>
+              </div>
+            ) : directorySubTab === 'requests' ? (
+              /* Listing Requests Table */
+              <div className="overflow-x-auto w-full">
+                <table className="w-full text-left text-xs min-w-[750px]">
+                  <thead>
+                    <tr className="border-b border-slate-200 text-slate-500 font-bold uppercase text-[10px]">
+                      <th className="pb-3">Event &amp; Organizer</th>
+                      <th className="pb-3">Plan &amp; Fee</th>
+                      <th className="pb-3">Payment Method</th>
+                      <th className="pb-3">Transaction ID (TID)</th>
+                      <th className="pb-3">Status</th>
+                      <th className="pb-3 text-right">Admin Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {listingRequests.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-slate-400">
+                          No listing requests submitted yet.
+                        </td>
+                      </tr>
+                    ) : (
+                      listingRequests.map((req) => (
+                        <tr key={req.id} className="hover:bg-slate-50/50">
+                          <td className="py-3.5">
+                            <div className="font-bold text-slate-900">{req.title}</div>
+                            <div className="text-[11px] text-slate-500">{req.organizer_name} ({req.organizer_email} &middot; {req.organizer_phone})</div>
+                            <div className="text-[10px] text-blue-600 mt-0.5">{req.city} &middot; {req.category} &middot; Ticket: PKR {req.ticket_price_pkr || 0}</div>
+                          </td>
+                          <td className="py-3.5">
+                            <div className="font-bold text-slate-800 capitalize">{req.plan_name || 'Standard'}</div>
+                            <div className="text-[11px] font-mono text-emerald-600 font-bold">
+                              {req.currency === 'USD' ? `${req.listing_fee_usd}` : `PKR ${req.listing_fee_pkr?.toLocaleString?.() || req.listing_fee_pkr}`}
+                            </div>
+                          </td>
+                          <td className="py-3.5 font-bold uppercase text-[11px] text-slate-700">
+                            {req.payment_method}
+                          </td>
+                          <td className="py-3.5 font-mono font-bold text-blue-700">
+                            {req.transaction_id || '—'}
+                          </td>
+                          <td className="py-3.5">
+                            <Badge className={`text-[10px] ${
+                              req.status === 'approved' ? 'bg-emerald-100 text-emerald-800' :
+                              req.status === 'rejected' ? 'bg-rose-100 text-rose-800' :
+                              'bg-amber-100 text-amber-800'
+                            }`}>
+                              {req.status}
+                            </Badge>
+                          </td>
+                          <td className="py-3.5 text-right space-x-2">
+                            {req.status === 'pending' ? (
+                              <>
+                                <Button
+                                  size="sm"
+                                  onClick={() => handleApproveListingRequest(req.id)}
+                                  className="h-7 px-2.5 text-[11px] bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg font-bold"
+                                >
+                                  Approve &amp; Publish
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  onClick={() => handleRejectListingRequest(req.id)}
+                                  className="h-7 px-2 text-[11px] text-rose-600 hover:bg-rose-50 border-rose-200 rounded-lg"
+                                >
+                                  Reject
+                                </Button>
+                              </>
+                            ) : (
+                              <span className="text-[11px] text-slate-400 capitalize">{req.status}</span>
+                            )}
+                          </td>
+                        </tr>
+                      ))
+                    )}
                   </tbody>
                 </table>
               </div>

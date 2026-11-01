@@ -12,6 +12,8 @@ node_modules
 dist-ssr
 *.local
 db/local_store.json
+db/local_store.backup.json
+brag-output*
 
 # User Uploads (Keep directory structure via .gitkeep)
 public/uploads/**

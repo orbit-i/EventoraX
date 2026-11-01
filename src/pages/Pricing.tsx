@@ -3,6 +3,7 @@ import gsap from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 import { Check, X, Sparkles, CreditCard, ChevronDown } from 'lucide-react';
 import SubscriptionCheckoutModal, { type PlanData } from '@/components/SubscriptionCheckoutModal';
+import { SadaPayBadge, NayaPayBadge } from '@/components/payment/PaymentLogos';
 import { api } from '@/services/api';
 
 gsap.registerPlugin(ScrollTrigger);
@@ -63,7 +64,7 @@ const plansData: PlanData[] = [
 const faqs = [
   { q: 'How does Multi-Tenancy work in Eventrye?', a: 'Every organizer gets an isolated workspace with partitioned events, attendees, team permissions, custom branding, and settings. You can also manage multiple client workspaces from a single login.' },
   { q: 'Can I sell Eventrye to my clients under my own brand (White-Label)?', a: 'Yes! On the Enterprise plan, you can attach custom domains, upload your own logo, set custom theme colors, and remove all Eventrye branding.' },
-  { q: 'Which payment methods are supported for Pakistani and international organizations?', a: 'We natively support Pakistani local gateways including JazzCash, Easypaisa, Raast Instant Pay, and Direct Bank Transfer (Meezan, HBL, Alfalah), as well as international Credit/Debit cards via Stripe.' },
+  { q: 'Which payment methods are supported for Pakistani and international organizations?', a: 'We support direct digital payments via SadaPay and NayaPay with instant transaction verification, receipts, and automatic activation.' },
   { q: 'Is there a free trial?', a: 'Yes! Every tier includes a 14-day free trial. You can start right away without committing.' },
 ];
 
@@ -295,45 +296,22 @@ export default function Pricing() {
         <div className="mt-16 bg-white p-6 rounded-3xl border border-slate-200 text-center shadow-xs">
           <div className="flex items-center justify-center gap-2 text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">
             <CreditCard className="w-4 h-4 text-[#1d4ed8]" />
-            Supported Global & Local Pakistani Payment Methods
+            Official Supported Payment Methods (SadaPay & NayaPay)
           </div>
-          <div className="flex flex-wrap items-center justify-center gap-2.5 sm:gap-4 text-xs font-bold text-slate-700">
-            <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
-              <img
-                src="/images/payments/jazzcash.png"
-                alt="JazzCash"
-                className="h-5 w-auto max-w-[65px] object-contain shrink-0"
-                style={{ height: '20px', maxHeight: '20px', maxWidth: '65px', objectFit: 'contain' }}
-                loading="lazy"
-              />
-              <span className="font-bold text-slate-800">JazzCash</span>
+          <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 text-xs font-bold text-slate-700">
+            <div className="px-4 py-2.5 rounded-2xl bg-white border border-slate-200 flex items-center gap-2.5 shadow-xs hover:border-[#00A389]/40 hover:shadow-sm transition-all">
+              <SadaPayBadge className="w-6 h-6 shrink-0" />
+              <div className="text-left">
+                <span className="font-bold text-slate-900 block leading-tight">SadaPay</span>
+                <span className="text-[10px] text-slate-400 font-medium">Instant 0% Fee</span>
+              </div>
             </div>
-            <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
-              <img
-                src="/images/payments/easypaisa.png"
-                alt="Easypaisa"
-                className="h-5 w-auto max-w-[65px] object-contain shrink-0"
-                style={{ height: '20px', maxHeight: '20px', maxWidth: '65px', objectFit: 'contain' }}
-                loading="lazy"
-              />
-              <span className="font-bold text-slate-800">Easypaisa</span>
-            </div>
-            <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
-              <img
-                src="/images/payments/meezan.png"
-                alt="Meezan Bank"
-                className="h-5 w-auto max-w-[65px] object-contain shrink-0"
-                style={{ height: '20px', maxHeight: '20px', maxWidth: '65px', objectFit: 'contain' }}
-                loading="lazy"
-              />
-              <span className="font-bold text-slate-800">Meezan IBFT</span>
-            </div>
-            <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 animate-pulse shrink-0" />
-              <span className="font-bold text-[#0B5D34]">Raast SBP Instant</span>
-            </div>
-            <div className="px-3.5 py-2 rounded-xl bg-white border border-slate-200 flex items-center gap-2 shadow-xs hover:border-slate-300 transition-all">
-              <span className="font-bold text-slate-800">PayFast / Visa / MasterCard</span>
+            <div className="px-4 py-2.5 rounded-2xl bg-white border border-slate-200 flex items-center gap-2.5 shadow-xs hover:border-[#FF5C00]/40 hover:shadow-sm transition-all">
+              <NayaPayBadge className="w-6 h-6 shrink-0" />
+              <div className="text-left">
+                <span className="font-bold text-slate-900 block leading-tight">NayaPay</span>
+                <span className="text-[10px] text-slate-400 font-medium">Instant 0% Fee</span>
+              </div>
             </div>
           </div>
         </div>

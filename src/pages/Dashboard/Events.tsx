@@ -25,7 +25,6 @@ import {
   Video,
   Upload,
   Film,
-  Play,
   Loader2
 } from 'lucide-react';
 import AttendanceScannerModal from '@/components/AttendanceScannerModal';

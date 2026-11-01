@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import {
   FileSpreadsheet,
   Presentation,
@@ -10,20 +10,11 @@ import {
   TrendingDown,
   Building2,
   ShieldCheck,
-  CheckCircle2,
   AlertTriangle,
   RefreshCw,
   Search,
-  Filter,
-  ArrowUpRight,
-  Printer,
-  Sparkles,
   PieChart as PieIcon,
   BarChart3,
-  Layers,
-  Award,
-  Lock,
-  Tag
 } from 'lucide-react';
 import {
   ResponsiveContainer,
@@ -38,7 +29,6 @@ import {
   YAxis,
   CartesianGrid,
   Tooltip,
-  Legend
 } from 'recharts';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
@@ -72,7 +62,6 @@ const INTERVAL_OPTIONS: IntervalOption[] = [
 ];
 
 const COLORS_PLANS = ['#3b82f6', '#10b981', '#8b5cf6', '#f59e0b'];
-const COLORS_STATUS = ['#10b981', '#ef4444', '#f59e0b'];
 
 export default function FinancialAuditReportsSection() {
   const [selectedInterval, setSelectedInterval] = useState<string>('1m');
@@ -236,15 +225,7 @@ export default function FinancialAuditReportsSection() {
       ].filter((p) => p.value > 0)
     : [];
 
-  // Chart data 4: Status pie
-  const statusPieData = orgs
-    ? [
-        { name: 'Active', value: orgs.statusDistribution.active || 0 },
-        { name: 'Suspended', value: orgs.statusDistribution.suspended || 0 },
-        { name: 'Pending', value: orgs.statusDistribution.pending || 0 }
-      ].filter((s) => s.value > 0)
-    : [];
-
+  
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* ============================================================== */}
@@ -623,7 +604,7 @@ export default function FinancialAuditReportsSection() {
                         outerRadius={80}
                         paddingAngle={4}
                       >
-                        {planPieData.map((entry, index) => (
+                        {planPieData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={COLORS_PLANS[index % COLORS_PLANS.length]} />
                         ))}
                       </Pie>
