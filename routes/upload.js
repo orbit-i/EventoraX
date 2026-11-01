@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 import crypto from 'crypto';
 import { fileURLToPath } from 'url';
-import { verifyToken } from '../middleware/auth.js';
+import { verifyTokenDirect } from '../middleware/auth.js';
 
 const router = express.Router();
 const __filename = fileURLToPath(import.meta.url);
@@ -45,8 +45,16 @@ const EXTENSION_MAP = {
 };
 
 // POST /api/upload - Direct base64 or binary media upload
-router.post('/', verifyToken, async (req, res) => {
+// POST /api/upload - Direct base64 media upload (Clients, SuperAdmins, and Public Event Submitters)
+router.post('/', async (req, res) => {
   try {
+    // Optional token inspection
+    const authHeader = req.headers['authorization'];
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      try {
+        req.user = verifyTokenDirect(authHeader.split(' ')[1]);
+      } catch {}
+    }
     const { base64Data, filename, mediaType, folder = 'events' } = req.body || {};
 
     if (!base64Data) {

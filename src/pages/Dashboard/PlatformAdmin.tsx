@@ -46,7 +46,11 @@ import {
   Percent,
   Edit,
   Users,
-  FileSpreadsheet
+  FileSpreadsheet,
+  Video as VideoIcon,
+  Image as ImageIcon,
+  Upload,
+  Loader2
 } from "lucide-react";
 import { api } from "@/services/api";
 import { useAuth } from "@/context/AuthContext";
@@ -354,34 +358,184 @@ export default function PlatformAdmin() {
   };
 
   // ==========================================
-  // 3RD-PARTY EVENTS DIRECTORY & BOOKINGS STATE
+  // 3RD-PARTY & PLATFORM OFFICIAL EVENTS DIRECTORY & BOOKINGS STATE
   const [directoryEventsList, setDirectoryEventsList] = useState<any[]>([]);
   const [, setDirectoryLoading] = useState(false);
   const [directoryBookingsList, setDirectoryBookingsList] = useState<any[]>([]);
   const [listingRequests, setListingRequests] = useState<any[]>([]);
   const [directorySubTab, setDirectorySubTab] = useState<'events' | 'requests' | 'bookings'>('events');
+
+  // Media upload states for Admin (Computer & Mobile files + links)
+  const [uploadingAdminBanner, setUploadingAdminBanner] = useState(false);
+  const [uploadingAdminVideo, setUploadingAdminVideo] = useState(false);
+  const [uploadingAdminGallery, setUploadingAdminGallery] = useState(false);
+  const [adminVideoInputUrl, setAdminVideoInputUrl] = useState('');
+  const [adminGalleryInputUrl, setAdminGalleryInputUrl] = useState('');
+
   const [directoryModal, setDirectoryModal] = useState<{ open: boolean; isNew: boolean; event: any }>({
     open: false,
     isNew: true,
     event: {
       title: '',
-      organizer_name: '',
+      organizer_name: 'Eventrye Platform / ORBIT-I',
       category: 'Technology',
       event_type: 'Conference',
       start_date: '',
       end_date: '',
-      location: '',
-      city: 'Nawabshah',
+      location: 'National Convention Center, Islamabad',
+      city: 'Islamabad',
       banner_url: '',
+      video_url: '',
+      videos: [] as string[],
+      gallery_images: [] as string[],
       description: '',
       ticket_tiers: [
-        { id: 'standard', name: 'General Delegate', price_pkr: 3500, price_usd: 12, perks: ['Full Hall Access', 'Digital Certificate'], available: 200, sold: 0 }
+        { id: 'standard', name: 'General Admission', price_pkr: 0, price_usd: 0, perks: ['Full Hall Access', 'Digital Certificate'], available: 500, sold: 0 }
       ],
       is_approved: 1,
-      is_featured: 1
+      is_featured: 1,
+      is_official: 1
     }
   });
   const [savingDirectoryEvent, setSavingDirectoryEvent] = useState(false);
+
+  const readFileAsBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = (err) => reject(err);
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleAdminBannerUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAdminBanner(true);
+    try {
+      const base64Data = await readFileAsBase64(file);
+      const res = await api.upload.media({
+        base64Data,
+        filename: file.name,
+        folder: 'events'
+      });
+      if (res.success && res.url) {
+        setDirectoryModal(prev => ({
+          ...prev,
+          event: { ...prev.event, banner_url: res.url }
+        }));
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload cover banner.');
+    } finally {
+      setUploadingAdminBanner(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleAdminVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadingAdminVideo(true);
+    try {
+      const base64Data = await readFileAsBase64(file);
+      const res = await api.upload.media({
+        base64Data,
+        filename: file.name,
+        folder: 'events'
+      });
+      if (res.success && res.url) {
+        const curVideos = Array.isArray(directoryModal.event.videos) ? directoryModal.event.videos : [];
+        setDirectoryModal(prev => ({
+          ...prev,
+          event: {
+            ...prev.event,
+            video_url: res.url,
+            videos: [...curVideos.filter((v: string) => v !== res.url), res.url]
+          }
+        }));
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload video.');
+    } finally {
+      setUploadingAdminVideo(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleAdminAttachVideoUrl = () => {
+    if (!adminVideoInputUrl.trim()) return;
+    const url = adminVideoInputUrl.trim();
+    const curVideos = Array.isArray(directoryModal.event.videos) ? directoryModal.event.videos : [];
+    setDirectoryModal(prev => ({
+      ...prev,
+      event: {
+        ...prev.event,
+        video_url: url,
+        videos: [...curVideos.filter((v: string) => v !== url), url]
+      }
+    }));
+    setAdminVideoInputUrl('');
+  };
+
+  const handleAdminGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+    setUploadingAdminGallery(true);
+    try {
+      const newUrls: string[] = [];
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i];
+        const base64Data = await readFileAsBase64(file);
+        const res = await api.upload.media({
+          base64Data,
+          filename: file.name,
+          folder: 'events'
+        });
+        if (res.success && res.url) {
+          newUrls.push(res.url);
+        }
+      }
+      const curGallery = Array.isArray(directoryModal.event.gallery_images) ? directoryModal.event.gallery_images : [];
+      setDirectoryModal(prev => ({
+        ...prev,
+        event: {
+          ...prev.event,
+          gallery_images: [...curGallery, ...newUrls]
+        }
+      }));
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload gallery photos.');
+    } finally {
+      setUploadingAdminGallery(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleAdminAddGalleryUrl = () => {
+    if (!adminGalleryInputUrl.trim()) return;
+    const url = adminGalleryInputUrl.trim();
+    const curGallery = Array.isArray(directoryModal.event.gallery_images) ? directoryModal.event.gallery_images : [];
+    setDirectoryModal(prev => ({
+      ...prev,
+      event: {
+        ...prev.event,
+        gallery_images: [...curGallery, url]
+      }
+    }));
+    setAdminGalleryInputUrl('');
+  };
+
+  const handleAdminRemoveGalleryImage = (idx: number) => {
+    const curGallery = Array.isArray(directoryModal.event.gallery_images) ? directoryModal.event.gallery_images : [];
+    setDirectoryModal(prev => ({
+      ...prev,
+      event: {
+        ...prev.event,
+        gallery_images: curGallery.filter((_: any, i: number) => i !== idx)
+      }
+    }));
+  };
 
   const loadDirectoryEvents = async () => {
     setDirectoryLoading(true);
@@ -3596,7 +3750,7 @@ export default function PlatformAdmin() {
                   className="bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold h-10 px-4 flex items-center gap-1.5 shadow-md shadow-blue-600/20"
                 >
                   <Plus className="w-4 h-4" />
-                  Add 3rd-Party Event
+                  Add Event / Platform Official Event
                 </Button>
               </div>
             </div>
@@ -3657,7 +3811,21 @@ export default function PlatformAdmin() {
                             className="w-12 h-10 rounded-lg object-cover"
                           />
                           <div>
-                            <div className="font-bold text-slate-900">{evt.title}</div>
+                            <div className="font-bold text-slate-900 flex items-center gap-1.5 flex-wrap">
+                              <span>{evt.title}</span>
+                              {Boolean(evt.is_official) && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-blue-100 text-blue-800 text-[9px] font-black uppercase tracking-wider flex items-center gap-0.5">
+                                  <ShieldCheck className="w-2.5 h-2.5 text-blue-600" />
+                                  Official Platform
+                                </span>
+                              )}
+                              {(evt.video_url || (Array.isArray(evt.videos) && evt.videos.length > 0)) && (
+                                <span className="px-1.5 py-0.5 rounded-md bg-indigo-100 text-indigo-800 text-[9px] font-bold flex items-center gap-0.5">
+                                  <VideoIcon className="w-2.5 h-2.5 text-indigo-600" />
+                                  Video
+                                </span>
+                              )}
+                            </div>
                             <div className="text-[11px] text-slate-500">{evt.organizer_name}</div>
                           </div>
                         </td>
@@ -5578,7 +5746,7 @@ export default function PlatformAdmin() {
                     <Calendar className="w-4 h-4" />
                   </div>
                   <h3 className="text-base font-bold text-slate-900">
-                    {directoryModal.isNew ? 'Add 3rd-Party Event to Directory' : 'Edit Directory Event'}
+                    {directoryModal.isNew ? 'Publish Event to Directory / Platform Official Event' : 'Edit Directory Event'}
                   </h3>
                 </div>
                 <button
@@ -5692,17 +5860,234 @@ export default function PlatformAdmin() {
                   </div>
                 </div>
 
-                <div>
-                  <label className="font-bold text-slate-700 block mb-1">Banner Image URL</label>
-                  <Input
-                    placeholder="https://..."
-                    value={directoryModal.event.banner_url || ''}
-                    onChange={(e) => setDirectoryModal({
-                      ...directoryModal,
-                      event: { ...directoryModal.event, banner_url: e.target.value }
-                    })}
-                    className="rounded-xl h-9 text-xs"
-                  />
+                {/* Official Platform Event Toggle */}
+                <div className="p-3 rounded-2xl bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200">
+                  <label className="flex items-center gap-2 cursor-pointer font-bold text-slate-800">
+                    <input
+                      type="checkbox"
+                      checked={Boolean(directoryModal.event.is_official)}
+                      onChange={(e) => setDirectoryModal({
+                        ...directoryModal,
+                        event: {
+                          ...directoryModal.event,
+                          is_official: e.target.checked ? 1 : 0,
+                          organizer_name: e.target.checked && (!directoryModal.event.organizer_name || directoryModal.event.organizer_name === 'CodePakistan')
+                            ? 'Eventrye Platform / ORBIT-I'
+                            : directoryModal.event.organizer_name
+                        }
+                      })}
+                      className="rounded text-blue-600 w-4 h-4"
+                    />
+                    <span>Official Platform Event (Organized &amp; Endorsed by Eventrye / ORBIT-I for All)</span>
+                  </label>
+                  <p className="text-[11px] text-slate-500 ml-6 mt-0.5">
+                    Official events are displayed with a verified platform badge and published publicly for all visitors.
+                  </p>
+                </div>
+
+                {/* Media & Visual Showcase (Banner, Video, Photo Gallery) */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-4">
+                  <div className="flex items-center justify-between pb-2 border-b border-slate-200">
+                    <span className="font-bold text-slate-800 flex items-center gap-1.5 text-xs">
+                      <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
+                      Event Cover, Videos &amp; Photo Gallery
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-medium">Computer &amp; Mobile Device Support</span>
+                  </div>
+
+                  {/* 1. Banner Cover Image */}
+                  <div className="space-y-2 bg-white p-3 rounded-xl border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <label className="font-bold text-slate-700 block text-xs">Cover / Banner Image *</label>
+                      {uploadingAdminBanner && (
+                        <span className="text-blue-600 text-[10px] flex items-center gap-1 font-semibold">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Uploading Cover...
+                        </span>
+                      )}
+                    </div>
+
+                    {directoryModal.event.banner_url && (
+                      <div className="relative w-full h-32 rounded-xl overflow-hidden border border-slate-200 bg-slate-900 group">
+                        <img
+                          src={directoryModal.event.banner_url}
+                          alt="Cover Preview"
+                          className="w-full h-full object-cover"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setDirectoryModal({
+                            ...directoryModal,
+                            event: { ...directoryModal.event, banner_url: '' }
+                          })}
+                          className="absolute top-2 right-2 p-1 rounded-md bg-black/60 hover:bg-rose-600 text-white transition-colors"
+                          title="Remove Cover"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <label className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 cursor-pointer text-xs font-bold transition-all shrink-0">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload from Computer / Mobile</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          onChange={handleAdminBannerUpload}
+                          disabled={uploadingAdminBanner}
+                          className="hidden"
+                        />
+                      </label>
+                      <Input
+                        placeholder="Or paste direct image URL (https://...)"
+                        value={directoryModal.event.banner_url || ''}
+                        onChange={(e) => setDirectoryModal({
+                          ...directoryModal,
+                          event: { ...directoryModal.event, banner_url: e.target.value }
+                        })}
+                        className="rounded-xl h-9 text-xs flex-1 font-mono"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 2. Promo / Trailer Video */}
+                  <div className="space-y-2 bg-white p-3 rounded-xl border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <label className="font-bold text-slate-700 block text-xs flex items-center gap-1">
+                        <VideoIcon className="w-3.5 h-3.5 text-indigo-600" />
+                        Promo / Trailer Video (Optional)
+                      </label>
+                      {uploadingAdminVideo && (
+                        <span className="text-indigo-600 text-[10px] flex items-center gap-1 font-semibold">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Uploading Video...
+                        </span>
+                      )}
+                    </div>
+
+                    {directoryModal.event.video_url && (
+                      <div className="relative w-full rounded-xl overflow-hidden border border-slate-200 bg-slate-950 p-2">
+                        {directoryModal.event.video_url.endsWith('.mp4') || directoryModal.event.video_url.endsWith('.webm') || directoryModal.event.video_url.includes('/uploads/videos/') ? (
+                          <video
+                            src={directoryModal.event.video_url}
+                            controls
+                            className="w-full max-h-[180px] rounded-lg object-contain bg-black"
+                          />
+                        ) : (
+                          <div className="aspect-video w-full rounded-lg overflow-hidden">
+                            <iframe
+                              src={directoryModal.event.video_url.includes('youtube.com/watch?v=') ? directoryModal.event.video_url.replace('watch?v=', 'embed/') : directoryModal.event.video_url}
+                              title="Video Preview"
+                              allowFullScreen
+                              className="w-full h-full border-0"
+                            />
+                          </div>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => setDirectoryModal({
+                            ...directoryModal,
+                            event: { ...directoryModal.event, video_url: '', videos: [] }
+                          })}
+                          className="absolute top-3 right-3 p-1 rounded-md bg-black/70 hover:bg-rose-600 text-white transition-colors"
+                          title="Remove Video"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <label className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 cursor-pointer text-xs font-bold transition-all shrink-0">
+                        <VideoIcon className="w-3.5 h-3.5" />
+                        <span>Upload Video from Device</span>
+                        <input
+                          type="file"
+                          accept="video/*"
+                          onChange={handleAdminVideoUpload}
+                          disabled={uploadingAdminVideo}
+                          className="hidden"
+                        />
+                      </label>
+                      <div className="flex-1 flex gap-1.5">
+                        <Input
+                          placeholder="Or paste YouTube or MP4 URL..."
+                          value={adminVideoInputUrl}
+                          onChange={(e) => setAdminVideoInputUrl(e.target.value)}
+                          className="rounded-xl h-9 text-xs flex-1 font-mono"
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleAdminAttachVideoUrl}
+                          className="h-9 px-3 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold"
+                        >
+                          Attach
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 3. Photo Gallery */}
+                  <div className="space-y-2 bg-white p-3 rounded-xl border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <label className="font-bold text-slate-700 block text-xs flex items-center gap-1">
+                        <ImageIcon className="w-3.5 h-3.5 text-blue-600" />
+                        Photo Gallery ({directoryModal.event.gallery_images?.length || 0})
+                      </label>
+                      {uploadingAdminGallery && (
+                        <span className="text-blue-600 text-[10px] flex items-center gap-1 font-semibold">
+                          <Loader2 className="w-3 h-3 animate-spin" /> Uploading Photos...
+                        </span>
+                      )}
+                    </div>
+
+                    {directoryModal.event.gallery_images && directoryModal.event.gallery_images.length > 0 && (
+                      <div className="grid grid-cols-4 sm:grid-cols-6 gap-2 pb-1">
+                        {directoryModal.event.gallery_images.map((imgUrl: string, idx: number) => (
+                          <div key={idx} className="relative group rounded-lg overflow-hidden border border-slate-200 aspect-square bg-slate-900">
+                            <img src={imgUrl} alt={`Gallery ${idx}`} className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => handleAdminRemoveGalleryImage(idx)}
+                              className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white transition-opacity"
+                            >
+                              <Trash2 className="w-3 h-3 text-rose-400" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row gap-2">
+                      <label className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 cursor-pointer text-xs font-bold transition-all shrink-0">
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Upload Photos from Device</span>
+                        <input
+                          type="file"
+                          accept="image/*"
+                          multiple
+                          onChange={handleAdminGalleryUpload}
+                          disabled={uploadingAdminGallery}
+                          className="hidden"
+                        />
+                      </label>
+                      <div className="flex-1 flex gap-1.5">
+                        <Input
+                          placeholder="Or paste Image URL..."
+                          value={adminGalleryInputUrl}
+                          onChange={(e) => setAdminGalleryInputUrl(e.target.value)}
+                          className="rounded-xl h-9 text-xs flex-1 font-mono"
+                        />
+                        <Button
+                          type="button"
+                          onClick={handleAdminAddGalleryUrl}
+                          className="h-9 px-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold"
+                        >
+                          Add
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div>

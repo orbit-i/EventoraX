@@ -14,7 +14,9 @@ import {
   ChevronDown,
   ChevronUp,
   Copy,
-  Check
+  Check,
+  Video,
+  Image as ImageIcon
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { 
@@ -33,6 +35,10 @@ export interface DirectoryEvent {
   location: string;
   city: string;
   banner_url: string;
+  video_url?: string;
+  videos?: string | string[];
+  gallery_images?: string | string[];
+  is_official?: number;
   description: string;
   agenda?: string | any[];
   speakers?: string | any[];
@@ -470,10 +476,22 @@ export default function EventsDirectory() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent" />
                     
                     <div className="absolute top-3 left-3 flex flex-wrap gap-1.5 z-10">
+                      {Boolean(evt.is_official) && (
+                        <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-md border border-white/20">
+                          <ShieldCheck className="w-3 h-3 text-cyan-200" />
+                          Official Event
+                        </span>
+                      )}
                       {isVip && (
                         <span className="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500 to-amber-600 text-white text-[10px] font-black uppercase tracking-wider flex items-center gap-1 shadow-md">
                           <Sparkles className="w-3 h-3 text-amber-200 animate-pulse" />
                           Featured Spotlight
+                        </span>
+                      )}
+                      {(evt.video_url || (Array.isArray(evt.videos) && evt.videos.length > 0)) && (
+                        <span className="px-2 py-0.5 rounded-full bg-purple-950/80 backdrop-blur-md text-purple-200 text-[10px] font-bold flex items-center gap-1 border border-purple-500/30">
+                          <Video className="w-2.5 h-2.5 text-purple-300" />
+                          Video
                         </span>
                       )}
                       <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold shadow-xs ${timing.badgeClass}`}>
@@ -591,11 +609,72 @@ export default function EventsDirectory() {
             </div>
 
             <div className="mt-4 space-y-4">
+              {Boolean(detailsEvent.is_official) && (
+                <div className="p-3 rounded-2xl bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white flex items-center justify-between gap-3 shadow-md">
+                  <div className="flex items-center gap-2">
+                    <ShieldCheck className="w-5 h-5 text-cyan-300 shrink-0" />
+                    <div>
+                      <div className="text-xs font-black uppercase tracking-wider">Official Platform Event</div>
+                      <div className="text-[11px] text-blue-100">Organized &amp; Endorsed by Eventrye / ORBIT-I for All</div>
+                    </div>
+                  </div>
+                  <span className="px-2 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-bold uppercase tracking-wider">
+                    Verified Host
+                  </span>
+                </div>
+              )}
+
               <img
                 src={detailsEvent.banner_url}
                 alt={detailsEvent.title}
-                className="w-full h-52 object-cover rounded-2xl"
+                className="w-full h-52 object-cover rounded-2xl border border-slate-200"
               />
+
+              {/* Video Player in Details Modal */}
+              {Boolean(detailsEvent.video_url || (Array.isArray(detailsEvent.videos) && detailsEvent.videos.length > 0)) && (() => {
+                const vid = detailsEvent.video_url || (Array.isArray(detailsEvent.videos) ? detailsEvent.videos[0] : '');
+                const isDirect = vid.endsWith('.mp4') || vid.endsWith('.webm') || vid.includes('/uploads/videos/');
+                return (
+                  <div className="p-3 rounded-2xl bg-slate-950 text-white border border-slate-800 space-y-2">
+                    <span className="text-[11px] font-bold text-indigo-300 uppercase tracking-wider flex items-center gap-1.5">
+                      <Video className="w-3.5 h-3.5" /> Event Promo / Teaser Video
+                    </span>
+                    <div className="rounded-xl overflow-hidden bg-black">
+                      {isDirect ? (
+                        <video src={vid} controls className="w-full max-h-[220px] object-contain bg-black" />
+                      ) : (
+                        <div className="aspect-video w-full">
+                          <iframe
+                            src={vid.includes('youtube.com/watch?v=') ? vid.replace('watch?v=', 'embed/') : vid}
+                            title="Event Video"
+                            allowFullScreen
+                            className="w-full h-full border-0"
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+
+              {/* Photo Gallery in Details Modal */}
+              {Boolean(detailsEvent.gallery_images && (Array.isArray(detailsEvent.gallery_images) ? detailsEvent.gallery_images.length > 0 : JSON.parse(detailsEvent.gallery_images || '[]').length > 0)) && (() => {
+                const imgs = Array.isArray(detailsEvent.gallery_images) ? detailsEvent.gallery_images : JSON.parse(detailsEvent.gallery_images as string || '[]');
+                return (
+                  <div className="space-y-2">
+                    <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
+                      <ImageIcon className="w-3.5 h-3.5 text-blue-600" /> Photo Gallery &amp; Venue Shots
+                    </span>
+                    <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
+                      {imgs.map((src: string, i: number) => (
+                        <a key={i} href={src} target="_blank" rel="noreferrer" className="aspect-square rounded-xl overflow-hidden border border-slate-200 hover:border-purple-500 transition-all">
+                          <img src={src} alt={`Venue ${i}`} className="w-full h-full object-cover" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })()}
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-50 p-4 rounded-2xl border border-slate-100">
                 <div className="flex items-center gap-2 text-slate-700">

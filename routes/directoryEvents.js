@@ -345,6 +345,9 @@ router.post('/submit-listing', async (req, res) => {
       location,
       city,
       banner_url,
+      video_url,
+      videos,
+      gallery_images,
       description,
       agenda,
       ticket_tiers,
@@ -421,6 +424,9 @@ router.post('/submit-listing', async (req, res) => {
       location: location || 'Islamabad, Pakistan',
       city: city || 'Islamabad',
       banner_url: banner_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
+      video_url: video_url || '',
+      videos: Array.isArray(videos) ? JSON.stringify(videos) : (typeof videos === 'string' ? videos : (video_url ? JSON.stringify([video_url]) : '[]')),
+      gallery_images: Array.isArray(gallery_images) ? JSON.stringify(gallery_images) : (typeof gallery_images === 'string' ? gallery_images : '[]'),
       description: description || 'Submitted event hosted via Eventrye.',
       agenda: typeof agenda === 'string' ? agenda : JSON.stringify(agenda || []),
       speakers: JSON.stringify([]),
@@ -553,6 +559,82 @@ router.get('/admin/bookings', verifyToken, requireSuperAdmin, (req, res) => {
     success: true,
     bookings: memoryStore.directory_bookings || []
   });
+});
+
+// POST /api/directory-events - Create directory event (SuperAdmin / Platform Official)
+router.post('/', verifyToken, requireSuperAdmin, (req, res) => {
+  try {
+    const {
+      title,
+      organizer_name,
+      category,
+      event_type,
+      start_date,
+      end_date,
+      location,
+      city,
+      banner_url,
+      video_url,
+      videos,
+      gallery_images,
+      description,
+      agenda,
+      ticket_tiers,
+      is_approved = 1,
+      is_featured = 0,
+      is_official = 0,
+      contact_email,
+      contact_phone
+    } = req.body || {};
+
+    if (!title || !title.trim()) {
+      return res.status(400).json({ success: false, message: 'Event title is required.' });
+    }
+
+    if (!memoryStore.directory_events) memoryStore.directory_events = [];
+    const newId = (memoryStore.directory_events.length ? Math.max(...memoryStore.directory_events.map(e => e.id || 0)) : 100) + 1;
+
+    const newEvent = {
+      id: newId,
+      title: title.trim(),
+      organizer_name: (organizer_name || 'Eventrye Platform / ORBIT-I').trim(),
+      category: category || 'Technology',
+      event_type: event_type || 'Conference',
+      start_date: start_date || new Date().toISOString(),
+      end_date: end_date || new Date().toISOString(),
+      location: location || 'National Convention Center, Islamabad',
+      city: city || 'Islamabad',
+      banner_url: banner_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=1200&auto=format&fit=crop&q=80',
+      video_url: video_url || '',
+      videos: Array.isArray(videos) ? JSON.stringify(videos) : (typeof videos === 'string' ? videos : (video_url ? JSON.stringify([video_url]) : '[]')),
+      gallery_images: Array.isArray(gallery_images) ? JSON.stringify(gallery_images) : (typeof gallery_images === 'string' ? gallery_images : '[]'),
+      description: description || 'Official event published by platform administration.',
+      agenda: typeof agenda === 'string' ? agenda : JSON.stringify(agenda || []),
+      speakers: JSON.stringify([]),
+      ticket_tiers: typeof ticket_tiers === 'string' ? ticket_tiers : JSON.stringify(ticket_tiers || [
+        { id: 'standard', name: 'General Admission', price_pkr: 0, price_usd: 0, perks: ['Full Hall Access', 'Digital Certificate'], available: 500, sold: 0 }
+      ]),
+      contact_email: contact_email || 'support@eventrye.com',
+      contact_phone: contact_phone || '+92 300 1234567',
+      is_approved: is_approved ? 1 : 0,
+      is_featured: is_featured ? 1 : 0,
+      is_official: is_official ? 1 : 0,
+      views_count: 0,
+      created_at: new Date().toISOString()
+    };
+
+    memoryStore.directory_events.unshift(newEvent);
+    saveLocalStore();
+
+    return res.status(201).json({
+      success: true,
+      message: 'Event published successfully to Directory!',
+      event: newEvent
+    });
+  } catch (error) {
+    console.error('[Create directory event error]:', error);
+    return res.status(500).json({ success: false, message: 'Failed to create directory event.' });
+  }
 });
 
 // PUT /api/directory-events/:id - Update event (SuperAdmin)

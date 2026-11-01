@@ -288,7 +288,7 @@ export default function PublicEventPage() {
         {/* Background Image with Gradient Overlay */}
         <div className="absolute inset-0 z-0 opacity-30">
           <img
-            src={event.banner_image || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1600&q=80'}
+            src={event.banner_image || event.banner_url || 'https://images.unsplash.com/photo-1540575467063-178a50c2df87?auto=format&fit=crop&w=1600&q=80'}
             alt={event.title}
             className="w-full h-full object-cover"
           />
@@ -297,6 +297,12 @@ export default function PublicEventPage() {
 
         <div className="max-w-6xl mx-auto px-4 py-16 md:py-24 relative z-10">
           <div className="flex flex-wrap items-center gap-2 mb-4">
+            {Boolean(event.is_official || event.is_platform_event) && (
+              <Badge className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-600 text-white font-bold text-xs uppercase tracking-wider px-3 py-1 shadow-md shadow-blue-900/30 border border-white/20 flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-cyan-200" />
+                Official Platform Event
+              </Badge>
+            )}
             <Badge className="bg-blue-600/90 text-white font-bold text-xs uppercase tracking-wider px-3 py-1">
               {event.category || 'Event'}
             </Badge>
